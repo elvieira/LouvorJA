@@ -1,23 +1,30 @@
 <template>
-  <div class="apps">
-    <v-expansion-panels v-model="panels_active" flat multiple :rounded="false">
-      <v-expansion-panel
-        v-for="(group, group_key) in module_group"
-        :key="group_key"
-      >
-        <v-expansion-panel-title
-          v-if="countModules(group.modules) != 0"
-          class="my-0 py-0"
-        >
-          {{ $t(group.title) }}
-        </v-expansion-panel-title>
-        <v-expansion-panel-text v-if="countModules(group.modules) != 0">
-          <v-container fluid class="my-0 py-0">
-            <v-row class="my-0 py-0">
-              <template
-                v-for="(module, module_key) in sortModules(group.modules)"
-                :key="module_key"
-              >
+  <!-- Versão adaptada para o home - lista todos os módulos -->
+  <div class="dashboard-modules">
+    <div class="content-header">
+      <h1 class="page-title">Todos os Módulos</h1>
+    </div>
+    
+    <div class="content-main">
+      <div class="apps-legacy">
+        <v-expansion-panels v-model="panels_active" flat multiple :rounded="false">
+          <v-expansion-panel
+            v-for="(group, group_key) in module_group"
+            :key="group_key"
+          >
+            <v-expansion-panel-title
+              v-if="countModules(group.modules) != 0"
+              class="my-0 py-0"
+            >
+              {{ $t(group.title) }}
+            </v-expansion-panel-title>
+            <v-expansion-panel-text v-if="countModules(group.modules) != 0">
+              <v-container fluid class="my-0 py-0">
+                <v-row class="my-0 py-0">
+                  <template
+                    v-for="(module, module_key) in sortModules(group.modules)"
+                    :key="module_key"
+                  >
                 <v-card
                   v-if="
                     module.language
@@ -58,6 +65,8 @@
         </v-expansion-panel-text>
       </v-expansion-panel>
     </v-expansion-panels>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -121,9 +130,33 @@ export default {
 };
 </script>
 
-<style scoped>
-.apps {
+<style scoped lang="scss">
+.dashboard-modules {
+  height: 100%;
+}
+
+.apps-legacy {
   overflow: auto !important;
   width: 100%;
+  
+  .v-expansion-panels {
+    background: transparent;
+  }
+  
+  .v-expansion-panel {
+    background: var(--card-bg, #ffffff);
+    margin-bottom: 16px;
+    border-radius: var(--border-radius, 8px);
+    box-shadow: var(--shadow, 0 2px 8px rgba(0,0,0,0.1));
+  }
+  
+  .v-card {
+    transition: all 0.3s ease;
+    
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-hover, 0 4px 16px rgba(0,0,0,0.15));
+    }
+  }
 }
 </style>

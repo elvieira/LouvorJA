@@ -56,6 +56,12 @@ export default {
 .apps-bar {
   width: 80px;
   margin: 5px;
+  position: fixed;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1000;
+  max-height: 60vh;
 }
 .apps-bar-header,
 .apps-bar-footer {

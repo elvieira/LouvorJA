@@ -30,7 +30,15 @@ export default {
 </script>
 
 <style>
+#app-container {
+  width: 100vw !important;
+  max-width: 100vw !important;
+  overflow-x: hidden !important;
+}
+
 #app-container > div {
   height: 100vh;
+  width: 100% !important;
+  max-width: 100% !important;
 }
 </style>

@@ -1,40 +1,83 @@
 <template>
+  <!-- Componentes de sistema que devem continuar -->
   <AppSystemBar />
-  <AppHeader />
-  <AppMenu />
-
   <AppModules />
   <AppAlert />
 
-  <v-main class="bg-main">
-    <Apps />
-    <AppTrayArea />
-  </v-main>
+  <!-- Novo Layout Dashboard -->
+  <div class="dashboard-layout">
+    <!-- Sidebar -->
+    <Sidebar @navigate="handleNavigation" />
+    
+    <!-- Área Principal -->
+    <div class="dashboard-content">
+      <!-- Renderiza o componente baseado na navegação -->
+      <Home v-if="currentView === 'home'" />
+      <Apps v-else-if="currentView === 'modules'" />
+      
+      <!-- Placeholder para outras páginas -->
+      <div v-else class="content-placeholder">
+        <div class="content-header">
+          <h1 class="page-title">{{ getPageTitle() }}</h1>
+        </div>
+        <div class="content-main">
+          <v-alert type="info" variant="tonal">
+            Página "{{ currentView }}" em desenvolvimento
+          </v-alert>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Componentes de sistema (posicionados de forma absoluta) -->
+  <!-- Tray Area (módulos minimizados) -->
+  <AppTrayArea />
 
   <AppFooter />
 </template>
 
 <script>
 import AppSystemBar from "@/layout/SystemBar.vue";
-import AppHeader from "@/layout/Header.vue";
 import AppFooter from "@/layout/Footer.vue";
-import AppMenu from "@/layout/Menu.vue";
 import AppModules from "@/layout/Modules.vue";
 import AppAlert from "@/layout/Alert.vue";
 import Apps from "@/layout/Apps.vue";
 import AppTrayArea from "@/layout/TrayArea.vue";
+import DashboardSidebar from "@/components/Sidebar.vue";
+import DashboardHome from "@/components/Home.vue";
 
 export default {
   name: "MainPage",
   components: {
     AppSystemBar,
-    AppHeader,
     AppFooter,
-    AppMenu,
     AppModules,
     AppAlert,
     Apps,
     AppTrayArea,
+    Sidebar: DashboardSidebar,
+    Home: DashboardHome,
+  },
+  data() {
+    return {
+      currentView: 'home' // 'home', 'modules', 'favorites', 'help', 'settings'
+    }
+  },
+  methods: {
+    handleNavigation(page) {
+      this.currentView = page;
+    },
+    
+    getPageTitle() {
+      const titles = {
+        'home': 'Dashboard',
+        'modules': 'Módulos',
+        'favorites': 'Favoritos',
+        'help': 'Ajuda e Sobre',
+        'settings': 'Configurações'
+      };
+      return titles[this.currentView] || 'Página';
+    }
   },
   mounted() {
     //Carregar os dados salvos
@@ -125,5 +168,12 @@ main {
   --v-layout-top: 0 !important;
   padding-top: 0 !important;
   overflow: auto !important;
+  width: 100% !important;
+  max-width: 100vw !important;
+}
+
+.dashboard-layout {
+  width: 100% !important;
+  max-width: 100% !important;
 }
 </style>

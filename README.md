@@ -1,24 +1,33 @@
-# louvorja
+# LouvorJA
 
-## Project setup
+## Configuração do Projeto
 ```
 npm install
 ```
 
-### Compiles and hot-reloads for development
+### Executa e recarrega automaticamente para desenvolvimento
 ```
 npm run serve
 ```
+ou
+```
+npm run dev
+```
 
-### Compiles and minifies for production
+### Compila e minifica para produção
 ```
 npm run build
 ```
 
-### Lints and fixes files
+### Visualiza o build de produção
+```
+npm run preview
+```
+
+### Executa o linter e corrige arquivos
 ```
 npm run lint
 ```
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+### Configuração Personalizada
+Veja [Vite Configuration Reference](https://vitejs.dev/config/).
