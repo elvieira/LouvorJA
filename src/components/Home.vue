@@ -1,6 +1,11 @@
 <template>
   <div class="dashboard-home">
     <div class="search-header">
+      <!-- Botão para abrir sidebar em telas pequenas -->
+      <button class="menu-toggle-btn" @click="toggleSidebar">
+        <v-icon>mdi-menu</v-icon>
+      </button>
+      
       <div class="search-bar">
         <v-text-field
           v-model="searchQuery"
@@ -182,6 +187,11 @@ export default {
     }
   },
   methods: {
+    toggleSidebar() {
+      // Emite evento para o componente pai controlar a sidebar
+      this.$emit('toggle-sidebar');
+    },
+    
     handleCollectionsScroll(event) {
       event.preventDefault();
       

@@ -22,7 +22,6 @@ html, body {
 }
 
 // === OVERRIDE GLOBAL STYLES ===
-// Garantir que o layout principal não cause scroll
 body {
   overflow: hidden !important;
 }
@@ -33,29 +32,33 @@ body {
   overflow: hidden !important;
 }
 
-// === DASHBOARD STYLES ===
-
-// Variáveis baseadas no logotipo LouvorJA
+// === VARIÁVEIS CSS ===
 :root {
-  --sidebar-width: 280px;
-  --sidebar-bg: #1a1a1a;
-  --sidebar-text: #ffffff;
-  --sidebar-text-secondary: #a0a0a0;
-  --sidebar-hover: #2a2a2a;
+  // Sidebar
+  --sidebar-width: 350px;
+  --sidebar-bg: #f8f9fa;
+  --sidebar-text: #2c3e50;
+  --sidebar-text-secondary: #6c757d;
+  --sidebar-hover: #e9ecef;
   --sidebar-active: linear-gradient(135deg, #0097D7 0%, #0054D8 100%);
+  --sidebar-border: #dee2e6;
+  
+  // Colors
   --accent-yellow: #F8C800;
   --accent-blue: #0097D7;
   --accent-blue-dark: #0054D8;
   --content-bg: #f8f9fa;
   --card-bg: #ffffff;
   --border-color: #e0e0e0;
+  
+  // Effects
   --shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   --shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.15);
   --border-radius: 8px;
   --transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-// Layout Principal
+// === LAYOUT PRINCIPAL ===
 .dashboard-layout {
   display: flex;
   height: 100vh;
@@ -78,60 +81,134 @@ body {
   top: 0;
   z-index: 1000;
   overflow-y: auto;
+  border-right: 1px solid var(--sidebar-border);
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
 
-  // Logo Section
-  .sidebar-logo {
-    padding: 24px 20px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  .sidebar-header {
+    padding: 32px 24px;
+    border-bottom: 1px solid var(--sidebar-border);
+    background: var(--card-bg);
     
     .logo-container {
       display: flex;
       justify-content: center;
       align-items: center;
-      gap: 12px;
+      gap: 16px;
       
       .logo-svg {
-        width: 40px;
-        height: 40px;
+        width: 48px;
+        height: 48px;
         flex-shrink: 0;
       }
       
-      .logo-text {
-        display: flex;
-        flex-direction: column;
-        
-        .logo-title {
-          font-size: 18px;
-          font-weight: 700;
-          color: var(--sidebar-text);
-          letter-spacing: 0.5px;
-          background: linear-gradient(135deg, var(--accent-yellow) 0%, var(--accent-blue) 100%);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-        }
+      .logo-text .logo-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--sidebar-text);
+        letter-spacing: 0.8px;
+        background: linear-gradient(135deg, var(--accent-yellow) 0%, var(--accent-blue) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
       }
     }
   }
 
-  // Navigation
-  .sidebar-nav {
+  .sidebar-nav-main {
     flex: 1;
-    padding: 20px 0;
+    padding: 40px 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .sidebar-footer {
+    padding: 24px 0 32px 0;
+    border-top: 1px solid var(--sidebar-border);
+    background: var(--card-bg);
   }
 
   .nav-item {
     position: relative;
-    margin: 4px 12px;
+    margin: 6px 20px;
     border-radius: var(--border-radius);
     transition: var(--transition);
     
+    &.close-item {
+      display: none;
+      margin-bottom: 16px;
+      
+      .close-sidebar-btn {
+        background: none;
+        border: none;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        padding: 16px 20px;
+        color: var(--accent-blue);
+        gap: 16px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+        border-radius: var(--border-radius);
+        
+        .nav-icon {
+          font-size: 24px;
+          min-width: 24px;
+          color: var(--accent-blue);
+        }
+        
+        .nav-text {
+          flex: 1;
+          text-align: left;
+          font-weight: 600;
+        }
+        
+        &:hover {
+          background: var(--sidebar-hover);
+          color: var(--accent-blue-dark);
+          
+          .nav-icon {
+            color: var(--accent-blue-dark);
+          }
+        }
+        
+        &:active {
+          transform: scale(0.98);
+        }
+      }
+    }
+    
+    &.main-item {
+      margin: 8px 20px;
+      
+      .nav-link {
+        padding: 16px 20px;
+        font-size: 16px;
+        font-weight: 600;
+        
+        .nav-icon {
+          font-size: 24px;
+          min-width: 24px;
+          color: var(--accent-blue);
+        }
+        
+        .nav-text {
+          font-weight: 600;
+        }
+      }
+    }
+    
     &:hover {
       background: var(--sidebar-hover);
+      border-radius: var(--border-radius);
     }
     
     &.active {
       background: var(--sidebar-active);
+      border-radius: var(--border-radius);
       
       .nav-link {
         color: white;
@@ -148,7 +225,7 @@ body {
       padding: 12px 16px;
       color: var(--sidebar-text);
       text-decoration: none;
-      gap: 12px;
+      gap: 16px;
       font-size: 14px;
       font-weight: 500;
       transition: var(--transition);
@@ -156,6 +233,7 @@ body {
       .nav-icon {
         font-size: 20px;
         min-width: 20px;
+        color: var(--accent-blue);
       }
       
       .nav-text {
@@ -173,7 +251,6 @@ body {
     }
   }
 
-  // Submenu
   .nav-submenu {
     padding-left: 32px;
     max-height: 0;
@@ -198,15 +275,9 @@ body {
       }
     }
   }
-
-  // Footer
-  .sidebar-footer {
-    padding: 20px 12px;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-  }
 }
 
-// === CONTENT AREA ===
+// === ÁREA DE CONTEÚDO ===
 .dashboard-content {
   flex: 1;
   margin-left: var(--sidebar-width);
@@ -219,34 +290,6 @@ body {
   flex-direction: column;
 }
 
-.content-header {
-  background: var(--card-bg);
-  padding: 20px 32px;
-  border-bottom: 1px solid var(--border-color);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  box-sizing: border-box;
-  flex-shrink: 0;
-  height: 80px;
-  
-  .page-title {
-    font-size: 24px;
-    font-weight: 600;
-    color: #333;
-    margin: 0;
-    flex-shrink: 0;
-  }
-  
-  .search-bar {
-    max-width: 400px;
-    flex: 1;
-    margin: 0 32px;
-    min-width: 200px;
-  }
-}
-
 .search-header {
   background: transparent;
   padding: 20px 32px 10px 32px;
@@ -254,12 +297,13 @@ body {
   justify-content: center;
   align-items: center;
   flex-shrink: 0;
+  gap: 16px;
   
   .search-bar {
     max-width: 500px;
     width: 100%;
+    flex: 1;
     
-    // Customização do campo de pesquisa
     .v-field {
       background: var(--card-bg) !important;
       box-shadow: var(--shadow) !important;
@@ -302,7 +346,7 @@ body {
   height: calc(100vh - 70px);
 }
 
-// === DASHBOARD CARDS ===
+// === SEÇÕES DO DASHBOARD ===
 .dashboard-section {
   margin-bottom: 40px;
   display: flex;
@@ -312,17 +356,6 @@ body {
     flex-shrink: 1;
     position: relative;
     min-height: 200px;
-    
-    // Em telas com pouca altura, reduz o espaço das coletâneas
-    @media (max-height: 700px) {
-      margin-bottom: 20px;
-      min-height: 180px;
-    }
-    
-    @media (max-height: 600px) {
-      margin-bottom: 16px;
-      min-height: 160px;
-    }
   }
   
   &.music-section {
@@ -330,19 +363,6 @@ body {
     min-height: 300px;
     display: flex;
     flex-direction: column;
-    
-    // Garante que sempre há espaço para a seção de música
-    @media (max-height: 800px) {
-      min-height: 250px;
-    }
-    
-    @media (max-height: 700px) {
-      min-height: 200px;
-    }
-    
-    @media (max-height: 600px) {
-      min-height: 150px;
-    }
   }
   
   .section-title {
@@ -354,15 +374,9 @@ body {
     align-items: center;
     flex-shrink: 0;
   }
-  
-  .section-subtitle {
-    color: #666;
-    font-size: 14px;
-    margin-bottom: 24px;
-    flex-shrink: 0;
-  }
 }
 
+// === GRID DE COLEÇÕES ===
 .collections-grid {
   display: flex;
   gap: 24px;
@@ -377,7 +391,6 @@ body {
     cursor: grabbing;
   }
   
-  // Scrollbar customizada
   &::-webkit-scrollbar {
     height: 8px;
   }
@@ -396,25 +409,12 @@ body {
     }
   }
   
-  // Indicador visual de scroll disponível
-  &::after {
-    content: '';
-    position: absolute;
-    right: 0;
-    top: 0;
-    bottom: 16px;
-    width: 20px;
-    background: linear-gradient(to left, rgba(248, 249, 250, 0.9), transparent);
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-  }
-  
-  &:hover::after {
-    opacity: 1;
+  &:hover::-webkit-scrollbar-thumb {
+    background: var(--accent-yellow);
   }
 }
 
+// === CARDS ===
 .collection-card {
   background: var(--card-bg);
   border-radius: var(--border-radius);
@@ -483,6 +483,7 @@ body {
   }
 }
 
+// === LISTA DE MÚSICAS ===
 .music-list {
   background: var(--card-bg);
   border-radius: var(--border-radius);
@@ -498,7 +499,6 @@ body {
     overflow-y: auto;
     overflow-x: hidden;
     
-    // Scrollbar customizada
     &::-webkit-scrollbar {
       width: 8px;
     }
@@ -514,6 +514,10 @@ body {
       &:hover {
         background: linear-gradient(135deg, var(--accent-blue-dark) 0%, var(--accent-blue) 100%);
       }
+    }
+    
+    &:hover::-webkit-scrollbar-thumb {
+      background: var(--accent-yellow);
     }
   }
 }
@@ -563,23 +567,65 @@ body {
   }
 }
 
-// === HOVER EFFECTS FOR SCROLLABLE AREAS ===
-.collections-grid:hover {
-  &::-webkit-scrollbar-thumb {
-    background: var(--accent-yellow);
+// === BOTÃO DE MENU MÓVEL ===
+.menu-toggle-btn {
+  display: none;
+  background: var(--card-bg);
+  border: none;
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: var(--transition);
+  margin-right: 16px;
+  
+  .v-icon {
+    color: var(--accent-blue);
+    font-size: 24px;
+  }
+  
+  &:hover {
+    box-shadow: var(--shadow-hover);
+    transform: scale(1.05);
+  }
+  
+  &:active {
+    transform: scale(0.95);
   }
 }
 
-.music-list-container:hover {
-  &::-webkit-scrollbar-thumb {
-    background: var(--accent-yellow);
-  }
+// === OVERLAY ===
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
 }
 
-// === RESPONSIVE ===
+// === RESPONSIVIDADE ===
 @media (max-width: 1024px) {
+  .menu-toggle-btn {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .close-item {
+    display: block !important;
+  }
+  
+  .sidebar-overlay {
+    display: block;
+  }
+  
   .dashboard-sidebar {
     transform: translateX(-100%);
+    transition: transform 0.3s ease;
     
     &.open {
       transform: translateX(0);
@@ -594,6 +640,7 @@ body {
   
   .search-header {
     padding: 16px 20px 8px 20px;
+    justify-content: flex-start;
     
     .search-bar {
       max-width: 100%;
@@ -617,7 +664,6 @@ body {
   .collections-grid {
     gap: 16px;
     
-    // Em telas menores, mantém o scroll horizontal mas com cards menores
     .collection-card {
       min-width: 240px;
       
@@ -638,21 +684,29 @@ body {
 }
 
 @media (max-width: 768px) {
+  .menu-toggle-btn {
+    width: 44px;
+    height: 44px;
+    margin-right: 12px;
+    
+    .v-icon {
+      font-size: 22px;
+    }
+  }
+  
   .search-header {
     padding: 12px 16px 6px 16px;
     
-    .search-bar {
-      .v-field {
-        border-radius: 20px !important;
-        
-        .v-field__input {
-          padding: 8px 14px !important;
-          font-size: 12px !important;
-        }
-        
-        .v-field__prepend-inner {
-          padding-left: 10px !important;
-        }
+    .search-bar .v-field {
+      border-radius: 20px !important;
+      
+      .v-field__input {
+        padding: 8px 14px !important;
+        font-size: 12px !important;
+      }
+      
+      .v-field__prepend-inner {
+        padding-left: 10px !important;
       }
     }
   }
@@ -661,7 +715,7 @@ body {
     gap: 12px;
     
     .collection-card {
-      min-width: 200px; // Cards ainda menores em mobile
+      min-width: 200px;
       
       .card-content {
         padding: 14px;
@@ -688,21 +742,24 @@ body {
   }
 }
 
-// === MEDIA QUERIES PARA ALTURA DA TELA ===
-@media (max-height: 800px) {
-  .collection-card {
-    .card-image {
-      height: 140px;
-      font-size: 42px;
+// === MEDIA QUERIES PARA ALTURA ===
+@media (max-height: 700px) {
+  .dashboard-section {
+    &.collections-section {
+      margin-bottom: 20px;
+      min-height: 180px;
+    }
+    
+    &.music-section {
+      min-height: 200px;
     }
   }
   
-  .dashboard-section {
-    margin-bottom: 30px;
+  .section-title {
+    font-size: 22px !important;
+    margin-bottom: 16px !important;
   }
-}
-
-@media (max-height: 700px) {
+  
   .collection-card {
     .card-image {
       height: 120px;
@@ -722,18 +779,33 @@ body {
       }
     }
   }
-  
-  .dashboard-section {
-    margin-bottom: 24px;
-  }
-  
-  .section-title {
-    font-size: 22px !important;
-    margin-bottom: 16px !important;
-  }
 }
 
 @media (max-height: 600px) {
+  .dashboard-section {
+    &.collections-section {
+      margin-bottom: 16px;
+      min-height: 160px;
+    }
+    
+    &.music-section {
+      min-height: 150px;
+    }
+  }
+  
+  .section-title {
+    font-size: 20px !important;
+    margin-bottom: 12px !important;
+  }
+  
+  .search-header {
+    padding: 10px 32px 8px 32px !important;
+  }
+  
+  .content-main {
+    padding: 16px 32px 20px 32px !important;
+  }
+  
   .collection-card {
     .card-image {
       height: 100px;
@@ -756,22 +828,5 @@ body {
         margin-top: 6px;
       }
     }
-  }
-  
-  .dashboard-section {
-    margin-bottom: 20px;
-  }
-  
-  .section-title {
-    font-size: 20px !important;
-    margin-bottom: 12px !important;
-  }
-  
-  .search-header {
-    padding: 10px 32px 8px 32px !important;
-  }
-  
-  .content-main {
-    padding: 16px 32px 20px 32px !important;
   }
 }

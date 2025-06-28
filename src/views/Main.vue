@@ -7,12 +7,26 @@
   <!-- Novo Layout Dashboard -->
   <div class="dashboard-layout">
     <!-- Sidebar -->
-    <Sidebar @navigate="handleNavigation" />
+    <Sidebar 
+      :class="{ open: sidebarOpen }"
+      @navigate="handleNavigation" 
+      @close-sidebar="closeSidebar"
+    />
+    
+    <!-- Overlay para fechar sidebar em mobile -->
+    <div 
+      v-if="sidebarOpen" 
+      class="sidebar-overlay"
+      @click="closeSidebar"
+    ></div>
     
     <!-- Área Principal -->
     <div class="dashboard-content">
       <!-- Renderiza o componente baseado na navegação -->
-      <Home v-if="currentView === 'home'" />
+      <Home 
+        v-if="currentView === 'home'" 
+        @toggle-sidebar="toggleSidebar"
+      />
       <Apps v-else-if="currentView === 'modules'" />
       
       <!-- Placeholder para outras páginas -->
@@ -60,10 +74,19 @@ export default {
   },
   data() {
     return {
-      currentView: 'home' // 'home', 'modules', 'favorites', 'help', 'settings'
+      currentView: 'home', // 'home', 'modules', 'favorites', 'help', 'settings'
+      sidebarOpen: false
     }
   },
   methods: {
+    toggleSidebar() {
+      this.sidebarOpen = !this.sidebarOpen;
+    },
+    
+    closeSidebar() {
+      this.sidebarOpen = false;
+    },
+    
     handleNavigation(page) {
       this.currentView = page;
     },

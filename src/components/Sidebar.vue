@@ -1,7 +1,7 @@
 <template>
   <div class="dashboard-sidebar">
     <!-- Logo Section -->
-    <div class="sidebar-logo">
+    <div class="sidebar-header">
       <div class="logo-container">
         <img src="/ico/favicon.svg" alt="LouvorJA" class="logo-svg" />
         <div class="logo-text">
@@ -10,10 +10,18 @@
       </div>
     </div>
 
-    <!-- Navigation -->
-    <nav class="sidebar-nav">
+    <!-- Main Navigation (centralized) -->
+    <nav class="sidebar-nav-main">
+      <!-- Botão de fechar integrado na navegação -->
+      <div class="nav-item close-item">
+        <button class="close-sidebar-btn" @click="closeSidebar">
+          <v-icon class="nav-icon">mdi-arrow-left</v-icon>
+          <span class="nav-text">Fechar menu</span>
+        </button>
+      </div>
+      
       <!-- Página Inicial -->
-      <div class="nav-item" :class="{ active: currentPage === 'home' }">
+      <div class="nav-item main-item" :class="{ active: currentPage === 'home' }">
         <a href="#" class="nav-link" @click.prevent="navigateTo('home')">
           <v-icon class="nav-icon">mdi-home</v-icon>
           <span class="nav-text">Página Inicial</span>
@@ -21,7 +29,7 @@
       </div>
 
       <!-- Álbuns e Coletâneas -->
-      <div class="nav-item">
+      <div class="nav-item main-item">
         <a href="#" class="nav-link" @click.prevent="toggleSubmenu('albums')">
           <v-icon class="nav-icon">mdi-play</v-icon>
           <span class="nav-text">Álbuns e Coletâneas</span>
@@ -49,7 +57,7 @@
       </div>
 
       <!-- Bíblia -->
-      <div class="nav-item">
+      <div class="nav-item main-item">
         <a href="#" class="nav-link" @click.prevent="openModule('bible')">
           <v-icon class="nav-icon">mdi-book</v-icon>
           <span class="nav-text">Bíblia</span>
@@ -57,7 +65,7 @@
       </div>
 
       <!-- Favoritos -->
-      <div class="nav-item">
+      <div class="nav-item main-item">
         <a href="#" class="nav-link" @click.prevent="navigateTo('favorites')">
           <v-icon class="nav-icon">mdi-heart</v-icon>
           <span class="nav-text">Favoritos</span>
@@ -65,7 +73,7 @@
       </div>
 
       <!-- Utilitários -->
-      <div class="nav-item">
+      <div class="nav-item main-item">
         <a href="#" class="nav-link" @click.prevent="openModule('clock')">
           <v-icon class="nav-icon">mdi-plus-circle</v-icon>
           <span class="nav-text">Utilitários</span>
@@ -73,7 +81,7 @@
       </div>
     </nav>
 
-    <!-- Footer -->
+    <!-- Footer Navigation -->
     <div class="sidebar-footer">
       <div class="nav-item">
         <a href="#" class="nav-link" @click.prevent="navigateTo('help')">
@@ -103,6 +111,11 @@ export default {
     }
   },
   methods: {
+    closeSidebar() {
+      // Emite evento para fechar a sidebar
+      this.$emit('close-sidebar');
+    },
+    
     navigateTo(page) {
       this.currentPage = page;
       this.$emit('navigate', page);
