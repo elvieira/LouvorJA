@@ -9,6 +9,7 @@
     <!-- Sidebar -->
     <Sidebar 
       :class="{ open: sidebarOpen }"
+      :current-view="currentView"
       @navigate="handleNavigation" 
       @close-sidebar="closeSidebar"
     />
@@ -28,6 +29,7 @@
         @toggle-sidebar="toggleSidebar"
       />
       <Apps v-else-if="currentView === 'modules'" />
+      <BibleModule v-else-if="currentView === 'bible'" />
       
       <!-- Placeholder para outras páginas -->
       <div v-else class="content-placeholder">
@@ -59,6 +61,7 @@ import Apps from "@/layout/Apps.vue";
 import AppTrayArea from "@/layout/TrayArea.vue";
 import DashboardSidebar from "@/components/Sidebar.vue";
 import DashboardHome from "@/components/Home.vue";
+import BibleModule from "@/modules/core/bible/interface/Index.vue";
 
 export default {
   name: "MainPage",
@@ -71,6 +74,7 @@ export default {
     AppTrayArea,
     Sidebar: DashboardSidebar,
     Home: DashboardHome,
+    BibleModule,
   },
   data() {
     return {
@@ -95,6 +99,7 @@ export default {
       const titles = {
         'home': 'Dashboard',
         'modules': 'Módulos',
+        'bible': 'Bíblia',
         'favorites': 'Favoritos',
         'help': 'Ajuda e Sobre',
         'settings': 'Configurações'

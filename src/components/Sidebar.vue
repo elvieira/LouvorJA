@@ -21,7 +21,7 @@
       </div>
       
       <!-- Página Inicial -->
-      <div class="nav-item main-item" :class="{ active: currentPage === 'home' }">
+      <div class="nav-item main-item" :class="{ active: currentView === 'home' }">
         <a href="#" class="nav-link" @click.prevent="navigateTo('home')">
           <v-icon class="nav-icon">mdi-home</v-icon>
           <span class="nav-text">Página Inicial</span>
@@ -57,15 +57,15 @@
       </div>
 
       <!-- Bíblia -->
-      <div class="nav-item main-item">
-        <a href="#" class="nav-link" @click.prevent="openModule('bible')">
+      <div class="nav-item main-item" :class="{ active: currentView === 'bible' }">
+        <a href="#" class="nav-link" @click.prevent="navigateTo('bible')">
           <v-icon class="nav-icon">mdi-book</v-icon>
           <span class="nav-text">Bíblia</span>
         </a>
       </div>
 
       <!-- Favoritos -->
-      <div class="nav-item main-item">
+      <div class="nav-item main-item" :class="{ active: currentView === 'favorites' }">
         <a href="#" class="nav-link" @click.prevent="navigateTo('favorites')">
           <v-icon class="nav-icon">mdi-heart</v-icon>
           <span class="nav-text">Favoritos</span>
@@ -83,13 +83,13 @@
 
     <!-- Footer Navigation -->
     <div class="sidebar-footer">
-      <div class="nav-item">
+      <div class="nav-item" :class="{ active: currentView === 'help' }">
         <a href="#" class="nav-link" @click.prevent="navigateTo('help')">
           <v-icon class="nav-icon">mdi-help-circle</v-icon>
           <span class="nav-text">Ajuda e sobre</span>
         </a>
       </div>
-      <div class="nav-item">
+      <div class="nav-item" :class="{ active: currentView === 'settings' }">
         <a href="#" class="nav-link" @click.prevent="navigateTo('settings')">
           <v-icon class="nav-icon">mdi-cog</v-icon>
           <span class="nav-text">Configurações</span>
@@ -102,9 +102,14 @@
 <script>
 export default {
   name: "DashboardSidebar",
+  props: {
+    currentView: {
+      type: String,
+      required: true
+    }
+  },
   data() {
     return {
-      currentPage: 'home',
       submenuOpen: {
         albums: false
       }
@@ -117,14 +122,7 @@ export default {
     },
     
     navigateTo(page) {
-      this.currentPage = page;
       this.$emit('navigate', page);
-      
-      // Se for página inicial, não abre módulo
-      if (page === 'home') {
-        // Apenas navega para home
-        return;
-      }
     },
     
     openModule(moduleId) {
