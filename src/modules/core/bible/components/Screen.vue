@@ -7,6 +7,7 @@
       width: '100%',
       height: height ? height + 'px' : '100%',
       color: '#fff',
+      position: 'relative',
     }"
   >
     <div v-if="bible" class="d-flex flex-column">

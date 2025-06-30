@@ -9,7 +9,6 @@ import shortkey from "vue3-shortkey";
 import VueFullscreen from "vue-fullscreen";
 import "./assets/styles/main.css";
 import "./assets/styles/fonts.css";
-import "./assets/styles/layout.scss";
 import "./assets/styles/main.scss";
 
 loadFonts();

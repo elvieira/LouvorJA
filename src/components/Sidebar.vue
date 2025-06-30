@@ -136,3 +136,7 @@ export default {
   }
 }
 </script>
+
+<style lang="scss">
+@import '@/assets/styles/layout/sidebar.scss';
+</style>

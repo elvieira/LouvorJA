@@ -1,7 +1,6 @@
 <template>
   <!-- Componentes de sistema que devem continuar -->
   <AppSystemBar />
-  <AppModules />
   <AppAlert />
 
   <!-- Novo Layout Dashboard -->
@@ -28,12 +27,19 @@
         v-if="currentView === 'home'" 
         @toggle-sidebar="toggleSidebar"
       />
-      <Apps v-else-if="currentView === 'modules'" />
-      <BibleModule v-else-if="currentView === 'bible'" />
+      <Apps 
+        v-else-if="currentView === 'modules'" 
+        @toggle-sidebar="toggleSidebar"
+      />
+      <BibleModule 
+        v-else-if="currentView === 'bible'"
+        @toggle-sidebar="toggleSidebar"
+      />
       
       <!-- Placeholder para outras páginas -->
       <div v-else class="content-placeholder">
         <div class="content-header">
+          <MenuToggleButton @toggle-sidebar="toggleSidebar" />
           <h1 class="page-title">{{ getPageTitle() }}</h1>
         </div>
         <div class="content-main">
@@ -55,26 +61,26 @@
 <script>
 import AppSystemBar from "@/layout/SystemBar.vue";
 import AppFooter from "@/layout/Footer.vue";
-import AppModules from "@/layout/Modules.vue";
 import AppAlert from "@/layout/Alert.vue";
 import Apps from "@/layout/Apps.vue";
 import AppTrayArea from "@/layout/TrayArea.vue";
 import DashboardSidebar from "@/components/Sidebar.vue";
 import DashboardHome from "@/components/Home.vue";
 import BibleModule from "@/modules/core/bible/interface/Index.vue";
+import MenuToggleButton from "@/components/MenuToggleButton.vue";
 
 export default {
   name: "MainPage",
   components: {
     AppSystemBar,
     AppFooter,
-    AppModules,
     AppAlert,
     Apps,
     AppTrayArea,
     Sidebar: DashboardSidebar,
     Home: DashboardHome,
     BibleModule,
+    MenuToggleButton,
   },
   data() {
     return {
@@ -188,7 +194,7 @@ export default {
 };
 </script>
 
-<style>
+<style lang="scss">
 main {
   display: flex !important;
   flex: auto !important;
@@ -203,5 +209,46 @@ main {
 .dashboard-layout {
   width: 100% !important;
   max-width: 100% !important;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.dashboard-content {
+  flex: 1;
+  margin-left: 250px; /* Largura da sidebar */
+  transition: margin-left 0.3s ease;
+}
+
+@media (max-width: 960px) {
+  .dashboard-content {
+    margin-left: 0;
+  }
+}
+
+.content-placeholder {
+  height: 100%;
+  padding: 16px;
+}
+
+.content-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+  
+  .page-title {
+    margin: 0;
+    font-size: 1.5rem;
+  }
+  
+  .menu-toggle-btn {
+    margin-right: 12px;
+  }
+  
+  @media (min-width: 901px) {
+    .menu-toggle-btn {
+      display: none;
+    }
+  }
 }
 </style>

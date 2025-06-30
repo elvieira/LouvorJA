@@ -2,9 +2,7 @@
   <div class="dashboard-home">
     <div class="search-header">
       <!-- Botão para abrir sidebar em telas pequenas -->
-      <button class="menu-toggle-btn" @click="toggleSidebar">
-        <v-icon>mdi-menu</v-icon>
-      </button>
+      <MenuToggleButton @toggle-sidebar="toggleSidebar" />
       
       <div class="search-bar">
         <v-text-field
@@ -77,8 +75,13 @@
 </template>
 
 <script>
+import MenuToggleButton from '@/components/MenuToggleButton.vue';
+
 export default {
   name: "DashboardHome",
+  components: {
+    MenuToggleButton
+  },
   data() {
     return {
       searchQuery: '',
@@ -209,3 +212,7 @@ export default {
   }
 }
 </script>
+
+<style lang="scss">
+@import '@/assets/styles/pages/home.scss';
+</style>

@@ -2,6 +2,7 @@
   <!-- Versão adaptada para o home - lista todos os módulos -->
   <div class="dashboard-modules">
     <div class="content-header">
+      <MenuToggleButton @toggle-sidebar="toggleSidebar" />
       <h1 class="page-title">Todos os Módulos</h1>
     </div>
     
@@ -71,8 +72,13 @@
 </template>
 
 <script>
+import MenuToggleButton from "@/components/MenuToggleButton.vue";
+
 export default {
   name: "AppsLayout",
+  components: {
+    MenuToggleButton
+  },
   data: () => ({
     panels_active: [],
 
@@ -115,6 +121,9 @@ export default {
     },
   },
   methods: {
+    toggleSidebar() {
+      this.$emit('toggle-sidebar');
+    },
     sortModules(modules) {
       //Ordena pelo idioma selecionado
       return this.$modules.sort(modules, this.$t);
@@ -133,6 +142,22 @@ export default {
 <style scoped lang="scss">
 .dashboard-modules {
   height: 100%;
+}
+
+.content-header {
+  display: flex;
+  align-items: center;
+  padding: 16px 0;
+  
+  .page-title {
+    margin: 0;
+  }
+  
+  @media (min-width: 901px) {
+    .menu-toggle-btn {
+      display: none;
+    }
+  }
 }
 
 .apps-legacy {
