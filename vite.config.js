@@ -2,16 +2,15 @@ import { defineConfig, loadEnv } from "vite";
 import vue from "@vitejs/plugin-vue";
 import vuetify from "vite-plugin-vuetify";
 import { VitePWA } from "vite-plugin-pwa";
-
-const path = require("path");
+import { fileURLToPath, URL } from "node:url";
 
 // https://vitejs.dev/config/
-export default ({ mode }) => {
+export default defineConfig(({ mode }) => {
   // Load app-level env vars to node-level env vars.
-  process.env = { ...process.env, ...loadEnv(mode, process.cwd()) };
+  const env = loadEnv(mode, process.cwd(), '');
 
-  return defineConfig({
-    base: process.env.VITE_BASE_URL ?? "/",
+  return {
+    base: env.VITE_BASE_URL ?? "/",
     plugins: [
       vue(),
       // https://github.com/vuetifyjs/vuetify-loader/tree/next/packages/vite-plugin
@@ -30,36 +29,33 @@ export default ({ mode }) => {
           name: "LouvorJA",
           short_name: "LouvorJA",
           description: "Software de músicas para Louvor e Adoração",
-          start_url: process.env.VITE_BASE_URL ?? "/",
+          start_url: env.VITE_BASE_URL ?? "/",
           display: "standalone",
           background_color: "#000000",
           theme_color: "#000000",
           icons: [
             {
-              src: (process.env.VITE_BASE_URL ?? "/") + "ico/favicon-16x16.png",
+              src: (env.VITE_BASE_URL ?? "/") + "ico/favicon-16x16.png",
               sizes: "16x16",
               type: "image/png",
             },
             {
-              src: (process.env.VITE_BASE_URL ?? "/") + "ico/favicon-32x32.png",
+              src: (env.VITE_BASE_URL ?? "/") + "ico/favicon-32x32.png",
               sizes: "32x32",
               type: "image/png",
             },
             {
-              src:
-                (process.env.VITE_BASE_URL ?? "/") + "ico/favicon-144x144.png",
+              src: (env.VITE_BASE_URL ?? "/") + "ico/favicon-144x144.png",
               sizes: "144x144",
               type: "image/png",
             },
             {
-              src:
-                (process.env.VITE_BASE_URL ?? "/") + "ico/favicon-152x152.png",
+              src: (env.VITE_BASE_URL ?? "/") + "ico/favicon-152x152.png",
               sizes: "152x152",
               type: "image/png",
             },
             {
-              src:
-                (process.env.VITE_BASE_URL ?? "/") + "ico/favicon-180x180.png",
+              src: (env.VITE_BASE_URL ?? "/") + "ico/favicon-180x180.png",
               sizes: "180x180",
               type: "image/png",
             },
@@ -73,21 +69,8 @@ export default ({ mode }) => {
     },
     resolve: {
       alias: {
-        "@": path.resolve(__dirname, "src"),
+        "@": fileURLToPath(new URL("./src", import.meta.url)),
       },
     },
-    /* remove the need to specify .vue files https://vitejs.dev/config/#resolve-extensions
-  resolve: {
-    extensions: [
-      '.js',
-      '.json',
-      '.jsx',
-      '.mjs',
-      '.ts',
-      '.tsx',
-      '.vue',
-    ]
-  },
-  */
-  });
-};
+  };
+});
