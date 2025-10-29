@@ -1,62 +1,70 @@
 <template>
   <AppSystemBar />
-  <AppHeader />
-  <AppMenu />
+  
+  <!-- Nova Sidebar -->
+  <AppSidebar v-model="sidebarOpen" />
 
   <AppModules />
   <AppAlert />
 
-  <v-main class="bg-main">
-    <Apps />
-    <AppTrayArea />
-  </v-main>
+  <!-- Container principal com margem para sidebar -->
+  <div class="main-container" :class="{ 'sidebar-open': sidebarOpen }">
+    <v-main class="bg-main">
+      <!-- Router view para Home e outras páginas -->
+      <router-view @toggle-sidebar="toggleSidebar" />
+      
+      <!-- TrayArea mantido (área de minimizados) -->
+      <AppTrayArea />
+    </v-main>
 
-  <AppFooter />
+    <AppFooter />
+  </div>
 </template>
 
 <script>
 import AppSystemBar from "@/layout/SystemBar.vue";
-import AppHeader from "@/layout/Header.vue";
 import AppFooter from "@/layout/Footer.vue";
-import AppMenu from "@/layout/Menu.vue";
+import AppSidebar from "@/layout/Sidebar.vue";
 import AppModules from "@/layout/Modules.vue";
 import AppAlert from "@/layout/Alert.vue";
-import Apps from "@/layout/Apps.vue";
 import AppTrayArea from "@/layout/TrayArea.vue";
 
 export default {
   name: "MainPage",
   components: {
     AppSystemBar,
-    AppHeader,
     AppFooter,
-    AppMenu,
+    AppSidebar,
     AppModules,
     AppAlert,
-    Apps,
     AppTrayArea,
+  },
+  data() {
+    return {
+      sidebarOpen: false,
+    };
   },
   mounted() {
     //Carregar os dados salvos
     this.$userdata.load();
 
     //Carrega o tema
-    let theme = this.$userdata.get("theme");
-    if (theme != "") {
+    const theme = this.$userdata.get("theme");
+    if (theme !== "") {
       this.$vuetify.theme.global.name = theme;
     }
     this.$appdata.set("is_dark", this.$vuetify.theme.global.current.dark);
 
     //Carrega o idioma
-    let lang = this.$userdata.get("language");
-    if (lang != "") {
+    const lang = this.$userdata.get("language");
+    if (lang !== "") {
       this.$i18n.locale = lang;
     } else {
       this.$userdata.set("language", this.$i18n.locale);
     }
 
     //Checa se está em modo de desenvolvimento
-    let is_dev = import.meta.env.VITE_APP_MODE == "development";
+    const is_dev = import.meta.env.VITE_APP_MODE === "development";
     this.$appdata.set("is_dev", is_dev);
 
     if (!is_dev) {
@@ -71,7 +79,7 @@ export default {
     this.$appdata.set(
       "is_mobile",
       this.$vuetify.display.platform.android ||
-        this.$vuetify.display.platform.ios
+        this.$vuetify.display.platform.ios,
     );
 
     if (this.$vuetify.display.platform.electron) {
@@ -83,14 +91,14 @@ export default {
 
     window.addEventListener("message", (event) => {
       if (event.origin === window.location.origin) {
-        if (event.data == "mounted") {
+        if (event.data === "mounted") {
           const popup = this.$appdata.get("popup");
           if (popup) {
             const data = this.$appdata.getFlatten();
             Object.keys(data).map((item) => {
               popup.postMessage(
                 { param: item, value: data[item] },
-                window.location.origin
+                window.location.origin,
               );
             });
             //popup.postMessage({ all: data }, window.location.origin);
@@ -104,7 +112,7 @@ export default {
     /* ********************* PROVISORIO ******************************** */
     if (is_dev) {
       //const self = this;
-      setTimeout(function () {
+      setTimeout(() => {
         //self.$media.open({ id_music: 112, mode: "audio", minimized: false });
         //self.$modules.open("clock");
         //self.$modules.open("collections");
@@ -114,10 +122,31 @@ export default {
     /*********************************************************************/
     /*********************************************************************/
   },
+  methods: {
+    toggleSidebar() {
+      this.sidebarOpen = !this.sidebarOpen;
+    },
+  },
 };
 </script>
 
-<style>
+<style scoped>
+/* Container principal com margem para sidebar */
+.main-container {
+  margin-left: var(--sidebar-width);
+  transition: margin-left 0.3s ease;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Mobile: sem margem (sidebar em overlay) */
+@media (max-width: 1024px) {
+  .main-container {
+    margin-left: 0 !important;
+  }
+}
+
 main {
   display: flex !important;
   flex: auto !important;

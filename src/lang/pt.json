@@ -2,6 +2,22 @@
     "app": {
         "name": "Louvor JA"
     },
+    "sidebar": {
+        "home": "Página Inicial",
+        "favorites": "Favoritos",
+        "help": "Ajuda e sobre",
+        "settings": "Configurações"
+    },
+    "home": {
+        "search_placeholder": "Procure aqui...",
+        "recent_collections": "Coletâneas recentes",
+        "top_songs": "Músicas mais tocadas",
+        "songs": "músicas",
+        "feature_coming_soon": "Funcionalidade em desenvolvimento",
+        "sample_song_1": "Mais Perto Quero Estar",
+        "sample_song_2": "Sublime Amor",
+        "sample_song_3": "Jesus, Meu Guia É"
+    },
     "modules": {
         "invalid": {
             "title": "#Erro#"
@@ -9,7 +25,7 @@
     },
     "module_group": {
         "musics": {
-            "title": "Músicas"
+            "title": "Álbuns e Coletâneas"
         },
         "bible": {
             "title": "Bíblia"

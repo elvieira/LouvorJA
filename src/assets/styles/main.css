@@ -5,6 +5,49 @@
     font-style: normal;
 }
 
+/* === VARIÁVEIS CSS GLOBAIS === */
+:root {
+    /* Cores principais */
+    --accent-blue: #0097d7;
+    --accent-blue-dark: #0077b3;
+    --accent-yellow: #ffc107;
+    
+    /* Backgrounds */
+    --card-bg: #ffffff;
+    --sidebar-bg: #ffffff;
+    --sidebar-border: #e0e0e0;
+    --border-color: #e0e0e0;
+    
+    /* Textos */
+    --sidebar-text: #333333;
+    --sidebar-text-secondary: #666666;
+    
+    /* Estados */
+    --sidebar-hover: rgba(0, 151, 215, 0.08);
+    --sidebar-active: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-blue-dark) 100%);
+    
+    /* Sombras */
+    --shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    --shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.12);
+    
+    /* Layout */
+    --sidebar-width: 350px;
+    --border-radius: 12px;
+    --transition: all 0.3s ease;
+}
+
+/* Tema escuro */
+.v-theme--dark {
+    --card-bg: #1e1e1e;
+    --sidebar-bg: #1e1e1e;
+    --sidebar-border: #2d2d2d;
+    --border-color: #2d2d2d;
+    --sidebar-text: #e0e0e0;
+    --sidebar-text-secondary: #999999;
+    --sidebar-hover: rgba(255, 255, 255, 0.05);
+    --shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    --shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
 
 html,
 body {

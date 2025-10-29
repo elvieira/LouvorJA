@@ -5,7 +5,7 @@
   "description": "Fornece ferramentas para customização das cores do programa.",
   "author": "maycorolbuche",
   "category": null,
-  "showInMainMenu": true,
+  "showInMainMenu": false,
   "icon": "mdi-palette",
   "minAppVersion": "1.0.0",
   "dependencies": [],

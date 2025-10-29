@@ -6,6 +6,7 @@
   "author": "maycorolbuche",
   "category": "musics",
   "icon": "mdi-music",
+  "active": false,
   "minAppVersion": "1.0.0",
   "dependencies": [
     "media",
