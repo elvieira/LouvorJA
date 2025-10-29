@@ -4,12 +4,14 @@
   <!-- Nova Sidebar -->
   <AppSidebar v-model="sidebarOpen" />
 
-  <AppModules />
   <AppAlert />
 
   <!-- Container principal com margem para sidebar -->
   <div class="main-container" :class="{ 'sidebar-open': sidebarOpen }">
     <v-main class="bg-main">
+      <!-- Módulos aparecem dentro do v-main -->
+      <AppModules />
+      
       <!-- Router view para Home e outras páginas -->
       <router-view @toggle-sidebar="toggleSidebar" />
       
@@ -153,6 +155,7 @@ main {
   align-items: stretch !important;
   --v-layout-top: 0 !important;
   padding-top: 0 !important;
-  overflow: auto !important;
+  overflow: hidden !important;
+  position: relative !important;
 }
 </style>

@@ -6,6 +6,8 @@
     :width="w_width"
     :height="w_height"
     :theme="dark ? 'dark' : ''"
+    attach=".v-main"
+    contained
   >
     <v-card :color="color ? color : ''">
       <slot name="toolbar">
