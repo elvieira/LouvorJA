@@ -13,6 +13,12 @@ import { defineAsyncComponent } from "vue";
 
 export default {
   name: "ModulesLayout",
+  data() {
+    return {
+      // Cache de componentes para evitar recriação em cada re-render
+      componentCache: {},
+    };
+  },
   computed: {
     modules() {
       return this.$modules.get();
@@ -23,7 +29,12 @@ export default {
   },
   methods: {
     loadModuleComponent(module) {
-      return defineAsyncComponent(() => {
+      // Retorna do cache se já foi carregado, evitando remount
+      if (this.componentCache[module.id]) {
+        return this.componentCache[module.id];
+      }
+
+      const comp = defineAsyncComponent(() => {
         // Try to load from modules interface directory
         return import(`@/modules/core/${module.id}/interface/Index.vue`).catch(
           () => {
@@ -39,6 +50,9 @@ export default {
           }
         );
       });
+
+      this.componentCache[module.id] = comp;
+      return comp;
     },
   },
 };

@@ -12,8 +12,8 @@
       <!-- Módulos aparecem dentro do v-main -->
       <AppModules />
       
-      <!-- Router view para Home e outras páginas -->
-      <router-view @toggle-sidebar="toggleSidebar" />
+      <!-- Router view para Home e outras páginas (oculta se houver módulo ativo) -->
+      <router-view v-show="!hasActiveModule" @toggle-sidebar="toggleSidebar" />
       
       <!-- TrayArea mantido (área de minimizados) -->
       <AppTrayArea />
@@ -46,7 +46,21 @@ export default {
       sidebarOpen: false,
     };
   },
+  computed: {
+    hasActiveModule() {
+      const modules = this.$appdata.get("modules") || {};
+      for (const module of Object.values(modules)) {
+        if (module.show) {
+          return true;
+        }
+      }
+      return false;
+    }
+  },
   mounted() {
+    // Garantir que nenhum módulo inicie aberto (previne estados "zumbi" do HMR)
+    this.closeAllModules();
+
     //Carregar os dados salvos
     this.$userdata.load();
 
@@ -127,6 +141,12 @@ export default {
   methods: {
     toggleSidebar() {
       this.sidebarOpen = !this.sidebarOpen;
+    },
+    closeAllModules() {
+      const modules = this.$appdata.get("modules") || {};
+      for (const key of Object.keys(modules)) {
+        this.$appdata.set(`modules.${key}.show`, false);
+      }
     },
   },
 };

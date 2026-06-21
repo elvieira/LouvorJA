@@ -27,8 +27,8 @@ app.use(helpersPlugin); // Plugin de helpers (substitui o mixin global)
 app.use(shortkey, { prevent: ["input", "textarea"] });
 app.use(VueFullscreen);
 
-createI18nInstance().then((i18n) => {
+createI18nInstance().then(async (i18n) => {
   app.use(i18n);
-  ModuleManager.init(i18n);
+  await ModuleManager.init(i18n);
   app.mount("#app");
 });

@@ -31,7 +31,7 @@
       </div>
       
       <!-- Página Inicial -->
-      <div class="nav-item main-item" :class="{ active: currentRoute === 'home' }">
+      <div class="nav-item main-item" :class="{ active: currentRoute === 'home' && !currentModule }">
         <a href="#" class="nav-link" @click.prevent="navigateTo('home')">
           <v-icon class="nav-icon">
             mdi-home
@@ -57,7 +57,11 @@
         </div>
         
         <!-- Outros grupos: com submenu -->
-        <div v-else class="nav-item main-item">
+        <div 
+          v-else 
+          class="nav-item main-item"
+          :class="{ 'group-active': isGroupActive(group) && !submenuOpen[groupKey] }"
+        >
           <a href="#" class="nav-link" @click.prevent="toggleSubmenu(groupKey)">
             <v-icon class="nav-icon">
               {{ group.icon }}
@@ -72,6 +76,7 @@
               v-for="moduleId in group.modules"
               :key="moduleId"
               class="nav-item"
+              :class="{ active: currentModule === moduleId }"
             >
               <a
                 v-if="shouldShowModule(moduleId)"
@@ -231,6 +236,14 @@ export default {
       this.isOpen = false;
     },
     navigateTo(route) {
+      if (route === 'home') {
+        const modules = this.$appdata.get("modules") || {};
+        for (const [key, module] of Object.entries(modules)) {
+          if (module.show) {
+            this.$modules.close(key);
+          }
+        }
+      }
       this.$router.push({ name: route });
       if (this.isMobile) {
         this.closeSidebar();
@@ -244,6 +257,10 @@ export default {
     },
     toggleSubmenu(submenu) {
       this.submenuOpen[submenu] = !this.submenuOpen[submenu];
+    },
+    isGroupActive(group) {
+      if (!group || !group.modules) return false;
+      return group.modules.includes(this.currentModule);
     },
     shouldShowModule(moduleId) {
       const module = this.$appdata.get(`modules.${moduleId}`);

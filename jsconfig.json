@@ -2,6 +2,7 @@
   "compilerOptions": {
     "target": "esnext",
     "module": "esnext",
+    "ignoreDeprecations": "6.0",
     "baseUrl": "./",
     "moduleResolution": "node",
     "paths": {

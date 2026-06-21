@@ -1,110 +1,115 @@
 <template>
-  <l-window
-    v-model="module.show"
-    :title="t('title')"
-    :icon="module.icon"
-    closable
-    minimizable
-    compact
-    @close="
-      close();
-      $modules.close(module_id);
-    "
-    @minimize="$modules.minimize(module_id)"
-    @scroll="onScroll"
-    @hasScroll="hasScroll"
-    :index="data.count"
-  >
-    <template v-slot:header>
-      <div :class="classform.group">
-        <div :class="classform.group_item" style="flex-basis: 600px">
-          <l-search
+  <v-slide-y-reverse-transition>
+    <div v-if="module?.show" class="module-full-page dashboard-home d-flex flex-column">
+      <!-- Cabeçalho Integrado do Módulo -->
+      <div class="search-header pb-0 flex-shrink-0" style="padding-top: 24px; padding-left: 24px; padding-right: 24px; display: flex; align-items: center;">
+        <v-btn
+          icon="mdi-arrow-left"
+          variant="text"
+          @click="close(); $modules.close(module_id); $router.push({ name: 'home' });"
+          class="mr-4"
+          color="var(--sidebar-text-secondary)"
+        />
+        
+        <div class="d-flex align-center mr-auto">
+          <div class="module-icon-box d-flex align-center justify-center mr-4">
+             <v-icon :icon="module.icon" size="24" />
+          </div>
+          <h2 class="section-title mb-0" style="color: var(--sidebar-text); font-size: 24px; font-weight: 600;">
+            {{ t('title') }}
+          </h2>
+        </div>
+
+        <div class="search-bar ml-4" style="max-width: 400px; flex: 1;">
+          <v-text-field
             v-model="search"
-            :label="t('inputs.search')"
-            :error="data.filter_count <= 0"
+            :placeholder="t('inputs.search')"
+            prepend-inner-icon="mdi-magnify"
+            variant="solo"
+            density="comfortable"
+            hide-details
+            clearable
+            rounded
+            :error="search !== '' && data.filter_count <= 0"
           />
         </div>
       </div>
-    </template>
 
-    <l-table
-      v-model="data"
-      :search="search"
-      letter=""
-      :searchable_fields="{
-        track: true,
-        name: true,
-      }"
-      :scroll="scroll"
-      :has_scroll="has_scroll"
-      sort_by="track"
-      :file="`${$i18n.locale}_hymnal`"
-    >
-      <thead>
-        <tr>
-          <th class="text-right">{{ t("table.track") }}</th>
-          <th class="text-left">{{ t("table.music_name") }}</th>
-          <th class="text-right">{{ t("table.duration") }}</th>
-          <th />
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="item in data.data" :key="item.id_music">
-          <td class="text-right">
-            {{ item.track }}
-          </td>
-          <td>
-            {{ item.name }}
-          </td>
-          <td class="text-right">{{ $datetime.shortTime(item.duration) }}</td>
-          <td>
-            <div class="d-flex justify-end">
-              <l-music-menu-table
-                :id_music="item.id_music"
-                :has_instrumental_music="item.has_instrumental_music"
-              />
-            </div>
-          </td>
-        </tr>
-      </tbody>
-    </l-table>
+      <!-- Conteúdo Principal da Listagem -->
+      <div class="content-main d-flex flex-column flex-grow-1" style="overflow: hidden; padding-top: 16px;">
+        <div class="music-list flex-grow-1 d-flex flex-column" style="background: transparent; box-shadow: none; min-height: 0;">
+          <l-table
+            v-model="data"
+            :search="search"
+            letter=""
+            :searchable_fields="{
+              track: true,
+              name: true,
+            }"
+            :scroll="scroll"
+            :has_scroll="has_scroll"
+            sort_by="track"
+            :file="`${$i18n.locale}_hymnal`"
+            class="modern-hymnal-table flex-grow-1 d-flex flex-column"
+            style="min-height: 0;"
+          >
+            <tbody class="music-list-container">
+              <tr v-for="item in data.data" :key="item.id_music" class="music-item">
+                <td class="music-number text-center">
+                  {{ item.track }}
+                </td>
+                <td class="music-info">
+                  <h4 class="music-title">
+                    {{ item.name }}
+                  </h4>
+                  <p class="music-artist">
+                    {{ t("title") }}
+                  </p>
+                </td>
+                <td class="music-duration">{{ $datetime.shortTime(item.duration) }}</td>
+                <td class="music-actions">
+                  <div class="d-flex justify-end">
+                    <l-music-menu-table
+                      :id_music="item.id_music"
+                      :has_instrumental_music="item.has_instrumental_music"
+                    />
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </l-table>
+        </div>
 
-    <v-alert
-      v-if="search && data.filter_count <= 0"
-      type="error"
-      :text="t('data.not_found')"
-      variant="tonal"
-      border="start"
-      class="ma-2"
-    />
+        <v-alert
+          v-if="search && data.filter_count <= 0"
+          type="error"
+          :text="t('data.not_found')"
+          variant="tonal"
+          border="start"
+          class="ma-2 mx-8"
+        />
 
-    <template v-slot:footer>
-      <div class="w-100">
-        <div class="text-right">
-          <small>
-            {{ t("data.records") }}:
-            {{ data.filter_count }}
+        <!-- Rodapé do Módulo -->
+        <div class="w-100 px-8 pb-3 pt-2 text-right flex-shrink-0">
+          <small style="color: var(--sidebar-text-secondary); font-weight: 500;">
+            {{ t("data.records") }}: {{ data.filter_count }}
           </small>
         </div>
       </div>
-    </template>
-  </l-window>
+    </div>
+  </v-slide-y-reverse-transition>
 </template>
 
 <script>
 import manifest from "../manifest.json";
 
-import LWindow from "@/components/Window.vue";
 import LTable from "@/components/DataTable.vue";
-import LSearch from "@/components/inputs/InputSearch.vue";
 import LMusicMenuTable from "@/components/MusicMenuTable.vue";
 
 export default {
   name: "HymnalModule",
   components: {
-    LWindow,
     LTable,
-    LSearch,
     LMusicMenuTable,
   },
 
@@ -157,3 +162,116 @@ export default {
   },
 };
 </script>
+
+<style lang="scss">
+/* Container do modo tela cheia integrado */
+.module-full-page {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--card-bg);
+  z-index: 10;
+}
+
+.module-icon-box {
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-blue-dark) 100%);
+  border-radius: 12px;
+  color: white;
+  box-shadow: 0 4px 10px rgba(0, 151, 215, 0.3);
+}
+
+.modern-hymnal-table {
+  background: transparent !important;
+  
+  .v-table__wrapper {
+    background: transparent !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    flex: 1 1 auto;
+    height: 100%;
+  }
+  
+  table {
+    background: transparent !important;
+    border-spacing: 0;
+  }
+
+  /* FORÇA A REMOÇÃO DO HOVER NATIVO DO VUETIFY NOS TDs */
+  tr:hover td {
+    background: transparent !important;
+  }
+
+  .music-list-container {
+    display: flex;
+    flex-direction: column;
+    padding: 0 16px;
+  }
+
+  .music-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--border-color);
+    transition: var(--transition);
+    
+    &:hover {
+      background: var(--sidebar-hover) !important;
+    }
+    
+    td {
+      border-bottom: none !important;
+      padding: 0 !important;
+      height: auto !important;
+      background: transparent !important;
+    }
+
+    &:hover td {
+      background-color: transparent !important;
+    }
+  }
+
+  .music-number {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--accent-blue);
+    min-width: 40px;
+    margin-right: 16px;
+  }
+  
+  .music-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    
+    .music-title {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--sidebar-text);
+      margin-bottom: 2px;
+      line-height: 1.2;
+    }
+    
+    .music-artist {
+      font-size: 13px;
+      color: var(--sidebar-text-secondary);
+      margin: 0;
+    }
+  }
+  
+  .music-duration {
+    font-size: 13px;
+    color: var(--sidebar-text-secondary);
+    min-width: 60px;
+    padding-right: 16px !important;
+  }
+  
+  .music-actions {
+    min-width: 80px;
+  }
+}
+</style>

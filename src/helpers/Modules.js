@@ -7,6 +7,15 @@ export default {
       console.error(`Módulo ${id} não encontrado!`);
       return;
     }
+
+    // Fechar outros módulos abertos para evitar sobreposição (mantendo comportamento de tela única)
+    const modules = $appdata.get("modules") || {};
+    for (const key of Object.keys(modules)) {
+      if (key !== id && modules[key].show) {
+        this.close(key);
+      }
+    }
+
     $dev.write("open", id);
     $appdata.set(`modules.${id}.show`, true);
   },

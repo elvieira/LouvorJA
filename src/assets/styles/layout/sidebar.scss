@@ -149,6 +149,19 @@
       }
     }
     
+    &.group-active {
+      background: var(--sidebar-active);
+      border-radius: var(--border-radius);
+      
+      .nav-link {
+        color: white;
+        
+        .nav-icon {
+          color: white;
+        }
+      }
+    }
+    
     .nav-link {
       display: flex;
       align-items: center;
@@ -194,6 +207,10 @@
     .nav-item {
       margin: 2px 0;
       
+      &.active .nav-link {
+        color: white !important;
+      }
+
       .nav-link {
         padding: 8px 16px;
         font-size: 13px;
