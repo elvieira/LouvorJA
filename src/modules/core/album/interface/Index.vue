@@ -1,84 +1,85 @@
 <template>
-  <Window
-    v-model="module.show"
-    :title="module?.data?.name"
-    :image="module?.data?.url_image ? $path.file(module.data.url_image) : ''"
-    closable
-    compact
-    title-class="text-h4 font-weight-light"
-    :image-size="125"
-    :color="module?.data?.color"
-    @close="$media.closeAlbum()"
-    slot-left-class="w-100"
-  >
-    <template v-slot:left>
-      <v-table
-        v-if="!loading"
-        fixed-header
-        hover
-        class="w-100 h-100"
-        :style="{ backgroundColor: module.data.color, color: '#FFF' }"
-      >
-        <thead>
-          <tr>
-            <th
-              class="text-right"
-              :style="{ backgroundColor: module.data.color, color: '#FFF' }"
-            >
-              {{ t("table.track") }}
-            </th>
-            <th
-              class="text-left"
-              :style="{ backgroundColor: module.data.color, color: '#FFF' }"
-            >
-              {{ t("table.music_name") }}
-            </th>
-            <th
-              class="text-right"
-              :style="{ backgroundColor: module.data.color, color: '#FFF' }"
-            >
-              {{ t("table.duration") }}
-            </th>
-            <th
-              :style="{ backgroundColor: module.data.color, color: '#FFF' }"
-            />
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="item in module.data.musics" :key="item.id_music">
-            <td class="text-right">
-              {{ item.track }}
-            </td>
-            <td>{{ item.name }}</td>
-            <td class="text-right">{{ $datetime.shortTime(item.duration) }}</td>
-            <td>
-              <div class="d-flex justify-end">
-                <MusicMenuTable
-                  color="#FFF"
-                  :id_music="item.id_music"
-                  :has_instrumental_music="item.has_instrumental_music"
-                />
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </v-table>
+  <v-slide-y-reverse-transition>
+    <div v-if="module?.show" class="module-full-page dashboard-home d-flex flex-column" :style="`z-index: 100;`">
+      <!-- Cabeçalho Integrado do Álbum -->
+      <div class="search-header pb-0 flex-shrink-0" style="padding-top: 24px; padding-left: 24px; padding-right: 24px; display: flex; align-items: center;">
+        <v-btn
+          icon="mdi-arrow-left"
+          variant="text"
+          @click="$media.closeAlbum()"
+          class="mr-4"
+          color="var(--sidebar-text-secondary)"
+        />
+        
+        <div class="d-flex align-center mr-auto">
+          <div class="album-cover-box d-flex align-center justify-center mr-4" :style="module?.data?.color ? `background: ${module.data.color}` : ''" style="width: 48px; height: 48px; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);">
+             <v-img v-if="module?.data?.url_image" :src="$path.file(module.data.url_image)" cover style="width: 100%; height: 100%;" />
+             <v-icon v-else size="24" color="white">mdi-album</v-icon>
+          </div>
+          <h2 class="section-title mb-0" style="color: var(--sidebar-text); font-size: 24px; font-weight: 600;">
+            {{ module?.data?.name }}
+          </h2>
+        </div>
+      </div>
 
-      <v-progress-linear v-if="loading" color="white" indeterminate />
-    </template>
-  </Window>
+      <!-- Conteúdo Principal da Listagem -->
+      <div class="content-main d-flex flex-column flex-grow-1" style="overflow: hidden; padding-top: 16px;">
+        <v-progress-linear
+          :color="$theme.primary()"
+          indeterminate
+          v-if="loading"
+        />
+
+        <div class="music-list flex-grow-1 d-flex flex-column" style="background: transparent; box-shadow: none; min-height: 0;" v-if="!loading">
+          <!-- Tabela de músicas do álbum com o mesmo estilo dos hinários -->
+          <v-table class="modern-hymnal-table flex-grow-1 d-flex flex-column" style="min-height: 0; background: transparent;">
+            <tbody class="music-list-container">
+              <tr v-for="item in module.data.musics" :key="item.id_music" class="music-item">
+                <td class="music-number text-center">
+                  {{ item.track }}
+                </td>
+                <td class="music-info">
+                  <h4 class="music-title">
+                    {{ item.name }}
+                  </h4>
+                  <p class="music-artist">
+                    {{ module.data.name }}
+                  </p>
+                </td>
+                <td class="music-duration">{{ $datetime.shortTime(item.duration) }}</td>
+                <td class="music-actions">
+                  <div class="d-flex justify-end">
+                    <MusicMenuTable
+                      color="var(--sidebar-text-secondary)"
+                      :id_music="item.id_music"
+                      :has_instrumental_music="item.has_instrumental_music"
+                    />
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </v-table>
+        </div>
+        
+        <!-- Rodapé do Álbum -->
+        <div class="w-100 px-8 pb-3 pt-2 text-right flex-shrink-0" v-if="!loading && module?.data?.musics">
+          <small style="color: var(--sidebar-text-secondary); font-weight: 500;">
+            {{ t("table.track") }}s: {{ module.data.musics.length }}
+          </small>
+        </div>
+      </div>
+    </div>
+  </v-slide-y-reverse-transition>
 </template>
 
 <script>
 import manifest from "../manifest.json";
 
-import Window from "@/components/Window.vue";
 import MusicMenuTable from "@/components/MusicMenuTable.vue";
 
 export default {
   name: "AlbumModule",
   components: {
-    Window,
     MusicMenuTable,
   },
   computed: {
@@ -105,3 +106,106 @@ export default {
   },
 };
 </script>
+
+<style lang="scss">
+/* Estilos aplicados do formato dashboard-home para o album full-page */
+.module-full-page {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--card-bg);
+  z-index: 10;
+}
+
+.modern-hymnal-table {
+  background: transparent !important;
+  
+  .v-table__wrapper {
+    background: transparent !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    flex: 1 1 auto;
+    height: 100%;
+  }
+  
+  table {
+    background: transparent !important;
+    border-spacing: 0;
+  }
+
+  tr:hover td {
+    background: transparent !important;
+  }
+
+  .music-list-container {
+    display: flex;
+    flex-direction: column;
+    padding: 0 16px;
+  }
+
+  .music-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--border-color);
+    transition: var(--transition);
+    
+    &:hover {
+      background: var(--sidebar-hover) !important;
+    }
+    
+    td {
+      border-bottom: none !important;
+      padding: 0 !important;
+      height: auto !important;
+      background: transparent !important;
+    }
+
+    &:hover td {
+      background-color: transparent !important;
+    }
+  }
+
+  .music-number {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--accent-blue);
+    min-width: 40px;
+    margin-right: 16px;
+  }
+  
+  .music-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    
+    .music-title {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--sidebar-text);
+      margin-bottom: 2px;
+      line-height: 1.2;
+    }
+    
+    .music-artist {
+      font-size: 13px;
+      color: var(--sidebar-text-secondary);
+      margin: 0;
+    }
+  }
+  
+  .music-duration {
+    font-size: 13px;
+    color: var(--sidebar-text-secondary);
+    min-width: 60px;
+    padding-right: 16px !important;
+  }
+  
+  .music-actions {
+    min-width: 80px;
+  }
+}
+</style>

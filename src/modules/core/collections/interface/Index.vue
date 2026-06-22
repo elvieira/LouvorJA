@@ -1,146 +1,127 @@
 <template>
-  <ModuleContainer
-    ref="moduleContainer"
-    :manifest="manifest"
-    @show="show"
-    @close="close"
-  >
-    <template v-slot:header>
-      <v-toolbar color="transparent" v-if="compact">
-        <template v-slot:prepend>
-          <v-menu>
-            <template v-slot:activator="{ props }">
-              <v-btn icon="$menu" v-bind="props" />
-            </template>
-            <v-list :color="$theme.primary()" class="d-flex flex-column h-100">
-              <v-list-item
-                v-for="category in categories"
-                :key="category.id_category"
-                :title="category.name"
-                :active="id_category == category.id_category"
-                @click="setCategory(category.id_category)"
-              />
-
-              <v-divider />
-
-              <v-list-item
-                class="mt-auto"
-                :title="t('all_collections')"
-                :active="id_category == 0"
-                @click="setCategory(0)"
-              />
-            </v-list>
-          </v-menu>
-        </template>
-
-        <v-toolbar-title
-          v-if="!id_category || id_category == 0"
-          class="text-h6"
-          :text="t('all_collections')"
+  <v-slide-y-reverse-transition>
+    <div v-if="module?.show" class="module-full-page dashboard-home d-flex flex-column">
+      <!-- Cabeçalho Integrado do Módulo -->
+      <div class="search-header pb-0 flex-shrink-0" style="padding-top: 24px; padding-left: 24px; padding-right: 24px; display: flex; align-items: center;">
+        <v-btn
+          icon="mdi-arrow-left"
+          variant="text"
+          @click="close(); $modules.close(module_id); $router.push({ name: 'home' });"
+          class="mr-4"
+          color="var(--sidebar-text-secondary)"
         />
-        <v-toolbar-title
-          v-else
-          class="text-h6"
-          :text="categories.find((c) => c.id_category == id_category).name"
-        />
-      </v-toolbar>
-    </template>
+        
+        <div class="d-flex align-center mr-auto">
+          <div class="module-icon-box d-flex align-center justify-center mr-4">
+             <v-icon :icon="module.icon" size="24" />
+          </div>
+          <h2 class="section-title mb-0" style="color: var(--sidebar-text); font-size: 24px; font-weight: 600;">
+            {{ t('title') }}
+          </h2>
+        </div>
 
-    <template v-slot:left>
-      <v-list
-        v-if="!compact"
-        :color="$theme.primary()"
-        :width="200"
-        class="d-flex flex-column h-100"
-      >
+        <div class="search-bar ml-4" style="max-width: 300px; flex: 1;">
+          <v-select
+            v-model="id_category"
+            :items="categoryOptions"
+            item-title="name"
+            item-value="id_category"
+            variant="solo"
+            density="comfortable"
+            hide-details
+            rounded
+            prepend-inner-icon="mdi-filter-variant"
+          />
+        </div>
+      </div>
+
+      <!-- Conteúdo Principal do Grid de Coleções -->
+      <div class="content-main d-flex flex-column flex-grow-1" style="overflow: hidden; padding-top: 16px;">
         <v-progress-linear
           :color="$theme.primary()"
           indeterminate
           v-if="loading"
         />
-        <v-list-item
-          v-for="category in categories"
-          :key="category.id_category"
-          :title="category.name"
-          :active="id_category == category.id_category"
-          @click="setCategory(category.id_category)"
+
+        <v-alert
+          v-if="error"
+          type="error"
+          :text="error"
+          variant="tonal"
+          border="start"
+          class="ma-2 mx-8"
         />
 
-        <v-list-item
-          class="mt-auto"
-          :title="t('all_collections')"
-          :active="id_category == 0"
-          @click="setCategory(0)"
-        />
-      </v-list>
-    </template>
-
-    <v-alert
-      v-if="error"
-      type="error"
-      :text="error"
-      variant="tonal"
-      border="start"
-      class="ma-2"
-    />
-
-    <div class="d-flex flex-wrap justify-center">
-      <v-card
-        :style="
-          $vuetify.display.width > 350
-            ? 'min-width: 300px; max-width: 300px'
-            : 'width:100%'
-        "
-        theme="dark"
-        v-for="album in albums"
-        :key="album.id_album"
-        width="320"
-        class="ma-2"
-        :color="album.color || '#385F73'"
-        dark
-        @click="openAlbum(album.id_album)"
-      >
-        <div class="d-flex flex-no-wrap justify-space-between align-center">
-          <v-avatar
-            v-if="album.url_image"
-            class="ma-3"
-            :size="$vuetify.display.width > 350 ? 125 : 75"
-            tile
-            rounded="0"
-          >
-            <v-img :src="$path.file(album.url_image)" />
-          </v-avatar>
-          <div class="flex-grow-1 d-flex flex-column">
-            <div class="text-h6 pt-2" v-text="album.name" />
-
-            <div class="h6" v-text="album.subtitle" />
+        <div class="collections-page-scroll flex-grow-1" style="overflow-y: auto; overflow-x: hidden; padding: 16px 8px;">
+          <div class="collections-grid-wrap">
+            <div 
+              v-for="album in albums" 
+              :key="album.id_album"
+              class="collection-card"
+              @click="openAlbum(album.id_album)"
+            >
+              <div class="card-image" :style="album.color ? `background: ${album.color}` : ''">
+                <v-img 
+                  v-if="album.url_image" 
+                  :src="$path.file(album.url_image)" 
+                  cover 
+                  style="width: 100%; height: 100%; position: absolute; inset: 0;"
+                />
+                <v-icon v-else size="48">mdi-album</v-icon>
+              </div>
+              <div class="card-content">
+                <h3 class="card-title" style="-webkit-line-clamp: 2;">
+                  {{ album.name }}
+                </h3>
+                <p class="card-stats">
+                  {{ album.subtitle || '' }}
+                </p>
+              </div>
+            </div>
           </div>
         </div>
-      </v-card>
+
+        <!-- Rodapé do Módulo -->
+        <div class="w-100 px-8 pb-3 pt-2 text-right flex-shrink-0">
+          <small style="color: var(--sidebar-text-secondary); font-weight: 500;">
+            {{ t("all_collections") }}: {{ albums.length }}
+          </small>
+        </div>
+      </div>
     </div>
-  </ModuleContainer>
+  </v-slide-y-reverse-transition>
 </template>
 
 <script>
+import manifest from "../manifest.json";
+
 export default {
   name: manifest.id,
   data: () => ({
     categories: [],
     lang: null,
-    id_category: null,
+    id_category: 0,
     loading: false,
     error: null,
   }),
   computed: {
-    /*show() {
-      let module = this.$modules.get(manifest.id);
-      return module.show;
-    },*/
+    module_id() {
+      return manifest.id;
+    },
+    module() {
+      return this.$modules.get(this.module_id);
+    },
+    categoryOptions() {
+      return [
+        { id_category: 0, name: this.t("all_collections") },
+        ...this.categories,
+      ];
+    },
     albums() {
       if (!this.categories) {
         return [];
       }
-      if (!this.id_category) {
+      if (!this.id_category || this.id_category === 0) {
         return [
           ...new Map(
             this.categories
@@ -152,15 +133,18 @@ export default {
 
       return this.categories
         .filter((item) => item.id_category == this.id_category)[0]
-        ?.albums.sort((a, b) => a.order - b.order);
+        ?.albums.sort((a, b) => a.order - b.order) || [];
     },
     compact: function () {
       return this.$vuetify.display.width <= 600;
     },
   },
   methods: {
+    t(text) {
+      return this.$t(`modules.${this.module_id}.${text}`);
+    },
     async loadData() {
-      this.id_category = null;
+      this.id_category = 0;
       this.categories = [];
       this.loading = true;
 
@@ -175,16 +159,11 @@ export default {
 
       if (this.categories.length > 0) {
         this.categories.sort((a, b) => a.order - b.order);
-        this.id_category = this.categories[0].id_category;
-      } else {
-        this.id_category = 0;
       }
-
+      
+      this.id_category = 0;
       this.lang = this.$i18n.locale;
       this.loading = false;
-    },
-    setCategory(id = null) {
-      this.id_category = id;
     },
     openAlbum(id_album) {
       this.$media.openAlbum(id_album);
@@ -192,17 +171,10 @@ export default {
     async show(value) {
       if (value && this.lang != this.$i18n.locale) {
         await this.loadData();
-      } else if (
-        value &&
-        this.categories.length > 0 &&
-        this.id_category == null
-      ) {
-        this.id_category = this.categories[0].id_category;
       }
     },
     close() {
-      //Se fechar a janela, não manter o histórico.
-      this.id_category = null;
+      this.id_category = 0;
     },
   },
   async mounted() {
@@ -211,18 +183,73 @@ export default {
 };
 </script>
 
-<!-- ########################################################### -->
-<!-- ####### SETUP OBRIGATÓRIA PARA INSTALAÇÃO DO MODULO ####### -->
-<!-- ########################################################### -->
-<script setup>
-import manifest from "../manifest.json";
-import ModuleContainer from "@/layout/ModuleContainer.vue";
-import { ref } from "vue";
-const moduleContainer = ref(null);
-const t = (key) => {
-  return moduleContainer.value?.t(key) || key;
-};
-</script>
-<!-- ########################################################### -->
-<!-- ########################################################### -->
-<!-- ########################################################### -->
+<style lang="scss">
+/* Container do modo tela cheia integrado */
+.module-full-page {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--card-bg);
+  z-index: 10;
+}
+
+.module-icon-box {
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-blue-dark) 100%);
+  border-radius: 12px;
+  color: white;
+  box-shadow: 0 4px 10px rgba(0, 151, 215, 0.3);
+}
+
+.collections-page-scroll {
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: var(--border-color);
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-blue-dark) 100%);
+    border-radius: 4px;
+    
+    &:hover {
+      background: linear-gradient(135deg, var(--accent-blue-dark) 0%, var(--accent-blue) 100%);
+    }
+  }
+}
+
+.collections-grid-wrap {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 24px;
+  padding: 0 16px 24px 16px;
+  
+  .collection-card {
+    /* Força o width 100% para ocupar o cell do grid, sobrescrevendo flex-shrink do home.scss se houver */
+    width: 100%;
+    min-width: 0;
+    flex-shrink: 1;
+    margin: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .collections-grid-wrap {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+    padding: 0 8px 16px 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .collections-grid-wrap {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+  }
+}
+</style>

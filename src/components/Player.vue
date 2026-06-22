@@ -1,118 +1,68 @@
 <template>
-  <v-card theme="dark" class="w-100 pa-0 ma-0 d-flex align-center" :rounded="0">
-    <div
-      v-if="location == 'footer' && $vuetify.display.width > 800"
-      class="d-flex align-center"
-      :style="
-        media.config.image && $vuetify.display.width > 900
-          ? 'max-width: 350px;padding-right:50px;'
-          : 'max-width: 300px'
-      "
-    >
-      <v-avatar
-        v-if="media.config.image && $vuetify.display.width > 900"
-        class="ma-1"
-        size="65"
-        rounded="0"
-      >
-        <v-img :src="$path.file(media.config.image)" />
-      </v-avatar>
-      <div class="d-flex flex-column flex-grow-1 w-100">
-        <v-card-title class="py-0">
-          {{ media.config.title }}
-        </v-card-title>
-        <v-card-subtitle v-if="media.config.subtitle" class="py-0">
-          {{ media.config.subtitle }}
-          <span v-if="media.config.track > 0">
-            | {{ $t("modules.media.general.track") }}
-            {{ media.config.track }}</span
-          >
-        </v-card-subtitle>
+  <div 
+    :class="location === 'footer' ? 'footer-player-bar d-flex align-center w-100 px-4 py-2' : 'modern-pill-player d-flex align-center px-6 py-2 mx-auto'" 
+  >
+      
+      <!-- INFO (Música e Álbum) -->
+      <div class="player-info d-flex flex-column mr-6" :style="location === 'footer' ? 'max-width: 300px; min-width: 200px;' : 'max-width: 220px; min-width: 150px;'">
+        <span class="text-subtitle-2 font-weight-bold text-truncate" :class="location === 'footer' ? 'text-black' : 'text-white'" style="line-height: 1.2;">{{ media.config.title }}</span>
+        <span class="text-caption text-truncate" :class="location === 'footer' ? 'text-grey-darken-1' : 'text-grey'" style="line-height: 1.2;">{{ media.config.subtitle }}</span>
       </div>
-    </div>
 
-    <div class="d-flex flex-column flex-grow-1">
-      <div class="d-flex align-center justify-center py-1 flex-grow-1">
-        <v-btn
-          v-for="(button, key) in buttons"
-          :key="key"
-          v-show="
-            button.show &&
-            (compact === false || (compact === true && !button.compact))
-          "
-          :disabled="media.loading || button.disabled"
-          :icon="button.icon"
-          :color="button.highlight ? 'white' : ''"
-          @click="button.click"
-          @shortkey="button.click"
-          v-shortkey="button.shortkey"
-          :variant="button.highlight ? 'flat' : 'text'"
-          class="ma-1"
-          size="small"
+      <!-- CONTROLES PRINCIPAIS (Prev, Play, Next) -->
+      <div class="d-flex align-center mr-6">
+        <v-btn icon="mdi-skip-previous" variant="text" :color="location === 'footer' ? 'black' : 'white'" size="small" @click="prev" class="mx-1" />
+        <v-btn :icon="media.config.is_paused ? 'mdi-play-circle' : 'mdi-pause-circle'" variant="text" :color="location === 'footer' ? 'black' : 'white'" size="large" @click="play" class="mx-1 play-btn" />
+        <v-btn icon="mdi-skip-next" variant="text" :color="location === 'footer' ? 'black' : 'white'" size="small" @click="next" class="mx-1" />
+      </div>
+
+      <!-- TIMELINE E TEMPO -->
+      <div v-if="media.config.audio" class="player-timeline-wrapper d-flex align-center flex-grow-1 mr-6" style="min-width: 150px;">
+        <span class="text-caption mr-3 font-weight-medium" :class="location === 'footer' ? 'text-grey-darken-2' : 'text-white'" style="opacity: 0.8;">{{ $datetime.shortTime(media.config.current_time) }}</span>
+        <v-progress-linear
+          v-model="media.config.progress"
+          clickable
+          :indeterminate="media.loading"
+          :height="4"
+          :stream="!media.loading"
+          :buffer-value="media.config.buffered"
+          :color="location === 'footer' ? 'var(--accent-blue)' : 'white'"
+          :bg-color="location === 'footer' ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.2)'"
+          rounded
+          @click="changeProgress"
+          class="flex-grow-1 timeline-slider"
         />
+        <span class="text-caption ml-3 font-weight-medium" :class="location === 'footer' ? 'text-grey-darken-2' : 'text-white'" style="opacity: 0.8;">{{ $datetime.shortTime(media.config.duration) }}</span>
       </div>
-      <div
-        v-if="media.config.audio"
-        class="d-flex align-center justify-center py-1 px-3"
-      >
-        <div class="text-right text-caption">
-          {{ $datetime.shortTime(media.config.current_time) }}
-        </div>
-        <div class="flex-grow-1 px-2">
-          <v-progress-linear
-            v-model="media.config.progress"
-            rounded
-            clickable
-            :indeterminate="media.loading"
-            :height="10"
-            :stream="!media.loading"
-            :buffer-value="media.config.buffered"
-            :color="
-              media.config.is_paused
-                ? 'warning'
-                : media.config.volume <= 0
-                ? 'red'
-                : 'info'
-            "
-            @click="changeProgress"
-          />
-        </div>
-        <div class="text-left text-caption">
-          {{ $datetime.shortTime(media.config.duration) }}
-        </div>
+
+      <!-- VOLUME -->
+      <div v-if="media.config.audio" class="d-flex align-center mr-4">
+        <v-btn :icon="volume_icon" variant="text" :color="location === 'footer' ? 'black' : 'white'" size="small" @click="toogleVolume" class="mx-1 volume-btn" />
       </div>
-      <div
-        v-if="!media.config.audio && location == 'footer'"
-        class="d-flex align-center justify-center py-1 px-3"
-      >
-        <small class="text-center">
-          {{ slide_text }}
-        </small>
-      </div>
-    </div>
-    <div class="d-flex flex-column">
-      <div class="d-flex align-center justify-end pa-1 flex-grow-1">
-        <v-menu
-          v-if="location !== 'fullscreen' && $vuetify.display.width > 350"
-        >
+
+      <!-- AÇÕES SECUNDÁRIAS -->
+      <div class="d-flex align-center">
+        <!-- Status Mode (Áudio/Instrumental/Letra) -->
+        <v-menu v-if="location !== 'fullscreen' && $vuetify.display.width > 350" :close-on-content-click="true">
           <template v-slot:activator="{ props }">
             <v-btn
               variant="text"
               size="small"
-              :color="mode.color"
+              :color="location === 'footer' ? (mode.color === 'white' ? 'black' : mode.color) : (mode.color || 'white')"
               v-bind="props"
               :icon="mode.tray_icon"
+              class="mx-1"
             />
           </template>
-
-          <v-list>
+          <v-list class="elevation-3" rounded="lg" :bg-color="location === 'footer' ? 'white' : '#1e1e1e'" :theme="location === 'footer' ? 'light' : 'dark'">
             <template v-for="(mode, key) in menu_modes" :key="key">
-              <v-divider v-if="mode.title == '-'" />
+              <v-divider v-if="mode.title == '-'" class="my-1 border-opacity-25" />
               <v-list-item
                 v-else
                 :active="mode.active"
                 :disabled="mode.disabled"
                 @click="mode.click"
+                active-color="var(--accent-blue)"
               >
                 <template v-slot:prepend>
                   <v-icon :icon="mode.icon"></v-icon>
@@ -123,134 +73,63 @@
           </v-list>
         </v-menu>
 
-        <v-menu v-if="this.media.minimized && !compact">
-          <template v-slot:activator="{ props }">
-            <v-btn variant="flat" size="x-small" color="white" v-bind="props">
-              {{ this.media.config.slide_index + 1 }}
-            </v-btn>
-          </template>
+        <!-- Extensão de Tela -->
+        <LScreenBtn v-if="location !== 'fullscreen'" module="media" :color="location === 'footer' ? 'black' : 'white'" class="mx-1" />
 
-          <v-list>
-            <v-list-item
-              v-for="(item, index) in slides"
-              :key="index"
-              :active="media.config.slide_index == index"
-              @click="$media.goToSlide(index)"
-            >
-              <template v-slot:prepend>
-                <v-chip size="small" class="mr-2">{{ index + 1 }}</v-chip>
-              </template>
-
-              <v-list-item-title v-if="item.cover">
-                {{ item.lyric }}
-              </v-list-item-title>
-              <div
-                class="text-caption text-truncate"
-                v-else
-                v-html="item.lyric"
-              />
-            </v-list-item>
-          </v-list>
-        </v-menu>
-
+        <!-- Maximizar (Apenas no Footer) -->
         <v-btn
-          v-if="this.media.minimized"
+          v-if="location === 'footer'"
           variant="text"
           size="small"
           icon="mdi-open-in-app"
+          color="black"
           @click="maximize()"
+          class="mx-1"
         />
+
+        <!-- Fechar (Apenas no Footer) -->
+        <v-btn
+          v-if="location === 'footer'"
+          variant="text"
+          size="small"
+          icon="mdi-close"
+          color="black"
+          @click="close()"
+          class="mx-1"
+        />
+
+        <!-- Fullscreen (Apenas no Window/Fullscreen) -->
         <v-btn
           v-if="location == 'fullscreen'"
           variant="text"
           size="small"
           icon="mdi-fullscreen-exit"
+          color="white"
           @click="fullscreen(false)"
+          class="mx-1"
         />
         <v-btn
           v-else-if="location == 'window'"
           variant="text"
           size="small"
           icon="mdi-fullscreen"
+          color="white"
           @click="fullscreen()"
+          class="mx-1"
         />
-        <LScreenBtn v-if="location !== 'fullscreen'" module="media" />
 
-        <v-menu v-if="location !== 'fullscreen' && compact">
-          <template v-slot:activator="{ props }">
-            <v-btn
-              icon="mdi-menu"
-              variant="text"
-              size="small"
-              v-bind="props"
-            ></v-btn>
-          </template>
-
-          <v-list>
-            <v-list-item
-              v-for="(button, key) in buttons.filter(
-                (item) => item.compact == true
-              )"
-              :key="key"
-              :disabled="media.loading || button.disabled"
-              @click="button.click"
-              @shortkey="button.click"
-              v-shortkey="button.shortkey"
-            >
-              <v-icon :icon="button.icon" />
-            </v-list-item>
-
-            <v-divider v-if="$vuetify.display.width <= 350" />
-            <template v-for="(mode, key) in menu_modes" :key="key">
-              <v-divider
-                v-if="mode.title == '-' && $vuetify.display.width <= 350"
-              />
-              <v-list-item
-                v-else-if="$vuetify.display.width <= 350"
-                :active="mode.active"
-                :disabled="mode.disabled"
-                @click="mode.click"
-              >
-                <v-icon :icon="mode.icon" />
-              </v-list-item>
-            </template>
-          </v-list>
-        </v-menu>
-
-        <v-btn
-          v-if="this.media.minimized"
-          variant="text"
-          size="small"
-          icon="mdi-close"
-          @click="close()"
+        <!-- Botão de Playlist (Apenas no Window) -->
+        <v-btn 
+          v-if="location == 'window'"
+          variant="text" 
+          size="small" 
+          icon="mdi-format-list-bulleted" 
+          :color="isPlaylistOpen ? 'var(--accent-blue)' : 'white'" 
+          @click="togglePlaylist" 
+          class="ml-2" 
         />
       </div>
-      <div
-        v-if="media.config.audio"
-        class="d-flex align-center justify-center pa-1"
-      >
-        <div>
-          <v-btn
-            :disabled="media.loading"
-            :icon="volume_icon"
-            size="x-small"
-            @click="toogleVolume"
-            variant="text"
-          />
-        </div>
-        <div class="flex-grow-1 px-2" style="min-width: 100px">
-          <v-progress-linear
-            v-model="media.config.volume"
-            rounded
-            clickable
-            :height="10"
-            color="white"
-            @click="changeVolume"
-          />
-        </div>
-      </div>
-    </div>
-  </v-card>
+  </div>
 </template>
 
 <script>
@@ -274,90 +153,8 @@ export default {
     has_instrumental_music() {
       return this.media.data.url_instrumental_music ? true : false;
     },
-    buttons() {
-      return [
-        {
-          show: this.media.config.audio,
-          compact: true,
-          disabled: false,
-          highlight: false,
-          icon: "mdi-rewind-10",
-          click: () => this.rewind(),
-          shortkey: {
-            left: ["ctrl", "arrowleft"],
-            up: ["ctrl", "arrowup"],
-            pgup: ["ctrl", "pageup"],
-          },
-        },
-        {
-          show: true,
-          compact: true,
-          disabled: this.media.config.slide_index <= 0,
-          highlight: false,
-          icon: "mdi-page-first",
-          click: () => this.first(),
-          shortkey: ["home"],
-        },
-        {
-          show: true,
-          compact: false,
-          disabled: this.media.config.slide_index <= 0,
-          highlight: false,
-          icon: "mdi-chevron-left",
-          click: () => this.prev(),
-          shortkey: {
-            left: ["arrowleft"],
-            up: ["arrowup"],
-            pgup: ["pageup"],
-          },
-        },
-        {
-          show: this.media.config.audio,
-          compact: false,
-          disabled: this.media.config.is_fading,
-          highlight: true,
-          icon: this.media.config.is_paused ? "mdi-play" : "mdi-pause",
-          click: () => this.play(),
-          shortkey: ["space"],
-        },
-        {
-          show: true,
-          compact: false,
-          disabled:
-            this.media.config.slide_index >= this.media.config.last_slide - 1,
-          highlight: false,
-          icon: "mdi-chevron-right",
-          click: () => this.next(),
-          shortkey: {
-            right: ["arrowright"],
-            down: ["arrowdown"],
-            pgdn: ["pagedown"],
-          },
-        },
-        {
-          show: true,
-          compact: true,
-          disabled:
-            this.media.config.slide_index >= this.media.config.last_slide - 1,
-          highlight: false,
-          icon: "mdi-page-last",
-          click: () => this.last(),
-          shortkey: ["end"],
-        },
-        {
-          show: this.media.config.audio,
-          compact: true,
-          disabled: false,
-          highlight: false,
-          icon: "mdi-fast-forward-10",
-          click: () => this.forward(),
-          shortkey: {
-            right: ["ctrl", "arrowright"],
-            down: ["ctrl", "arrowdown"],
-            pgdn: ["ctrl", "pagedown"],
-          },
-        },
-      ];
+    isPlaylistOpen() {
+      return this.$appdata.get("modules.media.show_playlist") || false;
     },
     menu_modes() {
       return [
@@ -370,7 +167,7 @@ export default {
           tray_icon: "mdi-account-voice",
           click: () =>
             this.open({
-              id_music: this.media.id_music,
+               id_music: this.media.id_music,
               mode: "audio",
               minimized: this.media.minimized,
             }),
@@ -399,7 +196,7 @@ export default {
           tray_icon: "mdi-music-off",
           click: () =>
             this.open({
-              id_music: this.media.id_music,
+               id_music: this.media.id_music,
               minimized: this.media.minimized,
             }),
         },
@@ -429,14 +226,6 @@ export default {
           return "mdi-volume-high";
       }
     },
-    slide_text: function () {
-      if (!this.slides[this.media.config.slide_index]) return "";
-      if (!this.slides[this.media.config.slide_index].lyric) return "";
-
-      let text = this.slides[this.media.config.slide_index].lyric;
-      text = text.replace(/<br>/gi, " / ").toUpperCase();
-      return text;
-    },
     is_mobile: function () {
       return this.$appdata.get("is_mobile");
     },
@@ -452,23 +241,11 @@ export default {
         this.$media.pause();
       }
     },
-    rewind: function () {
-      this.$media.advanceTime(-10);
-    },
-    first() {
-      this.$media.firstSlide();
-    },
     prev() {
       this.$media.prevSlide();
     },
     next() {
       this.$media.nextSlide();
-    },
-    last() {
-      this.$media.lastSlide();
-    },
-    forward: function () {
-      this.$media.advanceTime(+10);
     },
     open: function (data) {
       this.$media.open(data);
@@ -496,6 +273,63 @@ export default {
     changeVolume() {
       this.$media.setVolume(this.media.config.volume);
     },
+    togglePlaylist() {
+      const currentState = this.$appdata.get("modules.media.show_playlist") || false;
+      this.$appdata.set("modules.media.show_playlist", !currentState);
+    }
   },
 };
 </script>
+
+<style lang="scss">
+.modern-pill-player {
+  background: rgba(15, 15, 20, 0.45) !important;
+  backdrop-filter: blur(28px) saturate(160%);
+  -webkit-backdrop-filter: blur(28px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 9999px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  min-height: 60px;
+  width: auto !important;
+  display: inline-flex !important;
+  align-items: center;
+  position: relative;
+  overflow: visible;
+}
+
+.footer-player-bar {
+  background: white !important;
+  border-top: 1px solid var(--border-color);
+  width: 100%;
+  min-height: 64px;
+}
+
+.play-btn {
+  transform: scale(1.1);
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  
+  &:hover {
+    transform: scale(1.25);
+  }
+  &:active {
+    transform: scale(1);
+  }
+}
+
+.timeline-slider {
+  transition: height 0.2s ease;
+  cursor: pointer;
+  
+  &:hover {
+    height: 6px !important;
+  }
+}
+
+.volume-btn, .v-btn {
+  transition: all 0.2s ease;
+  &:hover {
+    opacity: 0.8;
+    background: rgba(255,255,255,0.05);
+  }
+}
+</style>
