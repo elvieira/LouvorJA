@@ -27,7 +27,8 @@
           :stream="!media.loading"
           :buffer-value="media.config.buffered"
           :color="location === 'footer' ? 'var(--accent-blue)' : 'white'"
-          :bg-color="location === 'footer' ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.2)'"
+          :bg-color="location === 'footer' ? '#b0b0b0' : 'rgba(255,255,255,0.4)'"
+          :bg-opacity="1"
           rounded
           @click="changeProgress"
           class="flex-grow-1 timeline-slider"
@@ -37,7 +38,34 @@
 
       <!-- VOLUME -->
       <div v-if="media.config.audio" class="d-flex align-center mr-4">
-        <v-btn :icon="volume_icon" variant="text" :color="location === 'footer' ? 'black' : 'white'" size="small" @click="toogleVolume" class="mx-1 volume-btn" />
+        <v-menu location="top center" :close-on-content-click="false" open-on-hover :open-delay="50">
+          <template v-slot:activator="{ props }">
+            <v-btn :icon="volume_icon" variant="text" :color="location === 'footer' ? 'black' : 'white'" size="small" v-bind="props" class="mx-1 volume-btn" @click="toogleVolume" />
+          </template>
+          <v-card 
+            class="py-2 px-4 rounded-lg d-flex align-center" 
+            :class="location === 'footer' ? '' : 'modern-pill-player-volume'"
+            :color="location === 'footer' ? '#f4f5f7' : ''" 
+            :theme="location === 'footer' ? 'light' : 'dark'" 
+            elevation="8" 
+            min-width="130" 
+            height="40"
+            style="overflow: hidden;"
+          >
+            <v-slider
+              v-model="media.config.volume"
+              :color="location === 'footer' ? 'var(--accent-blue)' : 'white'"
+              track-color="grey"
+              hide-details
+              thumb-size="12"
+              step="1"
+              min="0"
+              max="100"
+              @update:modelValue="changeVolume"
+              class="ma-0 pa-0 w-100"
+            />
+          </v-card>
+        </v-menu>
       </div>
 
       <!-- AÇÕES SECUNDÁRIAS -->
@@ -76,12 +104,12 @@
         <!-- Extensão de Tela -->
         <LScreenBtn v-if="location !== 'fullscreen'" module="media" :color="location === 'footer' ? 'black' : 'white'" class="mx-1" />
 
-        <!-- Maximizar (Apenas no Footer) -->
+        <!-- Maximizar (Apenas no Footer e se o Mini Player estiver fechado) -->
         <v-btn
-          v-if="location === 'footer'"
+          v-if="location === 'footer' && !showMiniPlayer"
           variant="text"
           size="small"
-          icon="mdi-open-in-app"
+          icon="mdi-arrow-expand-all"
           color="black"
           @click="maximize()"
           class="mx-1"
@@ -146,6 +174,9 @@ export default {
   computed: {
     media() {
       return this.$modules.get("media");
+    },
+    showMiniPlayer() {
+      return this.$appdata.get("modules.media.show_mini_player") !== false;
     },
     slides() {
       return this.$media.slides();
@@ -297,8 +328,16 @@ export default {
   overflow: visible;
 }
 
+.modern-pill-player-volume {
+  background: rgba(15, 15, 20, 0.45) !important;
+  backdrop-filter: blur(28px) saturate(160%);
+  -webkit-backdrop-filter: blur(28px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
 .footer-player-bar {
-  background: white !important;
+  background: #f4f5f7 !important;
   border-top: 1px solid var(--border-color);
   width: 100%;
   min-height: 64px;

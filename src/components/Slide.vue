@@ -12,13 +12,13 @@
         :style="style_bg(slide)"
       >
         <div
-          class="position-absolute top-0 left-0 w-100 h-100 d-flex justify-center align-center"
+          class="position-absolute top-0 left-0 w-100 h-100 d-flex justify-center align-center pa-6"
         >
-          <div>
+          <div class="d-flex flex-column align-center justify-center w-100">
             <div
               v-if="slide.aux_text"
               v-html="slide.aux_text"
-              :style="style_aux_text()"
+              :style="style_aux_text(slide)"
             />
             <div
               v-if="slide.text"
@@ -120,36 +120,58 @@ export default {
         backgroundSize: "cover",
       };
     },
-    style_aux_text() {
-      return {
-        backgroundColor: "rgba(0, 0, 0, 0.75)",
-        fontSize: `${this.fontSizePc(10)}px`,
-        color: "rgb(246, 195, 42)",
-        padding: `0px ${this.fontSizePc(5)}px`,
-        fontFamily: "DINCondensedBold",
-        textTransform: "uppercase",
-      };
-    },
-    style_text(slide) {
-      let style = {
-        backgroundColor: "rgba(0, 0, 0, 0.75)",
-        padding: `0px ${this.fontSizePc(5)}px`,
-        textAlign: "center",
-        fontFamily: "DINCondensedBold",
-        textTransform: "uppercase",
-      };
-
+    style_aux_text(slide) {
       if (slide.cover) {
         return {
-          ...style,
-          fontSize: `${this.fontSizePc(25)}px`,
-          color: "rgb(246, 195, 42)",
+          fontSize: `${this.fontSizePc(7)}px`,
+          color: "rgba(255, 255, 255, 0.95)",
+          textTransform: "uppercase",
+          fontWeight: "700",
+          letterSpacing: "0.4em", // Mais espaçado para dar um ar premium
+          marginBottom: `${this.fontSizePc(3)}px`,
+          textShadow: "0px 4px 16px rgba(0,0,0,0.8)",
+          textAlign: "center",
         };
       } else {
         return {
-          ...style,
-          fontSize: `${this.fontSizePc(20)}px`,
-          color: this.repeat ? "rgb(246, 195, 42)" : "rgb(255, 255, 255)",
+          fontSize: `${this.fontSizePc(4)}px`,
+          color: "rgba(255, 255, 255, 0.8)",
+          textTransform: "uppercase",
+          fontWeight: "500",
+          letterSpacing: "0.1em",
+          marginBottom: `${this.fontSizePc(2)}px`,
+          textShadow: "0px 1px 4px rgba(0,0,0,0.5)",
+          textAlign: "center",
+        };
+      }
+    },
+    style_text(slide) {
+      if (slide.cover) {
+        return {
+          fontSize: `${this.fontSizePc(24)}px`, // Fonte maior
+          color: "#f6c32a",
+          fontWeight: "900", // Mais espessa
+          textTransform: "uppercase",
+          letterSpacing: "-0.01em", // Um pouco mais fechado para fontes grandes fica elegante
+          textAlign: "center",
+          textShadow: "0px 10px 30px rgba(0, 0, 0, 0.9), 0px 2px 6px rgba(0, 0, 0, 0.7)", // Sombra dupla para super destaque
+          lineHeight: "1.1",
+        };
+      } else {
+        return {
+          backgroundColor: "rgba(0, 0, 0, 0.25)",
+          border: `${Math.max(2, this.fontSizePc(0.4))}px solid rgba(255, 255, 255, 0.85)`,
+          padding: `${this.fontSizePc(5)}px ${this.fontSizePc(8)}px`,
+          textAlign: "center",
+          textTransform: "uppercase",
+          fontSize: `${this.fontSizePc(15)}px`, // Letra um pouco maior (era 12)
+          color: this.repeat ? "#f6c32a" : "#ffffff",
+          fontWeight: "700",
+          letterSpacing: "0.03em",
+          lineHeight: "1.4",
+          backdropFilter: "blur(8px)",
+          WebkitBackdropFilter: "blur(8px)",
+          boxShadow: "0px 10px 30px rgba(0, 0, 0, 0.4)",
         };
       }
     },
