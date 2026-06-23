@@ -20,7 +20,18 @@
           </h2>
         </div>
 
-        <div class="search-bar ml-4" style="max-width: 300px; flex: 1;">
+        <div class="search-bar ml-4 d-flex align-center" style="max-width: 500px; flex: 1; gap: 16px;">
+          <v-text-field
+            v-model="search"
+            :placeholder="$t('modules.hymnal_1996.inputs.search') || 'Buscar música...'"
+            prepend-inner-icon="mdi-magnify"
+            variant="solo"
+            density="comfortable"
+            hide-details
+            clearable
+            rounded
+            @update:modelValue="onSearchInput"
+          />
           <v-select
             v-model="id_category"
             :items="categoryOptions"
@@ -31,6 +42,7 @@
             hide-details
             rounded
             prepend-inner-icon="mdi-filter-variant"
+            style="max-width: 220px;"
           />
         </div>
       </div>
@@ -52,7 +64,43 @@
           class="ma-2 mx-8"
         />
 
-        <div class="collections-page-scroll flex-grow-1" style="overflow-y: auto; overflow-x: hidden; padding: 16px 8px;">
+        <div v-if="search && search.length > 1" class="flex-grow-1 d-flex flex-column" style="min-height: 0;">
+          <div v-if="indexing" class="d-flex flex-column align-center justify-center flex-grow-1 w-100">
+            <v-progress-circular indeterminate color="var(--accent-blue)" size="48" class="mb-4" />
+            <p style="color: var(--sidebar-text-secondary); font-weight: 500;">Construindo índice de busca...</p>
+          </div>
+          <div v-else-if="filteredMusics.length === 0" class="d-flex flex-column align-center justify-center flex-grow-1 w-100">
+            <v-icon size="48" color="var(--sidebar-text-secondary)" class="mb-3">mdi-magnify</v-icon>
+            <p style="color: var(--sidebar-text-secondary); font-weight: 500;">Nenhuma música encontrada</p>
+          </div>
+          <div v-else class="music-list flex-grow-1 d-flex flex-column" style="background: transparent; box-shadow: none; min-height: 0;">
+            <v-table class="modern-hymnal-table flex-grow-1 d-flex flex-column" style="min-height: 0; background: transparent;">
+              <tbody class="music-list-container">
+                <tr v-for="item in filteredMusics" :key="item.id_music" class="music-item">
+                  <td class="music-info pl-4">
+                    <h4 class="music-title">
+                      {{ item.name }}
+                    </h4>
+                    <p class="music-artist">
+                      {{ item.album_name }}
+                    </p>
+                  </td>
+                  <td class="music-duration">{{ $datetime.shortTime(item.duration) }}</td>
+                  <td class="music-actions">
+                    <div class="d-flex justify-end">
+                      <l-music-menu-table
+                        :id_music="item.id_music"
+                        :has_instrumental_music="item.has_instrumental_music"
+                      />
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </v-table>
+          </div>
+        </div>
+
+        <div v-else class="collections-page-scroll flex-grow-1" style="overflow-y: auto; overflow-x: hidden; padding: 16px 8px;">
           <div class="collections-grid-wrap">
             <div 
               v-for="album in albums" 
@@ -84,7 +132,12 @@
         <!-- Rodapé do Módulo -->
         <div class="w-100 px-8 pb-3 pt-2 text-right flex-shrink-0">
           <small style="color: var(--sidebar-text-secondary); font-weight: 500;">
-            {{ t("all_collections") }}: {{ albums.length }}
+            <template v-if="search && search.length > 1">
+              {{ filteredMusics.length }} resultado(s)
+            </template>
+            <template v-else>
+              {{ t("all_collections") }}: {{ albums.length }}
+            </template>
           </small>
         </div>
       </div>
@@ -95,9 +148,18 @@
 <script>
 import manifest from "../manifest.json";
 
+import LMusicMenuTable from "@/components/MusicMenuTable.vue";
+
 export default {
   name: manifest.id,
+  components: {
+    LMusicMenuTable,
+  },
   data: () => ({
+    search: "",
+    all_musics: [],
+    indexing: false,
+    indexed: false,
     categories: [],
     lang: null,
     id_category: 0,
@@ -135,8 +197,28 @@ export default {
         .filter((item) => item.id_category == this.id_category)[0]
         ?.albums.sort((a, b) => a.order - b.order) || [];
     },
+    filteredMusics() {
+      if (!this.search || this.search.length <= 1 || this.all_musics.length === 0) {
+        return [];
+      }
+      const term = this.$string.clean(this.search);
+      return this.all_musics.filter(m => {
+        const name = this.$string.clean(m.name);
+        if (!isNaN(m.track) && !isNaN(term)) {
+          return Number(m.track) === Number(term) || name.includes(term);
+        }
+        return name.includes(term);
+      });
+    },
     compact: function () {
       return this.$vuetify.display.width <= 600;
+    },
+  },
+  watch: {
+    search(val) {
+      if (val && val.length > 1 && !this.indexed) {
+        this.buildSearchIndex();
+      }
     },
   },
   methods: {
@@ -173,7 +255,41 @@ export default {
         await this.loadData();
       }
     },
+    async buildSearchIndex() {
+      if (this.indexed || this.indexing) return;
+      this.indexing = true;
+      
+      try {
+        let musics = [];
+        const allAlbums = this.categories.reduce((acc, cat) => acc.concat(cat.albums), []);
+        
+        // Remove duplicatas de álbuns
+        const uniqueAlbums = [...new Map(allAlbums.map(a => [a.id_album, a])).values()];
+        
+        const promises = uniqueAlbums.map(a => this.$database.get(`album_${a.id_album}`));
+        const results = await Promise.all(promises);
+        
+        results.forEach(albumData => {
+          if (albumData && albumData.musics) {
+            albumData.musics.forEach(m => {
+              musics.push({
+                ...m,
+                album_name: albumData.name
+              });
+            });
+          }
+        });
+        
+        this.all_musics = musics;
+        this.indexed = true;
+      } catch (e) {
+        console.error("Erro ao indexar músicas", e);
+      } finally {
+        this.indexing = false;
+      }
+    },
     close() {
+      this.search = "";
       this.id_category = 0;
     },
   },
@@ -250,6 +366,91 @@ export default {
   .collections-grid-wrap {
     grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
     gap: 12px;
+  }
+}
+
+.modern-hymnal-table {
+  background: transparent !important;
+  
+  .v-table__wrapper {
+    background: transparent !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    flex: 1 1 auto;
+    height: 100%;
+  }
+  
+  table {
+    background: transparent !important;
+    border-spacing: 0;
+  }
+
+  tr:hover td {
+    background: transparent !important;
+  }
+
+  .music-list-container {
+    display: flex;
+    flex-direction: column;
+    padding: 0 16px;
+  }
+
+  .music-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--border-color);
+    transition: var(--transition);
+    
+    &:hover {
+      background: var(--sidebar-hover) !important;
+    }
+    
+    td {
+      border-bottom: none !important;
+      padding: 0 !important;
+      height: auto !important;
+      background: transparent !important;
+      background-color: transparent !important;
+    }
+
+    &:hover td,
+    &:hover > td {
+      background: transparent !important;
+      background-color: transparent !important;
+    }
+  }
+  
+  .music-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    
+    .music-title {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--sidebar-text);
+      margin-bottom: 2px;
+      line-height: 1.2;
+    }
+    
+    .music-artist {
+      font-size: 13px;
+      color: var(--sidebar-text-secondary);
+      margin: 0;
+    }
+  }
+  
+  .music-duration {
+    font-size: 13px;
+    color: var(--sidebar-text-secondary);
+    min-width: 60px;
+    padding-right: 16px !important;
+  }
+  
+  .music-actions {
+    min-width: 80px;
   }
 }
 </style>

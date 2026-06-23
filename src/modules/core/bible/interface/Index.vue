@@ -1,219 +1,209 @@
 <template>
-  <l-window
-    v-model="module.show"
-    :title="t('title')"
-    :icon="module.icon"
-    closable
-    minimizable
-    compact
-    @close="
-      close();
-      $modules.close(module_id);
-    "
-    @minimize="$modules.minimize(module_id)"
-    @resize="resize"
-    :slot-left-style="{ width: compact ? 0 : (width / 100) * 60 + 'px' }"
-    :slot-right-style="{ width: compact ? width : (width / 100) * 40 + 'px' }"
-    :index="loading"
-  >
-    <template v-slot:header>
-      <div v-if="compact" :class="{ 'd-flex': !super_compact }">
-        <v-autocomplete
-          v-model="bible.id_bible_book"
-          :items="books_list"
-          hide-details
-          density="compact"
-          variant="plain"
-          min-width="30%"
+  <v-slide-y-reverse-transition>
+    <div v-if="module?.show" class="module-full-page dashboard-home d-flex flex-column">
+      
+      <!-- Cabeçalho Integrado -->
+      <div class="search-header pb-0 flex-shrink-0" style="padding-top: 24px; padding-left: 24px; padding-right: 24px; display: flex; align-items: center;">
+        <v-btn
+          icon="mdi-arrow-left"
+          variant="text"
+          @click="close(); $modules.close(module_id); $router.push({ name: 'home' });"
+          class="mr-4"
+          color="var(--sidebar-text-secondary)"
         />
-        <v-autocomplete
-          v-model="bible.chapter"
-          :items="chapters_list"
-          hide-details
-          density="compact"
-          variant="plain"
-          min-width="20%"
-        />
-        <v-autocomplete
-          v-model="bible.id_bible_version"
-          :items="versions_list"
-          hide-details
-          density="compact"
-          variant="plain"
-          min-width="50%"
-        />
-      </div>
-      <span v-else>{{ scripturalReference(bible) }} </span>
-    </template>
-
-    <template v-slot:left>
-      <div v-if="!compact" class="d-flex flex-row h-100">
-        <div class="w-70 h-100">
-          <div
-            :style="`height: ${height}px`"
-            class="overflow-auto d-flex flex-row flex-wrap justify-center align-content-start"
-          >
-            <v-skeleton-loader
-              v-for="n in 10"
-              :key="n"
-              v-show="loading_book"
-              class="ma-1"
-              :height="80"
-              :width="100"
-            />
-            <v-card
-              v-for="book in books"
-              :key="book.id_bible_book"
-              :color="book.color"
-              class="ma-1 d-flex align-center flex-column"
-              :height="80"
-              :width="100"
-              hover
-              :variant="
-                book.id_bible_book == bible.id_bible_book ? 'flat' : 'tonal'
-              "
-              @click="selBook(book.id_bible_book)"
-              :id="`listBook_${book.id_bible_book}`"
-            >
-              <v-card-title
-                class="flex-grow-1 pa-0 ma-0 text-h4 d-flex align-center"
-              >
-                {{ book.abbreviation }}
-              </v-card-title>
-              <v-card-text
-                class="flex-grow-0 pa-0 px-1 ma-0 text-caption text-truncate text-center w-100"
-              >
-                {{ book.name }}
-              </v-card-text>
-            </v-card>
+        
+        <div class="d-flex align-center mr-auto">
+          <div class="module-icon-box d-flex align-center justify-center mr-4">
+             <v-icon :icon="module.icon" size="24" />
           </div>
+          <h2 class="section-title mb-0" style="color: var(--sidebar-text); font-size: 24px; font-weight: 600;">
+            {{ t('title') }}
+          </h2>
         </div>
-        <div class="w-30 h-100">
-          <div
-            :style="`height: ${height}px`"
-            class="overflow-auto d-flex flex-row flex-wrap justify-center align-content-start"
-          >
-            <v-skeleton-loader
-              v-for="n in 10"
-              :key="n"
-              v-show="loading_book"
-              class="ma-1"
-              :height="40"
-              :width="40"
-            />
-            <v-card
-              v-for="chapter in chapters"
-              :key="chapter"
-              :color="book?.color"
-              class="ma-1 d-flex align-center flex-column"
-              :height="40"
-              :width="40"
-              hover
-              :variant="chapter == bible.chapter ? 'flat' : 'tonal'"
-              @click="selChapter(chapter)"
-              :id="`listChapter_${chapter}`"
-            >
-              <v-card-title
-                class="flex-grow-1 pa-0 ma-0 d-flex align-center font-weight-regular"
-                style="font-size: 16px"
-              >
-                {{ chapter }}
-              </v-card-title>
-            </v-card>
-          </div>
+
+        <div class="search-bar ml-4 d-flex align-center" style="flex: 1; justify-content: flex-end; gap: 16px;">
+          <!-- Na direita do cabeçalho, os selects de versão e navegação para mobile -->
+          <v-autocomplete
+            v-if="compact"
+            v-model="bible.id_bible_book"
+            :items="books_list"
+            hide-details
+            density="comfortable"
+            variant="solo"
+            rounded
+            style="max-width: 150px;"
+          />
+          <v-autocomplete
+            v-if="compact"
+            v-model="bible.chapter"
+            :items="chapters_list"
+            hide-details
+            density="comfortable"
+            variant="solo"
+            rounded
+            style="max-width: 100px;"
+          />
+          <v-autocomplete
+            v-model="bible.id_bible_version"
+            :items="versions_list"
+            hide-details
+            density="comfortable"
+            variant="solo"
+            rounded
+            style="max-width: 350px;"
+            prepend-inner-icon="mdi-book-open-page-variant"
+          />
         </div>
       </div>
-    </template>
 
-    <template v-slot:right>
-      <div class="d-flex flex-row h-100">
-        <div
-          :style="{
-            height: height + 'px',
-            width: (compact ? width : (width / 100) * 40) + 'px',
-          }"
-        >
-          <div v-if="!compact" style="height: 40px">
-            <v-autocomplete
-              v-model="bible.id_bible_version"
-              :items="versions_list"
-              hide-details
-              density="compact"
-              variant="underlined"
-            />
+      <!-- Área de Conteúdo -->
+      <div class="content-main d-flex flex-row flex-grow-1" style="overflow: hidden; padding: 24px; min-height: 0; gap: 24px;">
+        
+        <!-- Coluna da Esquerda (Livros e Capítulos) -->
+        <div v-if="!compact" class="bible-navigation d-flex flex-row" style="width: 40%; min-width: 350px; background: var(--card-bg, #fff); border-radius: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid var(--border-color, rgba(0,0,0,0.05)); min-height: 0;">
+          
+          <!-- Lista de Livros -->
+          <div class="books-col h-100 d-flex flex-column" style="flex: 2; border-right: 1px solid var(--border-color, rgba(0,0,0,0.05));">
+            <div class="pa-4 pb-2">
+              <h3 style="font-size: 1.1rem; color: var(--sidebar-text); font-weight: 600;">Livros</h3>
+            </div>
+            <div class="overflow-y-auto px-2 pb-4 flex-grow-1">
+              <v-skeleton-loader v-if="loading_book" type="list-item@10" />
+              <v-list v-else density="compact" class="pa-0 bg-transparent">
+                <v-list-item
+                  v-for="book in books"
+                  :key="book.id_bible_book"
+                  @click="selBook(book.id_bible_book)"
+                  :id="`listBook_${book.id_bible_book}`"
+                  :active="book.id_bible_book == bible.id_bible_book"
+                  color="primary"
+                  class="rounded-lg mb-1"
+                  :variant="book.id_bible_book == bible.id_bible_book ? 'flat' : 'text'"
+                >
+                  <v-list-item-title class="font-weight-medium">
+                    {{ book.name }}
+                  </v-list-item-title>
+                  <template v-slot:append>
+                    <span class="text-caption font-weight-bold" :class="book.id_bible_book == bible.id_bible_book ? 'text-white' : 'text-primary'" style="opacity: 0.8">{{ book.abbreviation }}</span>
+                  </template>
+                </v-list-item>
+              </v-list>
+            </div>
           </div>
-          <div :style="`height: ${height / 2}px;`">
-            <v-skeleton-loader
-              v-show="loading_book || loading_verses"
-              type="list-item-two-line"
-            />
-            <v-list class="overflow h-100 ma-0 pa-0 no-select" width="100%">
-              <v-list-item
-                v-for="(verse, num) in verses"
-                :key="num"
-                link
-                variant="flat"
-                :value="verse"
-                :active="bible.verses.includes(+num)"
-                @click="selVerse($event, num)"
-                density="compact"
-                :id="`listVerse_${num}`"
-              >
-                <template v-slot:prepend>
-                  <v-chip class="mr-2">{{ num }}</v-chip>
-                </template>
 
-                <div v-html="verse" class="text-caption"></div>
-              </v-list-item>
-            </v-list>
+          <!-- Lista de Capítulos -->
+          <div class="chapters-col h-100 d-flex flex-column" style="flex: 1;">
+            <div class="pa-4 pb-2">
+              <h3 style="font-size: 1.1rem; color: var(--sidebar-text); font-weight: 600;">Cap.</h3>
+            </div>
+            <div class="overflow-y-auto px-2 pb-4 flex-grow-1">
+              <v-skeleton-loader v-if="loading_book" type="list-item@10" />
+              <div v-else class="d-flex flex-wrap justify-center gap-1">
+                <v-btn
+                  v-for="chapter in chapters"
+                  :key="chapter"
+                  @click="selChapter(chapter)"
+                  :id="`listChapter_${chapter}`"
+                  :variant="chapter == bible.chapter ? 'flat' : 'text'"
+                  :color="chapter == bible.chapter ? 'primary' : 'default'"
+                  class="rounded-lg ma-1 chapter-btn"
+                  min-width="44"
+                  width="44"
+                  height="44"
+                >
+                  {{ chapter }}
+                </v-btn>
+              </div>
+            </div>
           </div>
-          <div style="height: 48px">
-            <v-toolbar density="compact">
-              <v-spacer />
-              <v-divider vertical />
-              <v-btn
-                :disabled="
-                  !(select_bible?.verses && select_bible.verses.length > 0)
-                "
-                variant="text"
+        </div>
+
+        <!-- Coluna da Direita (Versículos e Projeção) -->
+        <div class="bible-verses-col d-flex flex-column flex-grow-1" style="background: var(--card-bg, #fff); border-radius: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid var(--border-color, rgba(0,0,0,0.05)); min-height: 0;">
+          
+          <!-- Título do Texto Atual -->
+          <div class="pa-4 d-flex justify-space-between align-center" style="border-bottom: 1px solid var(--border-color, rgba(0,0,0,0.05));">
+            <h3 style="font-size: 1.3rem; color: var(--sidebar-text); font-weight: 600;">
+              {{ scripturalReference(bible) }}
+            </h3>
+            
+            <div class="d-flex align-center" style="gap: 8px;">
+               <v-btn
+                :disabled="!(select_bible?.verses && select_bible.verses.length > 0)"
+                variant="tonal"
                 size="small"
-                icon="mdi-chevron-left "
+                icon="mdi-chevron-left"
                 @click="prevVerse()"
-                @shortkey="prevVerse()"
                 v-shortkey="['arrowleft']"
+                @shortkey="prevVerse()"
               />
               <v-btn
-                :disabled="
-                  !(select_bible?.verses && select_bible.verses.length > 0)
-                "
-                variant="text"
+                :disabled="!(select_bible?.verses && select_bible.verses.length > 0)"
+                variant="tonal"
                 size="small"
-                icon="mdi-chevron-right "
+                icon="mdi-chevron-right"
                 @click="nextVerse()"
-                @shortkey="nextVerse()"
                 v-shortkey="['arrowright']"
+                @shortkey="nextVerse()"
               />
-              <v-divider vertical />
               <v-btn
-                :disabled="
-                  !(select_bible?.verses && select_bible.verses.length > 0)
-                "
-                variant="text"
+                :disabled="!(select_bible?.verses && select_bible.verses.length > 0)"
+                variant="tonal"
+                color="error"
                 size="small"
                 icon="mdi-eraser"
                 @click="clean()"
-                @shortkey="clean()"
                 v-shortkey="['del']"
+                @shortkey="clean()"
               />
-              <v-divider vertical />
+              <v-btn
+                variant="tonal"
+                color="primary"
+                size="small"
+                icon="mdi-palette"
+                @click="showConfigModal = true"
+                class="mx-1"
+              />
+              <v-divider vertical class="mx-2" />
               <LScreenBtn module="bible" />
-            </v-toolbar>
+            </div>
           </div>
-          <Screen :height="compact ? height / 2 - 48 : height / 2 - 88" />
+
+          <!-- Lista de Versículos -->
+          <div class="overflow-y-auto pa-4 flex-grow-1" style="position: relative; min-height: 0;">
+            <v-skeleton-loader v-if="loading_book || loading_verses" type="list-item-two-line@5" />
+            <v-list v-else class="pa-0 bg-transparent">
+              <v-list-item
+                v-for="(verse, num) in verses"
+                :key="num"
+                @click="selVerse($event, num)"
+                :id="`listVerse_${num}`"
+                :active="bible.verses.includes(+num)"
+                color="primary"
+                class="rounded-lg mb-2 verse-item"
+                :variant="bible.verses.includes(+num) ? 'tonal' : 'text'"
+              >
+                <div class="d-flex align-start py-2">
+                  <v-chip size="small" class="mr-4 mt-1 font-weight-bold" :color="bible.verses.includes(+num) ? 'primary' : 'default'" :variant="bible.verses.includes(+num) ? 'flat' : 'tonal'">{{ num }}</v-chip>
+                  <div v-html="verse" class="verse-text" style="font-size: 1.15rem; line-height: 1.6; color: var(--sidebar-text);"></div>
+                </div>
+              </v-list-item>
+            </v-list>
+          </div>
+
+          <!-- Preview de Projeção -->
+          <div style="height: 220px; flex-shrink: 0; background: #000;">
+            <Screen />
+          </div>
+
         </div>
+        
       </div>
-    </template>
-  </l-window>
+    </div>
+  </v-slide-y-reverse-transition>
+
+  <!-- Modal de Configuração da Bíblia -->
+  <ConfigModal v-if="!loading" v-model="showConfigModal" />
 </template>
 
 <script>
@@ -221,6 +211,7 @@ import manifest from "../manifest.json";
 import LWindow from "@/components/Window.vue";
 import Screen from "../components/Screen.vue";
 import LScreenBtn from "@/components/buttons/Screen.vue";
+import ConfigModal from "../components/ConfigModal.vue";
 
 export default {
   name: "CollectionsModule",
@@ -228,6 +219,7 @@ export default {
     LWindow,
     Screen,
     LScreenBtn,
+    ConfigModal,
   },
   data: () => ({
     lang: null,
@@ -260,6 +252,7 @@ export default {
     verses: [],
     last_verse: 1,
     last_bible_file: null,
+    showConfigModal: false,
   }),
   computed: {
     /* COMPUTEDS OBRIGATÓRIAS - INÍCIO */

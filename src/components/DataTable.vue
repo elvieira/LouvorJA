@@ -1,5 +1,5 @@
 <template>
-  <v-table fixed-header hover loading density="compact" class="__table-data">
+  <v-table fixed-header loading density="compact" class="__table-data">
     <template v-slot:bottom>
       <v-progress-linear
         v-if="loading"

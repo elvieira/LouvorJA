@@ -1,26 +1,25 @@
 <template>
   <div
     ref="container"
-    class="d-flex align-center justify-center"
+    class="d-flex align-center justify-center overflow-hidden"
     :style="{
-      background: '#000',
+      background: config.background,
       width: '100%',
       height: height ? height + 'px' : '100%',
-      color: '#fff',
+      color: config.color,
     }"
   >
-    <div v-if="bible" class="d-flex flex-column">
+    <div v-if="bible" class="d-flex flex-column w-100 pa-4" :class="[config.align]">
       <span
         v-if="bible.text"
-        class="text-center"
-        :style="{ fontSize: `${this.fontSizePc(15)}px` }"
+        :style="{ fontSize: `${this.fontSizePc(config.fontSizePc)}px` }"
       >
         {{ bible.text }}
       </span>
       <span
         v-if="bible.scriptural_reference"
-        class="text-right"
-        :style="{ fontSize: `${this.fontSizePc(10)}px` }"
+        class="mt-4 font-weight-bold"
+        :style="{ fontSize: `${this.fontSizePc(config.refFontSizePc)}px`, color: config.refColor }"
       >
         {{ bible.scriptural_reference }}
       </span>
@@ -52,6 +51,16 @@ export default {
     /* COMPUTEDS OBRIGATÓRIAS - FIM */
     bible() {
       return this.$appdata.get("modules.bible.data");
+    },
+    config() {
+      return this.$appdata.get("modules.bible.config") || {
+        fontSizePc: 15,
+        align: "text-center",
+        background: "#000000",
+        color: "#ffffff",
+        refFontSizePc: 10,
+        refColor: "#ffffff",
+      };
     },
   },
   methods: {

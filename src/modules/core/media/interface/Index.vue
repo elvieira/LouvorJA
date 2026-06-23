@@ -101,12 +101,9 @@
         </fullscreen>
       </div>
 
-      <!-- Lista Lateral de Letras (Ocultável) - Dark Glassmorphism -->
+      <!-- Lista Lateral de Letras (Ocultável) - Glassmorphism -->
       <div class="player-playlist-area transition-all" :class="{'playlist-open': isPlaylistOpen, 'playlist-closed': !isPlaylistOpen}">
-        <div class="playlist-header px-6 py-4 border-bottom">
-          <h3 class="text-subtitle-1 font-weight-bold text-white">Fila de Reprodução</h3>
-        </div>
-        <v-list class="playlist-scroll h-100 pa-2 bg-transparent" :width="320" theme="dark">
+        <v-list class="playlist-scroll h-100 pa-4 bg-transparent pt-6" :width="340" theme="dark">
           <v-list-item
             @click="$media.goToSlide(index)"
             v-for="(item, index) in slides"
@@ -332,16 +329,14 @@ export default {
 /* Área da Playlist com Animação Deslizante (Design Dark/Glass) */
 .player-playlist-area {
   z-index: 2;
-  background: rgba(20, 22, 28, 0.85); /* Fundo dark translúcido */
-  backdrop-filter: blur(25px);
-  border-left: 1px solid rgba(255, 255, 255, 0.05);
+  background: linear-gradient(to right, rgba(0,0,0,0) 0%, rgba(0,0,0,0.4) 100%);
   display: flex;
   flex-direction: column;
   overflow: hidden;
   transition: width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.3s;
   
   &.playlist-open {
-    width: 320px;
+    width: 340px;
     opacity: 1;
   }
   
@@ -349,10 +344,6 @@ export default {
     width: 0px;
     opacity: 0;
     border: none;
-  }
-
-  .border-bottom {
-    border-bottom: 1px solid rgba(255,255,255,0.1);
   }
 
   .playlist-scroll {
@@ -379,18 +370,25 @@ export default {
 
   .playlist-item {
     border-radius: 12px;
-    transition: all 0.2s ease;
-    border: 1px solid transparent;
-    padding: 0 16px;
-    margin-bottom: 4px;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    background: rgba(0, 0, 0, 0.25) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 8px 16px;
+    margin-bottom: 12px;
 
     &:hover {
-      background: rgba(255, 255, 255, 0.05) !important;
+      background: rgba(0, 0, 0, 0.4) !important;
+      border: 1px solid rgba(255, 255, 255, 0.2) !important;
+      transform: translateX(-4px);
     }
 
     &.v-list-item--active {
-      background: rgba(255, 255, 255, 0.15) !important;
-      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(0, 0, 0, 0.55) !important;
+      border: 1px solid rgba(255, 255, 255, 0.4) !important;
+      transform: translateX(-8px) scale(1.02);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
 
       .slide-number-chip {
         background: white;
@@ -400,6 +398,7 @@ export default {
       .slide-text, .slide-title {
         color: white;
         font-weight: 600;
+        text-shadow: 0 2px 8px rgba(0,0,0,0.8);
       }
     }
 
@@ -421,6 +420,7 @@ export default {
     .slide-title {
       font-size: 14px;
       color: rgba(255, 255, 255, 0.9);
+      text-transform: uppercase;
     }
 
     .slide-text {
@@ -432,6 +432,7 @@ export default {
       -webkit-line-clamp: 2;
       line-clamp: 2;
       -webkit-box-orient: vertical;
+      text-transform: uppercase;
     }
 
     .slide-progress-container {

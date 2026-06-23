@@ -161,9 +161,12 @@ export default {
       padding: 0 !important;
       height: auto !important;
       background: transparent !important;
+      background-color: transparent !important;
     }
 
-    &:hover td {
+    &:hover td,
+    &:hover > td {
+      background: transparent !important;
       background-color: transparent !important;
     }
   }
