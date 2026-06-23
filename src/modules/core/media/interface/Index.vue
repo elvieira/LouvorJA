@@ -397,7 +397,7 @@ export default {
       
       .slide-text, .slide-title {
         color: white;
-        font-weight: 600;
+        font-weight: 600; line-height: 1;
         text-shadow: 0 2px 8px rgba(0,0,0,0.8);
       }
     }
@@ -411,7 +411,7 @@ export default {
       align-items: center;
       justify-content: center;
       font-size: 12px;
-      font-weight: 600;
+      font-weight: 600; line-height: 1;
       color: rgba(255, 255, 255, 0.8);
       margin-right: 14px;
       transition: all 0.2s;

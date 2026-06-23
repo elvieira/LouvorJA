@@ -1,8 +1,8 @@
 {
   "id": "hymnal",
   "name": "Hinário Adventista",
-  "version": "1.0.0",
-  "description": "Lista as músicas do Hinário Adventista",
+  "version": "2.0.0",
+  "description": "Hinário Adventista Oficial. Acesso rápido e prático a todos os louvores tradicionais, organizados numericamente.",
   "author": "maycorolbuche",
   "category": "musics",
   "icon": "mdi-music-clef-treble",

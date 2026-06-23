@@ -3,19 +3,13 @@
     <div v-if="module?.show" class="module-full-page dashboard-home d-flex flex-column bg-main">
       <!-- Cabeçalho -->
       <div class="search-header pb-0 flex-shrink-0" style="padding-top: 24px; padding-left: 24px; padding-right: 24px; display: flex; align-items: center;">
-        <v-btn
-          icon="mdi-arrow-left"
-          variant="text"
-          @click="$modules.close(manifest.id); $router.push({ name: 'home' });"
-          class="mr-4"
-          color="var(--sidebar-text-secondary)"
-        />
+        <MenuToggleButton style="margin-right: 16px;" @toggle-sidebar="toggleSidebar" />
         
         <div class="d-flex align-center mr-auto">
           <div class="module-icon-box d-flex align-center justify-center mr-4" style="background: var(--accent-blue); color: white; width: 48px; height: 48px; border-radius: 12px;">
              <v-icon :icon="manifest.icon || 'mdi-cog'" size="24" />
           </div>
-          <h2 class="section-title mb-0" style="color: var(--sidebar-text); font-size: 24px; font-weight: 600;">
+          <h2 class="section-title mb-0" style="color: var(--sidebar-text); font-size: 24px; font-weight: 600; line-height: 1;">
             Configurações Gerais
           </h2>
         </div>
@@ -113,9 +107,13 @@
 
 <script>
 import manifest from "../manifest.json";
+import MenuToggleButton from "@/components/MenuToggleButton.vue";
 
 export default {
   name: manifest.id,
+  components: {
+    MenuToggleButton,
+  },
   data: () => ({
     language: "Português",
     hardware_accel: true,
@@ -139,6 +137,12 @@ export default {
     }
   },
   methods: {
+    toggleSidebar() {
+      const mainEl = document.querySelector('.main-container');
+      if (mainEl) {
+        mainEl.dispatchEvent(new CustomEvent('toggle-sidebar'));
+      }
+    },
     setTheme(theme_id) {
       this.$vuetify.theme.global.name = theme_id;
       this.$userdata.set("theme", theme_id);

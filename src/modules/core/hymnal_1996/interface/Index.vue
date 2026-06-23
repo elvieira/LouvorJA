@@ -3,19 +3,13 @@
     <div v-if="module?.show" class="module-full-page dashboard-home d-flex flex-column">
       <!-- Cabeçalho Integrado do Módulo -->
       <div class="search-header pb-0 flex-shrink-0" style="padding-top: 24px; padding-left: 24px; padding-right: 24px; display: flex; align-items: center;">
-        <v-btn
-          icon="mdi-arrow-left"
-          variant="text"
-          @click="close(); $modules.close(module_id); $router.push({ name: 'home' });"
-          class="mr-4"
-          color="var(--sidebar-text-secondary)"
-        />
+        <MenuToggleButton style="margin-right: 16px;" @toggle-sidebar="toggleSidebar" />
         
         <div class="d-flex align-center mr-auto">
           <div class="module-icon-box d-flex align-center justify-center mr-4">
              <v-icon :icon="module.icon" size="24" />
           </div>
-          <h2 class="section-title mb-0" style="color: var(--sidebar-text); font-size: 24px; font-weight: 600;">
+          <h2 class="section-title mb-0" style="color: var(--sidebar-text); font-size: 24px; font-weight: 600; line-height: 1;">
             {{ t('title') }}
           </h2>
         </div>
@@ -102,6 +96,7 @@
 
 <script>
 import manifest from "../manifest.json";
+import MenuToggleButton from "@/components/MenuToggleButton.vue";
 
 import LTable from "@/components/DataTable.vue";
 import LMusicMenuTable from "@/components/MusicMenuTable.vue";
@@ -111,6 +106,7 @@ export default {
   components: {
     LTable,
     LMusicMenuTable,
+    MenuToggleButton,
   },
 
   data: () => ({
@@ -148,6 +144,12 @@ export default {
       return this.$t(`modules.${this.module_id}.${text}`);
     },
     /* METHODS OBRIGATÓRIOS - FIM */
+    toggleSidebar() {
+      const mainEl = document.querySelector('.main-container');
+      if (mainEl) {
+        mainEl.dispatchEvent(new CustomEvent('toggle-sidebar'));
+      }
+    },
 
     onScroll(data) {
       this.scroll = data;
@@ -239,7 +241,7 @@ export default {
 
   .music-number {
     font-size: 15px;
-    font-weight: 600;
+    font-weight: 600; line-height: 1;
     color: var(--accent-blue);
     min-width: 40px;
     margin-right: 16px;

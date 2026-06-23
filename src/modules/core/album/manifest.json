@@ -1,8 +1,8 @@
 {
   "id": "album",
   "name": "Álbum",
-  "version": "1.0.0",
-  "description": "Exibe as músicas de um álbum (função $media.openAlbum)",
+  "version": "2.0.0",
+  "description": "Reprodutor e visualizador de álbuns. Gerencia a listagem e execução contínua das faixas de um álbum musical.",
   "author": "maycorolbuche",
   "category": null,
   "icon": null,

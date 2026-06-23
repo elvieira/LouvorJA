@@ -1,5 +1,6 @@
 import $dev from "@/helpers/Dev";
 import $appdata from "@/helpers/AppData";
+import $media from "@/helpers/Media";
 
 export default {
   open(id) {
@@ -8,11 +9,22 @@ export default {
       return;
     }
 
+    // Se o player de música está aberto e não minimizado, minimiza automaticamente
+    const mediaShow = $appdata.get("modules.media.show");
+    const mediaMinimized = $appdata.get("modules.media.minimized", false);
+    if (mediaShow && !mediaMinimized) {
+      $media.minimize();
+    }
+
     // Fechar outros módulos abertos para evitar sobreposição (mantendo comportamento de tela única)
     const modules = $appdata.get("modules") || {};
     for (const key of Object.keys(modules)) {
       if (key !== id && modules[key].show) {
-        this.close(key);
+        $appdata.set(`modules.${key}.show`, false);
+        // Remove da TrayArea (exceto home que não vai para tray)
+        if (key !== 'home') {
+          this.removeTray(key);
+        }
       }
     }
 
@@ -29,6 +41,13 @@ export default {
 
     //Remove da TrayArea
     this.removeTray(id);
+
+    // Se nenhum módulo ficou ativo, reabre a home
+    const modules = $appdata.get("modules") || {};
+    const hasActive = Object.keys(modules).some((key) => modules[key].show);
+    if (!hasActive && this.check("home")) {
+      $appdata.set("modules.home.show", true);
+    }
   },
   minimize(id) {
     if (!this.check(id)) {

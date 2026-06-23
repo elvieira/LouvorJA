@@ -2,7 +2,7 @@
   "id": "theme",
   "name": "Temas",
   "version": "1.0.0",
-  "description": "Fornece ferramentas para customização das cores do programa.",
+  "description": "Aparência e Personalização. Permite alternar entre os modos claro e escuro, e customizar cores e estilos do programa.",
   "author": "maycorolbuche",
   "category": null,
   "showInMainMenu": false,

@@ -1,8 +1,8 @@
 {
   "id": "musics",
   "name": "Músicas",
-  "version": "1.0.0",
-  "description": "Lista todas as músicas do programa, com filtros de busca.",
+  "version": "2.0.0",
+  "description": "Biblioteca Geral de Músicas. Módulo responsável pelo gerenciamento de faixas avulsas ou coleções diversas.",
   "author": "maycorolbuche",
   "category": "musics",
   "icon": "mdi-music",

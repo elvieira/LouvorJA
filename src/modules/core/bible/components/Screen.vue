@@ -59,7 +59,7 @@ export default {
         background: "#000000",
         color: "#ffffff",
         refFontSizePc: 10,
-        refColor: "#ffffff",
+        refColor: "#fb8c00",
       };
     },
   },

@@ -1,10 +1,11 @@
 <template>
   <div 
+    ref="playerContainer"
     :class="location === 'footer' ? 'footer-player-bar d-flex align-center w-100 px-4 py-2' : 'modern-pill-player d-flex align-center px-6 py-2 mx-auto'" 
   >
       
       <!-- INFO (Música e Álbum) -->
-      <div class="player-info d-flex flex-column mr-6" :style="location === 'footer' ? 'max-width: 300px; min-width: 200px;' : 'max-width: 220px; min-width: 150px;'">
+      <div v-if="playerWidth >= 880" class="player-info d-flex flex-column mr-6" :style="location === 'footer' ? 'max-width: 300px; min-width: 200px;' : 'max-width: 220px; min-width: 150px;'">
         <span class="text-subtitle-2 font-weight-bold text-truncate" :class="location === 'footer' ? 'text-black' : 'text-white'" style="line-height: 1.2;">{{ media.config.title }}</span>
         <span class="text-caption text-truncate" :class="location === 'footer' ? 'text-grey-darken-1' : 'text-grey'" style="line-height: 1.2;">{{ media.config.subtitle }}</span>
       </div>
@@ -71,7 +72,7 @@
       <!-- AÇÕES SECUNDÁRIAS -->
       <div class="d-flex align-center">
         <!-- Status Mode (Áudio/Instrumental/Letra) -->
-        <v-menu v-if="location !== 'fullscreen' && $vuetify.display.width > 350" :close-on-content-click="true">
+        <v-menu v-if="location !== 'fullscreen' && playerWidth >= 880" :close-on-content-click="true">
           <template v-slot:activator="{ props }">
             <v-btn
               variant="text"
@@ -148,7 +149,7 @@
 
         <!-- Botão de Playlist (Apenas no Window) -->
         <v-btn 
-          v-if="location == 'window'"
+          v-if="location == 'window' && playerWidth >= 880"
           variant="text" 
           size="small" 
           icon="mdi-format-list-bulleted" 
@@ -170,6 +171,40 @@ export default {
   },
   components: {
     LScreenBtn,
+  },
+  data() {
+    return {
+      playerWidth: 0,
+      resizeObserver: null
+    };
+  },
+  mounted() {
+    this.resizeObserver = new ResizeObserver(entries => {
+      for (let entry of entries) {
+        this.playerWidth = entry.contentRect.width;
+      }
+    });
+    
+    let target = this.$refs.playerContainer;
+    if (target) {
+      if (this.location === 'window') {
+        const vCard = target.closest('.v-card');
+        if (vCard) {
+          target = vCard;
+        } else {
+          // Fallback para o contêiner principal se não achar v-card
+          target = target.closest('.floating-pill-container')?.parentNode || target.parentNode;
+        }
+      } else if (this.location === 'fullscreen') {
+        target = document.body;
+      }
+      this.resizeObserver.observe(target);
+    }
+  },
+  beforeUnmount() {
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect();
+    }
   },
   computed: {
     media() {

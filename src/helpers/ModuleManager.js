@@ -151,6 +151,11 @@ export default {
     //Importa as interfaces dos modules
     $appdata.set("import_modules", true);
 
+    // Abre o módulo Home automaticamente na inicialização
+    if ($appdata.get("modules.home")) {
+      $appdata.set("modules.home.show", true);
+    }
+
     // Optional: Remote module installation
     try {
       // Uncomment and modify as needed

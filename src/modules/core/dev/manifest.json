@@ -1,8 +1,8 @@
 {
   "id": "dev",
   "name": "Desenvolvedor",
-  "version": "1.0.0",
-  "description": "Exibir informações do sistema ao desenvolvedor.",
+  "version": "2.0.0",
+  "description": "Painel do Desenvolvedor. Ferramenta de diagnóstico que exibe variáveis globais, módulos instalados e configurações em tempo real.",
   "author": "maycorolbuche",
   "category": null,
   "showInMainMenu": true,

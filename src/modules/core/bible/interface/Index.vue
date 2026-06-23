@@ -4,19 +4,13 @@
       
       <!-- Cabeçalho Integrado -->
       <div class="search-header pb-0 flex-shrink-0" style="padding-top: 24px; padding-left: 24px; padding-right: 24px; display: flex; align-items: center;">
-        <v-btn
-          icon="mdi-arrow-left"
-          variant="text"
-          @click="close(); $modules.close(module_id); $router.push({ name: 'home' });"
-          class="mr-4"
-          color="var(--sidebar-text-secondary)"
-        />
-        
+        <MenuToggleButton style="margin-right: 16px;" @toggle-sidebar="toggleSidebar" />
+
         <div class="d-flex align-center mr-auto">
           <div class="module-icon-box d-flex align-center justify-center mr-4">
              <v-icon :icon="module.icon" size="24" />
           </div>
-          <h2 class="section-title mb-0" style="color: var(--sidebar-text); font-size: 24px; font-weight: 600;">
+          <h2 class="section-title mb-0" style="color: var(--sidebar-text); font-size: 24px; font-weight: 600; line-height: 1;">
             {{ t('title') }}
           </h2>
         </div>
@@ -60,14 +54,14 @@
       <div class="content-main d-flex flex-row flex-grow-1" style="overflow: hidden; padding: 24px; min-height: 0; gap: 24px;">
         
         <!-- Coluna da Esquerda (Livros e Capítulos) -->
-        <div v-if="!compact" class="bible-navigation d-flex flex-row" style="width: 40%; min-width: 350px; background: var(--card-bg, #fff); border-radius: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid var(--border-color, rgba(0,0,0,0.05)); min-height: 0;">
+        <div v-if="!compact" class="bible-navigation d-flex flex-row flex-shrink-0" style="width: 40%; min-width: 350px; max-width: 400px; background: var(--card-bg, #fff); border-radius: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid var(--border-color, rgba(0,0,0,0.05)); min-height: 0;">
           
           <!-- Lista de Livros -->
-          <div class="books-col h-100 d-flex flex-column" style="flex: 2; border-right: 1px solid var(--border-color, rgba(0,0,0,0.05));">
+          <div class="books-col h-100 d-flex flex-column" style="width: 65%; border-right: 1px solid var(--border-color, rgba(0,0,0,0.05));">
             <div class="pa-4 pb-2">
-              <h3 style="font-size: 1.1rem; color: var(--sidebar-text); font-weight: 600;">Livros</h3>
+              <h3 style="font-size: 1.1rem; color: var(--sidebar-text); font-weight: 600; line-height: 1;">Livros</h3>
             </div>
-            <div class="overflow-y-auto px-2 pb-4 flex-grow-1">
+            <div class="px-2 pb-4 flex-grow-1" style="overflow-y: scroll; overflow-x: hidden;">
               <v-skeleton-loader v-if="loading_book" type="list-item@10" />
               <v-list v-else density="compact" class="pa-0 bg-transparent">
                 <v-list-item
@@ -92,11 +86,11 @@
           </div>
 
           <!-- Lista de Capítulos -->
-          <div class="chapters-col h-100 d-flex flex-column" style="flex: 1;">
+          <div class="chapters-col h-100 d-flex flex-column" style="width: 35%;">
             <div class="pa-4 pb-2">
-              <h3 style="font-size: 1.1rem; color: var(--sidebar-text); font-weight: 600;">Cap.</h3>
+              <h3 style="font-size: 1.1rem; color: var(--sidebar-text); font-weight: 600; line-height: 1;">Cap.</h3>
             </div>
-            <div class="overflow-y-auto px-2 pb-4 flex-grow-1">
+            <div class="px-2 pb-4 flex-grow-1" style="overflow-y: scroll; overflow-x: hidden;">
               <v-skeleton-loader v-if="loading_book" type="list-item@10" />
               <div v-else class="d-flex flex-wrap justify-center gap-1">
                 <v-btn
@@ -123,7 +117,7 @@
           
           <!-- Título do Texto Atual -->
           <div class="pa-4 d-flex justify-space-between align-center" style="border-bottom: 1px solid var(--border-color, rgba(0,0,0,0.05));">
-            <h3 style="font-size: 1.3rem; color: var(--sidebar-text); font-weight: 600;">
+            <h3 style="font-size: 1.3rem; color: var(--sidebar-text); font-weight: 600; line-height: 1;">
               {{ scripturalReference(bible) }}
             </h3>
             
@@ -170,7 +164,7 @@
           </div>
 
           <!-- Lista de Versículos -->
-          <div class="overflow-y-auto pa-4 flex-grow-1" style="position: relative; min-height: 0;">
+          <div class="pa-4 flex-grow-1" style="position: relative; min-height: 0; overflow-y: scroll; overflow-x: hidden;">
             <v-skeleton-loader v-if="loading_book || loading_verses" type="list-item-two-line@5" />
             <v-list v-else class="pa-0 bg-transparent">
               <v-list-item
@@ -212,6 +206,7 @@ import LWindow from "@/components/Window.vue";
 import Screen from "../components/Screen.vue";
 import LScreenBtn from "@/components/buttons/Screen.vue";
 import ConfigModal from "../components/ConfigModal.vue";
+import MenuToggleButton from "@/components/MenuToggleButton.vue";
 
 export default {
   name: "CollectionsModule",
@@ -220,6 +215,7 @@ export default {
     Screen,
     LScreenBtn,
     ConfigModal,
+    MenuToggleButton,
   },
   data: () => ({
     lang: null,
@@ -343,6 +339,12 @@ export default {
       return this.$t(`modules.${this.module_id}.${text}`);
     },
     /* METHODS OBRIGATÓRIOS - FIM */
+    toggleSidebar() {
+      const mainEl = document.querySelector('.main-container');
+      if (mainEl) {
+        mainEl.dispatchEvent(new CustomEvent('toggle-sidebar'));
+      }
+    },
     send(param, value) {
       this.$appdata.set(`modules.${this.module_id}.data.${param}`, value);
     },

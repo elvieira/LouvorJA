@@ -1,8 +1,8 @@
 {
   "id": "lyric",
   "name": "Letra",
-  "version": "1.0.0",
-  "description": "Exibe a letra da música (função $media.openLyric)",
+  "version": "2.0.0",
+  "description": "Módulo de exibição de letras. Apresenta o texto sincronizado da música atual em reprodução no player ativo. (função $media.openLyric)",
   "author": "maycorolbuche",
   "category": null,
   "icon": null,

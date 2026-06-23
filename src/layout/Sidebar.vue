@@ -31,7 +31,7 @@
       </div>
       
       <!-- Página Inicial -->
-      <div class="nav-item main-item" :class="{ active: currentRoute === 'home' && !currentModule }">
+      <div class="nav-item main-item" :class="{ active: currentModule === 'home' }">
         <a href="#" class="nav-link" @click.prevent="navigateTo('home')">
           <v-icon class="nav-icon">
             mdi-home
@@ -237,14 +237,8 @@ export default {
     },
     navigateTo(route) {
       if (route === 'home') {
-        const modules = this.$appdata.get("modules") || {};
-        for (const [key, module] of Object.entries(modules)) {
-          if (module.show) {
-            this.$modules.close(key);
-          }
-        }
+        this.$modules.open('home');
       }
-      this.$router.push({ name: route });
       if (this.isMobile) {
         this.closeSidebar();
       }
@@ -256,7 +250,29 @@ export default {
       }
     },
     toggleSubmenu(submenu) {
-      this.submenuOpen[submenu] = !this.submenuOpen[submenu];
+      const isCurrentlyOpen = this.submenuOpen[submenu];
+      let wasAnyOtherOpen = false;
+      
+      // Fecha todos os submenus primeiro
+      Object.keys(this.submenuOpen).forEach(key => {
+        if (key !== submenu && this.submenuOpen[key]) {
+          wasAnyOtherOpen = true;
+        }
+        this.submenuOpen[key] = false;
+      });
+      
+      clearTimeout(this.submenuTimeout);
+      
+      // Se o submenu clicado não estava aberto, abre ele agora
+      if (!isCurrentlyOpen) {
+        if (wasAnyOtherOpen) {
+          this.submenuTimeout = setTimeout(() => {
+            this.submenuOpen[submenu] = true;
+          }, 300); // Tempo da transição CSS
+        } else {
+          this.submenuOpen[submenu] = true;
+        }
+      }
     },
     isGroupActive(group) {
       if (!group || !group.modules) return false;

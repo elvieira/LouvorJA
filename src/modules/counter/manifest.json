@@ -5,7 +5,7 @@
   "name": "Counter Module",
   "version": "1.0.0",
   "description": "Simple counter utility",
-  "author": "Your Name",
+  "author": "maycorolbuche",
   "category": "utilities",
   "icon": "mdi-counter",
   "minAppVersion": "1.0.0",

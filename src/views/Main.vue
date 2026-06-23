@@ -7,13 +7,10 @@
   <AppAlert />
 
   <!-- Container principal com margem para sidebar -->
-  <div class="main-container" :class="{ 'sidebar-open': sidebarOpen }">
+  <div class="main-container" :class="{ 'sidebar-open': sidebarOpen }" @toggle-sidebar="toggleSidebar">
     <v-main class="bg-main">
-      <!-- Módulos aparecem dentro do v-main -->
+      <!-- Módulos aparecem dentro do v-main (incluindo a Home) -->
       <AppModules />
-      
-      <!-- Router view para Home e outras páginas (oculta se houver módulo ativo) -->
-      <router-view v-show="!hasActiveModule" @toggle-sidebar="toggleSidebar" />
       
       <!-- TrayArea mantido (área de minimizados) -->
       <AppTrayArea />
@@ -90,15 +87,6 @@ export default {
     };
   },
   computed: {
-    hasActiveModule() {
-      const modules = this.$appdata.get("modules") || {};
-      for (const module of Object.values(modules)) {
-        if (module.show) {
-          return true;
-        }
-      }
-      return false;
-    },
     showMiniPlayer: {
       get() {
         return this.$appdata.get("modules.media.show_mini_player") !== false;
@@ -213,6 +201,10 @@ export default {
       const modules = this.$appdata.get("modules") || {};
       for (const key of Object.keys(modules)) {
         this.$appdata.set(`modules.${key}.show`, false);
+      }
+      // Garante que a Home sempre reabra após a inicialização forçada de limpeza
+      if (this.$appdata.get("modules.home")) {
+        this.$appdata.set("modules.home.show", true);
       }
     },
     maximizePlayer() {

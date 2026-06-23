@@ -85,7 +85,8 @@
     font-size: 24px;
     font-weight: 600;
     color: var(--sidebar-text);
-    margin-bottom: 20px;
+    margin: 0 !important;
+    align-self: center;
     display: flex;
     align-items: center;
     flex-shrink: 0;
@@ -379,10 +380,7 @@
     }
   }
   
-  .section-title {
-    font-size: 22px !important;
-    margin-bottom: 16px !important;
-  }
+
   
   .collection-card {
     .card-image {
@@ -418,10 +416,7 @@
     }
   }
   
-  .section-title {
-    font-size: 20px !important;
-    margin-bottom: 12px !important;
-  }
+
   
   .content-main {
     padding: 16px 32px 20px 32px !important;

@@ -1,8 +1,8 @@
 {
   "id": "collections",
   "name": "Álbuns",
-  "version": "1.0.0",
-  "description": "Lista as coletâneas",
+  "version": "2.0.0",
+  "description": "Central de coletâneas e álbuns musicais. Organize, busque e navegue por todas as coleções de músicas disponíveis no sistema.",
   "author": "maycorolbuche",
   "category": "musics",
   "icon": "mdi-music-box-multiple",

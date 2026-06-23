@@ -8,16 +8,6 @@
         "help": "Ayuda y acerca de",
         "settings": "Configuraciones"
     },
-    "home": {
-        "search_placeholder": "Buscar aquí...",
-        "recent_collections": "Colecciones recientes",
-        "top_songs": "Canciones más tocadas",
-        "songs": "canciones",
-        "feature_coming_soon": "Funcionalidad en desarrollo",
-        "sample_song_1": "Más Cerca Quiero Estar",
-        "sample_song_2": "Sublime Amor",
-        "sample_song_3": "Jesús, Mi Guía Es"
-    },
     "modules": {
         "invalid": {
             "title": "#Error#"

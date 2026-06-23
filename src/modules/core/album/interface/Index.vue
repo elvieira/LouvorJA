@@ -3,20 +3,14 @@
     <div v-if="module?.show" class="module-full-page dashboard-home d-flex flex-column" :style="`z-index: 100;`">
       <!-- Cabeçalho Integrado do Álbum -->
       <div class="search-header pb-0 flex-shrink-0" style="padding-top: 24px; padding-left: 24px; padding-right: 24px; display: flex; align-items: center;">
-        <v-btn
-          icon="mdi-arrow-left"
-          variant="text"
-          @click="$media.closeAlbum()"
-          class="mr-4"
-          color="var(--sidebar-text-secondary)"
-        />
+        <MenuToggleButton style="margin-right: 16px;" @toggle-sidebar="toggleSidebar" />
         
         <div class="d-flex align-center mr-auto">
           <div class="album-cover-box d-flex align-center justify-center mr-4" :style="module?.data?.color ? `background: ${module.data.color}` : ''" style="width: 48px; height: 48px; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);">
              <v-img v-if="module?.data?.url_image" :src="$path.file(module.data.url_image)" cover style="width: 100%; height: 100%;" />
              <v-icon v-else size="24" color="white">mdi-album</v-icon>
           </div>
-          <h2 class="section-title mb-0" style="color: var(--sidebar-text); font-size: 24px; font-weight: 600;">
+          <h2 class="section-title mb-0" style="color: var(--sidebar-text); font-size: 24px; font-weight: 600; line-height: 1;">
             {{ module?.data?.name }}
           </h2>
         </div>
@@ -76,11 +70,13 @@
 import manifest from "../manifest.json";
 
 import MusicMenuTable from "@/components/MusicMenuTable.vue";
+import MenuToggleButton from "@/components/MenuToggleButton.vue";
 
 export default {
   name: "AlbumModule",
   components: {
     MusicMenuTable,
+    MenuToggleButton,
   },
   computed: {
     /* COMPUTEDS OBRIGATÓRIAS - INÍCIO */
@@ -103,6 +99,12 @@ export default {
       return this.$t(`modules.${this.module_id}.${text}`);
     },
     /* METHODS OBRIGATÓRIOS - FIM */
+    toggleSidebar() {
+      const mainEl = document.querySelector('.main-container');
+      if (mainEl) {
+        mainEl.dispatchEvent(new CustomEvent('toggle-sidebar'));
+      }
+    },
   },
 };
 </script>
@@ -173,7 +175,7 @@ export default {
 
   .music-number {
     font-size: 15px;
-    font-weight: 600;
+    font-weight: 600; line-height: 1;
     color: var(--accent-blue);
     min-width: 40px;
     margin-right: 16px;

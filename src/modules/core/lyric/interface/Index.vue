@@ -77,7 +77,7 @@ export default {
   .v-card-title {
     color: var(--glass-text);
     font-size: 1.4rem;
-    font-weight: 600;
+    font-weight: 600; line-height: 1;
   }
   .v-card-subtitle {
     color: var(--glass-text-secondary) !important;

@@ -11,7 +11,7 @@
         <div v-if="alert.translate" v-html="$t(alert.title)" />
         <div v-else v-html="alert.title" />
       </v-card-title>
-      <v-card-text v-if="alert.text" class="px-6 pb-2 pt-2">
+      <v-card-text v-if="alert.text" class="px-6 pb-2" :class="alert.title ? 'pt-2' : 'pt-8'">
         <div v-if="alert.translate" v-html="$t(alert.text)" class="alert-text-content" />
         <div v-else v-html="alert.text" class="alert-text-content" />
         <small v-if="alert.error" class="text-error mt-2 d-block" v-html="alert.error" />
@@ -57,11 +57,9 @@ export default {
 }
 
 .modern-alert-card {
-  background: var(--glass-bg) !important;
-  backdrop-filter: blur(28px) saturate(180%);
-  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  background: #ffffff !important;
   border: 1px solid var(--glass-border) !important;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.1) !important;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.15) !important;
 
   .v-card-title {
     font-weight: 600;

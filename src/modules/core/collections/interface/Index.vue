@@ -3,19 +3,13 @@
     <div v-if="module?.show" class="module-full-page dashboard-home d-flex flex-column">
       <!-- Cabeçalho Integrado do Módulo -->
       <div class="search-header pb-0 flex-shrink-0" style="padding-top: 24px; padding-left: 24px; padding-right: 24px; display: flex; align-items: center;">
-        <v-btn
-          icon="mdi-arrow-left"
-          variant="text"
-          @click="close(); $modules.close(module_id); $router.push({ name: 'home' });"
-          class="mr-4"
-          color="var(--sidebar-text-secondary)"
-        />
-        
+        <MenuToggleButton style="margin-right: 16px;" @toggle-sidebar="toggleSidebar" />
+
         <div class="d-flex align-center mr-auto">
           <div class="module-icon-box d-flex align-center justify-center mr-4">
              <v-icon :icon="module.icon" size="24" />
           </div>
-          <h2 class="section-title mb-0" style="color: var(--sidebar-text); font-size: 24px; font-weight: 600;">
+          <h2 class="section-title mb-0" style="color: var(--sidebar-text); font-size: 24px; font-weight: 600; line-height: 1;">
             {{ t('title') }}
           </h2>
         </div>
@@ -118,7 +112,7 @@
                 <v-icon v-else size="48">mdi-album</v-icon>
               </div>
               <div class="card-content">
-                <h3 class="card-title" style="-webkit-line-clamp: 2;">
+                <h3 class="card-title" style="-webkit-line-clamp: 2; line-clamp: 2;">
                   {{ album.name }}
                 </h3>
                 <p class="card-stats">
@@ -147,6 +141,7 @@
 
 <script>
 import manifest from "../manifest.json";
+import MenuToggleButton from "@/components/MenuToggleButton.vue";
 
 import LMusicMenuTable from "@/components/MusicMenuTable.vue";
 
@@ -154,6 +149,7 @@ export default {
   name: manifest.id,
   components: {
     LMusicMenuTable,
+    MenuToggleButton,
   },
   data: () => ({
     search: "",
@@ -224,6 +220,12 @@ export default {
   methods: {
     t(text) {
       return this.$t(`modules.${this.module_id}.${text}`);
+    },
+    toggleSidebar() {
+      const mainEl = document.querySelector('.main-container');
+      if (mainEl) {
+        mainEl.dispatchEvent(new CustomEvent('toggle-sidebar'));
+      }
     },
     async loadData() {
       this.id_category = 0;
