@@ -4,6 +4,13 @@
       <!-- Cabeçalho Integrado do Álbum -->
       <div class="search-header pb-0 flex-shrink-0" style="padding-top: 24px; padding-left: 24px; padding-right: 24px; display: flex; align-items: center;">
         <MenuToggleButton style="margin-right: 16px;" @toggle-sidebar="toggleSidebar" />
+        <v-btn
+          icon="mdi-arrow-left"
+          variant="text"
+          size="small"
+          style="margin-right: 16px; color: var(--sidebar-text-secondary);"
+          @click="$modules.close(module_id)"
+        ></v-btn>
         
         <div class="d-flex align-center mr-auto">
           <div class="album-cover-box d-flex align-center justify-center mr-4" :style="module?.data?.color ? `background: ${module.data.color}` : ''" style="width: 48px; height: 48px; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);">
@@ -28,7 +35,7 @@
           <!-- Tabela de músicas do álbum com o mesmo estilo dos hinários -->
           <v-table class="modern-hymnal-table flex-grow-1 d-flex flex-column" style="min-height: 0; background: transparent;">
             <tbody class="music-list-container">
-              <tr v-for="item in module.data.musics" :key="item.id_music" class="music-item">
+              <tr v-for="item in module.data.musics" :key="item.id_music" class="music-item" @click="$media.open({ id_music: item.id_music, mode: 'audio' })" style="cursor: pointer;">
                 <td class="music-number text-center">
                   {{ item.track }}
                 </td>
@@ -36,15 +43,11 @@
                   <h4 class="music-title">
                     {{ item.name }}
                   </h4>
-                  <p class="music-artist">
-                    {{ module.data.name }}
-                  </p>
                 </td>
                 <td class="music-duration">{{ $datetime.shortTime(item.duration) }}</td>
                 <td class="music-actions">
                   <div class="d-flex justify-end">
                     <MusicMenuTable
-                      color="var(--sidebar-text-secondary)"
                       :id_music="item.id_music"
                       :has_instrumental_music="item.has_instrumental_music"
                     />
@@ -55,12 +58,6 @@
           </v-table>
         </div>
         
-        <!-- Rodapé do Álbum -->
-        <div class="w-100 px-8 pb-3 pt-2 text-right flex-shrink-0" v-if="!loading && module?.data?.musics">
-          <small style="color: var(--sidebar-text-secondary); font-weight: 500;">
-            {{ t("table.track") }}s: {{ module.data.musics.length }}
-          </small>
-        </div>
       </div>
     </div>
   </v-slide-y-reverse-transition>

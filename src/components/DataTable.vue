@@ -30,7 +30,7 @@ export default {
     has_scroll: Boolean,
     searchable_fields: Object,
     filter: Object,
-    letter: String,
+    letter: { type: String, default: "" },
     sort_by: String,
   },
   data: () => ({

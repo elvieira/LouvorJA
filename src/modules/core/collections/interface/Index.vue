@@ -123,17 +123,7 @@
           </div>
         </div>
 
-        <!-- Rodapé do Módulo -->
-        <div class="w-100 px-8 pb-3 pt-2 text-right flex-shrink-0">
-          <small style="color: var(--sidebar-text-secondary); font-weight: 500;">
-            <template v-if="search && search.length > 1">
-              {{ filteredMusics.length }} resultado(s)
-            </template>
-            <template v-else>
-              {{ t("all_collections") }}: {{ albums.length }}
-            </template>
-          </small>
-        </div>
+
       </div>
     </div>
   </v-slide-y-reverse-transition>

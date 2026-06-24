@@ -164,8 +164,10 @@ export default {
     currentModule() {
       // Detecta qual módulo está aberto
       const modules = this.$appdata.get("modules") || {};
+      const overlays = ['album', 'media', 'lyric'];
+      
       for (const [key, module] of Object.entries(modules)) {
-        if (module.show) {
+        if (module.show && !overlays.includes(key)) {
           return key;
         }
       }

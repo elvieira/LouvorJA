@@ -21,70 +21,128 @@
 
       <!-- Conteúdo Principal -->
       <div class="content-main">
-        <!-- Coletâneas Recentes -->
-        <div class="dashboard-section collections-section">
-          <h2 class="section-title">
-            {{ t("recent_collections") }}
+        <!-- Resultados da Pesquisa -->
+        <div v-if="searchQuery" class="dashboard-section music-section h-100 d-flex flex-column" style="min-height: 0;">
+          <h2 class="section-title mb-4">
+            Resultados da Pesquisa
           </h2>
-          <div 
-            ref="collectionsGrid"
-            class="collections-grid"
-            @wheel="handleCollectionsScroll"
-          >
-            <div 
-              v-for="collection in displayCollections" 
-              :key="collection.id"
-              class="collection-card"
-              @click="openCollection(collection.id)"
+          <div class="music-list flex-grow-1 d-flex flex-column" style="min-height: 0; background: transparent; box-shadow: none;">
+            <l-table
+              v-model="searchData"
+              :search="searchQuery"
+              :searchable_fields="{
+                name: true,
+                albums_names: true,
+              }"
+              sort_by="name"
+              :file="`${$i18n.locale}_musics`"
+              class="flex-grow-1 d-flex flex-column"
+              style="background: transparent; min-height: 0;"
             >
-              <div class="card-image">
-                <v-icon size="48">
-                  {{ collection.icon }}
-                </v-icon>
-              </div>
-              <div class="card-content">
-                <h3 class="card-title">
-                  {{ getCollectionName(collection) }}
-                </h3>
-                <p class="card-stats">
-                  {{ collection.songCount || 0 }} {{ t("songs") }}
-                </p>
-              </div>
-            </div>
+              <tbody class="music-list-container">
+                <tr 
+                  v-for="item in searchData.data" 
+                  :key="item.id_music"
+                  class="music-item w-100"
+                  @click="$media.open({ id_music: item.id_music, mode: 'audio' })"
+                  style="cursor: pointer;"
+                >
+                  <td class="music-info flex-grow-1" style="border-bottom: none; padding-left: 24px !important;">
+                    <h4 class="music-title">
+                      {{ item.name }}
+                    </h4>
+                    <p class="music-artist" style="margin-top: 4px;">
+                      {{ item.albums ? item.albums.map(a => a.name).join(', ') : '' }}
+                    </p>
+                  </td>
+                  <td class="music-duration pr-4" style="border-bottom: none;">
+                    {{ $datetime.shortTime(item.duration) }}
+                  </td>
+                  <td style="border-bottom: none;">
+                    <div class="d-flex justify-end pr-4">
+                      <l-music-menu-table
+                        :id_music="item.id_music"
+                        :has_instrumental_music="item.has_instrumental_music"
+                      />
+                    </div>
+                  </td>
+                </tr>
+                <tr v-if="searchData.data && searchData.data.length === 0">
+                  <td class="text-center pa-8 text-grey w-100 d-block" style="border-bottom: none;">
+                    Nenhuma música encontrada.
+                  </td>
+                </tr>
+              </tbody>
+            </l-table>
           </div>
         </div>
 
-        <!-- Músicas Mais Tocadas -->
-        <div class="dashboard-section music-section">
-          <h2 class="section-title">
-            {{ t("top_songs") }}
-          </h2>
-          <div class="music-list">
-            <div class="music-list-container">
+        <template v-else>
+          <!-- Coletâneas Recentes -->
+          <div class="dashboard-section collections-section">
+            <h2 class="section-title">
+              {{ t("recent_collections") }}
+            </h2>
+            <div 
+              ref="collectionsGrid"
+              class="collections-grid"
+              @wheel="handleCollectionsScroll"
+            >
               <div 
-                v-for="(song, index) in topSongs" 
-                :key="song.id || index"
-                class="music-item"
-                @click="playSong(song)"
+                v-for="collection in displayCollections" 
+                :key="collection.id"
+                class="collection-card"
+                @click="openCollection(collection.id)"
               >
-                <div class="music-number">
-                  {{ index + 1 }}
+                <div class="card-image">
+                  <v-icon size="48">
+                    {{ collection.icon }}
+                  </v-icon>
                 </div>
-                <div class="music-info">
-                  <h4 class="music-title">
-                    {{ song.title }}
-                  </h4>
-                  <p class="music-artist">
-                    {{ song.artist }}
+                <div class="card-content">
+                  <h3 class="card-title">
+                    {{ getCollectionName(collection) }}
+                  </h3>
+                  <p class="card-stats">
+                    {{ collection.songCount || 0 }} {{ t("songs") }}
                   </p>
-                </div>
-                <div class="music-duration">
-                  {{ song.duration || "0:00" }}
                 </div>
               </div>
             </div>
           </div>
-        </div>
+
+          <!-- Músicas Mais Tocadas -->
+          <div class="dashboard-section music-section">
+            <h2 class="section-title">
+              {{ t("top_songs") }}
+            </h2>
+            <div class="music-list">
+              <div class="music-list-container">
+                <div 
+                  v-for="(song, index) in topSongs" 
+                  :key="song.id || index"
+                  class="music-item"
+                  @click="playSong(song)"
+                >
+                  <div class="music-number">
+                    {{ index + 1 }}
+                  </div>
+                  <div class="music-info">
+                    <h4 class="music-title">
+                      {{ song.title }}
+                    </h4>
+                    <p class="music-artist">
+                      {{ song.artist }}
+                    </p>
+                  </div>
+                  <div class="music-duration">
+                    {{ song.duration || "0:00" }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </template>
       </div>
     </div>
   </v-slide-y-reverse-transition>
@@ -93,15 +151,20 @@
 <script>
 import manifest from "../manifest.json";
 import MenuToggleButton from "@/components/MenuToggleButton.vue";
+import LTable from "@/components/DataTable.vue";
+import LMusicMenuTable from "@/components/MusicMenuTable.vue";
 
 export default {
   name: manifest.id,
   components: {
     MenuToggleButton,
+    LTable,
+    LMusicMenuTable,
   },
   data() {
     return {
       searchQuery: "",
+      searchData: [],
       manifest: manifest,
     };
   },
@@ -175,6 +238,10 @@ export default {
         },
       ];
     },
+    
+    compact: function () {
+      return this.$vuetify.display.width <= 800;
+    },
   },
   methods: {
     /* METHODS OBRIGATÓRIOS - INÍCIO */
@@ -231,6 +298,10 @@ export default {
       };
       
       return knownCounts[moduleId] || 0;
+    },
+    
+    openAlbum(id_album) {
+      this.$media.openAlbum(id_album);
     },
   },
 };

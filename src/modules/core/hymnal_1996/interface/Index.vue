@@ -48,7 +48,7 @@
             style="min-height: 0;"
           >
             <tbody class="music-list-container">
-              <tr v-for="item in data.data" :key="item.id_music" class="music-item">
+              <tr v-for="item in data.data" :key="item.id_music" class="music-item" @click="$media.open({ id_music: item.id_music, mode: 'audio' })" style="cursor: pointer;">
                 <td class="music-number text-center">
                   {{ item.track }}
                 </td>
@@ -56,9 +56,6 @@
                   <h4 class="music-title">
                     {{ item.name }}
                   </h4>
-                  <p class="music-artist">
-                    {{ t("title") }}
-                  </p>
                 </td>
                 <td class="music-duration">{{ $datetime.shortTime(item.duration) }}</td>
                 <td class="music-actions">
@@ -83,12 +80,6 @@
           class="ma-2 mx-8"
         />
 
-        <!-- Rodapé do Módulo -->
-        <div class="w-100 px-8 pb-3 pt-2 text-right flex-shrink-0">
-          <small style="color: var(--sidebar-text-secondary); font-weight: 500;">
-            {{ t("data.records") }}: {{ data.filter_count }}
-          </small>
-        </div>
       </div>
     </div>
   </v-slide-y-reverse-transition>

@@ -76,7 +76,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="item in data.data" :key="item.id_music">
+        <tr v-for="item in data.data" :key="item.id_music" @click="$media.open({ id_music: item.id_music, mode: 'audio' })" style="cursor: pointer;">
           <td>
             {{ item.name }}
             <div v-if="compact" class="pb-1">
@@ -85,7 +85,7 @@
                 :key="album.id_album"
                 :color="$theme.primary()"
                 size="x-small"
-                @click="openAlbum(album.id_album)"
+                @click.stop="openAlbum(album.id_album)"
               >
                 {{ album.name }}
               </v-chip>
@@ -97,7 +97,7 @@
               :key="album.id_album"
               :color="$theme.primary()"
               density="compact"
-              @click="openAlbum(album.id_album)"
+              @click.stop="openAlbum(album.id_album)"
             >
               {{ album.name }}
             </v-chip>
@@ -127,12 +127,6 @@
     <template v-slot:footer>
       <div class="w-100">
         <l-letter-paginate v-model="letter" />
-        <div class="text-right">
-          <small>
-            {{ t("data.records") }}:
-            {{ data.filter_count }}
-          </small>
-        </div>
       </div>
     </template>
   </l-window>

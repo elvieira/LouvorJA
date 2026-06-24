@@ -8,7 +8,7 @@
       :color="color ? color : $theme.primary()"
       density="compact"
       class="mx-1"
-      @click="btn.click"
+      @click.stop="btn.click"
       icon
     >
       <v-icon>{{ btn.icon }}</v-icon>

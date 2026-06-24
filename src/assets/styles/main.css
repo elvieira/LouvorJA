@@ -13,6 +13,7 @@
     --accent-yellow: #ffc107;
     
     /* Backgrounds */
+    --main-bg: #f5f7fb;
     --card-bg: #ffffff;
     --sidebar-bg: #ffffff;
     --sidebar-border: #e0e0e0;
@@ -44,21 +45,26 @@
 
 /* Tema escuro */
 .v-theme--dark {
-    --card-bg: #1e1e1e;
+    --main-bg: #121212;
+    --card-bg: #2a2a2a;
     --sidebar-bg: #1e1e1e;
-    --sidebar-border: #2d2d2d;
-    --border-color: #2d2d2d;
+    --sidebar-border: #333333;
+    --border-color: #333333;
     --sidebar-text: #e0e0e0;
-    --sidebar-text-secondary: #999999;
-    --sidebar-hover: rgba(255, 255, 255, 0.05);
-    --shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-    --shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.4);
+    --sidebar-text-secondary: #a0a0a0;
+    --sidebar-hover: rgba(255, 255, 255, 0.08);
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    --shadow-hover: 0 6px 16px rgba(0, 0, 0, 0.6);
     
     /* Glassmorphism Dark */
-    --glass-bg: rgba(30, 30, 30, 0.75);
+    --glass-bg: rgba(42, 42, 42, 0.75);
     --glass-border: rgba(255, 255, 255, 0.1);
     --glass-text: #ffffff;
     --glass-text-secondary: rgba(255, 255, 255, 0.7);
+}
+
+.bg-main {
+    background-color: var(--main-bg) !important;
 }
 
 html,

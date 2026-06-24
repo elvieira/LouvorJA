@@ -210,11 +210,13 @@
   min-height: 0;
   display: flex;
   flex-direction: column;
-  
-  .music-list-container {
-    flex: 1;
-    overflow-y: auto;
-    overflow-x: hidden;
+
+  .v-table__wrapper {
+    background: transparent !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    flex: 1 1 auto;
+    height: 100%;
     
     &::-webkit-scrollbar {
       width: 8px;
@@ -237,6 +239,20 @@
       background: var(--accent-yellow);
     }
   }
+  
+  table {
+    background: transparent !important;
+    border-spacing: 0;
+  }
+
+  tr:hover td {
+    background: transparent !important;
+  }
+  
+  .music-list-container {
+    display: flex;
+    flex-direction: column;
+  }
 }
 
 .music-item {
@@ -256,10 +272,12 @@
   }
   
   .music-number {
-    font-size: 14px;
-    color: var(--sidebar-text-secondary);
-    margin-right: 20px;
-    min-width: 24px;
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1;
+    color: var(--accent-blue);
+    min-width: 40px;
+    margin-right: 16px;
   }
   
   .music-info {
@@ -368,80 +386,4 @@
   }
 }
 
-// Media queries para altura
-@media (max-height: 875px) {
-  .dashboard-section {
-    &.collections-section {
-      min-height: 180px;
-    }
-    
-    &.music-section {
-      min-height: 200px;
-    }
-  }
-  
 
-  
-  .collection-card {
-    .card-image {
-      height: 120px;
-      font-size: 36px;
-    }
-    
-    .card-content {
-      padding: 16px;
-      min-height: 70px;
-      
-      .card-title {
-        font-size: 15px;
-      }
-      
-      .card-stats {
-        font-size: 11px;
-      }
-    }
-  }
-}
-
-@media (max-height: 720px) {
-  .dashboard-section {
-    margin-bottom: 0;
-
-    &.collections-section {
-      min-height: 180px;
-    }
-    
-    &.music-section {
-      min-height: 150px;
-    }
-  }
-  
-
-  
-  .content-main {
-    padding: 16px 32px 20px 32px !important;
-  }
-  
-  .collection-card {
-    .card-image {
-      display: none;
-    }
-    
-    .card-content {
-      padding: 12px;
-      min-height: 60px;
-      
-      .card-title {
-        font-size: 14px;
-        line-height: 1.2;
-        -webkit-line-clamp: 2;
-        line-clamp: 2;
-      }
-      
-      .card-stats {
-        font-size: 10px;
-        margin-top: 6px;
-      }
-    }
-  }
-}
