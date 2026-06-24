@@ -18,7 +18,7 @@
       </div>
 
       <!-- TIMELINE E TEMPO -->
-      <div v-if="media.config.audio" class="player-timeline-wrapper d-flex align-center flex-grow-1 mr-6" style="min-width: 150px;">
+      <div v-if="media.config.audio && playerWidth >= 620" class="player-timeline-wrapper d-flex align-center flex-grow-1 mr-6" style="min-width: 150px;">
         <span class="text-caption mr-3 font-weight-medium" :class="location === 'footer' ? 'text-grey-darken-2' : 'text-white'" style="opacity: 0.8;">{{ $datetime.shortTime(media.config.current_time) }}</span>
         <v-progress-linear
           v-model="media.config.progress"
@@ -38,7 +38,7 @@
       </div>
 
       <!-- VOLUME -->
-      <div v-if="media.config.audio" class="d-flex align-center mr-4">
+      <div v-if="media.config.audio && playerWidth >= 620" class="d-flex align-center mr-4">
         <v-menu location="top center" :close-on-content-click="false" open-on-hover :open-delay="50">
           <template v-slot:activator="{ props }">
             <v-btn :icon="volume_icon" variant="text" :color="location === 'footer' ? 'black' : 'white'" size="small" v-bind="props" class="mx-1 volume-btn" @click="toogleVolume" />
@@ -103,11 +103,11 @@
         </v-menu>
 
         <!-- Extensão de Tela -->
-        <LScreenBtn v-if="location !== 'fullscreen'" module="media" :color="location === 'footer' ? 'black' : 'white'" class="mx-1" />
+        <LScreenBtn v-if="location !== 'fullscreen' && playerWidth >= 620" module="media" :color="location === 'footer' ? 'black' : 'white'" class="mx-1" />
 
         <!-- Maximizar (Apenas no Footer e se o Mini Player estiver fechado) -->
         <v-btn
-          v-if="location === 'footer' && !showMiniPlayer"
+          v-if="location === 'footer' && !showMiniPlayer && playerWidth >= 620"
           variant="text"
           size="small"
           icon="mdi-arrow-expand-all"

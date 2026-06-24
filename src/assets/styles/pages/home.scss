@@ -62,140 +62,57 @@
   height: calc(100vh - 70px);
 }
 
-// === SEÇÕES DO DASHBOARD ===
-.dashboard-section {
-  margin-bottom: 40px;
+// === HERO MODE ===
+.hero-search-header {
   display: flex;
   flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  flex-grow: 1;
+  padding: 0 32px 15vh 32px;
+  background: transparent;
+  transition: all 0.3s ease;
+  position: relative;
   
-  &.collections-section {
-    flex-shrink: 1;
-    position: relative;
-    min-height: 200px;
-  }
-  
-  &.music-section {
-    flex: 1;
-    min-height: 300px;
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .section-title {
-    font-size: 24px;
-    font-weight: 600;
-    color: var(--sidebar-text);
-    margin: 0 !important;
-    align-self: center;
-    display: flex;
-    align-items: center;
-    flex-shrink: 0;
+  .menu-btn {
+    position: absolute;
+    top: 24px;
+    left: 24px;
+    margin: 0;
   }
 }
 
-// === GRID DE COLEÇÕES ===
-.collections-grid {
-  display: flex;
-  padding: 5px;
-  gap: 24px;
-  overflow-x: auto;
-  overflow-y: hidden;
-  padding-bottom: 16px;
-  scroll-behavior: smooth;
-  cursor: grab;
-  
-  &:active {
-    cursor: grabbing;
-  }
-  
-  &::-webkit-scrollbar {
-    height: 8px;
-  }
-  
-  &::-webkit-scrollbar-track {
-    background: var(--border-color);
-    border-radius: 4px;
-  }
-  
-  &::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-blue-dark) 100%);
-    border-radius: 4px;
-    
-    &:hover {
-      background: linear-gradient(135deg, var(--accent-blue-dark) 0%, var(--accent-blue) 100%);
-    }
-  }
-  
-  &:hover::-webkit-scrollbar-thumb {
-    background: var(--accent-yellow);
-  }
+.hero-title {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--sidebar-text);
+  letter-spacing: -0.5px;
 }
 
-// === CARDS ===
-.collection-card {
-  background: var(--card-bg);
-  border-radius: var(--border-radius);
-  box-shadow: var(--shadow);
-  transition: var(--transition);
-  cursor: pointer;
-  overflow: hidden;
-  min-width: 280px;
-  flex-shrink: 0;
+.hero-search-bar {
+  width: 100%;
+  max-width: 650px;
   
-  &:hover {
-    box-shadow: var(--shadow-hover);
-    transform: translateY(-2px);
-  }
-  
-  .card-image {
-    width: 100%;
-    height: 160px;
-    background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-blue-dark) 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 48px;
-    position: relative;
+  .v-field {
+    border-radius: 32px !important;
     
-    &::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      right: 0;
-      width: 40px;
-      height: 40px;
-      background: var(--accent-yellow);
-      border-radius: 0 0 0 20px;
-      opacity: 0.8;
-    }
-  }
-  
-  .card-content {
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    min-height: 80px;
-    
-    .card-title {
-      font-size: 16px;
-      font-weight: 600;
-      color: var(--sidebar-text);
-      margin-bottom: auto;
-      line-height: 1.3;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
+    .v-field__input {
+      padding: 16px 24px !important;
+      font-size: 16px !important;
     }
     
-    .card-stats {
-      font-size: 12px;
-      color: var(--sidebar-text-secondary);
-      margin-top: 8px;
-      flex-shrink: 0;
+    .v-field__prepend-inner {
+      padding-left: 20px !important;
+      
+      .v-icon {
+        font-size: 24px;
+      }
+    }
+    
+    &.v-field--focused {
+      box-shadow: 0 8px 30px rgba(0, 151, 215, 0.2) !important;
+      transform: translateY(-2px);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
   }
 }
@@ -326,27 +243,6 @@
     padding: 16px 20px 20px 20px;
     height: calc(100vh - 60px);
   }
-  
-  .collections-grid {
-    gap: 16px;
-    
-    .collection-card {
-      min-width: 240px;
-      
-      .card-content {
-        padding: 16px;
-        min-height: 70px;
-        
-        .card-title {
-          font-size: 15px;
-        }
-        
-        .card-stats {
-          font-size: 11px;
-        }
-      }
-    }
-  }
 }
 
 @media (max-width: 768px) {  
@@ -363,19 +259,6 @@
       
       .v-field__prepend-inner {
         padding-left: 10px !important;
-      }
-    }
-  }
-  
-  .collections-grid {
-    gap: 12px;
-    
-    .collection-card {
-      min-width: 200px;
-      
-      .card-content {
-        padding: 14px;
-        min-height: 65px;
       }
     }
   }

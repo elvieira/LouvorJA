@@ -137,3 +137,11 @@ body {
     -moz-user-select: none;
     -ms-user-select: none;
 }
+
+/* Responsividade nas listas de músicas (ocultar artista e duração) */
+@media (max-width: 650px) {
+    .music-artist,
+    .music-duration {
+        display: none !important;
+    }
+}
