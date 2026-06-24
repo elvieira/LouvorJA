@@ -7,6 +7,7 @@
 .DS_Store
 node_modules
 /dist
+/dist-electron
 OL
 
 # local env files

@@ -1,6 +1,4 @@
 <template>
-  <AppSystemBar />
-  
   <!-- Nova Sidebar -->
   <AppSidebar v-model="sidebarOpen" />
 
@@ -62,7 +60,6 @@
 </template>
 
 <script>
-import AppSystemBar from "@/layout/SystemBar.vue";
 import AppFooter from "@/layout/Footer.vue";
 import AppSidebar from "@/layout/Sidebar.vue";
 import AppModules from "@/layout/Modules.vue";
@@ -73,7 +70,6 @@ import LSlide from "@/components/Slide.vue";
 export default {
   name: "MainPage",
   components: {
-    AppSystemBar,
     AppFooter,
     AppSidebar,
     AppModules,
@@ -192,6 +188,22 @@ export default {
     }
     /*********************************************************************/
     /*********************************************************************/
+
+    // Listeners para menu nativo do Electron
+    if (window.electronAPI && window.electronAPI.isElectron) {
+      window.electronAPI.onNavigateModule((moduleId) => {
+        this.$modules.open(moduleId);
+      });
+      window.electronAPI.onNavigateRoute((routeName) => {
+        if (routeName === 'help') {
+          this.$modules.open('home');
+          // Navega para a rota help se existir
+          if (this.$router) {
+            this.$router.push({ name: routeName }).catch(() => {});
+          }
+        }
+      });
+    }
   },
   methods: {
     toggleSidebar() {
