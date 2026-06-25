@@ -5,8 +5,8 @@
   >
     <!-- INFO (Música e Álbum) -->
     <div v-if="playerWidth >= 880" class="player-info d-flex flex-column mr-6" :style="location === 'footer' ? 'max-width: 300px; min-width: 200px;' : 'max-width: 220px; min-width: 150px;'">
-      <span class="text-subtitle-2 font-weight-bold text-truncate" :class="location === 'footer' ? 'text-black' : 'text-white'" style="line-height: 1.2;">{{ media.config.title }}</span>
-      <span class="text-caption text-truncate" :class="location === 'footer' ? 'text-grey-darken-1' : 'text-grey'" style="line-height: 1.2;">{{ media.config.subtitle }}</span>
+      <span class="text-subtitle-2 font-weight-bold text-truncate" :class="defaultTextClass" style="line-height: 1.2;">{{ media.config.title }}</span>
+      <span class="text-caption text-truncate" :class="secondaryTextClass" style="line-height: 1.2;">{{ media.config.subtitle }}</span>
     </div>
 
     <!-- CONTROLES PRINCIPAIS (Prev, Play, Next) -->
@@ -14,7 +14,7 @@
       <v-btn
         icon="mdi-skip-previous"
         variant="text"
-        :color="location === 'footer' ? 'black' : 'white'"
+        :color="defaultTextColor"
         size="small"
         class="mx-1"
         @click="prev"
@@ -22,7 +22,7 @@
       <v-btn
         :icon="media.config.is_paused ? 'mdi-play-circle' : 'mdi-pause-circle'"
         variant="text"
-        :color="location === 'footer' ? 'black' : 'white'"
+        :color="defaultTextColor"
         size="large"
         class="mx-1 play-btn"
         @click="play"
@@ -30,7 +30,7 @@
       <v-btn
         icon="mdi-skip-next"
         variant="text"
-        :color="location === 'footer' ? 'black' : 'white'"
+        :color="defaultTextColor"
         size="small"
         class="mx-1"
         @click="next"
@@ -39,7 +39,7 @@
 
     <!-- TIMELINE E TEMPO -->
     <div v-if="media.config.audio" class="player-timeline-wrapper d-flex align-center flex-grow-1 mr-6" style="min-width: 150px;">
-      <span class="text-caption mr-3 font-weight-medium" :class="location === 'footer' ? 'text-grey-darken-2' : 'text-white'" style="opacity: 0.8;">{{ $datetime.shortTime(media.config.current_time) }}</span>
+      <span class="text-caption mr-3 font-weight-medium" :class="secondaryTextClass" style="opacity: 0.8;">{{ $datetime.shortTime(media.config.current_time) }}</span>
       <v-progress-linear
         v-model="media.config.progress"
         clickable
@@ -48,13 +48,13 @@
         :stream="!media.loading"
         :buffer-value="media.config.buffered"
         :color="location === 'footer' ? 'var(--accent-blue)' : 'white'"
-        :bg-color="location === 'footer' ? '#b0b0b0' : 'rgba(255,255,255,0.4)'"
+        :bg-color="timelineBgColor"
         :bg-opacity="1"
         rounded
         class="flex-grow-1 timeline-slider"
         @click="changeProgress"
       />
-      <span class="text-caption ml-3 font-weight-medium" :class="location === 'footer' ? 'text-grey-darken-2' : 'text-white'" style="opacity: 0.8;">{{ $datetime.shortTime(media.config.duration) }}</span>
+      <span class="text-caption ml-3 font-weight-medium" :class="secondaryTextClass" style="opacity: 0.8;">{{ $datetime.shortTime(media.config.duration) }}</span>
     </div>
 
     <!-- VOLUME -->
@@ -69,7 +69,7 @@
           <v-btn
             :icon="volume_icon"
             variant="text"
-            :color="location === 'footer' ? 'black' : 'white'"
+            :color="defaultTextColor"
             size="small"
             v-bind="props"
             class="mx-1 volume-btn"
@@ -79,8 +79,8 @@
         <v-card 
           class="py-2 px-4 rounded-lg d-flex align-center" 
           :class="location === 'footer' ? '' : 'modern-pill-player-volume'"
-          :color="location === 'footer' ? '#f4f5f7' : ''" 
-          :theme="location === 'footer' ? 'light' : 'dark'" 
+          :color="location === 'footer' && !isDark ? '#f4f5f7' : ''" 
+          :theme="location === 'footer' && !isDark ? 'light' : 'dark'" 
           elevation="8" 
           min-width="130" 
           height="40"
@@ -110,7 +110,7 @@
           <v-btn
             variant="text"
             size="small"
-            :color="location === 'footer' ? (mode.color === 'white' ? 'black' : mode.color) : (mode.color || 'white')"
+            :color="mode.color && mode.color !== 'white' ? mode.color : defaultTextColor"
             v-bind="props"
             :icon="mode.tray_icon"
             class="mx-1"
@@ -119,8 +119,8 @@
         <v-list
           class="elevation-3"
           rounded="lg"
-          :bg-color="location === 'footer' ? 'white' : '#1e1e1e'"
-          :theme="location === 'footer' ? 'light' : 'dark'"
+          :bg-color="location === 'footer' && !isDark ? 'white' : 'var(--card-bg)'"
+          :theme="location === 'footer' && !isDark ? 'light' : 'dark'"
         >
           <template v-for="(mode, key) in menu_modes" :key="key">
             <v-divider v-if="mode.title == '-'" class="my-1 border-opacity-25" />
@@ -144,7 +144,7 @@
       <LScreenBtn
         v-if="location !== 'fullscreen'"
         module="media"
-        :color="location === 'footer' ? 'black' : 'white'"
+        :color="defaultTextColor"
         class="mx-1"
       />
 
@@ -154,7 +154,7 @@
         variant="text"
         size="small"
         icon="mdi-arrow-expand-all"
-        color="black"
+        :color="defaultTextColor"
         class="mx-1"
         @click="maximize()"
       />
@@ -165,7 +165,7 @@
         variant="text"
         size="small"
         icon="mdi-close"
-        color="black"
+        :color="defaultTextColor"
         class="mx-1"
         @click="close()"
       />
@@ -222,6 +222,25 @@ export default {
     };
   },
   computed: {
+    isDark() {
+      return this.$vuetify.theme.name === 'dark';
+    },
+    defaultTextColor() {
+      if (this.location !== 'footer') return 'white';
+      return this.isDark ? 'white' : 'black';
+    },
+    defaultTextClass() {
+      if (this.location !== 'footer') return 'text-white';
+      return this.isDark ? 'text-white' : 'text-black';
+    },
+    secondaryTextClass() {
+      if (this.location !== 'footer') return 'text-grey';
+      return this.isDark ? 'text-grey' : 'text-grey-darken-1';
+    },
+    timelineBgColor() {
+      if (this.location !== 'footer') return 'rgba(255,255,255,0.4)';
+      return this.isDark ? 'rgba(255,255,255,0.2)' : '#b0b0b0';
+    },
     media() {
       return this.$modules.get("media");
     },
@@ -415,7 +434,7 @@ export default {
 }
 
 .footer-player-bar {
-  background: #f4f5f7 !important;
+  background: var(--card-bg) !important;
   border-top: 1px solid var(--border-color);
   width: 100%;
   min-height: 64px;
