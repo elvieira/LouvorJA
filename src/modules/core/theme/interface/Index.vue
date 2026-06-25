@@ -157,6 +157,57 @@
                   </v-card-text>
                 </v-card>
 
+                <!-- Dados e Inicialização -->
+                <v-card class="settings-card rounded-xl pa-2" flat style="background: var(--card-bg); box-shadow: var(--shadow);">
+                  <v-card-text class="pa-6">
+                    <div class="d-flex align-center justify-space-between mb-4">
+                      <div class="d-flex align-start">
+                        <v-icon color="warning" class="mr-3 mt-1" size="28">mdi-monitor-star</v-icon>
+                        <div>
+                          <h3 class="font-weight-bold mb-1" style="color: var(--sidebar-text); font-size: 1.1rem; line-height: 1.2;">Tela de Carregamento</h3>
+                          <div class="text-caption" style="color: var(--sidebar-text-secondary); max-width: 300px;">
+                            Força a exibição da tela de carregamento inicial para fins de teste ou demonstração visual.
+                          </div>
+                        </div>
+                      </div>
+                      <v-btn
+                        color="warning"
+                        variant="flat"
+                        prepend-icon="mdi-eye"
+                        class="rounded-lg text-none px-6 font-weight-bold"
+                        @click="showBootScreen"
+                        elevation="2"
+                      >
+                        Visualizar Tela
+                      </v-btn>
+                    </div>
+
+                    <v-divider class="my-4"></v-divider>
+
+                    <div class="d-flex align-center justify-space-between">
+                      <div class="d-flex align-start">
+                        <v-icon color="error" class="mr-3 mt-1" size="28">mdi-delete-alert</v-icon>
+                        <div>
+                          <h3 class="font-weight-bold mb-1" style="color: var(--sidebar-text); font-size: 1.1rem; line-height: 1.2;">Limpar Todos os Dados</h3>
+                          <div class="text-caption" style="color: var(--sidebar-text-secondary); max-width: 300px;">
+                            Exclui banco de dados, letras, capas e arquivos de áudio baixados no PC. O programa precisará baixar tudo na próxima vez.
+                          </div>
+                        </div>
+                      </div>
+                      <v-btn
+                        color="error"
+                        variant="flat"
+                        prepend-icon="mdi-folder-remove"
+                        class="rounded-lg text-none px-6 font-weight-bold"
+                        @click="clearAllData"
+                        elevation="2"
+                      >
+                        Apagar Tudo
+                      </v-btn>
+                    </div>
+                  </v-card-text>
+                </v-card>
+
               </div>
             </div>
           </v-tabs-window-item>
@@ -393,6 +444,24 @@ export default {
         // Dispara um alerta ou recarrega para aplicar a home (se desejar, mas Vue reatividade no Storage não é automática sem store. Uma msg é o suficiente)
         alert("Histórico resetado com sucesso! Atualize a página inicial para ver as mudanças.");
       }
+    },
+    async clearAllData() {
+      if (confirm("ATENÇÃO: Você tem certeza que deseja apagar todos os bancos de dados, capas, músicas e mídias baixadas do aplicativo?\n\nIsso exigirá um novo download de todos os arquivos essenciais e irá reiniciar o programa.")) {
+        if (window.electronAPI) {
+          const success = await window.electronAPI.clearAllData();
+          if (success) {
+            alert("Todos os arquivos locais foram removidos com sucesso. O aplicativo será recarregado agora.");
+            window.location.reload();
+          } else {
+            alert("Ocorreu um erro ao tentar limpar os dados.");
+          }
+        } else {
+          alert("Apenas disponível na versão desktop.");
+        }
+      }
+    },
+    showBootScreen() {
+      window.dispatchEvent(new CustomEvent('show-boot-screen'));
     },
   },
 };

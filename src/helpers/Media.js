@@ -95,87 +95,44 @@ export default {
         ),
       );
 
-      $appdata.set(
-        "modules.media.config.audio",
-        $path.file(
-          mode == "audio" ? data.url_music : data.url_instrumental_music,
-        ),
-      );
+      const urlPath = mode == "audio" ? data.url_music : data.url_instrumental_music;
+      let targetAudioUrl = $path.file(urlPath);
 
-      if (
-        $appdata.get("is_online") &&
-        $userdata.get("modules.media.lazy_load")
-      ) {
-        //Se a opção lazy_load estiver marcada, execução rápida (o audio vai carregando enquanto é executado)
-        $appdata.set("modules.media.config.lazy", true);
-        audio.src = $appdata.get("modules.media.config.audio");
-        audio.load();
-        $appdata.set("modules.media.loading", false);
-        this.play();
+      // Interceptação Offline (Desktop)
+    if (window.electronAPI && window.electronAPI.isElectron) {
+      const relativePath = urlPath.replace(/^\/(musics|images|covers)\//, '');
+      const localUrl = await window.electronAPI.checkMedia('music', relativePath);
+      if (localUrl) {
+        $dev.write("Mídia carregada do disco local", localUrl);
+        targetAudioUrl = localUrl;
       } else {
-        //Se a opção lazy_load estiver desmarcada, execução lenta (o audio só é executado depois de totalmente carregado)
-        $appdata.set("modules.media.config.lazy", false);
-        const self = this;
-        const request = new XMLHttpRequest();
-        try {
-          request.open("GET", $appdata.get("modules.media.config.audio"), true);
-        } catch (error) {
-          $alert.error(
-            { text: "modules.media.alerts.not_loaded", error },
-            (a) => {
-              if (a) {
-                self.open(id_music);
-              }
-            },
-          );
-          return;
-        }
-
-        request.responseType = "blob";
-        request.onload = function () {
-          if (this.status == 200) {
-            audio.src = URL.createObjectURL(this.response);
-            audio.load();
-            self.play();
-          } else {
-            $alert.error(
-              {
-                text: "modules.media.alerts.not_loaded",
-                error: request.statusText || "",
-              },
-              (a) => {
-                if (a) {
-                  self.open(id_music);
-                }
-              },
-            );
-          }
-        };
-        request.onerror = function () {
-          $alert.error(
-            {
-              text: "modules.media.alerts.not_loaded",
-              error: request.statusText || "",
-            },
-            (a) => {
-              if (a) {
-                self.open(id_music);
-              }
-            },
-          );
-          
-        };
-
-        request.send();
+        // Bloqueio Offline Estrito
+        this.close(true);
         $appdata.set("modules.media.loading", false);
+        $alert.error({ 
+          text: "Mídia não encontrada no computador! Vá no Menu Lateral > Sincronização Local e clique em Baixar Coletânea.",
+          translate: false
+        });
+        return; // Interrompe a execução completamente
       }
-    } else {
-      $appdata.set("modules.media.config.audio", "");
-      $appdata.set("modules.media.loading", false);
     }
 
-    $appdata.set("modules.media.config.mode", mode);
-  },
+    $appdata.set("modules.media.config.audio", targetAudioUrl);
+
+    // Atribuição Direta (Desktop/Strict Offline)
+    audio.src = targetAudioUrl;
+    audio.load();
+    $appdata.set("modules.media.config.lazy", false);
+    $appdata.set("modules.media.loading", false);
+    
+    this.play();
+  } else {
+    $appdata.set("modules.media.config.audio", "");
+    $appdata.set("modules.media.loading", false);
+  }
+
+  $appdata.set("modules.media.config.mode", mode);
+},
 
   close(force = false) {
     //Se force for true, fechamento forçado. Sem diálogo de confirmação!
@@ -433,20 +390,11 @@ export default {
   },
   pause(bool = true, callback) {
     const audio = this.getElement();
-    const fade_audio = $userdata.get("modules.media.fade_audio");
 
     if (bool) {
-      if (fade_audio) {
-        this.fadeOutAudio(() => {
-          audio.pause();
-          $appdata.set("modules.media.config.is_paused", bool);
-          if (callback) callback();
-        });
-      } else {
-        audio.pause();
-        $appdata.set("modules.media.config.is_paused", bool);
-        if (callback) callback();
-      }
+      audio.pause();
+      $appdata.set("modules.media.config.is_paused", bool);
+      if (callback) callback();
     } else {
       const self = this;
       audio.play().catch((e) => {
@@ -462,54 +410,11 @@ export default {
           },
         );
       });
-      if (fade_audio) {
-        this.fadeInAudio(() => {
-          if (callback) callback();
-        });
-      } else {
-        const volume = $appdata.get("modules.media.config.volume") / 100;
-        audio.volume = volume;
-        if (callback) callback();
-      }
+      const volume = $appdata.get("modules.media.config.volume") / 100;
+      audio.volume = volume;
+      if (callback) callback();
       $appdata.set("modules.media.config.is_paused", bool);
     }
-  },
-
-  fadeInAudio(callback) {
-    const audio = this.getElement();
-
-    $appdata.set("modules.media.config.is_fading", true);
-    const max_volume = $appdata.get("modules.media.config.volume") / 100;
-
-    const fadeOut = setInterval(() => {
-      if (audio.volume < max_volume) {
-        audio.volume = Math.min(audio.volume + 0.05, max_volume); // Incrementa suavemente.
-      } else {
-        $appdata.set("modules.media.config.is_fading", false);
-        clearInterval(fadeOut);
-        if (callback) callback();
-      }
-    }, 60);
-  },
-  fadeOutAudio(callback) {
-    const audio = this.getElement();
-
-    if (audio.paused) {
-      if (callback) callback();
-      return;
-    }
-
-    $appdata.set("modules.media.config.is_fading", true);
-
-    const fadeOut = setInterval(() => {
-      if (audio.volume > 0) {
-        audio.volume = Math.max(audio.volume - 0.05, 0);
-      } else {
-        $appdata.set("modules.media.config.is_fading", false);
-        clearInterval(fadeOut);
-        if (callback) callback();
-      }
-    }, 60);
   },
 
   firstSlide() {

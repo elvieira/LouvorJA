@@ -17,14 +17,17 @@ export default {
       $media.minimize();
     }
 
-    // Fechar outros módulos abertos para evitar sobreposição (mantendo comportamento de tela única)
     const modules = $appdata.get("modules") || {};
-    for (const key of Object.keys(modules)) {
-      if (key !== id && modules[key].show) {
-        $appdata.set(`modules.${key}.show`, false);
-        // Remove da TrayArea (exceto home que não vai para tray)
-        if (key !== "home") {
-          this.removeTray(key);
+    const moduleToOpen = modules[id];
+    const isOverlay = moduleToOpen?.manifest?.overlay === true;
+
+    if (!isOverlay) {
+      for (const key of Object.keys(modules)) {
+        if (key !== id && modules[key].show) {
+          $appdata.set(`modules.${key}.show`, false);
+          if (key !== "home") {
+            this.removeTray(key);
+          }
         }
       }
     }

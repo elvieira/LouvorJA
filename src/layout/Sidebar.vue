@@ -110,6 +110,15 @@
 
     <!-- Footer Navigation -->
     <div class="sidebar-footer">
+      <div v-if="isDesktop" class="nav-item" :class="{ active: currentModule === 'sync' }">
+        <a href="#" class="nav-link" @click.prevent="openModule('sync')">
+          <v-icon class="nav-icon" :color="currentModule === 'sync' ? '' : 'primary'">
+            mdi-library
+          </v-icon>
+          <span class="nav-text font-weight-bold" :style="{ color: currentModule === 'sync' ? '' : 'var(--accent-blue)' }">Biblioteca Local</span>
+        </a>
+      </div>
+      
       <div class="nav-item" :class="{ active: currentRoute === 'help' }">
         <a href="#" class="nav-link" @click.prevent="navigateTo('help')">
           <v-icon class="nav-icon">
@@ -133,6 +142,8 @@
 <script>
 export default {
   name: "DashboardSidebar",
+  components: {
+  },
   props: {
     modelValue: {
       type: Boolean,
@@ -158,6 +169,9 @@ export default {
     isMobile() {
       return this.windowWidth <= 1024;
     },
+    isDesktop() {
+      return window.electronAPI && window.electronAPI.isElectron;
+    },
     currentRoute() {
       return this.$route.name?.toLowerCase() || "";
     },
@@ -166,8 +180,13 @@ export default {
       const modules = this.$appdata.get("modules") || {};
       const overlays = ["album", "media", "lyric"];
       
+      // Se a sincronização (que é um overlay visual) estiver aberta, ela ganha prioridade na barra lateral
+      if (modules['sync']?.show) {
+        return 'sync';
+      }
+      
       for (const [key, module] of Object.entries(modules)) {
-        if (module.show && !overlays.includes(key)) {
+        if (module.show && !overlays.includes(key) && key !== 'sync') {
           return key;
         }
       }
@@ -237,6 +256,7 @@ export default {
     closeSidebar() {
       this.isOpen = false;
     },
+
     navigateTo(route) {
       if (route === "home") {
         this.$modules.open("home");

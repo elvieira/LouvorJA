@@ -1,4 +1,5 @@
 <template>
+  <FirstBootLoader />
   <AppLoading />
   <v-btn
     v-show="false"
@@ -12,11 +13,13 @@
 
 <script>
 import AppLoading from "@/layout/Loading.vue";
+import FirstBootLoader from "@/layout/FirstBootLoader.vue";
 
 export default {
   name: "App",
   components: {
     AppLoading,
+    FirstBootLoader,
   },
   methods: {
     handleKeydown() {

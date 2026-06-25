@@ -19,7 +19,8 @@ export default {
   },
 
   toNumber(time) {
-    const parts = time.split(":").map(Number);
+    if (!time) return 0;
+    const parts = time.toString().split(":").map(Number);
 
     const hours = parts[0] || 0;
     const minutes = parts[1] || 0;
