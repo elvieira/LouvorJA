@@ -1,6 +1,11 @@
 <template>
-  <v-app-bar id="header-bar" tile flat color="primary">
-    <template v-slot:prepend>
+  <v-app-bar
+    id="header-bar"
+    tile
+    flat
+    color="primary"
+  >
+    <template #prepend>
       <v-app-bar-nav-icon @click="$appdata.toogle('menu.show')" />
     </template>
     <v-app-bar-title>{{ $t("app.name") }}</v-app-bar-title>

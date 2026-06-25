@@ -1,24 +1,24 @@
 <template>
-  <l-window
+  <LWindow
     v-model="module.show"
     :title="t('title')"
     :icon="module.icon"
     closable
     minimizable
     compact
+    :index="data.count"
     @close="
       close();
       $modules.close(module_id);
     "
     @minimize="$modules.minimize(module_id)"
     @scroll="onScroll"
-    @hasScroll="hasScroll"
-    :index="data.count"
+    @has-scroll="hasScroll"
   >
-    <template v-slot:header>
+    <template #header>
       <div :class="classform.group">
         <div :class="classform.group_item" style="flex-basis: 600px">
-          <l-search
+          <LSearch
             v-model="search"
             :label="t('inputs.search')"
             :error="data.filter_count <= 0"
@@ -27,12 +27,12 @@
           />
         </div>
         <div :class="classform.group_item" style="flex-basis: 250px">
-          <l-checkbox v-model="search_name" :label="t('inputs.filter_name')" />
-          <l-checkbox
+          <LCheckbox v-model="search_name" :label="t('inputs.filter_name')" />
+          <LCheckbox
             v-model="search_lyric"
             :label="t('inputs.filter_lyric')"
           />
-          <l-checkbox
+          <LCheckbox
             v-model="search_album"
             :label="t('inputs.filter_album')"
           />
@@ -40,9 +40,9 @@
         <v-divider vertical />
         <div :class="classform.group_item" style="flex-basis: 200px">
           <div>
-            <l-checkbox
-              switch
+            <LCheckbox
               v-model="filter_instrumental_music"
+              switch
               :label="t('inputs.filter_instrumental')"
             />
           </div>
@@ -50,7 +50,7 @@
       </div>
     </template>
 
-    <l-table
+    <LTable
       v-model="data"
       :search="search"
       :letter="letter"
@@ -67,16 +67,25 @@
     >
       <thead>
         <tr>
-          <th class="text-left">{{ t("table.music_name") }}</th>
+          <th class="text-left">
+            {{ t("table.music_name") }}
+          </th>
           <th v-if="!compact" class="text-left">
             {{ t("table.album_name") }}
           </th>
-          <th class="text-right">{{ t("table.duration") }}</th>
+          <th class="text-right">
+            {{ t("table.duration") }}
+          </th>
           <th />
         </tr>
       </thead>
       <tbody>
-        <tr v-for="item in data.data" :key="item.id_music" @click="$media.open({ id_music: item.id_music, mode: 'audio' })" style="cursor: pointer;">
+        <tr
+          v-for="item in data.data"
+          :key="item.id_music"
+          style="cursor: pointer;"
+          @click="$media.open({ id_music: item.id_music, mode: 'audio' })"
+        >
           <td>
             {{ item.name }}
             <div v-if="compact" class="pb-1">
@@ -102,10 +111,12 @@
               {{ album.name }}
             </v-chip>
           </td>
-          <td class="text-right">{{ $datetime.shortTime(item.duration) }}</td>
+          <td class="text-right">
+            {{ $datetime.shortTime(item.duration) }}
+          </td>
           <td>
             <div class="d-flex justify-end">
-              <l-music-menu-table
+              <LMusicMenuTable
                 :id_music="item.id_music"
                 :has_instrumental_music="item.has_instrumental_music"
               />
@@ -113,7 +124,7 @@
           </td>
         </tr>
       </tbody>
-    </l-table>
+    </LTable>
 
     <v-alert
       v-if="search && data.filter_count <= 0"
@@ -124,12 +135,12 @@
       class="ma-2"
     />
 
-    <template v-slot:footer>
+    <template #footer>
       <div class="w-100">
-        <l-letter-paginate v-model="letter" />
+        <LLetterPaginate v-model="letter" />
       </div>
     </template>
-  </l-window>
+  </LWindow>
 </template>
 
 <script>
@@ -208,17 +219,17 @@ export default {
     filter_instrumental_music: {
       get() {
         return this.$userdata.get(
-          `modules.${this.module_id}.filter.instrumental_music`
+          `modules.${this.module_id}.filter.instrumental_music`,
         );
       },
       set(value) {
         this.$userdata.set(
           `modules.${this.module_id}.filter.instrumental_music`,
-          value
+          value,
         );
       },
     },
-    compact: function () {
+    compact() {
       return this.$vuetify.display.width <= 800;
     },
   },

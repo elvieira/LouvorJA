@@ -1,9 +1,9 @@
 <template>
   <div v-if="import_modules">
     <component
+      :is="loadModuleComponent(module)"
       v-for="module in modules"
       :key="module.id"
-      :is="loadModuleComponent(module)"
     />
   </div>
 </template>
@@ -45,9 +45,9 @@ export default {
                 error: e,
               });
 
-              return null
+              return null;
             });
-          }
+          },
         );
       });
 

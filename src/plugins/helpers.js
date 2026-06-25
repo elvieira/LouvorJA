@@ -13,9 +13,10 @@ import Media from "@/helpers/Media";
 import Alert from "@/helpers/Alert";
 import Popup from "@/helpers/Popup";
 import Database from "@/helpers/Database";
+import History from "@/helpers/History";
 
 // Símbolos de injeção (garantem unicidade e evitam colisões)
-export const HelpersSymbol = Symbol('helpers');
+export const HelpersSymbol = Symbol("helpers");
 
 // Plugin de instalação
 export default {
@@ -34,6 +35,7 @@ export default {
       alert: Alert,
       popup: Popup,
       database: Database,
+      history: History,
     };
 
     // Fornecer helpers globalmente
@@ -56,5 +58,6 @@ export default {
     app.config.globalProperties.$alert = Alert;
     app.config.globalProperties.$popup = Popup;
     app.config.globalProperties.$database = Database;
+    app.config.globalProperties.$history = History;
   },
 };

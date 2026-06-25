@@ -1,8 +1,8 @@
 <template>
   <v-menu>
-    <template v-slot:activator="{ props }">
+    <template #activator="{ props }">
       <v-btn v-bind="props" slim>
-        <country-flag
+        <CountryFlag
           v-if="current_language"
           :country="languages[current_language].flag"
           style="margin: 0; padding: 0"
@@ -15,8 +15,8 @@
         :key="key"
         @click="changeLanguage(key)"
       >
-        <template v-slot:prepend>
-          <country-flag
+        <template #prepend>
+          <CountryFlag
             :country="language.flag"
             style="margin: 0; padding: 0"
           />

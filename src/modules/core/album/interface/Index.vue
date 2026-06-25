@@ -10,12 +10,19 @@
           size="small"
           style="margin-right: 16px; color: var(--sidebar-text-secondary);"
           @click="$modules.close(module_id)"
-        ></v-btn>
+        />
         
         <div class="d-flex align-center mr-auto">
           <div class="album-cover-box d-flex align-center justify-center mr-4" :style="module?.data?.color ? `background: ${module.data.color}` : ''" style="width: 48px; height: 48px; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);">
-             <v-img v-if="module?.data?.url_image" :src="$path.file(module.data.url_image)" cover style="width: 100%; height: 100%;" />
-             <v-icon v-else size="24" color="white">mdi-album</v-icon>
+            <v-img
+              v-if="module?.data?.url_image"
+              :src="$path.file(module.data.url_image)"
+              cover
+              style="width: 100%; height: 100%;"
+            />
+            <v-icon v-else size="24" color="white">
+              mdi-album
+            </v-icon>
           </div>
           <h2 class="section-title mb-0" style="color: var(--sidebar-text); font-size: 24px; font-weight: 600; line-height: 1;">
             {{ module?.data?.name }}
@@ -26,16 +33,22 @@
       <!-- Conteúdo Principal da Listagem -->
       <div class="content-main d-flex flex-column flex-grow-1" style="overflow: hidden; padding-top: 16px;">
         <v-progress-linear
+          v-if="loading"
           :color="$theme.primary()"
           indeterminate
-          v-if="loading"
         />
 
-        <div class="music-list flex-grow-1 d-flex flex-column" style="background: transparent; box-shadow: none; min-height: 0;" v-if="!loading">
+        <div v-if="!loading" class="music-list flex-grow-1 d-flex flex-column" style="background: transparent; box-shadow: none; min-height: 0;">
           <!-- Tabela de músicas do álbum com o mesmo estilo dos hinários -->
           <v-table class="modern-hymnal-table flex-grow-1 d-flex flex-column" style="min-height: 0; background: transparent;">
             <tbody class="music-list-container">
-              <tr v-for="item in module.data.musics" :key="item.id_music" class="music-item" @click="$media.open({ id_music: item.id_music, mode: 'audio' })" style="cursor: pointer;">
+              <tr
+                v-for="item in module.data.musics"
+                :key="item.id_music"
+                class="music-item"
+                style="cursor: pointer;"
+                @click="$media.open({ id_music: item.id_music, mode: 'audio' })"
+              >
                 <td class="music-number text-center">
                   {{ item.track }}
                 </td>
@@ -44,7 +57,9 @@
                     {{ item.name }}
                   </h4>
                 </td>
-                <td class="music-duration">{{ $datetime.shortTime(item.duration) }}</td>
+                <td class="music-duration">
+                  {{ $datetime.shortTime(item.duration) }}
+                </td>
                 <td class="music-actions">
                   <div class="d-flex justify-end">
                     <MusicMenuTable
@@ -57,7 +72,6 @@
             </tbody>
           </v-table>
         </div>
-        
       </div>
     </div>
   </v-slide-y-reverse-transition>
@@ -97,9 +111,9 @@ export default {
     },
     /* METHODS OBRIGATÓRIOS - FIM */
     toggleSidebar() {
-      const mainEl = document.querySelector('.main-container');
+      const mainEl = document.querySelector(".main-container");
       if (mainEl) {
-        mainEl.dispatchEvent(new CustomEvent('toggle-sidebar'));
+        mainEl.dispatchEvent(new CustomEvent("toggle-sidebar"));
       }
     },
   },

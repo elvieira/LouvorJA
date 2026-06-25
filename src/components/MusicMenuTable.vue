@@ -8,8 +8,8 @@
       :color="color ? color : $theme.primary()"
       density="compact"
       class="mx-1"
-      @click.stop="btn.click"
       icon
+      @click.stop="btn.click"
     >
       <v-icon>{{ btn.icon }}</v-icon>
       <v-tooltip activator="parent" location="top" open-delay="300">

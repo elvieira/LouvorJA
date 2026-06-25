@@ -15,8 +15,8 @@ export default {
     const is_dev = $appdata.get("is_dev");
     $appdata.set("is_dev", !is_dev);
     $alert.info(
-      "messages." +
-        (is_dev ? "developer_mode_disabled" : "developer_mode_enabled")
+      `messages.${ 
+        is_dev ? "developer_mode_disabled" : "developer_mode_enabled"}`,
     );
   },
 };

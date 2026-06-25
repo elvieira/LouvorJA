@@ -2,8 +2,8 @@
   <AppLoading />
   <v-btn
     v-show="false"
-    @shortkey="handleKeydown()"
     v-shortkey="['ctrl', 'alt', 'd']"
+    @shortkey="handleKeydown()"
   />
   <v-app id="app-container">
     <router-view />

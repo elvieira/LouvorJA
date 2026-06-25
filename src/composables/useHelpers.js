@@ -1,8 +1,8 @@
 // @/composables/useHelpers.js
 // Composable para acessar helpers em componentes usando Composition API
 
-import { inject } from 'vue';
-import { HelpersSymbol } from '@/plugins/helpers';
+import { inject } from "vue";
+import { HelpersSymbol } from "@/plugins/helpers";
 
 /**
  * Composable para acessar todos os helpers da aplicação
@@ -28,7 +28,7 @@ export function useHelpers() {
   const helpers = inject(HelpersSymbol);
   
   if (!helpers) {
-    console.warn('Helpers não encontrados. Certifique-se de que o plugin está instalado.');
+    console.warn("Helpers não encontrados. Certifique-se de que o plugin está instalado.");
     return {};
   }
   

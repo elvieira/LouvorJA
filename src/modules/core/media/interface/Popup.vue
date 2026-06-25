@@ -1,5 +1,5 @@
 <template>
-  <l-slide
+  <LSlide
     v-if="slide"
     :slide_number="config.slide_index"
     :cover="slide.cover == true"

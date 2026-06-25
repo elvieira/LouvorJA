@@ -1,6 +1,11 @@
 <template>
   <div class="apps">
-    <v-expansion-panels v-model="panels_active" flat multiple :rounded="false">
+    <v-expansion-panels
+      v-model="panels_active"
+      flat
+      multiple
+      :rounded="false"
+    >
       <v-expansion-panel
         v-for="(group, group_key) in module_group"
         :key="group_key"
@@ -29,12 +34,12 @@
                     module.invalid
                       ? 'error'
                       : module.development
-                      ? 'warning'
-                      : $theme.primary()
+                        ? 'warning'
+                        : $theme.primary()
                   "
-                  @click="$modules.open(module_key)"
                   class="ma-2"
                   :width="130"
+                  @click="$modules.open(module_key)"
                 >
                   <div
                     class="d-flex flex-column align-center justify-center h-100"
@@ -70,11 +75,6 @@ export default {
     selectedTheme: "",
     themes: [],
   }),
-  watch: {
-    module_group() {
-      this.panels_active = Object.keys(this.module_group).map((_, key) => key);
-    },
-  },
   computed: {
     module_group() {
       return Object.entries(this.$modules.getGroups())
@@ -105,6 +105,11 @@ export default {
       },
     },
   },
+  watch: {
+    module_group() {
+      this.panels_active = Object.keys(this.module_group).map((_, key) => key);
+    },
+  },
   methods: {
     sortModules(modules) {
       //Ordena pelo idioma selecionado
@@ -114,7 +119,7 @@ export default {
       return Object.keys(modules).filter((key) =>
         !this.is_dev
           ? !modules[key].development || modules[key].development === false
-          : true
+          : true,
       ).length;
     },
   },

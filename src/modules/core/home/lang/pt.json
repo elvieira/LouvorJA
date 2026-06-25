@@ -4,8 +4,6 @@
     "recent_collections": "Coletâneas recentes",
     "top_songs": "Músicas mais tocadas",
     "songs": "músicas",
-    "feature_coming_soon": "Funcionalidade em desenvolvimento",
-    "sample_song_1": "Mais Perto Quero Estar",
-    "sample_song_2": "Sublime Amor",
-    "sample_song_3": "Jesus, Meu Guia É"
+    "no_songs_played": "Nenhuma música tocada ainda. Abra uma coletânea e toque uma música!",
+    "no_collections_played": "Nenhuma coletânea acessada. Toque uma música para registrá-la aqui!"
 }

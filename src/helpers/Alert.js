@@ -17,14 +17,14 @@ export default {
       "alert.translate",
       data.translate == null || data.translate == undefined
         ? true
-        : data.translate
+        : data.translate,
     );
     $appdata.set(
       "alert.buttons",
-      data.buttons || [{ text: "alert.close", color: "error", value: "close" }]
+      data.buttons || [{ text: "alert.close", color: "error", value: "close" }],
     );
 
-    let tmr = setInterval(function () {
+    const tmr = setInterval(() => {
       if (!$appdata.get("alert.show")) {
         clearInterval(tmr);
         callback($appdata.get("alert.value"));
@@ -45,7 +45,7 @@ export default {
       },
       (resp, ret) => {
         callback(resp, ret);
-      }
+      },
     );
   },
 
@@ -59,7 +59,7 @@ export default {
       },
       (resp, ret) => {
         callback(resp, ret);
-      }
+      },
     );
   },
 
@@ -73,12 +73,12 @@ export default {
       },
       (resp, ret) => {
         callback(resp, ret);
-      }
+      },
     );
   },
 
   getData(data) {
-    if (typeof data == "string") {
+    if (typeof data === "string") {
       data = { text: data };
     } else if (Array.isArray(data)) {
       data = {

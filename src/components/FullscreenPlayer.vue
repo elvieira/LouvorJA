@@ -11,7 +11,7 @@
         @mouseenter="mouseEnter"
         @mouseleave="mouseLeave"
       >
-        <l-player location="fullscreen" />
+        <LPlayer location="fullscreen" />
       </div>
     </transition>
   </div>
@@ -31,6 +31,9 @@ export default {
       start_timer: true,
       timeout: null,
     };
+  },
+  beforeUnmount() {
+    clearTimeout(this.timeout); // Limpa o temporizador ao destruir o componente
   },
   methods: {
     mouseMove() {
@@ -58,9 +61,6 @@ export default {
         this.visible = false; // Oculta a div filho após um tempo
       }, 1000);
     },
-  },
-  beforeUnmount() {
-    clearTimeout(this.timeout); // Limpa o temporizador ao destruir o componente
   },
 };
 </script>

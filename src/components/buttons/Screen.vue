@@ -28,21 +28,21 @@ export default {
     },
   },
   computed: {
-    is_mobile: function () {
+    is_mobile() {
       return this.$appdata.get("is_mobile");
     },
-    is_popup_opened: function () {
+    is_popup_opened() {
       return !!this.$appdata.get("popup");
     },
-    popup_module: function () {
+    popup_module() {
       return this.$appdata.get("popup_module");
     },
-    is_selected: function () {
+    is_selected() {
       return this.is_popup_opened && this.popup_module == this.module;
     },
   },
   methods: {
-    popup: function () {
+    popup() {
       if (this.is_selected) {
         this.$popup.exit();
       } else {

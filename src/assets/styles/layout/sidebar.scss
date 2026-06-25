@@ -9,7 +9,7 @@
   height: 100vh;
   left: 0;
   top: 0;
-  z-index: 1000;
+  z-index: 9999;
   overflow-y: auto;
   border-right: 1px solid var(--sidebar-border);
   box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
@@ -233,7 +233,7 @@
   width: 100vw;
   height: 100vh;
   background: rgba(0, 0, 0, 0.5);
-  z-index: 999;
+  z-index: 9998;
 }
 
 // Responsividade da sidebar

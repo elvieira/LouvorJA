@@ -48,7 +48,7 @@ export default {
     }
 
     current[keys[keys.length - 1]] = current[keys[keys.length - 1]].filter(
-      (item) => item !== value
+      (item) => item !== value,
     );
   },
 };

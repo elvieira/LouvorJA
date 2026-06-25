@@ -2,7 +2,7 @@
   <v-dialog v-model="show" max-width="320" persistent>
     <v-list color="primary" elevation="12" rounded="lg">
       <v-list-item prepend-icon="$louvorja">
-        <template v-slot:prepend>
+        <template #prepend>
           <div class="pe-4">
             <img src="/ico/favicon.svg" :width="32" />
           </div>
@@ -10,7 +10,7 @@
 
         {{ $t("alert.wait") }}
 
-        <template v-slot:append>
+        <template #append>
           <v-progress-circular
             color="primary"
             indeterminate="disable-shrink"

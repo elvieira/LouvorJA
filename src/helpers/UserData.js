@@ -15,7 +15,7 @@ export default {
   },
   load() {
     $dev.write("carregando dados");
-    let data = $appdata.flatten($storage.get("user_data"));
+    const data = $appdata.flatten($storage.get("user_data"));
 
     Object.keys(data).map((item) => {
       $appdata.set(`user_data.${item}`, data[item]);

@@ -1,9 +1,9 @@
 <template>
   <div ref="container" class="w-100 h-100">
     <transition
-      name="fade"
       v-for="(slide, index) in slides.slice().reverse()"
       :key="index"
+      name="fade"
     >
       <div
         v-if="!slide.destroy"
@@ -17,13 +17,13 @@
           <div class="d-flex flex-column align-center justify-center w-100">
             <div
               v-if="slide.aux_text"
-              v-html="slide.aux_text"
               :style="style_aux_text(slide)"
+              v-html="slide.aux_text"
             />
             <div
               v-if="slide.text"
-              v-html="slide.text"
               :style="style_text(slide)"
+              v-html="slide.text"
             />
           </div>
         </div>
@@ -70,18 +70,26 @@ export default {
     },
     screenSize() {
       const self = this;
-      setTimeout(function () {
+      setTimeout(() => {
         self.windowResize();
       }, 100);
     },
+  },
+  mounted() {
+    this.setSlide();
+    this.windowResize();
+    window.addEventListener("resize", this.windowResize);
+  },
+  unmounted() {
+    window.removeEventListener("resize", this.windowResize);
   },
   methods: {
     setSlide() {
       if (
         this.$string.clean(this.slides[1].text) ==
-          this.$string.clean(this.props_slide.text) &&
+        this.$string.clean(this.props_slide.text) &&
         this.$string.clean(this.slides[1].aux_text) ==
-          this.$string.clean(this.props_slide.aux_text) &&
+        this.$string.clean(this.props_slide.aux_text) &&
         this.slides[1].image == this.props_slide.image &&
         this.slides[1].cover == this.props_slide.cover
       ) {
@@ -132,18 +140,18 @@ export default {
           textShadow: "0px 4px 16px rgba(0,0,0,0.8)",
           textAlign: "center",
         };
-      } else {
-        return {
-          fontSize: `${this.fontSizePc(4)}px`,
-          color: "rgba(255, 255, 255, 0.8)",
-          textTransform: "uppercase",
-          fontWeight: "500",
-          letterSpacing: "0.1em",
-          marginBottom: `${this.fontSizePc(2)}px`,
-          textShadow: "0px 1px 4px rgba(0,0,0,0.5)",
-          textAlign: "center",
-        };
-      }
+      } 
+      return {
+        fontSize: `${this.fontSizePc(4)}px`,
+        color: "rgba(255, 255, 255, 0.8)",
+        textTransform: "uppercase",
+        fontWeight: "500",
+        letterSpacing: "0.1em",
+        marginBottom: `${this.fontSizePc(2)}px`,
+        textShadow: "0px 1px 4px rgba(0,0,0,0.5)",
+        textAlign: "center",
+      };
+      
     },
     style_text(slide) {
       if (slide.cover) {
@@ -157,23 +165,23 @@ export default {
           textShadow: "0px 10px 30px rgba(0, 0, 0, 0.9), 0px 2px 6px rgba(0, 0, 0, 0.7)", // Sombra dupla para super destaque
           lineHeight: "1.1",
         };
-      } else {
-        return {
-          backgroundColor: "rgba(0, 0, 0, 0.25)",
-          border: `${Math.max(2, this.fontSizePc(0.4))}px solid rgba(255, 255, 255, 0.85)`,
-          padding: `${this.fontSizePc(5)}px ${this.fontSizePc(8)}px`,
-          textAlign: "center",
-          textTransform: "uppercase",
-          fontSize: `${this.fontSizePc(15)}px`, // Letra um pouco maior (era 12)
-          color: this.repeat ? "#f6c32a" : "#ffffff",
-          fontWeight: "700",
-          letterSpacing: "0.03em",
-          lineHeight: "1.4",
-          backdropFilter: "blur(8px)",
-          WebkitBackdropFilter: "blur(8px)",
-          boxShadow: "0px 10px 30px rgba(0, 0, 0, 0.4)",
-        };
-      }
+      } 
+      return {
+        backgroundColor: "rgba(0, 0, 0, 0.25)",
+        border: `${Math.max(2, this.fontSizePc(0.4))}px solid rgba(255, 255, 255, 0.85)`,
+        padding: `${this.fontSizePc(5)}px ${this.fontSizePc(8)}px`,
+        textAlign: "center",
+        textTransform: "uppercase",
+        fontSize: `${this.fontSizePc(15)}px`, // Letra um pouco maior (era 12)
+        color: this.repeat ? "#f6c32a" : "#ffffff",
+        fontWeight: "700",
+        letterSpacing: "0.03em",
+        lineHeight: "1.4",
+        backdropFilter: "blur(8px)",
+        WebkitBackdropFilter: "blur(8px)",
+        boxShadow: "0px 10px 30px rgba(0, 0, 0, 0.4)",
+      };
+      
     },
     fontSizePc(pc) {
       const v = Math.min(this.width, this.height);
@@ -187,20 +195,12 @@ export default {
 
         if (this.width <= 0 || this.height <= 0) {
           const self = this;
-          setTimeout(function () {
+          setTimeout(() => {
             self.windowResize();
           }, 100);
         }
       }
     },
-  },
-  mounted() {
-    this.setSlide();
-    this.windowResize();
-    window.addEventListener("resize", this.windowResize);
-  },
-  unmounted() {
-    window.removeEventListener("resize", this.windowResize);
   },
 };
 </script>

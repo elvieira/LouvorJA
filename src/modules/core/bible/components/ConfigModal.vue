@@ -5,15 +5,22 @@
         <v-toolbar-title class="font-weight-bold" style="color: var(--sidebar-text);">
           Personalização da Projeção
         </v-toolbar-title>
-        <v-spacer></v-spacer>
-        <v-btn icon="mdi-close" variant="text" @click="close" color="var(--sidebar-text-secondary)"></v-btn>
+        <v-spacer />
+        <v-btn
+          icon="mdi-close"
+          variant="text"
+          color="var(--sidebar-text-secondary)"
+          @click="close"
+        />
       </v-toolbar>
 
-      <v-divider class="mt-2 mb-4"></v-divider>
+      <v-divider class="mt-2 mb-4" />
 
       <v-card-text class="pa-4 pt-0" style="color: var(--sidebar-text);">
         <!-- Fundo -->
-        <div class="text-subtitle-1 font-weight-bold mb-2">Fundo da Projeção</div>
+        <div class="text-subtitle-1 font-weight-bold mb-2">
+          Fundo da Projeção
+        </div>
         <div class="d-flex align-center gap-4 mb-6">
           <div class="d-flex flex-column" style="width: 100%;">
             <span class="text-caption mb-1">Cor do Fundo</span>
@@ -26,12 +33,14 @@
               swatches-max-height="100"
               class="elevation-0"
               style="width: 100%; max-width: 100%; border: 1px solid rgba(0,0,0,0.1); border-radius: 12px;"
-            ></v-color-picker>
+            />
           </div>
         </div>
 
         <!-- Texto Principal -->
-        <div class="text-subtitle-1 font-weight-bold mb-2 mt-4">Texto Principal</div>
+        <div class="text-subtitle-1 font-weight-bold mb-2 mt-4">
+          Texto Principal
+        </div>
         <div class="d-flex align-center gap-4 mb-6">
           <div style="flex: 1;">
             <span class="text-caption mb-1">Tamanho da Fonte (%)</span>
@@ -44,16 +53,18 @@
               density="compact"
               hide-details
               color="primary"
-            ></v-slider>
+            />
           </div>
           <div style="width: 100px;">
             <span class="text-caption mb-1">Cor</span>
-            <input type="color" v-model="localConfig.color" style="width: 100%; height: 36px; border: none; border-radius: 8px; cursor: pointer; background: transparent; padding: 0;" />
+            <input v-model="localConfig.color" type="color" style="width: 100%; height: 36px; border: none; border-radius: 8px; cursor: pointer; background: transparent; padding: 0;" />
           </div>
         </div>
 
         <!-- Alinhamento -->
-        <div class="text-subtitle-1 font-weight-bold mb-2">Alinhamento</div>
+        <div class="text-subtitle-1 font-weight-bold mb-2">
+          Alinhamento
+        </div>
         <div class="mb-6">
           <v-btn-toggle
             v-model="localConfig.align"
@@ -63,14 +74,22 @@
             mandatory
             class="w-100"
           >
-            <v-btn value="text-left" class="flex-grow-1"><v-icon>mdi-format-align-left</v-icon></v-btn>
-            <v-btn value="text-center" class="flex-grow-1"><v-icon>mdi-format-align-center</v-icon></v-btn>
-            <v-btn value="text-right" class="flex-grow-1"><v-icon>mdi-format-align-right</v-icon></v-btn>
+            <v-btn value="text-left" class="flex-grow-1">
+              <v-icon>mdi-format-align-left</v-icon>
+            </v-btn>
+            <v-btn value="text-center" class="flex-grow-1">
+              <v-icon>mdi-format-align-center</v-icon>
+            </v-btn>
+            <v-btn value="text-right" class="flex-grow-1">
+              <v-icon>mdi-format-align-right</v-icon>
+            </v-btn>
           </v-btn-toggle>
         </div>
 
         <!-- Referência Scriptural -->
-        <div class="text-subtitle-1 font-weight-bold mb-2">Referência (Ex: Números 28:3)</div>
+        <div class="text-subtitle-1 font-weight-bold mb-2">
+          Referência (Ex: Números 28:3)
+        </div>
         <div class="d-flex align-center gap-4 mb-4">
           <div style="flex: 1;">
             <span class="text-caption mb-1">Tamanho da Fonte (%)</span>
@@ -83,20 +102,29 @@
               density="compact"
               hide-details
               color="primary"
-            ></v-slider>
+            />
           </div>
           <div style="width: 100px;">
             <span class="text-caption mb-1">Cor</span>
-            <input type="color" v-model="localConfig.refColor" style="width: 100%; height: 36px; border: none; border-radius: 8px; cursor: pointer; background: transparent; padding: 0;" />
+            <input v-model="localConfig.refColor" type="color" style="width: 100%; height: 36px; border: none; border-radius: 8px; cursor: pointer; background: transparent; padding: 0;" />
           </div>
         </div>
       </v-card-text>
 
-      <v-divider></v-divider>
+      <v-divider />
 
       <v-card-actions class="pa-4 d-flex justify-space-between">
-        <v-btn variant="text" color="error" @click="resetToDefault">Restaurar Padrão</v-btn>
-        <v-btn variant="flat" color="primary" @click="saveAndClose" class="px-6 rounded-lg">Aplicar</v-btn>
+        <v-btn variant="text" color="error" @click="resetToDefault">
+          Restaurar Padrão
+        </v-btn>
+        <v-btn
+          variant="flat"
+          color="primary"
+          class="px-6 rounded-lg"
+          @click="saveAndClose"
+        >
+          Aplicar
+        </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -153,6 +181,9 @@ export default {
       deep: true,
     },
   },
+  mounted() {
+    this.loadConfig();
+  },
   methods: {
     loadConfig() {
       const savedConfig = this.$appdata.get("modules.bible.config");
@@ -173,9 +204,6 @@ export default {
     close() {
       this.visible = false;
     },
-  },
-  mounted() {
-    this.loadConfig();
   },
 };
 </script>

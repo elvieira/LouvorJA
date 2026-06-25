@@ -7,7 +7,7 @@
         
         <div class="d-flex align-center mr-auto">
           <div class="module-icon-box d-flex align-center justify-center mr-4">
-             <v-icon :icon="module.icon" size="24" />
+            <v-icon :icon="module.icon" size="24" />
           </div>
           <h2 class="section-title mb-0" style="color: var(--sidebar-text); font-size: 24px; font-weight: 600; line-height: 1;">
             {{ t('title') }}
@@ -32,7 +32,7 @@
       <!-- Conteúdo Principal da Listagem -->
       <div class="content-main d-flex flex-column flex-grow-1" style="overflow: hidden; padding-top: 16px;">
         <div class="music-list flex-grow-1 d-flex flex-column" style="background: transparent; box-shadow: none; min-height: 0;">
-          <l-table
+          <LTable
             v-model="data"
             :search="search"
             letter=""
@@ -48,7 +48,13 @@
             style="min-height: 0;"
           >
             <tbody class="music-list-container">
-              <tr v-for="item in data.data" :key="item.id_music" class="music-item" @click="$media.open({ id_music: item.id_music, mode: 'audio' })" style="cursor: pointer;">
+              <tr
+                v-for="item in data.data"
+                :key="item.id_music"
+                class="music-item"
+                style="cursor: pointer;"
+                @click="$media.open({ id_music: item.id_music, mode: 'audio' })"
+              >
                 <td class="music-number text-center">
                   {{ item.track }}
                 </td>
@@ -57,10 +63,12 @@
                     {{ item.name }}
                   </h4>
                 </td>
-                <td class="music-duration">{{ $datetime.shortTime(item.duration) }}</td>
+                <td class="music-duration">
+                  {{ $datetime.shortTime(item.duration) }}
+                </td>
                 <td class="music-actions">
                   <div class="d-flex justify-end">
-                    <l-music-menu-table
+                    <LMusicMenuTable
                       :id_music="item.id_music"
                       :has_instrumental_music="item.has_instrumental_music"
                     />
@@ -68,7 +76,7 @@
                 </td>
               </tr>
             </tbody>
-          </l-table>
+          </LTable>
         </div>
 
         <v-alert
@@ -79,7 +87,6 @@
           border="start"
           class="ma-2 mx-8"
         />
-
       </div>
     </div>
   </v-slide-y-reverse-transition>
@@ -124,7 +131,7 @@ export default {
           "flex-shrink-1 flex-grow-1 d-flex flex-wrap justify-space-around",
       };
     },
-    compact: function () {
+    compact() {
       return this.$vuetify.display.width <= 800;
     },
   },
@@ -136,9 +143,9 @@ export default {
     },
     /* METHODS OBRIGATÓRIOS - FIM */
     toggleSidebar() {
-      const mainEl = document.querySelector('.main-container');
+      const mainEl = document.querySelector(".main-container");
       if (mainEl) {
-        mainEl.dispatchEvent(new CustomEvent('toggle-sidebar'));
+        mainEl.dispatchEvent(new CustomEvent("toggle-sidebar"));
       }
     },
 

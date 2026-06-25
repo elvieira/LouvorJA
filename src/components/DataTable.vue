@@ -1,6 +1,11 @@
 <template>
-  <v-table fixed-header loading density="compact" class="__table-data">
-    <template v-slot:bottom>
+  <v-table
+    fixed-header
+    loading
+    density="compact"
+    class="__table-data"
+  >
+    <template #bottom>
       <v-progress-linear
         v-if="loading"
         :color="$theme.primary()"
@@ -75,6 +80,9 @@ export default {
       }
     },
   },
+  async mounted() {
+    await this.loadData();
+  },
   methods: {
     async loadData() {
       this.all_data = [];
@@ -90,7 +98,7 @@ export default {
 
       if (this.sort_by) {
         this.all_data.sort((a, b) =>
-          this.$string.sort(a[this.sort_by], b[this.sort_by])
+          this.$string.sort(a[this.sort_by], b[this.sort_by]),
         );
       }
       this.filterData();
@@ -99,12 +107,12 @@ export default {
       this.limit = 0;
       const value = this.$string.clean(this.search);
 
-      let searchable = this.searchable_fields
+      const searchable = this.searchable_fields
         ? Object.keys(this.searchable_fields).filter(
-            (key) => this.searchable_fields[key] === true
-          )
+          (key) => this.searchable_fields[key] === true,
+        )
         : [];
-      let filter = this.filter
+      const filter = this.filter
         ? Object.keys(this.filter).filter((key) => this.filter[key] === true)
         : [];
       this.filter_data = this.all_data
@@ -117,9 +125,9 @@ export default {
                 return Number(item[key]) === Number(value);
               } else if (isNaN(item[key])) {
                 return this.$string.clean(item[key]).includes(value);
-              } else {
-                return false;
-              }
+              } 
+              return false;
+              
             });
 
           const filterCondition =
@@ -130,12 +138,12 @@ export default {
             this.letter === "" ||
             (this.letter === "#"
               ? /^[^a-zA-Z]/.test(
-                  item.name.normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-                )
+                item.name.normalize("NFD").replace(/[\u0300-\u036f]/g, ""),
+              )
               : item.name
-                  .normalize("NFD")
-                  .replace(/[\u0300-\u036f]/g, "")
-                  .startsWith(this.letter));
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .startsWith(this.letter));
 
           return searchableCondition && filterCondition && initialLetter;
         })
@@ -157,7 +165,7 @@ export default {
     },
 
     compareFilterData() {
-      let filter = {
+      const filter = {
         searchable_fields: this.searchable_fields,
         filter: this.filter,
         letter: this.letter,
@@ -171,9 +179,6 @@ export default {
 
       this.filterData();
     },
-  },
-  async mounted() {
-    await this.loadData();
   },
 };
 </script>

@@ -10,17 +10,17 @@
     @close="close()"
     @minimize="minimize()"
   >
-    <template v-slot:header>
+    <template #header>
       <slot name="header" />
     </template>
-    <template v-slot:left>
+    <template #left>
       <slot name="left" />
     </template>
-    <template v-slot:right>
+    <template #right>
       <slot name="right" />
     </template>
 
-    <template v-slot:default>
+    <template #default>
       <slot />
     </template>
   </Window>

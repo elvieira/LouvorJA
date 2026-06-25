@@ -7,7 +7,7 @@
 
         <div class="d-flex align-center mr-auto">
           <div class="module-icon-box d-flex align-center justify-center mr-4">
-             <v-icon :icon="module.icon" size="24" />
+            <v-icon :icon="module.icon" size="24" />
           </div>
           <h2 class="section-title mb-0" style="color: var(--sidebar-text); font-size: 24px; font-weight: 600; line-height: 1;">
             {{ t('title') }}
@@ -24,7 +24,7 @@
             hide-details
             clearable
             rounded
-            @update:modelValue="onSearchInput"
+            @update:model-value="onSearchInput"
           />
           <v-select
             v-model="id_category"
@@ -44,9 +44,9 @@
       <!-- Conteúdo Principal do Grid de Coleções -->
       <div class="content-main d-flex flex-column flex-grow-1" style="overflow: hidden; padding-top: 16px;">
         <v-progress-linear
+          v-if="loading"
           :color="$theme.primary()"
           indeterminate
-          v-if="loading"
         />
 
         <v-alert
@@ -60,12 +60,23 @@
 
         <div v-if="search && search.length > 1" class="flex-grow-1 d-flex flex-column" style="min-height: 0;">
           <div v-if="indexing" class="d-flex flex-column align-center justify-center flex-grow-1 w-100">
-            <v-progress-circular indeterminate color="var(--accent-blue)" size="48" class="mb-4" />
-            <p style="color: var(--sidebar-text-secondary); font-weight: 500;">Construindo índice de busca...</p>
+            <v-progress-circular
+              indeterminate
+              color="var(--accent-blue)"
+              size="48"
+              class="mb-4"
+            />
+            <p style="color: var(--sidebar-text-secondary); font-weight: 500;">
+              Construindo índice de busca...
+            </p>
           </div>
           <div v-else-if="filteredMusics.length === 0" class="d-flex flex-column align-center justify-center flex-grow-1 w-100">
-            <v-icon size="48" color="var(--sidebar-text-secondary)" class="mb-3">mdi-magnify</v-icon>
-            <p style="color: var(--sidebar-text-secondary); font-weight: 500;">Nenhuma música encontrada</p>
+            <v-icon size="48" color="var(--sidebar-text-secondary)" class="mb-3">
+              mdi-magnify
+            </v-icon>
+            <p style="color: var(--sidebar-text-secondary); font-weight: 500;">
+              Nenhuma música encontrada
+            </p>
           </div>
           <div v-else class="music-list flex-grow-1 d-flex flex-column" style="background: transparent; box-shadow: none; min-height: 0;">
             <v-table class="modern-hymnal-table flex-grow-1 d-flex flex-column" style="min-height: 0; background: transparent;">
@@ -79,10 +90,12 @@
                       {{ item.album_name }}
                     </p>
                   </td>
-                  <td class="music-duration">{{ $datetime.shortTime(item.duration) }}</td>
+                  <td class="music-duration">
+                    {{ $datetime.shortTime(item.duration) }}
+                  </td>
                   <td class="music-actions">
                     <div class="d-flex justify-end">
-                      <l-music-menu-table
+                      <LMusicMenuTable
                         :id_music="item.id_music"
                         :has_instrumental_music="item.has_instrumental_music"
                       />
@@ -109,7 +122,9 @@
                   cover 
                   style="width: 100%; height: 100%; position: absolute; inset: 0;"
                 />
-                <v-icon v-else size="48">mdi-album</v-icon>
+                <v-icon v-else size="48">
+                  mdi-album
+                </v-icon>
               </div>
               <div class="card-content">
                 <h3 class="card-title" style="-webkit-line-clamp: 2; line-clamp: 2;">
@@ -122,8 +137,6 @@
             </div>
           </div>
         </div>
-
-
       </div>
     </div>
   </v-slide-y-reverse-transition>
@@ -174,7 +187,7 @@ export default {
           ...new Map(
             this.categories
               .reduce((acc, category) => acc.concat(category.albums), [])
-              .map((album) => [album.id_album, { ...album, subtitle: null }])
+              .map((album) => [album.id_album, { ...album, subtitle: null }]),
           ).values(),
         ].sort((a, b) => this.$string.sort(a.name, b.name));
       }
@@ -196,7 +209,7 @@ export default {
         return name.includes(term);
       });
     },
-    compact: function () {
+    compact() {
       return this.$vuetify.display.width <= 600;
     },
   },
@@ -207,14 +220,17 @@ export default {
       }
     },
   },
+  async mounted() {
+    await this.loadData();
+  },
   methods: {
     t(text) {
       return this.$t(`modules.${this.module_id}.${text}`);
     },
     toggleSidebar() {
-      const mainEl = document.querySelector('.main-container');
+      const mainEl = document.querySelector(".main-container");
       if (mainEl) {
-        mainEl.dispatchEvent(new CustomEvent('toggle-sidebar'));
+        mainEl.dispatchEvent(new CustomEvent("toggle-sidebar"));
       }
     },
     async loadData() {
@@ -223,7 +239,7 @@ export default {
       this.loading = true;
 
       this.categories = await this.$database.get(
-        `${this.$i18n.locale}_categories`
+        `${this.$i18n.locale}_categories`,
       );
 
       if (this.categories == null) {
@@ -252,7 +268,7 @@ export default {
       this.indexing = true;
       
       try {
-        let musics = [];
+        const musics = [];
         const allAlbums = this.categories.reduce((acc, cat) => acc.concat(cat.albums), []);
         
         // Remove duplicatas de álbuns
@@ -266,7 +282,7 @@ export default {
             albumData.musics.forEach(m => {
               musics.push({
                 ...m,
-                album_name: albumData.name
+                album_name: albumData.name,
               });
             });
           }
@@ -284,9 +300,6 @@ export default {
       this.search = "";
       this.id_category = 0;
     },
-  },
-  async mounted() {
-    await this.loadData();
   },
 };
 </script>

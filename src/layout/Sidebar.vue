@@ -164,7 +164,7 @@ export default {
     currentModule() {
       // Detecta qual módulo está aberto
       const modules = this.$appdata.get("modules") || {};
-      const overlays = ['album', 'media', 'lyric'];
+      const overlays = ["album", "media", "lyric"];
       
       for (const [key, module] of Object.entries(modules)) {
         if (module.show && !overlays.includes(key)) {
@@ -238,8 +238,8 @@ export default {
       this.isOpen = false;
     },
     navigateTo(route) {
-      if (route === 'home') {
-        this.$modules.open('home');
+      if (route === "home") {
+        this.$modules.open("home");
       }
       if (this.isMobile) {
         this.closeSidebar();

@@ -10,7 +10,7 @@ export default {
       const cache = $storage.get(cache_name, null, "session");
 
       if (cache) {
-        $dev.write(`Lendo BD do cache`, file);
+        $dev.write("Lendo BD do cache", file);
         return cache;
       }
 

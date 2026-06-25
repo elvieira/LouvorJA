@@ -7,15 +7,30 @@
             <v-icon :icon="module.icon || 'mdi-puzzle'" size="28" color="var(--primary)" />
           </v-avatar>
           <div>
-            <h3 class="module-title">{{ module.manifest.name }}</h3>
-            <div class="module-subtitle">by {{ module.manifest.author }} | v{{ module.manifest.version }}</div>
+            <h3 class="module-title">
+              {{ module.manifest.name }}
+            </h3>
+            <div class="module-subtitle">
+              by {{ module.manifest.author }} | v{{ module.manifest.version }}
+            </div>
           </div>
         </div>
         <div class="module-badges d-flex flex-column align-end gap-1">
-          <v-chip color="primary" size="small" variant="flat" class="font-weight-bold">
+          <v-chip
+            color="primary"
+            size="small"
+            variant="flat"
+            class="font-weight-bold"
+          >
             {{ module.manifest.id }}
           </v-chip>
-          <v-chip v-if="module.manifest.system" color="error" size="small" variant="flat" class="font-weight-bold">
+          <v-chip
+            v-if="module.manifest.system"
+            color="error"
+            size="small"
+            variant="flat"
+            class="font-weight-bold"
+          >
             system
           </v-chip>
         </div>
@@ -25,8 +40,10 @@
         {{ module.manifest.description }}
       </div>
 
-      <div class="module-dependencies mb-4" v-if="module.manifest.dependencies && module.manifest.dependencies.length > 0">
-        <div class="text-caption text-grey font-weight-bold mb-1">Dependencies:</div>
+      <div v-if="module.manifest.dependencies && module.manifest.dependencies.length > 0" class="module-dependencies mb-4">
+        <div class="text-caption text-grey font-weight-bold mb-1">
+          Dependencies:
+        </div>
         <div class="d-flex flex-wrap gap-2">
           <v-chip
             v-for="(dependency, key) in module.manifest.dependencies"
@@ -40,7 +57,7 @@
         </div>
       </div>
 
-      <v-divider class="mb-3" style="opacity: 0.1"></v-divider>
+      <v-divider class="mb-3" style="opacity: 0.1" />
 
       <div class="module-tags d-flex flex-wrap gap-2 mt-auto">
         <v-chip
@@ -51,7 +68,14 @@
         >
           {{ module.manifest.category }}
         </v-chip>
-        <v-chip v-else color="grey" size="small" variant="tonal">no-category</v-chip>
+        <v-chip
+          v-else
+          color="grey"
+          size="small"
+          variant="tonal"
+        >
+          no-category
+        </v-chip>
         
         <v-chip
           v-if="module.manifest.development"

@@ -57,7 +57,7 @@ export default {
   },
 
   flatten(data, parent = "", result = {}) {
-    for (let key in data) {
+    for (const key in data) {
       const prop = data[key];
       const newKey = parent ? `${parent}.${key}` : key;
       if (typeof prop === "object" && !Array.isArray(prop) && prop !== null) {

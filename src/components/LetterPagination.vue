@@ -2,10 +2,10 @@
   <div class="w-100 d-flex align-center">
     <v-btn
       color="primary"
-      @click="reset()"
       :variant="input < 0 ? 'flat' : 'tonal'"
       density="compact"
       class="me-1"
+      @click="reset()"
     >
       {{ $t("components.letterpagination.all") }}
     </v-btn>
@@ -19,10 +19,10 @@
         <v-btn
           icon
           color="primary"
-          @click="toggle"
           :variant="isSelected ? 'flat' : 'tonal'"
           density="compact"
           class="me-1"
+          @click="toggle"
         >
           {{ letter }}
         </v-btn>

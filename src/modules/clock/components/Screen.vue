@@ -9,7 +9,7 @@
       color: '#fff',
     }"
   >
-    <span class="text-right" :style="{ fontSize: `${this.fontSizePc(30)}px` }">
+    <span class="text-right" :style="{ fontSize: `${fontSizePc(30)}px` }">
       {{ time }}
     </span>
   </div>
@@ -27,26 +27,6 @@ export default {
     timer: null,
     time: null,
   }),
-  methods: {
-    fontSizePc(pc) {
-      const v = Math.min(this.s_width, this.s_height);
-      return (pc * v) / 100 / 2;
-    },
-    windowResize() {
-      const container = this.$refs.container;
-      if (container) {
-        this.s_width = container.offsetWidth;
-        this.s_height = container.offsetHeight;
-
-        if (this.width <= 0 || this.height <= 0) {
-          const self = this;
-          setTimeout(function () {
-            self.windowResize();
-          }, 100);
-        }
-      }
-    },
-  },
   mounted() {
     this.windowResize();
     window.addEventListener("resize", this.windowResize);
@@ -61,6 +41,26 @@ export default {
   unmounted() {
     window.removeEventListener("resize", this.windowResize);
     clearInterval(this.timer);
+  },
+  methods: {
+    fontSizePc(pc) {
+      const v = Math.min(this.s_width, this.s_height);
+      return (pc * v) / 100 / 2;
+    },
+    windowResize() {
+      const container = this.$refs.container;
+      if (container) {
+        this.s_width = container.offsetWidth;
+        this.s_height = container.offsetHeight;
+
+        if (this.width <= 0 || this.height <= 0) {
+          const self = this;
+          setTimeout(() => {
+            self.windowResize();
+          }, 100);
+        }
+      }
+    },
   },
 };
 </script>

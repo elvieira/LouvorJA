@@ -82,7 +82,7 @@ export default {
             this.i18n.global.mergeLocaleMessage(lang, {
               modules: { [manifest.id]: translations },
             });
-          }
+          },
         );
       }
 
@@ -90,7 +90,7 @@ export default {
       $dev.write(
         "module_install",
         manifest.id,
-        manifest.development ? "[dev]" : ""
+        manifest.development ? "[dev]" : "",
       );
 
       return true;

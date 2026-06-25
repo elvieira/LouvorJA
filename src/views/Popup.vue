@@ -1,6 +1,6 @@
 <template>
   <div class="w-100 h-100" style="background: #000">
-    <component v-if="module" :is="loadModuleComponent()" />
+    <component :is="loadModuleComponent()" v-if="module" />
   </div>
 </template>
 
@@ -16,6 +16,19 @@ export default {
     module() {
       return this.$appdata.get("popup_module");
     },
+  },
+  mounted() {
+    this.$appdata.set("is_popup", true);
+    window.addEventListener("message", (event) => {
+      if (event.origin === window.location.origin) {
+        this.message = event.data;
+        if (event.data.param) {
+          this.$appdata.set(event.data.param, event.data.value);
+        }
+      }
+    });
+
+    window.opener.postMessage("mounted", window.location.origin);
   },
   methods: {
     loadModuleComponent() {
@@ -33,24 +46,11 @@ export default {
               });
 
               return null;
-            }
+            },
           );
         });
       });
     },
-  },
-  mounted() {
-    this.$appdata.set("is_popup", true);
-    window.addEventListener("message", (event) => {
-      if (event.origin === window.location.origin) {
-        this.message = event.data;
-        if (event.data.param) {
-          this.$appdata.set(event.data.param, event.data.value);
-        }
-      }
-    });
-
-    window.opener.postMessage("mounted", window.location.origin);
   },
 };
 </script>

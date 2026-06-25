@@ -5,19 +5,19 @@
     subtitle=""
     compact
     compact_footer
+    size="large"
+    :scroll-pos="scrollPos"
+    class="modern-media-window"
     @close="$media.close()"
     @minimize="$media.minimize()"
     @resize="resize"
-    size="large"
-    :scrollPos="scrollPos"
-    class="modern-media-window"
   >
     <!-- Substitui completamente a toolbar do Window para flutuar no canto esquerdo -->
-    <template v-slot:toolbar>
+    <template #toolbar>
       <div class="modern-media-toolbar d-flex align-center">
         <!-- Menu do Sistema -->
         <v-menu v-if="is_online">
-          <template v-slot:activator="{ props }">
+          <template #activator="{ props }">
             <v-btn
               v-bind="props"
               class="custom-system-btn"
@@ -27,14 +27,19 @@
               color="white"
             />
           </template>
-          <v-card class="modern-menu-card" color="rgba(20, 20, 20, 0.9)" theme="dark" rounded="lg">
+          <v-card
+            class="modern-menu-card"
+            color="rgba(20, 20, 20, 0.9)"
+            theme="dark"
+            rounded="lg"
+          >
             <v-card-text>
               <v-tooltip :text="t('inputs.lazy_load_tooltip')">
-                <template v-slot:activator="{ props }">
+                <template #activator="{ props }">
                   <v-switch
-                    color="var(--accent-blue)"
                     v-bind="props"
                     v-model="lazy_load"
+                    color="var(--accent-blue)"
                     :label="t('inputs.lazy_load')"
                     hide-details
                     class="mb-2"
@@ -42,11 +47,11 @@
                 </template>
               </v-tooltip>
               <v-tooltip :text="t('inputs.fade_audio_tooltip')">
-                <template v-slot:activator="{ props }">
+                <template #activator="{ props }">
                   <v-switch
-                    color="var(--accent-blue)"
                     v-bind="props"
                     v-model="fade_audio"
+                    color="var(--accent-blue)"
                     :label="t('inputs.fade_audio')"
                     hide-details
                   />
@@ -77,7 +82,6 @@
     </template>
 
     <div class="player-main-container position-relative w-100 h-100 d-flex flex-row overflow-hidden bg-black">
-      
       <!-- Visual e Tela de Letras (Forçada a expandir - Cover) -->
       <div class="player-visual-area flex-grow-1 position-relative transition-all" style="z-index: 1;">
         <fullscreen
@@ -86,7 +90,7 @@
           style="top: 0; left: 0;"
         >
           <div class="visual-content-wrapper w-100 h-100 position-absolute">
-            <l-slide
+            <LSlide
               v-if="slide"
               :slide_number="config.slide_index"
               :cover="slide.cover == true"
@@ -96,7 +100,7 @@
               :image_position="slide.image_position"
               class="w-100 h-100"
             />
-            <l-fullscreen-player v-if="fullscreen" class="w-100 h-100" />
+            <LFullscreenPlayer v-if="fullscreen" class="w-100 h-100" />
           </div>
         </fullscreen>
       </div>
@@ -105,29 +109,31 @@
       <div class="player-playlist-area transition-all" :class="{'playlist-open': isPlaylistOpen, 'playlist-closed': !isPlaylistOpen}">
         <v-list class="playlist-scroll h-100 pa-4 bg-transparent pt-6" :width="340" theme="dark">
           <v-list-item
-            @click="$media.goToSlide(index)"
             v-for="(item, index) in slides"
             :key="index"
+            ref="slideItem"
             link
             :active="config.slide_index === index"
-            ref="slideItem"
             class="playlist-item"
             :height="64"
+            @click="$media.goToSlide(index)"
           >
-            <template v-slot:prepend>
-              <div class="slide-number-chip">{{ index + 1 }}</div>
+            <template #prepend>
+              <div class="slide-number-chip">
+                {{ index + 1 }}
+              </div>
             </template>
 
             <v-list-item-title v-if="item.cover" class="slide-title">
               {{ item.lyric }}
             </v-list-item-title>
             <div
-              class="slide-text text-truncate"
               v-else
+              class="slide-text text-truncate"
               v-html="item.lyric"
             />
             
-            <div class="slide-progress-container" v-if="config.audio != '' && config.slide_index == index">
+            <div v-if="config.audio != '' && config.slide_index == index" class="slide-progress-container">
               <v-progress-linear
                 v-model="config.slide_progress"
                 :indeterminate="loading"
@@ -149,10 +155,9 @@
       <!-- The Pill Player (Flutuante no fundo) -->
       <div class="floating-pill-container position-absolute w-100 d-flex justify-center" style="bottom: 40px; z-index: 20; pointer-events: none;">
         <div style="pointer-events: auto;">
-          <l-player location="window" />
+          <LPlayer location="window" />
         </div>
       </div>
-
     </div>
   </Window>
 </template>
@@ -229,7 +234,7 @@ export default {
     },
     isPlaylistOpen() {
       return this.$appdata.get("modules.media.show_playlist") || false;
-    }
+    },
   },
   watch: {
     slide_index() {
@@ -238,9 +243,9 @@ export default {
       }
 
       if (this.$refs?.slideItem && this.$refs?.slideItem[0]?.$el) {
-        let self = this;
-        let height = this.$refs.slideItem[0].$el.offsetHeight;
-        setTimeout(function () {
+        const self = this;
+        const height = this.$refs.slideItem[0].$el.offsetHeight;
+        setTimeout(() => {
           self.scrollPos = self.slide_index * height - height;
         }, 100);
       }

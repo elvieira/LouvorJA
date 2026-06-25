@@ -1,6 +1,6 @@
 <template>
   <ModuleContainer ref="moduleContainer" :manifest="manifest">
-    <template v-slot:header>
+    <template #header>
       <v-toolbar>
         <v-spacer />
         <v-divider vertical />

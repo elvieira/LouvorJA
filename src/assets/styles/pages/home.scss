@@ -69,14 +69,14 @@
   flex-direction: column;
   
   &.collections-section {
-    flex-shrink: 1;
+    flex-shrink: 0;
     position: relative;
     min-height: 200px;
   }
   
   &.music-section {
     flex: 1;
-    min-height: 300px;
+    min-height: 0;
     display: flex;
     flex-direction: column;
   }
@@ -86,7 +86,8 @@
     font-weight: 600;
     color: var(--sidebar-text);
     margin: 0 !important;
-    align-self: center;
+    padding-bottom: 10px;
+    align-self: flex-start;
     display: flex;
     align-items: center;
     flex-shrink: 0;
@@ -252,6 +253,29 @@
   .music-list-container {
     display: flex;
     flex-direction: column;
+    overflow-y: auto;
+    flex: 1;
+    
+    &::-webkit-scrollbar {
+      width: 8px;
+    }
+    
+    &::-webkit-scrollbar-track {
+      background: var(--border-color);
+    }
+    
+    &::-webkit-scrollbar-thumb {
+      background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-blue-dark) 100%);
+      border-radius: 4px;
+      
+      &:hover {
+        background: linear-gradient(135deg, var(--accent-blue-dark) 0%, var(--accent-blue) 100%);
+      }
+    }
+    
+    &:hover::-webkit-scrollbar-thumb {
+      background: var(--accent-yellow);
+    }
   }
 }
 
@@ -299,6 +323,29 @@
   .music-duration {
     font-size: 13px;
     color: var(--sidebar-text-secondary);
+  }
+
+  .music-plays {
+    font-size: 12px;
+    color: var(--accent-blue);
+    font-weight: 500;
+    margin-right: 16px;
+    white-space: nowrap;
+  }
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  gap: 12px;
+  
+  p {
+    font-size: 14px;
+    color: var(--sidebar-text-secondary);
+    text-align: center;
   }
 }
 

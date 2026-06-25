@@ -16,7 +16,12 @@
       <!-- MINI PLAYER POPUP -->
       <transition name="fade-slide">
         <div v-if="isMinimized && showMiniPlayer" class="mini-player-popup elevation-12">
-          <v-card theme="dark" rounded="lg" class="overflow-hidden bg-black" width="320">
+          <v-card
+            theme="dark"
+            rounded="lg"
+            class="overflow-hidden bg-black"
+            width="320"
+          >
             <div class="mini-player-toolbar d-flex justify-end pa-1 position-absolute w-100" style="z-index: 10;">
               <v-btn 
                 icon="mdi-arrow-expand-all" 
@@ -36,7 +41,7 @@
               />
             </div>
             <div class="position-relative w-100 bg-black" style="height: 180px;">
-              <l-slide
+              <LSlide
                 v-if="slide"
                 :slide_number="config.slide_index"
                 :cover="slide.cover == true"
@@ -89,7 +94,7 @@ export default {
       },
       set(val) {
         this.$appdata.set("modules.media.show_mini_player", val);
-      }
+      },
     },
     isMinimized() {
       return this.$media.isMinimized();
@@ -106,7 +111,7 @@ export default {
       if (val) {
         this.showMiniPlayer = true;
       }
-    }
+    },
   },
   mounted() {
     // Garantir que nenhum módulo inicie aberto (previne estados "zumbi" do HMR)
@@ -195,8 +200,8 @@ export default {
         this.$modules.open(moduleId);
       });
       window.electronAPI.onNavigateRoute((routeName) => {
-        if (routeName === 'help') {
-          this.$modules.open('home');
+        if (routeName === "help") {
+          this.$modules.open("home");
           // Navega para a rota help se existir
           if (this.$router) {
             this.$router.push({ name: routeName }).catch(() => {});
@@ -222,7 +227,7 @@ export default {
     maximizePlayer() {
       this.$media.maximize();
       this.showMiniPlayer = false;
-    }
+    },
   },
 };
 </script>

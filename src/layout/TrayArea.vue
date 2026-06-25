@@ -1,11 +1,11 @@
 <template>
   <div
-    class="apps-bar d-flex flex-column"
     v-if="Object.keys(modules).length > 0"
+    class="apps-bar d-flex flex-column"
   >
-    <div class="apps-bar-header"></div>
+    <div class="apps-bar-header" />
 
-    <draggable
+    <Draggable
       v-model="modules"
       item-key="id"
       class="apps-bar-container d-flex align-center justify-center flex-column"
@@ -19,15 +19,15 @@
           icon
           @click="$modules.open(element.id)"
         >
-          <v-icon :icon="element.icon"></v-icon>
+          <v-icon :icon="element.icon" />
           <v-tooltip activator="parent" location="start">
             {{ $t(element.title) }}
           </v-tooltip>
         </v-btn>
       </template>
-    </draggable>
+    </Draggable>
 
-    <div class="apps-bar-footer"></div>
+    <div class="apps-bar-footer" />
   </div>
 </template>
 

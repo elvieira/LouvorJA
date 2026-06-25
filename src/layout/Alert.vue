@@ -12,20 +12,20 @@
         <div v-else v-html="alert.title" />
       </v-card-title>
       <v-card-text v-if="alert.text" class="px-6 pb-2" :class="alert.title ? 'pt-2' : 'pt-8'">
-        <div v-if="alert.translate" v-html="$t(alert.text)" class="alert-text-content" />
-        <div v-else v-html="alert.text" class="alert-text-content" />
+        <div v-if="alert.translate" class="alert-text-content" v-html="$t(alert.text)" />
+        <div v-else class="alert-text-content" v-html="alert.text" />
         <small v-if="alert.error" class="text-error mt-2 d-block" v-html="alert.error" />
       </v-card-text>
       <v-card-actions class="px-6 pb-6 pt-2 d-flex justify-end" style="gap: 12px;">
-        <v-spacer></v-spacer>
+        <v-spacer />
         <v-btn
           v-for="(btn, index) in alert.buttons"
           :key="index"
           :color="btn.color ? btn.color : 'primary'"
-          @click="clickBtn(btn.value)"
           :variant="btn.color === 'error' ? 'tonal' : 'flat'"
           class="modern-alert-btn px-6"
           height="40"
+          @click="clickBtn(btn.value)"
         >
           {{ $t(btn.text) }}
         </v-btn>
@@ -38,7 +38,7 @@
 export default {
   name: "AlertLayout",
   computed: {
-    alert: function () {
+    alert() {
       return this.$appdata.get("alert");
     },
   },

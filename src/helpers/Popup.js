@@ -3,7 +3,7 @@ import $window from "@/helpers/Window";
 
 export default {
   async open(params) {
-    if (typeof params != "object") {
+    if (typeof params !== "object") {
       params = { module: params };
     }
 

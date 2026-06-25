@@ -147,27 +147,27 @@ export default {
         this.$emit("update:modelValue", value);
       },
     },
-    compact_screen: function () {
+    compact_screen() {
       return this.$vuetify.display.width <= 600;
     },
-    compact_height: function () {
+    compact_height() {
       return this.$vuetify.display.height <= 600;
     },
     w_width() {
       return this.compact_screen
         ? "100%"
         : this.size == "small"
-        ? "500px"
-        : this.size == "large"
-        ? "95%"
-        : "90%";
+          ? "500px"
+          : this.size == "large"
+            ? "95%"
+            : "90%";
     },
     w_height() {
       return this.compact_screen || this.compact_height
         ? "100%"
         : this.size == "small"
-        ? "550px"
-        : "90%";
+          ? "550px"
+          : "90%";
     },
   },
   watch: {
@@ -188,6 +188,15 @@ export default {
       }
     },
   },
+  mounted() {
+    this.resizeObserver = new ResizeObserver(() => {
+      this.checkScroll();
+    });
+
+    if (this.visible) {
+      this.listenerResize(this.visible);
+    }
+  },
   methods: {
     close() {
       this.$emit("close");
@@ -196,7 +205,7 @@ export default {
       this.$emit("minimize");
     },
     scroll() {
-      let data = {};
+      const data = {};
       data.scroll_top = this.$refs.main_container.scrollTop;
       data.client_height = this.$refs.main_container.clientHeight;
       data.scroll_height = this.$refs.main_container.scrollHeight;
@@ -214,12 +223,12 @@ export default {
       }
     },
     windowResize() {
-      let el = this.$refs?.container?.$el;
+      const el = this.$refs?.container?.$el;
       if (!el) {
         return;
       }
 
-      let data = {
+      const data = {
         container_width: el.clientWidth,
         container_height: el.clientHeight,
       };
@@ -235,7 +244,7 @@ export default {
           this.windowResize();
         } else {
           const self = this;
-          setTimeout(function () {
+          setTimeout(() => {
             self.listenerResize(active);
             self.checkScroll();
           }, 10);
@@ -245,15 +254,6 @@ export default {
         window.removeEventListener("resize", this.windowResize);
       }
     },
-  },
-  mounted() {
-    this.resizeObserver = new ResizeObserver(() => {
-      this.checkScroll();
-    });
-
-    if (this.visible) {
-      this.listenerResize(this.visible);
-    }
   },
 };
 </script>

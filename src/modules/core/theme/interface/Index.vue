@@ -7,7 +7,7 @@
         
         <div class="d-flex align-center mr-auto">
           <div class="module-icon-box d-flex align-center justify-center mr-4" style="background: var(--accent-blue); color: white; width: 48px; height: 48px; border-radius: 12px;">
-             <v-icon :icon="manifest.icon || 'mdi-cog'" size="24" />
+            <v-icon :icon="manifest.icon || 'mdi-cog'" size="24" />
           </div>
           <h2 class="section-title mb-0" style="color: var(--sidebar-text); font-size: 24px; font-weight: 600; line-height: 1;">
             Configurações Gerais
@@ -18,87 +18,130 @@
       <!-- Área Principal -->
       <div class="content-main flex-grow-1 overflow-y-auto w-100">
         <div class="settings-container mx-auto d-flex flex-column" style="max-width: 800px; padding: 32px 24px; gap: 32px;">
-        
-        <!-- Bloco de Aparência -->
-        <div class="settings-section">
-          <h3 class="font-weight-bold mb-4 d-flex align-center" style="color: var(--sidebar-text); font-size: 1.1rem;">
-            <v-icon color="primary" class="mr-3" size="22">mdi-palette-outline</v-icon> Aparência
-          </h3>
-          <v-card class="settings-card rounded-xl" flat style="background: var(--card-bg); box-shadow: var(--shadow);">
-            <v-card-text class="pa-6 d-flex flex-column" style="gap: 28px;">
-            
-            <!-- Modo Claro / Escuro -->
-            <div>
-              <div class="text-subtitle-2 font-weight-bold mb-3" style="color: var(--sidebar-text-secondary);">Tema do Sistema</div>
-              <v-btn-toggle
-                v-model="active_theme_mode"
-                color="primary"
-                variant="tonal"
-                mandatory
-                class="rounded-lg"
-                style="height: 44px;"
-              >
-                <v-btn value="light" class="px-6">
-                  <v-icon start>mdi-white-balance-sunny</v-icon> Modo Claro
-                </v-btn>
-                <v-btn value="dark" class="px-6">
-                  <v-icon start>mdi-moon-waning-crescent</v-icon> Modo Escuro
-                </v-btn>
-              </v-btn-toggle>
-            </div>
-          </v-card-text>
-        </v-card>
-        </div>
+          <!-- Bloco de Aparência -->
+          <div class="settings-section">
+            <h3 class="font-weight-bold mb-4 d-flex align-center" style="color: var(--sidebar-text); font-size: 1.1rem;">
+              <v-icon color="primary" class="mr-3" size="22">
+                mdi-palette-outline
+              </v-icon> Aparência
+            </h3>
+            <v-card class="settings-card rounded-xl" flat style="background: var(--card-bg); box-shadow: var(--shadow);">
+              <v-card-text class="pa-6 d-flex flex-column" style="gap: 28px;">
+                <!-- Modo Claro / Escuro -->
+                <div>
+                  <div class="text-subtitle-2 font-weight-bold mb-3" style="color: var(--sidebar-text-secondary);">
+                    Tema do Sistema
+                  </div>
+                  <v-btn-toggle
+                    v-model="active_theme_mode"
+                    color="primary"
+                    variant="tonal"
+                    mandatory
+                    class="rounded-lg"
+                    style="height: 44px;"
+                  >
+                    <v-btn value="light" class="px-6">
+                      <v-icon start>
+                        mdi-white-balance-sunny
+                      </v-icon> Modo Claro
+                    </v-btn>
+                    <v-btn value="dark" class="px-6">
+                      <v-icon start>
+                        mdi-moon-waning-crescent
+                      </v-icon> Modo Escuro
+                    </v-btn>
+                  </v-btn-toggle>
+                </div>
+              </v-card-text>
+            </v-card>
+          </div>
 
-        <!-- Bloco Geral -->
-        <div class="settings-section">
-          <h3 class="font-weight-bold mb-4 d-flex align-center" style="color: var(--sidebar-text); font-size: 1.1rem;">
-            <v-icon color="primary" class="mr-3" size="22">mdi-earth</v-icon> Geral
-          </h3>
-          <v-card class="settings-card rounded-xl" flat style="background: var(--card-bg); box-shadow: var(--shadow);">
-            <v-card-text class="pa-6">
-            <v-row>
-              <v-col cols="12" md="6">
-                <div class="text-subtitle-2 font-weight-bold mb-2" style="color: var(--sidebar-text-secondary);">Idioma</div>
-                <v-select
-                  v-model="language"
-                  :items="['Português', 'English', 'Español']"
-                  variant="outlined"
-                  density="compact"
+          <!-- Bloco Geral -->
+          <div class="settings-section">
+            <h3 class="font-weight-bold mb-4 d-flex align-center" style="color: var(--sidebar-text); font-size: 1.1rem;">
+              <v-icon color="primary" class="mr-3" size="22">
+                mdi-earth
+              </v-icon> Geral
+            </h3>
+            <v-card class="settings-card rounded-xl" flat style="background: var(--card-bg); box-shadow: var(--shadow);">
+              <v-card-text class="pa-6">
+                <v-row>
+                  <v-col cols="12" md="6">
+                    <div class="text-subtitle-2 font-weight-bold mb-2" style="color: var(--sidebar-text-secondary);">
+                      Idioma
+                    </div>
+                    <v-select
+                      v-model="language"
+                      :items="['Português', 'English', 'Español']"
+                      variant="outlined"
+                      density="compact"
+                      hide-details
+                      bg-color="transparent"
+                    />
+                  </v-col>
+                </v-row>
+              </v-card-text>
+            </v-card>
+          </div>
+
+          <!-- Bloco Avançado -->
+          <div class="settings-section mb-8">
+            <h3 class="font-weight-bold mb-4 d-flex align-center" style="color: var(--sidebar-text); font-size: 1.1rem;">
+              <v-icon color="primary" class="mr-3" size="22">
+                mdi-monitor-dashboard
+              </v-icon> Projeção & Sistema
+            </h3>
+            <v-card class="settings-card rounded-xl" flat style="background: var(--card-bg); box-shadow: var(--shadow);">
+              <v-card-text class="pa-6">
+                <v-switch
+                  v-model="hardware_accel"
+                  color="primary"
+                  label="Aceleração de Hardware"
                   hide-details
-                  bg-color="transparent"
-                ></v-select>
-              </v-col>
-            </v-row>
-          </v-card-text>
-        </v-card>
-        </div>
+                  inset
+                />
+                <v-switch
+                  v-model="fullscreen_mode"
+                  color="primary"
+                  label="Iniciar em Tela Cheia"
+                  hide-details
+                  inset
+                />
+              </v-card-text>
+            </v-card>
+          </div>
 
-        <!-- Bloco Avançado -->
-        <div class="settings-section mb-8">
-          <h3 class="font-weight-bold mb-4 d-flex align-center" style="color: var(--sidebar-text); font-size: 1.1rem;">
-            <v-icon color="primary" class="mr-3" size="22">mdi-monitor-dashboard</v-icon> Projeção & Sistema
-          </h3>
-          <v-card class="settings-card rounded-xl" flat style="background: var(--card-bg); box-shadow: var(--shadow);">
-            <v-card-text class="pa-6">
-             <v-switch
-                v-model="hardware_accel"
-                color="primary"
-                label="Aceleração de Hardware"
-                hide-details
-                inset
-              ></v-switch>
-              <v-switch
-                v-model="fullscreen_mode"
-                color="primary"
-                label="Iniciar em Tela Cheia"
-                hide-details
-                inset
-              ></v-switch>
-          </v-card-text>
-        </v-card>
-        </div>
-
+          <!-- Bloco Dados e Histórico -->
+          <div class="settings-section mb-8">
+            <h3 class="font-weight-bold mb-4 d-flex align-center" style="color: var(--sidebar-text); font-size: 1.1rem;">
+              <v-icon color="primary" class="mr-3" size="22">
+                mdi-database-refresh
+              </v-icon> Dados e Histórico
+            </h3>
+            <v-card class="settings-card rounded-xl" flat style="background: var(--card-bg); box-shadow: var(--shadow);">
+              <v-card-text class="pa-6">
+                <div class="d-flex align-center justify-space-between">
+                  <div>
+                    <div class="text-subtitle-2 font-weight-bold mb-1" style="color: var(--sidebar-text);">
+                      Resetar Histórico
+                    </div>
+                    <div class="text-caption" style="color: var(--sidebar-text-secondary);">
+                      Limpa as coletâneas recentes e as músicas mais tocadas da página inicial.
+                    </div>
+                  </div>
+                  <v-btn
+                    color="error"
+                    variant="tonal"
+                    prepend-icon="mdi-delete-empty"
+                    class="rounded-lg text-none"
+                    @click="resetHistory"
+                  >
+                    Limpar
+                  </v-btn>
+                </div>
+              </v-card-text>
+            </v-card>
+          </div>
         </div>
       </div>
     </div>
@@ -118,7 +161,7 @@ export default {
     language: "Português",
     hardware_accel: true,
     fullscreen_mode: false,
-    manifest: manifest,
+    manifest,
   }),
   computed: {
     module_id() {
@@ -129,24 +172,11 @@ export default {
     },
     active_theme_mode: {
       get() {
-        return this.$vuetify.theme.global.current.dark ? 'dark' : 'light';
+        return this.$vuetify.theme.global.current.dark ? "dark" : "light";
       },
       set(mode) {
         this.setTheme(mode);
-      }
-    }
-  },
-  methods: {
-    toggleSidebar() {
-      const mainEl = document.querySelector('.main-container');
-      if (mainEl) {
-        mainEl.dispatchEvent(new CustomEvent('toggle-sidebar'));
-      }
-    },
-    setTheme(theme_id) {
-      this.$vuetify.theme.global.name = theme_id;
-      this.$userdata.set("theme", theme_id);
-      this.$appdata.set("is_dark", this.$vuetify.theme.global.current.dark);
+      },
     },
   },
   mounted() {
@@ -154,6 +184,26 @@ export default {
     if(this.$userdata.get("theme")){
       this.$vuetify.theme.global.name = this.$userdata.get("theme");
     }
+  },
+  methods: {
+    toggleSidebar() {
+      const mainEl = document.querySelector(".main-container");
+      if (mainEl) {
+        mainEl.dispatchEvent(new CustomEvent("toggle-sidebar"));
+      }
+    },
+    setTheme(theme_id) {
+      this.$vuetify.theme.global.name = theme_id;
+      this.$userdata.set("theme", theme_id);
+      this.$appdata.set("is_dark", this.$vuetify.theme.global.current.dark);
+    },
+    resetHistory() {
+      if (confirm("Tem certeza que deseja resetar o histórico de coletâneas e músicas mais tocadas?")) {
+        this.$history.clearAll();
+        // Dispara um alerta ou recarrega para aplicar a home (se desejar, mas Vue reatividade no Storage não é automática sem store. Uma msg é o suficiente)
+        alert("Histórico resetado com sucesso! Atualize a página inicial para ver as mudanças.");
+      }
+    },
   },
 };
 </script>

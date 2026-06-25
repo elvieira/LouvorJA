@@ -12,14 +12,14 @@
     <div v-if="bible" class="d-flex flex-column w-100 pa-4" :class="[config.align]">
       <span
         v-if="bible.text"
-        :style="{ fontSize: `${this.fontSizePc(config.fontSizePc)}px` }"
+        :style="{ fontSize: `${fontSizePc(config.fontSizePc)}px` }"
       >
         {{ bible.text }}
       </span>
       <span
         v-if="bible.scriptural_reference"
         class="mt-4 font-weight-bold"
-        :style="{ fontSize: `${this.fontSizePc(config.refFontSizePc)}px`, color: config.refColor }"
+        :style="{ fontSize: `${fontSizePc(config.refFontSizePc)}px`, color: config.refColor }"
       >
         {{ bible.scriptural_reference }}
       </span>
@@ -63,6 +63,13 @@ export default {
       };
     },
   },
+  mounted() {
+    this.windowResize();
+    window.addEventListener("resize", this.windowResize);
+  },
+  unmounted() {
+    window.removeEventListener("resize", this.windowResize);
+  },
   methods: {
     fontSizePc(pc) {
       const v = Math.min(this.s_width, this.s_height);
@@ -76,19 +83,12 @@ export default {
 
         if (this.width <= 0 || this.height <= 0) {
           const self = this;
-          setTimeout(function () {
+          setTimeout(() => {
             self.windowResize();
           }, 100);
         }
       }
     },
-  },
-  mounted() {
-    this.windowResize();
-    window.addEventListener("resize", this.windowResize);
-  },
-  unmounted() {
-    window.removeEventListener("resize", this.windowResize);
   },
 };
 </script>

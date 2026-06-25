@@ -45,22 +45,26 @@
 
 /* Tema escuro */
 .v-theme--dark {
-    --main-bg: #121212;
-    --card-bg: #2a2a2a;
-    --sidebar-bg: #1e1e1e;
-    --sidebar-border: #333333;
-    --border-color: #333333;
-    --sidebar-text: #e0e0e0;
-    --sidebar-text-secondary: #a0a0a0;
-    --sidebar-hover: rgba(255, 255, 255, 0.08);
-    --shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-    --shadow-hover: 0 6px 16px rgba(0, 0, 0, 0.6);
+    --main-bg: #15141e; /* Fundo principal mais escuro para aumentar contraste */
+    --card-bg: #2b2f42; /* Cards mais claros e azulados */
+    --sidebar-bg: #181722; /* Sidebar combinando com o fundo principal, mas com leve diferença */
+    --sidebar-border: rgba(255, 255, 255, 0.05); /* Subtle border */
+    --border-color: rgba(255, 255, 255, 0.05);
+    --sidebar-text: #ffffff; /* White text */
+    --sidebar-text-secondary: #8b8e9b; /* Muted text */
+    --sidebar-hover: rgba(108, 93, 211, 0.15); /* Soft purple hover */
+    --shadow: 0 8px 24px rgba(0, 0, 0, 0.4); /* Sombra mais pronunciada para destacar os cards */
+    --shadow-hover: 0 12px 32px rgba(0, 0, 0, 0.5);
+    
+    /* Variáveis baseadas no Accent para o modo escuro */
+    --accent-blue: #6c5dd3; /* Soft purple from reference */
+    --accent-blue-dark: #5b4dbf; 
     
     /* Glassmorphism Dark */
-    --glass-bg: rgba(42, 42, 42, 0.75);
-    --glass-border: rgba(255, 255, 255, 0.1);
+    --glass-bg: rgba(43, 47, 66, 0.85); /* rgba do novo card-bg */
+    --glass-border: rgba(255, 255, 255, 0.08);
     --glass-text: #ffffff;
-    --glass-text-secondary: rgba(255, 255, 255, 0.7);
+    --glass-text-secondary: #8b8e9b;
 }
 
 .bg-main {

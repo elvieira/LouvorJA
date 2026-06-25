@@ -1,14 +1,13 @@
 <template>
   <v-slide-y-reverse-transition>
     <div v-if="module?.show" class="module-full-page dashboard-home d-flex flex-column">
-      
       <!-- Cabeçalho Integrado -->
       <div class="search-header pb-0 flex-shrink-0" style="padding-top: 24px; padding-left: 24px; padding-right: 24px; display: flex; align-items: center;">
         <MenuToggleButton style="margin-right: 16px;" @toggle-sidebar="toggleSidebar" />
 
         <div class="d-flex align-center mr-auto">
           <div class="module-icon-box d-flex align-center justify-center mr-4">
-             <v-icon :icon="module.icon" size="24" />
+            <v-icon :icon="module.icon" size="24" />
           </div>
           <h2 class="section-title mb-0" style="color: var(--sidebar-text); font-size: 24px; font-weight: 600; line-height: 1;">
             {{ t('title') }}
@@ -52,32 +51,32 @@
 
       <!-- Área de Conteúdo -->
       <div class="content-main d-flex flex-row flex-grow-1" style="overflow: hidden; padding: 24px; min-height: 0; gap: 24px;">
-        
         <!-- Coluna da Esquerda (Livros e Capítulos) -->
         <div v-if="!compact" class="bible-navigation d-flex flex-row flex-shrink-0" style="width: 40%; min-width: 350px; max-width: 400px; background: var(--card-bg, #fff); border-radius: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid var(--border-color, rgba(0,0,0,0.05)); min-height: 0;">
-          
           <!-- Lista de Livros -->
           <div class="books-col h-100 d-flex flex-column" style="width: 65%; border-right: 1px solid var(--border-color, rgba(0,0,0,0.05));">
             <div class="pa-4 pb-2">
-              <h3 style="font-size: 1.1rem; color: var(--sidebar-text); font-weight: 600; line-height: 1;">Livros</h3>
+              <h3 style="font-size: 1.1rem; color: var(--sidebar-text); font-weight: 600; line-height: 1;">
+                Livros
+              </h3>
             </div>
             <div class="px-2 pb-4 flex-grow-1" style="overflow-y: scroll; overflow-x: hidden;">
               <v-skeleton-loader v-if="loading_book" type="list-item@10" />
               <v-list v-else density="compact" class="pa-0 bg-transparent">
                 <v-list-item
                   v-for="book in books"
-                  :key="book.id_bible_book"
-                  @click="selBook(book.id_bible_book)"
                   :id="`listBook_${book.id_bible_book}`"
+                  :key="book.id_bible_book"
                   :active="book.id_bible_book == bible.id_bible_book"
                   color="primary"
                   class="rounded-lg mb-1"
                   :variant="book.id_bible_book == bible.id_bible_book ? 'flat' : 'text'"
+                  @click="selBook(book.id_bible_book)"
                 >
                   <v-list-item-title class="font-weight-medium">
                     {{ book.name }}
                   </v-list-item-title>
-                  <template v-slot:append>
+                  <template #append>
                     <span class="text-caption font-weight-bold" :class="book.id_bible_book == bible.id_bible_book ? 'text-white' : 'text-primary'" style="opacity: 0.8">{{ book.abbreviation }}</span>
                   </template>
                 </v-list-item>
@@ -88,22 +87,24 @@
           <!-- Lista de Capítulos -->
           <div class="chapters-col h-100 d-flex flex-column" style="width: 35%;">
             <div class="pa-4 pb-2">
-              <h3 style="font-size: 1.1rem; color: var(--sidebar-text); font-weight: 600; line-height: 1;">Cap.</h3>
+              <h3 style="font-size: 1.1rem; color: var(--sidebar-text); font-weight: 600; line-height: 1;">
+                Cap.
+              </h3>
             </div>
             <div class="px-2 pb-4 flex-grow-1" style="overflow-y: scroll; overflow-x: hidden;">
               <v-skeleton-loader v-if="loading_book" type="list-item@10" />
               <div v-else class="d-flex flex-wrap justify-center gap-1">
                 <v-btn
                   v-for="chapter in chapters"
-                  :key="chapter"
-                  @click="selChapter(chapter)"
                   :id="`listChapter_${chapter}`"
+                  :key="chapter"
                   :variant="chapter == bible.chapter ? 'flat' : 'text'"
                   :color="chapter == bible.chapter ? 'primary' : 'default'"
                   class="rounded-lg ma-1 chapter-btn"
                   min-width="44"
                   width="44"
                   height="44"
+                  @click="selChapter(chapter)"
                 >
                   {{ chapter }}
                 </v-btn>
@@ -114,7 +115,6 @@
 
         <!-- Coluna da Direita (Versículos e Projeção) -->
         <div class="bible-verses-col d-flex flex-column flex-grow-1" style="background: var(--card-bg, #fff); border-radius: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid var(--border-color, rgba(0,0,0,0.05)); min-height: 0;">
-          
           <!-- Título do Texto Atual -->
           <div class="pa-4 d-flex justify-space-between align-center" style="border-bottom: 1px solid var(--border-color, rgba(0,0,0,0.05));">
             <h3 style="font-size: 1.3rem; color: var(--sidebar-text); font-weight: 600; line-height: 1;">
@@ -122,32 +122,32 @@
             </h3>
             
             <div class="d-flex align-center" style="gap: 8px;">
-               <v-btn
+              <v-btn
+                v-shortkey="['arrowleft']"
                 :disabled="!(select_bible?.verses && select_bible.verses.length > 0)"
                 variant="tonal"
                 size="small"
                 icon="mdi-chevron-left"
                 @click="prevVerse()"
-                v-shortkey="['arrowleft']"
                 @shortkey="prevVerse()"
               />
               <v-btn
+                v-shortkey="['arrowright']"
                 :disabled="!(select_bible?.verses && select_bible.verses.length > 0)"
                 variant="tonal"
                 size="small"
                 icon="mdi-chevron-right"
                 @click="nextVerse()"
-                v-shortkey="['arrowright']"
                 @shortkey="nextVerse()"
               />
               <v-btn
+                v-shortkey="['del']"
                 :disabled="!(select_bible?.verses && select_bible.verses.length > 0)"
                 variant="tonal"
                 color="error"
                 size="small"
                 icon="mdi-eraser"
                 @click="clean()"
-                v-shortkey="['del']"
                 @shortkey="clean()"
               />
               <v-btn
@@ -155,8 +155,8 @@
                 color="primary"
                 size="small"
                 icon="mdi-palette"
-                @click="showConfigModal = true"
                 class="mx-1"
+                @click="showConfigModal = true"
               />
               <v-divider vertical class="mx-2" />
               <LScreenBtn module="bible" />
@@ -169,17 +169,24 @@
             <v-list v-else class="pa-0 bg-transparent">
               <v-list-item
                 v-for="(verse, num) in verses"
-                :key="num"
-                @click="selVerse($event, num)"
                 :id="`listVerse_${num}`"
+                :key="num"
                 :active="bible.verses.includes(+num)"
                 color="primary"
                 class="rounded-lg mb-2 verse-item"
                 :variant="bible.verses.includes(+num) ? 'tonal' : 'text'"
+                @click="selVerse($event, num)"
               >
                 <div class="d-flex align-start py-2">
-                  <v-chip size="small" class="mr-4 mt-1 font-weight-bold" :color="bible.verses.includes(+num) ? 'primary' : 'default'" :variant="bible.verses.includes(+num) ? 'flat' : 'tonal'">{{ num }}</v-chip>
-                  <div v-html="verse" class="verse-text" style="font-size: 1.15rem; line-height: 1.6; color: var(--sidebar-text);"></div>
+                  <v-chip
+                    size="small"
+                    class="mr-4 mt-1 font-weight-bold"
+                    :color="bible.verses.includes(+num) ? 'primary' : 'default'"
+                    :variant="bible.verses.includes(+num) ? 'flat' : 'tonal'"
+                  >
+                    {{ num }}
+                  </v-chip>
+                  <div class="verse-text" style="font-size: 1.15rem; line-height: 1.6; color: var(--sidebar-text);" v-html="verse" />
                 </div>
               </v-list-item>
             </v-list>
@@ -189,9 +196,7 @@
           <div style="height: 220px; flex-shrink: 0; background: #000;">
             <Screen />
           </div>
-
         </div>
-        
       </div>
     </div>
   </v-slide-y-reverse-transition>
@@ -267,12 +272,12 @@ export default {
 
     book() {
       return this.books.find(
-        (b) => b.id_bible_book == this.bible.id_bible_book
+        (b) => b.id_bible_book == this.bible.id_bible_book,
       );
     },
     version() {
       return this.versions.find(
-        (b) => b.id_bible_version == this.bible.id_bible_version
+        (b) => b.id_bible_version == this.bible.id_bible_version,
       );
     },
     chapters() {
@@ -289,14 +294,14 @@ export default {
     },
     versions_list() {
       return this.versions.map((version) => ({
-        title: version.abbreviation + " - " + version.name,
+        title: `${version.abbreviation  } - ${  version.name}`,
         value: version.id_bible_version,
       }));
     },
-    compact: function () {
+    compact() {
       return this.$vuetify.display.width <= 750;
     },
-    super_compact: function () {
+    super_compact() {
       return this.$vuetify.display.width <= 400;
     },
   },
@@ -332,6 +337,9 @@ export default {
       this.send("text", this.select_bible.text);
     },
   },
+  async mounted() {
+    await this.loadData();
+  },
   methods: {
     /* METHODS OBRIGATÓRIOS - INÍCIO */
     /* NÃO MODIFICAR */
@@ -340,9 +348,9 @@ export default {
     },
     /* METHODS OBRIGATÓRIOS - FIM */
     toggleSidebar() {
-      const mainEl = document.querySelector('.main-container');
+      const mainEl = document.querySelector(".main-container");
       if (mainEl) {
-        mainEl.dispatchEvent(new CustomEvent('toggle-sidebar'));
+        mainEl.dispatchEvent(new CustomEvent("toggle-sidebar"));
       }
     },
     send(param, value) {
@@ -354,7 +362,7 @@ export default {
       if (this.books.length <= 0) {
         this.loading_book = true;
         this.books = await this.$database.get(
-          `${this.$i18n.locale}_bible_book`
+          `${this.$i18n.locale}_bible_book`,
         );
         if (!this.bible.id_bible_book) {
           await this.selBook(this.books[0].id_bible_book);
@@ -364,7 +372,7 @@ export default {
 
       if (this.versions.length <= 0) {
         this.versions = await this.$database.get(
-          `${this.$i18n.locale}_bible_version`
+          `${this.$i18n.locale}_bible_version`,
         );
         if (!this.bible.id_bible_version) {
           await this.selVersion(this.versions[0].id_bible_version);
@@ -470,7 +478,7 @@ export default {
       this.bible.verses.sort((a, b) => a - b);
       this.select_bible = Object.assign({}, this.bible);
       this.select_bible.scriptural_reference = this.scripturalReference(
-        this.select_bible
+        this.select_bible,
       );
       this.select_bible.text = this.getSelectedVerses(this.select_bible.verses);
 
@@ -491,7 +499,7 @@ export default {
       }
       if (this.select_bible?.verses && this.select_bible.verses.length > 0) {
         let verse = Math.min(
-          ...this.select_bible.verses.filter((num) => num > 0)
+          ...this.select_bible.verses.filter((num) => num > 0),
         );
         if (verse > 1) {
           verse--;
@@ -499,8 +507,8 @@ export default {
           await this.selChapter(this.select_bible.chapter - 1);
           verse = Math.max(...Object.keys(this.verses).map(Number));
         } else {
-          let bookIndex = this.books.findIndex(
-            (b) => b.id_bible_book == this.bible.id_bible_book
+          const bookIndex = this.books.findIndex(
+            (b) => b.id_bible_book == this.bible.id_bible_book,
           );
           const book =
             bookIndex > 0
@@ -533,8 +541,8 @@ export default {
           await this.selChapter(this.select_bible.chapter + 1);
           verse = 1;
         } else {
-          let bookIndex = this.books.findIndex(
-            (b) => b.id_bible_book == this.bible.id_bible_book
+          const bookIndex = this.books.findIndex(
+            (b) => b.id_bible_book == this.bible.id_bible_book,
           );
           const book =
             bookIndex < this.books.length - 1
@@ -552,7 +560,7 @@ export default {
 
       numbers.sort((a, b) => a - b);
 
-      let result = [];
+      const result = [];
       let start = numbers[0];
       let end = numbers[0];
 
@@ -583,11 +591,11 @@ export default {
       }
 
       return (
-        data.book +
-        " " +
-        data.chapter +
-        (verses_interval ? `:${verses_interval}` : "") +
-        (data.version ? ` (${data.version})` : "")
+        `${data.book 
+        } ${ 
+          data.chapter 
+        }${verses_interval ? `:${verses_interval}` : "" 
+        }${data.version ? ` (${data.version})` : ""}`
       ).trim();
     },
 
@@ -608,7 +616,7 @@ export default {
 
       return result;
     },
-    clean: function () {
+    clean() {
       this.bible.verses = [];
       this.select_bible = {
         id_bible_version: null,
@@ -636,9 +644,6 @@ export default {
         text: null,
       };
     },
-  },
-  async mounted() {
-    await this.loadData();
   },
 };
 </script>

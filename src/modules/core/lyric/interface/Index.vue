@@ -4,12 +4,12 @@
     :title="config?.title"
     :subtitle="
       (config?.subtitle || '') +
-      (config?.track > 0 ? ' | ' + t('track') + ' ' + config.track : '')
+        (config?.track > 0 ? ' | ' + t('track') + ' ' + config.track : '')
     "
     closable
     size="small"
-    @close="$media.closeLyric()"
     class="modern-lyric-window"
+    @close="$media.closeLyric()"
   >
     <div class="h-100">
       <v-skeleton-loader v-if="module.loading" type="text@5" />

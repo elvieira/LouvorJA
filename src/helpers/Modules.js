@@ -1,6 +1,7 @@
 import $dev from "@/helpers/Dev";
 import $appdata from "@/helpers/AppData";
 import $media from "@/helpers/Media";
+import $history from "@/helpers/History";
 
 export default {
   open(id) {
@@ -22,7 +23,7 @@ export default {
       if (key !== id && modules[key].show) {
         $appdata.set(`modules.${key}.show`, false);
         // Remove da TrayArea (exceto home que não vai para tray)
-        if (key !== 'home') {
+        if (key !== "home") {
           this.removeTray(key);
         }
       }
@@ -73,7 +74,7 @@ export default {
       return $appdata.get("modules");
     }
 
-    if (typeof list == "string") {
+    if (typeof list === "string") {
       return $appdata.get(`modules.${list}`);
     }
 
@@ -93,7 +94,7 @@ export default {
                 icon: "mdi-alert-circle-outline",
               },
             ];
-          })
+          }),
         ),
       };
     } catch (e) {
@@ -105,14 +106,14 @@ export default {
       console.error(`Módulo ${id} não encontrado!`);
       return;
     }
-    $appdata.addElement(`tray_area.modules`, id);
+    $appdata.addElement("tray_area.modules", id);
   },
   removeTray(id) {
     if (!this.check(id)) {
       console.error(`Módulo ${id} não encontrado!`);
       return;
     }
-    $appdata.removeElement(`tray_area.modules`, id);
+    $appdata.removeElement("tray_area.modules", id);
   },
   getTray() {
     return this.get($appdata.get("tray_area.modules"));
@@ -127,7 +128,7 @@ export default {
 
   getGroups() {
     const module_group = JSON.parse(
-      JSON.stringify($appdata.get("module_group") || {})
+      JSON.stringify($appdata.get("module_group") || {}),
     );
     Object.keys(module_group).forEach((key) => {
       if (module_group[key].modules?.length <= 0) {

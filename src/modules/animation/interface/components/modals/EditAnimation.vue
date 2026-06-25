@@ -17,15 +17,25 @@
             <g transform="translate(50 50)">
               <!-- starting at -15, incrementing by 30 for each hour -->
               <g class="hours" transform="rotate(-15)">
-                <circle cx="0" cy="0" r="50" fill="#fff"></circle>
-                <path d="M 0 -50 v 50 l 28.86 -50" fill="#000"></path>
+                <circle
+                  cx="0"
+                  cy="0"
+                  r="50"
+                  fill="#fff"
+                />
+                <path d="M 0 -50 v 50 l 28.86 -50" fill="#000" />
               </g>
             </g>
           </mask>
         </defs>
 
         <!-- circle making up the bottom of the clock -->
-        <circle cx="50" cy="50" r="46" fill="#303335"></circle>
+        <circle
+          cx="50"
+          cy="50"
+          r="46"
+          fill="#303335"
+        />
 
         <!-- circle with the accent color, overlaid before the text elements -->
         <circle
@@ -34,7 +44,7 @@
           r="42"
           fill="#EA3F3F"
           filter="url(#shadow-large)"
-        ></circle>
+        />
 
         <!-- text elements, positioned from the center around the clock -->
         <g
@@ -64,7 +74,7 @@
           cy="50"
           r="50"
           fill="#303335"
-        ></circle>
+        />
 
         <!-- smaller circle on which the hands sit -->
         <circle
@@ -73,20 +83,25 @@
           r="4"
           filter="url(#shadow-small)"
           fill="#303335"
-        ></circle>
+        />
 
         <!-- clock's hands -->
         <!-- centered in the clock and rotated according to the passage of time in the 0-360 range -->
         <g class="hands" transform="translate(50 50)">
           <g class="minutes" transform="rotate(240)">
             <!-- change rotation of this group to affect both clock's hand -->
-            <path fill="#fff" d="M -0.4 8 h 0.8 v -33 h -0.8 z"></path>
-            <circle fill="#303335" cx="0" cy="0" r="0.6"></circle>
+            <path fill="#fff" d="M -0.4 8 h 0.8 v -33 h -0.8 z" />
+            <circle
+              fill="#303335"
+              cx="0"
+              cy="0"
+              r="0.6"
+            />
           </g>
 
           <g class="seconds" transform="rotate(80)">
             <!-- change rotation of this group to affect both clock's hand -->
-            <path fill="#EA3F3F" d="M -0.4 10 h 0.8 v -45 h -0.8 z"></path>
+            <path fill="#EA3F3F" d="M -0.4 10 h 0.8 v -45 h -0.8 z" />
             <circle
               stroke-width="0.4"
               stroke="#EA3F3F"
@@ -94,7 +109,7 @@
               cx="0"
               cy="0"
               r="0.8"
-            ></circle>
+            />
           </g>
         </g>
       </svg>
@@ -268,11 +283,11 @@ onMounted(() => {
         // remove the event listeners from the input buttons until the animation is complete
         begin: () =>
           buttons.forEach((button) =>
-            button.removeEventListener("click", handleClick)
+            button.removeEventListener("click", handleClick),
           ),
         complete: () =>
           buttons.forEach((button) =>
-            button.addEventListener("click", handleClick)
+            button.addEventListener("click", handleClick),
           ),
       });
 
