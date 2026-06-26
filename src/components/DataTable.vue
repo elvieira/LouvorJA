@@ -115,21 +115,29 @@ export default {
       const filter = this.filter
         ? Object.keys(this.filter).filter((key) => this.filter[key] === true)
         : [];
+      
       this.filter_data = this.all_data
         .filter((item) => {
-          const searchableCondition =
-            searchable.length === 0 ||
-            value == "" ||
-            searchable.some((key) => {
-              if (!isNaN(item[key]) && !isNaN(value)) {
+          const isPureNumber = !isNaN(value) && value !== "";
+          let searchableCondition = false;
+          
+          if (searchable.length === 0 || value === "") {
+            searchableCondition = true;
+          } else if (isPureNumber) {
+            searchableCondition = searchable.some((key) => {
+              if (!isNaN(item[key]) && item[key] !== null && item[key] !== "") {
                 return Number(item[key]) === Number(value);
-              } else if (isNaN(item[key])) {
-                return this.$string.clean(item[key]).includes(value);
-              } 
+              }
               return false;
-              
+            }) || (item.albums && item.albums.some(al => al.type === 'hymnal' && Number(al.pivot?.track) === Number(value)));
+          } else {
+            searchableCondition = searchable.some((key) => {
+              if (isNaN(item[key]) || item[key] === null) {
+                return this.$string.clean(item[key]).includes(value);
+              }
+              return false;
             });
-
+          }
           const filterCondition =
             filter.length === 0 ||
             filter.some((key) => item[key] === true || item[key] === 1);
@@ -148,6 +156,18 @@ export default {
           return searchableCondition && filterCondition && initialLetter;
         })
         .slice();
+
+      if (!isNaN(value) && value !== "") {
+        const numValue = Number(value);
+        this.filter_data.sort((a, b) => {
+          const getScore = (item) => {
+            if (item.albums?.some(al => al.type === 'hymnal' && al.name === 'Hinário Adventista' && Number(al.pivot?.track) === numValue)) return 2;
+            if (item.albums?.some(al => al.type === 'hymnal' && al.name === 'Hinário Adventista 1996' && Number(al.pivot?.track) === numValue)) return 1;
+            return 0;
+          };
+          return getScore(b) - getScore(a);
+        });
+      }
 
       this.paginateData();
     },

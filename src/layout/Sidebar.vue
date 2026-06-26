@@ -112,10 +112,34 @@
     <div class="sidebar-footer">
       <div v-if="isDesktop" class="nav-item" :class="{ active: currentModule === 'sync' }">
         <a href="#" class="nav-link" @click.prevent="openModule('sync')">
-          <v-icon class="nav-icon" :color="currentModule === 'sync' ? '' : 'primary'">
+          <v-icon 
+            class="nav-icon" 
+            :color="currentModule === 'sync' ? '' : 'primary'"
+          >
             mdi-library
           </v-icon>
           <span class="nav-text font-weight-bold" :style="{ color: currentModule === 'sync' ? '' : 'var(--accent-blue)' }">Biblioteca Local</span>
+          
+          <div 
+            v-if="isDownloading"
+            class="v-icon"
+            style="position: relative; margin-left: auto; width: 22px; height: 22px;"
+          >
+            <v-icon 
+              class="mdi-spin" 
+              :color="currentModule === 'sync' ? '' : 'primary'"
+              style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"
+            >
+              mdi-loading
+            </v-icon>
+            <v-icon 
+              :color="currentModule === 'sync' ? '' : 'primary'"
+              size="12"
+              style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); margin: 0;"
+            >
+              mdi-arrow-down
+            </v-icon>
+          </div>
         </a>
       </div>
       
@@ -241,6 +265,9 @@ export default {
     },
     isDev() {
       return this.$appdata.get("is_dev");
+    },
+    isDownloading() {
+      return this.$appdata.get("sync_is_downloading") === true;
     },
   },
   mounted() {

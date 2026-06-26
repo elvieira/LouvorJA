@@ -1,11 +1,19 @@
 <template>
   <v-slide-y-reverse-transition>
     <div v-if="module?.show" class="module-full-page dashboard-home d-flex flex-column">
-      <div class="search-header">
-        <!-- Botão para abrir sidebar em telas pequenas -->
-        <MenuToggleButton style="margin: 0;" @toggle-sidebar="toggleSidebar" />
+      <div class="search-header-container" :class="(searchQuery || shouldShowHistory) ? 'search-header d-flex align-center w-100' : 'hero-search-header d-flex flex-column align-center justify-center'" :style="(searchQuery || shouldShowHistory) ? 'padding: 24px 32px 10px 32px; position: relative;' : 'flex: 1; position: relative; padding: 32px; transition: all 0.5s ease;'">
+        <!-- Botão menu em telas pequenas -->
+        <div :style="(searchQuery || shouldShowHistory) ? 'flex: 1; display: flex; align-items: center;' : 'position: absolute; top: 24px; left: 32px;'">
+          <MenuToggleButton style="margin: 0;" @toggle-sidebar="toggleSidebar" />
+        </div>
         
-        <div class="search-bar">
+        <div class="hero-content d-flex flex-column align-center w-100" v-if="!searchQuery && !shouldShowHistory" style="animation: fadeIn 0.5s ease;">
+          <img src="/ico/favicon.svg" alt="LouvorJA" style="width: 80px; height: 80px; margin-bottom: 24px;" />
+          <h1 class="hero-title mb-8" style="font-size: 2.5rem; font-weight: 700; color: var(--sidebar-text);">O que vamos cantar?</h1>
+        </div>
+        
+        <!-- Centro (Barra de pesquisa) -->
+        <div class="search-bar" :style="(searchQuery || shouldShowHistory) ? 'flex: 2; display: flex; justify-content: center; transition: all 0.5s ease;' : 'width: 100%; max-width: 650px; transition: all 0.5s ease;'">
           <v-text-field
             v-model="searchQuery"
             :placeholder="t('search_placeholder')"
@@ -15,12 +23,18 @@
             hide-details
             clearable
             rounded
+            @keydown.enter="playFirstResult"
+            :style="(searchQuery || shouldShowHistory) ? 'width: 100%; max-width: 600px;' : 'width: 100%;'"
+            class="search-input-hero"
           />
         </div>
+
+        <!-- Lado direito (Espaçador para manter o centro perfeito) -->
+        <div v-if="(searchQuery || shouldShowHistory)" style="flex: 1;"></div>
       </div>
 
       <!-- Conteúdo Principal -->
-      <div class="content-main">
+      <div class="content-main" v-if="searchQuery || shouldShowHistory">
         <!-- Resultados da Pesquisa -->
         <div v-if="searchQuery" class="dashboard-section music-section h-100 d-flex flex-column" style="min-height: 0;">
           <h2 class="section-title mb-4">
@@ -32,7 +46,6 @@
               :search="searchQuery"
               :searchable_fields="{
                 name: true,
-                albums_names: true,
               }"
               sort_by="name"
               :file="`${$i18n.locale}_musics`"
@@ -49,6 +62,7 @@
                 >
                   <td class="music-info flex-grow-1" style="border-bottom: none; padding-left: 24px !important;">
                     <h4 class="music-title">
+                      <span v-if="getHymnalTrack(item)" style="color: var(--accent-blue); margin-right: 8px;">{{ getHymnalTrack(item) }}</span>
                       {{ item.name }}
                     </h4>
                     <p class="music-artist" style="margin-top: 4px;">
@@ -77,7 +91,7 @@
           </div>
         </div>
 
-        <template v-else>
+        <template v-else-if="shouldShowHistory && !searchQuery">
           <!-- Coletâneas Recentes -->
           <div class="dashboard-section collections-section">
             <h2 class="section-title">
@@ -95,8 +109,14 @@
                 class="collection-card"
                 @click="openCollection(collection)"
               >
-                <div class="card-image" :style="getCollectionStyle(collection)">
-                  <v-icon v-if="!getCollectionImage(collection)" size="48">
+                <div class="card-image" style="position: relative;">
+                  <v-img 
+                    v-if="getCollectionImage(collection)" 
+                    :src="getCollectionImage(collection)" 
+                    cover 
+                    style="width: 100%; height: 100%; position: absolute; inset: 0;"
+                  />
+                  <v-icon v-else size="48" style="position: relative; z-index: 1;">
                     {{ collection.icon }}
                   </v-icon>
                 </div>
@@ -165,6 +185,9 @@ import MenuToggleButton from "@/components/MenuToggleButton.vue";
 import LTable from "@/components/DataTable.vue";
 import LMusicMenuTable from "@/components/MusicMenuTable.vue";
 
+import hymnalImg from "@/assets/images/hymnal.jpeg";
+import hymnal1996Img from "@/assets/images/hymnal_1996.jpeg";
+
 export default {
   name: manifest.id,
   components: {
@@ -178,6 +201,9 @@ export default {
       searchData: [],
       manifest,
       dynamicCollectionInfo: {},
+      show_home_history: true,
+      hymnalImg,
+      hymnal1996Img,
     };
   },
   computed: {
@@ -208,6 +234,11 @@ export default {
       });
       
       return result;
+    },
+
+    // Retorna se deve exibir o histórico (baseado na config e se há itens)
+    shouldShowHistory() {
+      return this.show_home_history && (this.displayCollections.length > 0 || this.topSongs.length > 0);
     },
     
     // Coletâneas para exibir (dinâmico via histórico)
@@ -244,9 +275,20 @@ export default {
       deep: true,
       immediate: true,
     },
+    'module.show': {
+      handler(newVal) {
+        if (newVal) {
+          const setting = this.$userdata.get("show_home_history");
+          this.show_home_history = setting !== false;
+        }
+      },
+      immediate: true,
+    }
   },
   mounted() {
     this.fetchCollectionInfo();
+    const setting = this.$userdata.get("show_home_history");
+    this.show_home_history = setting !== false;
   },
   methods: {
     /* METHODS OBRIGATÓRIOS - INÍCIO */
@@ -286,6 +328,31 @@ export default {
                 }
               }
             }
+
+            // Fallback para buscar a imagem nas categorias, independentemente do tipo salvo
+            if (!info.url_image) {
+              if (!allCategories) {
+                allCategories = await this.$database.get(`${this.$i18n.locale}_categories`);
+              }
+              if (allCategories) {
+                for (const cat of allCategories) {
+                  const albumObj = cat.albums?.find(a => a.id_album === col.id || a.id_album === col.module || a.id_album === col.id.replace('hymnal', 'hasd'));
+                  if (albumObj && albumObj.url_image) {
+                    info.url_image = albumObj.url_image;
+                    break;
+                  }
+                }
+              }
+            }
+            
+            // Verificar imagens locais
+            if (info.url_image && window.electronAPI) {
+              const imgRelativePath = info.url_image.replace(/^\/(musics|images|covers)\//, '');
+              const localCheck = await window.electronAPI.checkMedia('covers', imgRelativePath);
+              if (localCheck) {
+                info.local_url_image = localCheck;
+              }
+            }
             
             // Atualiza de forma reativa
             this.dynamicCollectionInfo = {
@@ -299,21 +366,38 @@ export default {
       }
     },
     
-    getCollectionStyle(collection) {
-      const url = this.getCollectionImage(collection);
-      if (url) {
-        return {
-          backgroundImage: `url(${this.$path.file(url)})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundColor: "transparent",
-        };
-      }
-      return {};
-    },
-    
     getCollectionImage(collection) {
-      return collection.url_image || null;
+      const name = this.getCollectionName(collection) || '';
+      
+      // 1996 tem prioridade na verificação para não cair na regra geral do hinário
+      if (
+        collection.id === 'hymnal_1996' || 
+        collection.module === 'hymnal_1996' || 
+        collection.id === 'ha1996' ||
+        name.includes('1996') ||
+        (collection.url_image && collection.url_image.includes('1996'))
+      ) {
+        return this.hymnal1996Img;
+      }
+      
+      if (
+        collection.id === 'hymnal' || 
+        collection.module === 'hymnal' || 
+        collection.id === 'hasd' ||
+        name.includes('Hinário') ||
+        collection.url_image === '/covers/hasd.bmp'
+      ) {
+        return this.hymnalImg;
+      }
+      
+      if (collection.local_url_image) {
+        return collection.local_url_image;
+      }
+      
+      if (collection.url_image) {
+        return this.$path.file(collection.url_image);
+      }
+      return null;
     },
 
     toggleSidebar() {
@@ -355,6 +439,25 @@ export default {
     
     getCollectionName(collection) {
       return collection.name || this.$t(collection.title) || collection.id;
+    },
+    
+    playFirstResult() {
+      if (this.searchData && this.searchData.data && this.searchData.data.length > 0) {
+        const first = this.searchData.data[0];
+        if (first.id_music) {
+          this.$media.open({ id_music: first.id_music, mode: 'audio' });
+        }
+      }
+    },
+    
+    getHymnalTrack(item) {
+      if (item && item.albums) {
+        const hymnalAlbum = item.albums.find(a => a.type === 'hymnal');
+        if (hymnalAlbum && hymnalAlbum.pivot && hymnalAlbum.pivot.track) {
+          return hymnalAlbum.pivot.track;
+        }
+      }
+      return null;
     },
     
     openAlbum(id_album) {

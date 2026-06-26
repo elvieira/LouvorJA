@@ -15,8 +15,28 @@ export default {
     }
     $dev.write("open media", params);
 
-    this.stopAudio();
-    this.clearVariables();
+    const isSameSong = params.id_music === $appdata.get("modules.media.id_music");
+    let savedTime = 0;
+    
+    let audio = this.getElement();
+    const volume = $appdata.get("modules.media.config.volume") / 100;
+    const fadeAudioEnabled = $userdata.get("modules.media.fade_audio") !== false;
+
+    if (isSameSong) {
+      savedTime = audio.currentTime;
+      if (fadeAudioEnabled && !audio.paused && audio.volume > 0) {
+        this.fadeOut(audio, 1000).catch(() => {});
+      } else {
+        audio.pause();
+      }
+      
+      this.switchActiveElement();
+      audio = this.getElement();
+    } else {
+      this.stopAudio();
+      this.clearVariables();
+      audio = this.getElement();
+    }
 
     const id_music = params.id_music;
     const minimized = params.minimized ? params.minimized : false;
@@ -30,15 +50,17 @@ export default {
       this.close(true);
       return;
     }
-    $appdata.set("modules.media.data", data);
-
-    $appdata.set("modules.media.id_music", id_music);
-    $appdata.set("modules.media.id_album", id_album);
-    $appdata.set("modules.media.config.slide_index", 0);
-    $appdata.set("modules.media.config.title", data.name);
-    $appdata.set("modules.media.config.last_slide", this.slides().length);
-    $appdata.set("modules.media.times", []);
-    this.setAlbumInfo(id_album);
+    
+    if (!isSameSong) {
+      $appdata.set("modules.media.data", data);
+      $appdata.set("modules.media.id_music", id_music);
+      $appdata.set("modules.media.id_album", id_album);
+      $appdata.set("modules.media.config.slide_index", 0);
+      $appdata.set("modules.media.config.title", data.name);
+      $appdata.set("modules.media.config.last_slide", this.slides().length);
+      $appdata.set("modules.media.times", []);
+      this.setAlbumInfo(id_album);
+    }
 
     // Registrar reprodução no histórico
     const albumInfo = data.albums && data.albums.length > 0
@@ -83,7 +105,9 @@ export default {
       audio.volume = volume / 100;
 
       this.pause(true);
-      audio.currentTime = 0;
+      if (!isSameSong) {
+        audio.currentTime = 0;
+      }
 
       //Grava os tempos dos slides
       $appdata.set(
@@ -110,7 +134,7 @@ export default {
         this.close(true);
         $appdata.set("modules.media.loading", false);
         $alert.error({ 
-          text: "Mídia não encontrada no computador! Vá no Menu Lateral > Sincronização Local e clique em Baixar Coletânea.",
+          text: "Essa coletânea ainda não foi baixada. Acesse a Biblioteca Local para baixá-la.",
           translate: false
         });
         return; // Interrompe a execução completamente
@@ -125,7 +149,16 @@ export default {
     $appdata.set("modules.media.config.lazy", false);
     $appdata.set("modules.media.loading", false);
     
-    this.play();
+    if (isSameSong && savedTime > 0) {
+      audio.currentTime = savedTime;
+      if (fadeAudioEnabled) {
+        this.fadeIn(audio, volume / 100, 1000).catch(() => {});
+      } else {
+        this.play();
+      }
+    } else {
+      this.play();
+    }
   } else {
     $appdata.set("modules.media.config.audio", "");
     $appdata.set("modules.media.loading", false);
@@ -256,9 +289,11 @@ export default {
   },
 
   stopAudio() {
-    const audio = this.getElement();
+    const audioA = this.getElement("a");
+    const audioB = this.getElement("b");
     this.pause(true, () => {
-      audio.setAttribute("src", "");
+      audioA.setAttribute("src", "");
+      audioB.setAttribute("src", "");
     });
   },
 
@@ -541,20 +576,71 @@ export default {
       this.close(true);
     }
   },
-  getElement() {
-    let el;
-    const id = "__audio";
-    if (!document.getElementById(id)) {
+  async fadeOut(audio, durationMs = 1000) {
+    return new Promise((resolve) => {
+      const startVolume = audio.volume;
+      if (startVolume <= 0 || audio.paused) return resolve();
+      
+      const step = startVolume / (durationMs / 50);
+      const interval = setInterval(() => {
+        if (audio.volume - step > 0) {
+          audio.volume -= step;
+        } else {
+          audio.volume = 0;
+          audio.pause();
+          clearInterval(interval);
+          resolve();
+        }
+      }, 50);
+    });
+  },
+  async fadeIn(audio, targetVolume, durationMs = 1000) {
+    return new Promise((resolve) => {
+      audio.volume = 0;
+      audio.play().catch(() => {});
+      $appdata.set("modules.media.config.is_paused", false);
+      
+      const step = targetVolume / (durationMs / 50);
+      const interval = setInterval(() => {
+        if (audio.volume + step < targetVolume) {
+          audio.volume += step;
+        } else {
+          audio.volume = targetVolume;
+          clearInterval(interval);
+          resolve();
+        }
+      }, 50);
+    });
+  },
+  switchActiveElement() {
+    const active = $appdata.get("modules.media.config.active_audio") || "a";
+    $appdata.set("modules.media.config.active_audio", active === "a" ? "b" : "a");
+  },
+  getElement(forceId = null) {
+    const active = forceId || $appdata.get("modules.media.config.active_audio") || "a";
+    const id = `__audio_${active}`;
+    
+    let el = document.getElementById(id);
+    if (!el) {
       el = document.createElement("audio");
       el.setAttribute("id", id);
       el.setAttribute("preload", "auto");
       document.body.appendChild(el);
-      el.addEventListener("timeupdate", this.timeUpdate.bind(this));
-      el.addEventListener("progress", this.timeUpdate.bind(this));
-    } else {
-      el = document.getElementById(id);
+      
+      const self = this;
+      el.addEventListener("timeupdate", function() {
+        const currentActive = $appdata.get("modules.media.config.active_audio") || "a";
+        if (this.id === `__audio_${currentActive}`) {
+          self.timeUpdate.bind(self)();
+        }
+      });
+      el.addEventListener("progress", function() {
+        const currentActive = $appdata.get("modules.media.config.active_audio") || "a";
+        if (this.id === `__audio_${currentActive}`) {
+          self.timeUpdate.bind(self)();
+        }
+      });
     }
-
     el.setAttribute("autoplay", true);
     return el;
   },

@@ -2,20 +2,20 @@
   <v-slide-y-reverse-transition>
     <div v-if="module?.show" class="module-full-page dashboard-home d-flex flex-column bg-main">
       <!-- Cabeçalho Integrado com Abas -->
-      <div class="search-header pb-0 flex-shrink-0" style="padding-top: 24px; padding-left: 24px; padding-right: 24px; display: flex; align-items: center; justify-content: space-between;">
-        <div class="d-flex align-center">
-          <MenuToggleButton style="margin-right: 16px;" @toggle-sidebar="toggleSidebar" />
+      <div class="search-header pb-0 flex-shrink-0" style="padding-top: 24px; padding-left: 24px; padding-right: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+        <div class="d-flex align-center" style="flex-shrink: 0;">
+          <MenuToggleButton style="margin-right: 16px; flex-shrink: 0;" @toggle-sidebar="toggleSidebar" />
           
-          <div class="module-icon-box d-flex align-center justify-center mr-4">
+          <div class="module-icon-box d-flex align-center justify-center mr-4" style="flex-shrink: 0;">
             <v-icon :icon="manifest.icon || 'mdi-cog'" size="24" />
           </div>
-          <h2 class="section-title mb-0" style="color: var(--sidebar-text); font-size: 24px; font-weight: 600; line-height: 1;">
+          <h2 class="section-title mb-0" style="color: var(--sidebar-text); font-size: 24px; font-weight: 600; line-height: 1; white-space: nowrap;">
             Configurações Gerais
           </h2>
         </div>
 
-        <div class="d-flex align-center">
-          <v-tabs v-model="tab" color="var(--accent-blue)" class="mr-4">
+        <div class="d-flex align-center" style="max-width: 100%; overflow-x: auto;">
+          <v-tabs v-model="tab" color="var(--accent-blue)">
             <v-tab :value="1">Aparência</v-tab>
             <v-tab :value="2">Geral</v-tab>
             <v-tab :value="3">Mídia & Player</v-tab>
@@ -127,6 +127,20 @@
                       bg-color="transparent"
                       class="font-weight-medium"
                     />
+                  </v-card-text>
+                </v-card>
+
+                <!-- Layout da Página Inicial -->
+                <v-card class="settings-card rounded-xl pa-2" flat style="background: var(--card-bg); box-shadow: var(--shadow);">
+                  <v-card-text class="pa-6">
+                    <div class="d-flex align-center mb-6">
+                      <v-icon color="primary" class="mr-3" size="28">mdi-view-dashboard</v-icon>
+                      <div>
+                        <h3 class="font-weight-bold" style="color: var(--sidebar-text); font-size: 1.1rem; line-height: 1.2;">Layout da Tela Inicial</h3>
+                        <div class="text-caption" style="color: var(--sidebar-text-secondary);">Exibir as coletâneas e músicas mais tocadas.</div>
+                      </div>
+                    </div>
+                    <v-switch v-model="show_home_history" label="Ativar modo histórico" color="primary" inset hide-details class="font-weight-medium" />
                   </v-card-text>
                 </v-card>
 
@@ -372,6 +386,7 @@ export default {
   data: () => ({
     tab: 1,
     language: "Português",
+    show_home_history: true,
     hardware_accel: true,
     fullscreen_mode: false,
     
@@ -424,6 +439,17 @@ export default {
     // Configura o toggle inicial para coincidir com o modo ativo
     if(this.$userdata.get("theme")){
       this.$vuetify.theme.global.name = this.$userdata.get("theme");
+    }
+    
+    // Load show_home_history
+    const saved_home_history = this.$userdata.get("show_home_history");
+    if (saved_home_history !== undefined && saved_home_history !== null) {
+      this.$data.show_home_history = saved_home_history;
+    }
+  },
+  watch: {
+    show_home_history(val) {
+      this.$userdata.set("show_home_history", val);
     }
   },
   methods: {

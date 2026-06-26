@@ -117,11 +117,11 @@
         <div class="bible-verses-col d-flex flex-column flex-grow-1" style="background: var(--card-bg, #fff); border-radius: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid var(--border-color, rgba(0,0,0,0.05)); min-height: 0;">
           <!-- Título do Texto Atual -->
           <div class="pa-4 d-flex justify-space-between align-center" style="border-bottom: 1px solid var(--border-color, rgba(0,0,0,0.05));">
-            <h3 style="font-size: 1.3rem; color: var(--sidebar-text); font-weight: 600; line-height: 1;">
+            <h3 class="scriptural-reference-title" style="font-size: 1.3rem; color: var(--sidebar-text); font-weight: 600; line-height: 1;">
               {{ scripturalReference(bible) }}
             </h3>
             
-            <div class="d-flex align-center" style="gap: 8px;">
+            <div class="d-flex align-center ml-auto" style="gap: 8px;">
               <v-btn
                 v-shortkey="['arrowleft']"
                 :disabled="!(select_bible?.verses && select_bible.verses.length > 0)"
@@ -155,7 +155,7 @@
                 color="primary"
                 size="small"
                 icon="mdi-palette"
-                class="mx-1"
+                class="mx-1 config-palette-btn"
                 @click="showConfigModal = true"
               />
               <v-divider vertical class="mx-2" />
@@ -647,3 +647,22 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.bible-verses-col {
+  container-type: inline-size;
+  container-name: verses-col;
+}
+
+@container verses-col (max-width: 510px) {
+  .scriptural-reference-title {
+    display: none !important;
+  }
+}
+
+@container verses-col (max-width: 310px) {
+  .config-palette-btn {
+    display: none !important;
+  }
+}
+</style>

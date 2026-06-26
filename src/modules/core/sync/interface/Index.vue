@@ -144,8 +144,11 @@ import $db from "@/helpers/Database";
 import manifest from "../manifest.json";
 import MenuToggleButton from "@/components/MenuToggleButton.vue";
 
+import hymnalImg from "@/assets/images/hymnal.jpeg";
+import hymnal1996Img from "@/assets/images/hymnal_1996.jpeg";
+
 export default {
-  name: manifest.id,
+  name: "SyncIndex",
   components: {
     MenuToggleButton,
   },
@@ -156,6 +159,8 @@ export default {
       loadingList: false,
       cancelToken: false,
       isDownloadingAll: false,
+      hymnalImg,
+      hymnal1996Img,
     };
   },
   computed: {
@@ -207,7 +212,7 @@ export default {
             id_album: 'hymnal',
             name: 'Hinário Adventista',
             subtitle: 'Hinário oficial com ' + hymnal.length + ' hinos',
-            coverUrl: null,
+            coverUrl: this.hymnalImg,
             status: manifest.includes('hymnal') ? 'downloaded' : 'idle',
             progress: 0,
             totalCount: 0,
@@ -221,7 +226,7 @@ export default {
             id_album: 'hymnal_1996',
             name: 'Hinário Adventista (1996)',
             subtitle: 'Edição de 1996 com ' + hymnal1996.length + ' hinos',
-            coverUrl: null,
+            coverUrl: this.hymnal1996Img,
             status: manifest.includes('hymnal_1996') ? 'downloaded' : 'idle',
             progress: 0,
             totalCount: 0,
@@ -279,8 +284,15 @@ export default {
       
       this.loadingList = false;
     },
+    checkGlobalDownloadState() {
+      const isDownloading = this.categoriesWithAlbums.some(cat => cat.albums.some(a => a.status === 'downloading'));
+      this.$appdata.set("sync_is_downloading", isDownloading);
+    },
     async downloadAlbum(album) {
       if (!window.electronAPI) return;
+      if (this.cancelToken) return;
+      
+      this.$appdata.set("sync_is_downloading", true);
       
       album.status = 'downloading';
       album.progress = 0;
@@ -391,17 +403,19 @@ export default {
           }));
         }
         
-        if (this.cancelToken || album.cancelToken) {
+        if (this.cancelToken) {
           album.status = 'idle';
-          return;
+          album.progressText = 'Cancelado';
+        } else {
+          album.status = 'downloaded';
+          await this.markAlbumDownloaded(album.id_album);
         }
-        
-        album.status = 'downloaded';
-        await this.markAlbumDownloaded(album.id_album);
-        
       } catch (error) {
-        console.error("Erro ao baixar coletânea:", error);
-        album.status = 'idle';
+        console.error("Erro ao baixar album:", error);
+        album.status = 'error';
+        album.progressText = 'Erro ao baixar';
+      } finally {
+        this.checkGlobalDownloadState();
       }
     },
     async markAlbumDownloaded(albumId) {
@@ -412,8 +426,9 @@ export default {
       }
     },
     async downloadAllAlbums() {
-      this.cancelToken = false;
+      if (this.hasNoIdleAlbums) return;
       this.isDownloadingAll = true;
+      this.$appdata.set("sync_is_downloading", true);
       
       for (const cat of this.categoriesWithAlbums) {
         for (const album of cat.albums) {
@@ -426,6 +441,7 @@ export default {
       }
       
       this.isDownloadingAll = false;
+      this.$appdata.set("sync_is_downloading", false);
     },
     cancelAll() {
       this.cancelToken = true;

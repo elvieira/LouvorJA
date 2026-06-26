@@ -6,46 +6,36 @@
   flex-direction: column;
 }
 
-.search-header {
+.search-header, .hero-search-header {
   background: transparent;
-  padding: 20px 32px 10px 32px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-shrink: 0;
-  gap: 16px;
-  
-  .search-bar {
-    max-width: 500px;
-    width: 100%;
-    flex: 1;
+}
+
+.dashboard-home .search-bar {
+  .v-field {
+    background: var(--card-bg) !important;
+    box-shadow: var(--shadow) !important;
+    border-radius: 25px !important;
     
-    .v-field {
-      background: var(--card-bg) !important;
-      box-shadow: var(--shadow) !important;
-      border-radius: 25px !important;
+    .v-field__input {
+      padding: 12px 20px !important;
+      font-size: 14px !important;
+    }
+    
+    .v-field__prepend-inner {
+      padding-left: 16px !important;
       
-      .v-field__input {
-        padding: 12px 20px !important;
-        font-size: 14px !important;
+      .v-icon {
+        color: var(--accent-blue) !important;
+        opacity: 0.7;
       }
-      
-      .v-field__prepend-inner {
-        padding-left: 16px !important;
-        
-        .v-icon {
-          color: var(--accent-blue) !important;
-          opacity: 0.7;
-        }
-      }
-      
-      &:hover {
-        box-shadow: var(--shadow-hover) !important;
-      }
-      
-      &.v-field--focused {
-        box-shadow: 0 4px 20px rgba(0, 151, 215, 0.15) !important;
-      }
+    }
+    
+    &:hover {
+      box-shadow: var(--shadow-hover) !important;
+    }
+    
+    &.v-field--focused {
+      box-shadow: 0 4px 20px rgba(0, 151, 215, 0.15) !important;
     }
   }
 }
@@ -109,27 +99,6 @@
     cursor: grabbing;
   }
   
-  &::-webkit-scrollbar {
-    height: 8px;
-  }
-  
-  &::-webkit-scrollbar-track {
-    background: var(--border-color);
-    border-radius: 4px;
-  }
-  
-  &::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-blue-dark) 100%);
-    border-radius: 4px;
-    
-    &:hover {
-      background: linear-gradient(135deg, var(--accent-blue-dark) 0%, var(--accent-blue) 100%);
-    }
-  }
-  
-  &:hover::-webkit-scrollbar-thumb {
-    background: var(--accent-yellow);
-  }
 }
 
 // === CARDS ===
@@ -140,7 +109,7 @@
   transition: var(--transition);
   cursor: pointer;
   overflow: hidden;
-  min-width: 280px;
+  width: clamp(150px, 20vh, 250px);
   flex-shrink: 0;
   
   &:hover {
@@ -150,7 +119,8 @@
   
   .card-image {
     width: 100%;
-    height: 160px;
+    aspect-ratio: 1 / 1;
+    height: auto;
     background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-blue-dark) 100%);
     display: flex;
     align-items: center;
@@ -158,18 +128,6 @@
     color: white;
     font-size: 48px;
     position: relative;
-    
-    &::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      right: 0;
-      width: 40px;
-      height: 40px;
-      background: var(--accent-yellow);
-      border-radius: 0 0 0 20px;
-      opacity: 0.8;
-    }
   }
   
   .card-content {
@@ -219,26 +177,7 @@
     flex: 1 1 auto;
     height: 100%;
     
-    &::-webkit-scrollbar {
-      width: 8px;
-    }
-    
-    &::-webkit-scrollbar-track {
-      background: var(--border-color);
-    }
-    
-    &::-webkit-scrollbar-thumb {
-      background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-blue-dark) 100%);
-      border-radius: 4px;
-      
-      &:hover {
-        background: linear-gradient(135deg, var(--accent-blue-dark) 0%, var(--accent-blue) 100%);
-      }
-    }
-    
-    &:hover::-webkit-scrollbar-thumb {
-      background: var(--accent-yellow);
-    }
+
   }
   
   table {
@@ -256,26 +195,7 @@
     overflow-y: auto;
     flex: 1;
     
-    &::-webkit-scrollbar {
-      width: 8px;
-    }
-    
-    &::-webkit-scrollbar-track {
-      background: var(--border-color);
-    }
-    
-    &::-webkit-scrollbar-thumb {
-      background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-blue-dark) 100%);
-      border-radius: 4px;
-      
-      &:hover {
-        background: linear-gradient(135deg, var(--accent-blue-dark) 0%, var(--accent-blue) 100%);
-      }
-    }
-    
-    &:hover::-webkit-scrollbar-thumb {
-      background: var(--accent-yellow);
-    }
+
   }
 }
 
@@ -378,8 +298,6 @@
     gap: 16px;
     
     .collection-card {
-      min-width: 240px;
-      
       .card-content {
         padding: 16px;
         min-height: 70px;
@@ -418,8 +336,6 @@
     gap: 12px;
     
     .collection-card {
-      min-width: 200px;
-      
       .card-content {
         padding: 14px;
         min-height: 65px;

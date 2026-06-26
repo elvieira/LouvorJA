@@ -24,6 +24,7 @@
             hide-details
             clearable
             rounded
+            @keydown.enter="playFirstResult"
             :error="search !== '' && data.filter_count <= 0"
           />
         </div>
@@ -154,6 +155,14 @@ export default {
     },
     hasScroll(data) {
       this.has_scroll = data;
+    },
+    playFirstResult() {
+      if (this.data && this.data.data && this.data.data.length > 0) {
+        const first = this.data.data[0];
+        if (first.id_music) {
+          this.$media.open({ id_music: first.id_music, mode: 'audio' });
+        }
+      }
     },
     close() {
       //Se fechar a janela, não manter o histórico de pesquisa.

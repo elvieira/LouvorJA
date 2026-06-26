@@ -24,7 +24,7 @@
             hide-details
             clearable
             rounded
-            @update:model-value="onSearchInput"
+            @keydown.enter="playFirstResult"
           />
           <v-select
             v-model="id_category"
@@ -117,8 +117,8 @@
             >
               <div class="card-image" :style="album.color ? `background: ${album.color}` : ''">
                 <v-img 
-                  v-if="album.url_image" 
-                  :src="$path.file(album.url_image)" 
+                  v-if="album.url_image || album.local_url_image" 
+                  :src="album.local_url_image || $path.file(album.url_image)" 
                   cover 
                   style="width: 100%; height: 100%; position: absolute; inset: 0;"
                 />
@@ -233,6 +233,14 @@ export default {
         mainEl.dispatchEvent(new CustomEvent("toggle-sidebar"));
       }
     },
+    playFirstResult() {
+      if (this.filteredMusics && this.filteredMusics.length > 0) {
+        const first = this.filteredMusics[0];
+        if (first.id_music) {
+          this.$media.open({ id_music: first.id_music, mode: 'audio' });
+        }
+      }
+    },
     async loadData() {
       this.id_category = 0;
       this.categories = [];
@@ -249,6 +257,23 @@ export default {
 
       if (this.categories.length > 0) {
         this.categories.sort((a, b) => a.order - b.order);
+        
+        // Verificar imagens locais
+        if (window.electronAPI) {
+          for (const cat of this.categories) {
+            if (cat.albums) {
+              for (const album of cat.albums) {
+                if (album.url_image) {
+                  const imgRelativePath = album.url_image.replace(/^\/(musics|images|covers)\//, '');
+                  const localCheck = await window.electronAPI.checkMedia('covers', imgRelativePath);
+                  if (localCheck) {
+                    album.local_url_image = localCheck;
+                  }
+                }
+              }
+            }
+          }
+        }
       }
       
       this.id_category = 0;
@@ -326,27 +351,12 @@ export default {
 }
 
 .collections-page-scroll {
-  &::-webkit-scrollbar {
-    width: 8px;
-  }
-  
-  &::-webkit-scrollbar-track {
-    background: var(--border-color);
-  }
-  
-  &::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-blue-dark) 100%);
-    border-radius: 4px;
-    
-    &:hover {
-      background: linear-gradient(135deg, var(--accent-blue-dark) 0%, var(--accent-blue) 100%);
-    }
-  }
+
 }
 
 .collections-grid-wrap {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 24px;
   padding: 0 16px 24px 16px;
   

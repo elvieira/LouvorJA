@@ -54,6 +54,13 @@ export default {
 <style lang="scss">
 .modern-alert-dialog-wrapper {
   backdrop-filter: blur(5px);
+  transform: translateX(calc(var(--sidebar-width, 280px) / 2));
+}
+
+@media (max-width: 1024px) {
+  .modern-alert-dialog-wrapper {
+    transform: translateX(0);
+  }
 }
 
 .modern-alert-card {
