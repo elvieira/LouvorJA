@@ -126,6 +126,47 @@ ipcMain.handle('get-displays', () => {
   }));
 });
 
+ipcMain.handle('identify-displays', () => {
+  const { screen } = require('electron');
+  const displays = screen.getAllDisplays();
+
+  displays.forEach((display, index) => {
+    let win = new BrowserWindow({
+      x: display.bounds.x,
+      y: display.bounds.y,
+      width: display.bounds.width,
+      height: display.bounds.height,
+      transparent: true,
+      frame: false,
+      alwaysOnTop: true,
+      focusable: false,
+      hasShadow: false,
+      webPreferences: { nodeIntegration: false, contextIsolation: true }
+    });
+    
+    win.setIgnoreMouseEvents(true);
+
+    const html = `
+      <html>
+        <body style="margin:0; overflow:hidden; display:flex; align-items:center; justify-content:center; height:100vh; background-color: rgba(0,0,0,0.6);">
+          <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 30vw; font-weight: bold; color: white; text-shadow: 0 10px 30px rgba(0,0,0,0.8);">
+            ${index + 1}
+          </div>
+        </body>
+      </html>
+    `;
+
+    win.loadURL('data:text/html;charset=utf-8,' + encodeURIComponent(html));
+
+    setTimeout(() => {
+      if (win && !win.isDestroyed()) {
+        win.close();
+      }
+    }, 3000);
+  });
+  return true;
+});
+
 // Determine se está em modo de desenvolvimento
 const isDev = !app.isPackaged;
 
@@ -281,16 +322,25 @@ function createWindow() {
       }
     };
 
-    if (isFullscreen && displays.length > 1) {
-      const primary = screen.getPrimaryDisplay();
-      // Assume que displays com coordenadas idênticas ao primário (como espelhamento em alguns SOs) não são estendidos verdadeiros
-      const secondary = displays.find(d => d.id !== primary.id && (d.bounds.x !== primary.bounds.x || d.bounds.y !== primary.bounds.y));
+    const monitorMatch = features.match(/monitor=(\d+)/);
+    const targetMonitorId = monitorMatch ? parseInt(monitorMatch[1]) : null;
 
-      if (secondary) {
-        windowConfig.x = secondary.bounds.x;
-        windowConfig.y = secondary.bounds.y;
-        windowConfig.width = secondary.bounds.width;
-        windowConfig.height = secondary.bounds.height;
+    if (isFullscreen && displays.length > 1) {
+      let targetDisplay = null;
+      if (targetMonitorId) {
+        targetDisplay = displays.find(d => d.id === targetMonitorId);
+      }
+      
+      if (!targetDisplay) {
+        const primary = screen.getPrimaryDisplay();
+        targetDisplay = displays.find(d => d.id !== primary.id && (d.bounds.x !== primary.bounds.x || d.bounds.y !== primary.bounds.y));
+      }
+
+      if (targetDisplay) {
+        windowConfig.x = targetDisplay.bounds.x;
+        windowConfig.y = targetDisplay.bounds.y;
+        windowConfig.width = targetDisplay.bounds.width;
+        windowConfig.height = targetDisplay.bounds.height;
         windowConfig.fullscreen = true;
         windowConfig.resizable = false;
         windowConfig.frame = false;
@@ -329,6 +379,19 @@ app.whenReady().then(() => {
   });
 
   createWindow();
+
+  const { screen } = require('electron');
+  const notifyDisplaysChanged = () => {
+    BrowserWindow.getAllWindows().forEach(win => {
+      if (!win.isDestroyed()) {
+        win.webContents.send('displays-changed');
+      }
+    });
+  };
+
+  screen.on('display-added', notifyDisplaysChanged);
+  screen.on('display-removed', notifyDisplaysChanged);
+  screen.on('display-metrics-changed', notifyDisplaysChanged);
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {

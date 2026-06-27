@@ -29,6 +29,7 @@
     "dotenv": "^16.6.1",
     "fs-extra": "^11.3.2",
     "roboto-fontface": "*",
+    "systeminformation": "^5.31.11",
     "vue": "^3.5.22",
     "vue-country-flag-next": "^2.3.2",
     "vue-fullscreen": "^3.1.3",

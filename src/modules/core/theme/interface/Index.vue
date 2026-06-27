@@ -285,16 +285,16 @@
                       </div>
                     </div>
                     
-                    <div class="d-flex mb-4" style="gap: 2px;">
-                      <!-- Visual mock for monitor -->
-                      <div class="d-flex flex-column align-center justify-center rounded-sm" style="background: #000; color: #fff; width: 140px; height: 90px; border: 2px solid var(--accent-blue);">
-                        <span class="font-weight-bold text-h5">1</span>
-                        <span class="text-caption">1366 x 768</span>
-                      </div>
-                      <div class="d-flex flex-column align-center justify-center rounded-sm" style="background: rgba(120,120,120,0.1); width: 140px; height: 90px; border: 1px solid var(--border-color);">
+                    <div class="d-flex flex-wrap mb-4" style="gap: 16px;">
+                      <!-- Visual loop for monitors -->
+                      <div v-for="(display, index) in rawDisplays" :key="display.id" 
+                           class="d-flex flex-column align-center justify-center rounded-sm" 
+                           :style="`background: ${display.isPrimary ? '#000' : 'rgba(120,120,120,0.1)'}; color: ${display.isPrimary ? '#fff' : 'inherit'}; width: 140px; height: 90px; border: ${display.isPrimary ? '2px solid var(--accent-blue)' : '1px solid var(--border-color)'};`">
+                        <span class="font-weight-bold text-h5">{{ index + 1 }}</span>
+                        <span class="text-caption" style="opacity: 0.8">{{ display.bounds.width }} x {{ display.bounds.height }}</span>
                       </div>
                     </div>
-                    <v-btn variant="tonal" color="primary" class="text-none font-weight-bold">Identificar Monitores</v-btn>
+                    <v-btn variant="tonal" color="primary" class="text-none font-weight-bold" @click="identifyMonitors">Identificar Monitores</v-btn>
                   </v-card-text>
                 </v-card>
 
@@ -310,7 +310,7 @@
                     
                     <v-row class="mb-2">
                       <v-col cols="12" sm="6">
-                        <v-select v-model="slide_monitor" :items="['Monitor 1', 'Monitor 2']" label="Abrir no monitor" variant="outlined" density="comfortable" hide-details />
+                        <v-select v-model="slide_monitor" :items="slideMonitorList" multiple chips label="Abrir nos monitores selecionados" variant="outlined" density="comfortable" hide-details />
                       </v-col>
                       <v-col cols="12" sm="6">
                         <v-select v-model="slide_align" :items="['Centro', 'Esquerda', 'Direita']" label="Alinhamento da letra" variant="outlined" density="comfortable" hide-details />
@@ -406,7 +406,7 @@ export default {
     youtube_mode: 'Vídeo',
     
     // Tab 4: Projeção & Telas
-    slide_monitor: 'Monitor 1',
+    slide_monitor: [],
     slide_align: 'Centro',
     slide_fullscreen: true,
     slide_always_on_top: true,
@@ -434,6 +434,26 @@ export default {
         this.setTheme(mode);
       },
     },
+    rawDisplays() {
+      return this.$appdata.get("system_displays") || [];
+    },
+    monitorList() {
+      if (this.rawDisplays.length === 0) {
+        return [
+          { title: 'Monitor 1 (Principal)', value: 'Monitor 1' },
+          { title: 'Monitor 2', value: 'Monitor 2' }
+        ];
+      }
+      return this.rawDisplays.map((d, index) => ({
+        title: `Monitor ${index + 1} ${d.isPrimary ? '(Principal)' : '(Estendido)'}`,
+        value: d.id,
+        isPrimary: d.isPrimary
+      }));
+    },
+    slideMonitorList() {
+      // Retorna todos os monitores exceto o principal para evitar projeção por cima dos controles
+      return this.monitorList.filter(m => !m.isPrimary);
+    }
   },
   mounted() {
     // Configura o toggle inicial para coincidir com o modo ativo
@@ -446,13 +466,40 @@ export default {
     if (saved_home_history !== undefined && saved_home_history !== null) {
       this.$data.show_home_history = saved_home_history;
     }
+
+    let savedSlideMonitor = this.$userdata.get("modules.theme.slide_monitor");
+    if (savedSlideMonitor) {
+      if (!Array.isArray(savedSlideMonitor)) {
+        savedSlideMonitor = [savedSlideMonitor]; // Migrate string to array
+      }
+      this.slide_monitor = savedSlideMonitor;
+    }
   },
   watch: {
     show_home_history(val) {
       this.$userdata.set("show_home_history", val);
+    },
+    slide_monitor(val) {
+      if (val) this.$userdata.set("modules.theme.slide_monitor", val);
+    },
+    slideMonitorList: {
+      handler(newList) {
+        if (newList.length > 0 && this.rawDisplays.length > 0) {
+          if (!this.slide_monitor || this.slide_monitor.length === 0) {
+            // Select all extended monitors by default if none are selected
+            this.slide_monitor = newList.map(m => m.value);
+          }
+        }
+      },
+      immediate: true
     }
   },
   methods: {
+    identifyMonitors() {
+      if (window.electronAPI && window.electronAPI.identifyDisplays) {
+        window.electronAPI.identifyDisplays();
+      }
+    },
     toggleSidebar() {
       const mainEl = document.querySelector(".main-container");
       if (mainEl) {

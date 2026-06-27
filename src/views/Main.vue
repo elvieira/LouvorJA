@@ -170,16 +170,15 @@ export default {
     window.addEventListener("message", (event) => {
       if (event.origin === window.location.origin) {
         if (event.data === "mounted") {
-          const popup = this.$appdata.get("popup");
-          if (popup) {
+          const popupSource = event.source;
+          if (popupSource) {
             const data = this.$appdata.getFlatten();
             Object.keys(data).map((item) => {
-              popup.postMessage(
+              popupSource.postMessage(
                 { param: item, value: data[item] },
                 window.location.origin,
               );
             });
-            //popup.postMessage({ all: data }, window.location.origin);
           }
         }
       }

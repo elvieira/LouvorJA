@@ -4,22 +4,34 @@ export default {
   set(param, value) {
     store.commit("setData", [param, value]);
 
-    const popup = this.get("popup");
+    const popups = this.get("popups") || [];
+    // Also fallback to single popup just in case
+    const singlePopup = this.get("popup");
+    if (singlePopup && !popups.includes(singlePopup)) {
+      popups.push(singlePopup);
+    }
+
     if (
-      popup &&
+      popups.length > 0 &&
       param != "popup" &&
+      param != "popups" &&
       param != "is_popup" &&
       param != "is_fullscreen"
     ) {
-      if (popup.closed) {
-        this.set("popup", null);
-        //this.set("popup_module", null);
-      } else {
-        try {
-          popup.postMessage({ param, value }, window.location.origin);
-        } catch (e) {
-          console.log(e);
+      let activePopups = [];
+      popups.forEach(popup => {
+        if (!popup.closed) {
+          activePopups.push(popup);
+          try {
+            popup.postMessage({ param, value }, window.location.origin);
+          } catch (e) {
+            console.log(e);
+          }
         }
+      });
+      
+      if (activePopups.length !== popups.length) {
+        this.set("popups", activePopups);
       }
     }
   },
@@ -35,6 +47,7 @@ export default {
   getFlatten() {
     let data = Object.assign({}, this.get());
     delete data.popup;
+    delete data.popups;
     delete data.is_popup;
     data = JSON.parse(JSON.stringify(data));
     return this.flatten(data);

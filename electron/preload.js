@@ -25,4 +25,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   
   // Informações de Tela (Monitores)
   getDisplays: () => ipcRenderer.invoke('get-displays'),
+  identifyDisplays: () => ipcRenderer.invoke('identify-displays'),
+  onDisplaysChanged: (callback) => ipcRenderer.on('displays-changed', callback),
 });

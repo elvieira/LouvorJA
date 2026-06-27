@@ -170,11 +170,21 @@ export default {
     if (window.electronAPI && window.electronAPI.getDisplays) {
       const displays = await window.electronAPI.getDisplays();
       if (displays && displays.length > 1) {
+        let selectedMonitors = $userdata.get("modules.theme.slide_monitor");
+        if (!Array.isArray(selectedMonitors)) {
+          selectedMonitors = selectedMonitors ? [selectedMonitors] : [];
+        }
+
         const primary = displays.find(d => d.isPrimary) || displays[0];
-        const secondary = displays.find(d => d.id !== primary.id && (d.bounds.x !== primary.bounds.x || d.bounds.y !== primary.bounds.y));
-        if (secondary) {
+        
+        // Remove primary from selected monitors to avoid covering controls
+        selectedMonitors = selectedMonitors.filter(m => m !== primary.id);
+
+        if (selectedMonitors.length > 0) {
           const { default: $popup } = await import("@/helpers/Popup");
-          $popup.open({ module: 'media', fullscreen: true });
+          selectedMonitors.forEach(monitorId => {
+            $popup.open({ module: 'media', fullscreen: true, monitorId: monitorId });
+          });
         }
       }
     }

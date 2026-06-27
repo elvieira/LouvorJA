@@ -74,6 +74,24 @@ export default {
   },
   mounted() {
     window.addEventListener("keydown", this.handleGlobalKeydown);
+    
+    if (window.electronAPI && window.electronAPI.getDisplays) {
+      window.electronAPI.getDisplays().then(displays => {
+        this.$appdata.set("system_displays", displays);
+      });
+      
+      if (window.electronAPI.onDisplaysChanged) {
+        window.electronAPI.onDisplaysChanged(async () => {
+          const displays = await window.electronAPI.getDisplays();
+          this.$appdata.set("system_displays", displays);
+          
+          if (displays.length === 1) {
+            const { default: $popup } = await import("@/helpers/Popup");
+            $popup.exit();
+          }
+        });
+      }
+    }
   },
   unmounted() {
     window.removeEventListener("keydown", this.handleGlobalKeydown);
