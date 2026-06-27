@@ -47,6 +47,11 @@ export default {
     };
   },
   mounted() {
+    if (window.location.href.includes('popup')) {
+      this.isOpen = false;
+      return;
+    }
+
     window.addEventListener('show-boot-screen', this.handleManualShow);
     
     // Aguarda 1 segundo antes de exibir os componentes internos e fazer o check

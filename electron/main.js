@@ -60,18 +60,18 @@ ipcMain.handle('download-media', async (event, url, destFolderType, filename) =>
     let destFolder = coversPath; // default
     if (destFolderType === 'music') destFolder = musicPath;
     else if (destFolderType === 'slides') destFolder = slidesPath;
-    
+
     const decodedFilename = decodeURIComponent(filename);
     const filePath = path.join(destFolder, decodedFilename);
     const fileDir = path.dirname(filePath);
-    
+
     if (!fs.existsSync(fileDir)) {
       fs.mkdirSync(fileDir, { recursive: true });
     }
-    
+
     const response = await net.fetch(url);
     if (!response.ok) return false;
-    
+
     const arrayBuffer = await response.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
     fs.writeFileSync(filePath, buffer);
@@ -86,7 +86,7 @@ ipcMain.handle('check-media', async (event, destFolderType, filename) => {
   let destFolder = coversPath;
   if (destFolderType === 'music') destFolder = musicPath;
   else if (destFolderType === 'slides') destFolder = slidesPath;
-  
+
   const decodedFilename = decodeURIComponent(filename);
   const filePath = path.join(destFolder, decodedFilename);
   if (fs.existsSync(filePath)) {
@@ -99,7 +99,7 @@ ipcMain.handle('delete-media', async (event, destFolderType, filename) => {
   let destFolder = coversPath;
   if (destFolderType === 'music') destFolder = musicPath;
   else if (destFolderType === 'slides') destFolder = slidesPath;
-  
+
   const decodedFilename = decodeURIComponent(filename);
   const filePath = path.join(destFolder, decodedFilename);
   if (fs.existsSync(filePath)) {
@@ -112,6 +112,18 @@ ipcMain.handle('delete-media', async (event, destFolderType, filename) => {
     }
   }
   return true; // Already deleted
+});
+
+// IPC Handlers: Informações de Tela (Monitores)
+ipcMain.handle('get-displays', () => {
+  const { screen } = require('electron');
+  return screen.getAllDisplays().map(d => ({
+    id: d.id,
+    bounds: d.bounds,
+    workArea: d.workArea,
+    scaleFactor: d.scaleFactor,
+    isPrimary: d.id === screen.getPrimaryDisplay().id
+  }));
 });
 
 // Determine se está em modo de desenvolvimento
@@ -252,6 +264,44 @@ function createWindow() {
 
   const menu = Menu.buildFromTemplate(menuTemplate);
   Menu.setApplicationMenu(menu);
+
+  // Interceptar aberturas de janelas para projetar no segundo monitor se necessário
+  mainWindow.webContents.setWindowOpenHandler(({ url, features }) => {
+    const isFullscreen = features.includes('fullscreen=yes');
+    const { screen } = require('electron');
+    const displays = screen.getAllDisplays();
+
+    let windowConfig = {
+      width: 800,
+      height: 600,
+      webPreferences: {
+        preload: path.join(__dirname, 'preload.js'),
+        contextIsolation: true,
+        nodeIntegration: false,
+      }
+    };
+
+    if (isFullscreen && displays.length > 1) {
+      const primary = screen.getPrimaryDisplay();
+      // Assume que displays com coordenadas idênticas ao primário (como espelhamento em alguns SOs) não são estendidos verdadeiros
+      const secondary = displays.find(d => d.id !== primary.id && (d.bounds.x !== primary.bounds.x || d.bounds.y !== primary.bounds.y));
+
+      if (secondary) {
+        windowConfig.x = secondary.bounds.x;
+        windowConfig.y = secondary.bounds.y;
+        windowConfig.width = secondary.bounds.width;
+        windowConfig.height = secondary.bounds.height;
+        windowConfig.fullscreen = true;
+        windowConfig.resizable = false;
+        windowConfig.frame = false;
+      }
+    }
+
+    return {
+      action: 'allow',
+      overrideBrowserWindowOptions: windowConfig
+    };
+  });
 
   if (isDev) {
     // Em desenvolvimento, carrega o servidor Vite

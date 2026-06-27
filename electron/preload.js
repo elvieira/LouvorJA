@@ -22,4 +22,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onNavigateRoute: (callback) => {
     ipcRenderer.on('navigate-route', (_event, routeName) => callback(routeName));
   },
+  
+  // Informações de Tela (Monitores)
+  getDisplays: () => ipcRenderer.invoke('get-displays'),
 });

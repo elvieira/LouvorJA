@@ -17,7 +17,7 @@ export default {
 
     const isSameSong = params.id_music === $appdata.get("modules.media.id_music");
     let savedTime = 0;
-    
+
     let audio = this.getElement();
     const volume = $appdata.get("modules.media.config.volume") / 100;
     const fadeAudioEnabled = $userdata.get("modules.media.fade_audio") !== false;
@@ -25,11 +25,11 @@ export default {
     if (isSameSong) {
       savedTime = audio.currentTime;
       if (fadeAudioEnabled && !audio.paused && audio.volume > 0) {
-        this.fadeOut(audio, 1000).catch(() => {});
+        this.fadeOut(audio, 1000).catch(() => { });
       } else {
         audio.pause();
       }
-      
+
       this.switchActiveElement();
       audio = this.getElement();
     } else {
@@ -50,7 +50,7 @@ export default {
       this.close(true);
       return;
     }
-    
+
     if (!isSameSong) {
       $appdata.set("modules.media.data", data);
       $appdata.set("modules.media.id_music", id_music);
@@ -76,7 +76,7 @@ export default {
     if (albumInfo) {
       let collectionId = albumInfo.id_album;
       let collectionType = "album";
-      
+
       const hymnal = data.categories?.filter((item) => item.startsWith("hymnal."))[0];
       if (hymnal) {
         collectionId = hymnal.split(".")[1];
@@ -123,49 +123,62 @@ export default {
       let targetAudioUrl = $path.file(urlPath);
 
       // Interceptação Offline (Desktop)
-    if (window.electronAPI && window.electronAPI.isElectron) {
-      const relativePath = urlPath.replace(/^\/(musics|images|covers)\//, '');
-      const localUrl = await window.electronAPI.checkMedia('music', relativePath);
-      if (localUrl) {
-        $dev.write("Mídia carregada do disco local", localUrl);
-        targetAudioUrl = localUrl;
-      } else {
-        // Bloqueio Offline Estrito
-        this.close(true);
-        $appdata.set("modules.media.loading", false);
-        $alert.error({ 
-          text: "Essa coletânea ainda não foi baixada. Acesse a Biblioteca Local para baixá-la.",
-          translate: false
-        });
-        return; // Interrompe a execução completamente
+      if (window.electronAPI && window.electronAPI.isElectron) {
+        const relativePath = urlPath.replace(/^\/(musics|images|covers)\//, '');
+        const localUrl = await window.electronAPI.checkMedia('music', relativePath);
+        if (localUrl) {
+          $dev.write("Mídia carregada do disco local", localUrl);
+          targetAudioUrl = localUrl;
+        } else {
+          // Bloqueio Offline Estrito
+          this.close(true);
+          $appdata.set("modules.media.loading", false);
+          $alert.error({
+            text: "Essa coletânea ainda não foi baixada. Acesse a Biblioteca Local para baixá-la.",
+            translate: false
+          });
+          return; // Interrompe a execução completamente
+        }
       }
-    }
 
-    $appdata.set("modules.media.config.audio", targetAudioUrl);
+      $appdata.set("modules.media.config.audio", targetAudioUrl);
 
-    // Atribuição Direta (Desktop/Strict Offline)
-    audio.src = targetAudioUrl;
-    audio.load();
-    $appdata.set("modules.media.config.lazy", false);
-    $appdata.set("modules.media.loading", false);
-    
-    if (isSameSong && savedTime > 0) {
-      audio.currentTime = savedTime;
-      if (fadeAudioEnabled) {
-        this.fadeIn(audio, volume / 100, 1000).catch(() => {});
+      // Atribuição Direta (Desktop/Strict Offline)
+      audio.src = targetAudioUrl;
+      audio.load();
+      $appdata.set("modules.media.config.lazy", false);
+      $appdata.set("modules.media.loading", false);
+
+      if (isSameSong && savedTime > 0) {
+        audio.currentTime = savedTime;
+        if (fadeAudioEnabled) {
+          this.fadeIn(audio, volume / 100, 1000).catch(() => { });
+        } else {
+          this.play();
+        }
       } else {
         this.play();
       }
     } else {
-      this.play();
+      $appdata.set("modules.media.config.audio", "");
+      $appdata.set("modules.media.loading", false);
     }
-  } else {
-    $appdata.set("modules.media.config.audio", "");
-    $appdata.set("modules.media.loading", false);
-  }
 
-  $appdata.set("modules.media.config.mode", mode);
-},
+    $appdata.set("modules.media.config.mode", mode);
+
+    // Projeção Automática no Monitor Estendido
+    if (window.electronAPI && window.electronAPI.getDisplays) {
+      const displays = await window.electronAPI.getDisplays();
+      if (displays && displays.length > 1) {
+        const primary = displays.find(d => d.isPrimary) || displays[0];
+        const secondary = displays.find(d => d.id !== primary.id && (d.bounds.x !== primary.bounds.x || d.bounds.y !== primary.bounds.y));
+        if (secondary) {
+          const { default: $popup } = await import("@/helpers/Popup");
+          $popup.open({ module: 'media', fullscreen: true });
+        }
+      }
+    }
+  },
 
   close(force = false) {
     //Se force for true, fechamento forçado. Sem diálogo de confirmação!
@@ -183,6 +196,13 @@ export default {
     this.clearVariables();
     $appdata.set("modules.media.show", false);
     $appdata.set("modules.media.minimized", false);
+
+    // Fechar a projeção se estiver aberta
+    import("@/helpers/Popup").then(({ default: $popup }) => {
+      if ($appdata.get("popup_module") === "media") {
+        $popup.exit();
+      }
+    });
   },
 
   async openLyric(params) {
@@ -580,7 +600,7 @@ export default {
     return new Promise((resolve) => {
       const startVolume = audio.volume;
       if (startVolume <= 0 || audio.paused) return resolve();
-      
+
       const step = startVolume / (durationMs / 50);
       const interval = setInterval(() => {
         if (audio.volume - step > 0) {
@@ -597,9 +617,9 @@ export default {
   async fadeIn(audio, targetVolume, durationMs = 1000) {
     return new Promise((resolve) => {
       audio.volume = 0;
-      audio.play().catch(() => {});
+      audio.play().catch(() => { });
       $appdata.set("modules.media.config.is_paused", false);
-      
+
       const step = targetVolume / (durationMs / 50);
       const interval = setInterval(() => {
         if (audio.volume + step < targetVolume) {
@@ -619,22 +639,22 @@ export default {
   getElement(forceId = null) {
     const active = forceId || $appdata.get("modules.media.config.active_audio") || "a";
     const id = `__audio_${active}`;
-    
+
     let el = document.getElementById(id);
     if (!el) {
       el = document.createElement("audio");
       el.setAttribute("id", id);
       el.setAttribute("preload", "auto");
       document.body.appendChild(el);
-      
+
       const self = this;
-      el.addEventListener("timeupdate", function() {
+      el.addEventListener("timeupdate", function () {
         const currentActive = $appdata.get("modules.media.config.active_audio") || "a";
         if (this.id === `__audio_${currentActive}`) {
           self.timeUpdate.bind(self)();
         }
       });
-      el.addEventListener("progress", function() {
+      el.addEventListener("progress", function () {
         const currentActive = $appdata.get("modules.media.config.active_audio") || "a";
         if (this.id === `__audio_${currentActive}`) {
           self.timeUpdate.bind(self)();
