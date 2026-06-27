@@ -1,12 +1,12 @@
 <template>
-  <FirstBootLoader />
-  <AppLoading />
-  <v-btn
-    v-show="false"
-    v-shortkey="['ctrl', 'alt', 'd']"
-    @shortkey="handleKeydown()"
-  />
   <v-app id="app-container">
+    <FirstBootLoader />
+    <AppLoading />
+    <v-btn
+      v-show="false"
+      v-shortkey="['ctrl', 'alt', 'd']"
+      @shortkey="handleKeydown()"
+    />
     <router-view />
   </v-app>
 </template>
@@ -29,6 +29,13 @@ export default {
       //}
     },
   },
+  created() {
+    this.$userdata.load();
+    const theme = this.$userdata.get("theme");
+    if (theme !== "") {
+      this.$vuetify.theme.global.name = theme;
+    }
+  }
 };
 </script>
 

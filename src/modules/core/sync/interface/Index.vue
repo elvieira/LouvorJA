@@ -52,7 +52,7 @@
                 v-for="album in cat.albums" 
                 :key="album.id_album" 
                 class="mb-2 rounded-xl pa-3" 
-                style="background: var(--main-bg); border: 1px solid var(--border-color);"
+                style="background: transparent; border: 1px solid var(--border-color);"
               >
                 <template #prepend>
                   <v-avatar rounded="lg" size="48" color="primary" variant="tonal" class="mr-3">
