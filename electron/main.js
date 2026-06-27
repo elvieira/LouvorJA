@@ -143,7 +143,7 @@ ipcMain.handle('identify-displays', () => {
       hasShadow: false,
       webPreferences: { nodeIntegration: false, contextIsolation: true }
     });
-    
+
     win.setIgnoreMouseEvents(true);
 
     const html = `
@@ -330,7 +330,7 @@ function createWindow() {
       if (targetMonitorId) {
         targetDisplay = displays.find(d => d.id === targetMonitorId);
       }
-      
+
       if (!targetDisplay) {
         const primary = screen.getPrimaryDisplay();
         targetDisplay = displays.find(d => d.id !== primary.id && (d.bounds.x !== primary.bounds.x || d.bounds.y !== primary.bounds.y));

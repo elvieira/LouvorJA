@@ -71,7 +71,7 @@
           @click="$media.minimize()"
         >
           <v-icon>mdi-minus</v-icon>
-          <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-pill-player-volume elevation-0 font-weight-medium text-white">Minimizar</v-tooltip>
+          <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">Minimizar</v-tooltip>
         </v-btn>
         <v-btn
           class="custom-system-btn"
@@ -82,7 +82,7 @@
           @click="$media.close()"
         >
           <v-icon>mdi-close</v-icon>
-          <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-pill-player-volume elevation-0 font-weight-medium text-white">Fechar</v-tooltip>
+          <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">Fechar</v-tooltip>
         </v-btn>
       </div>
     </template>

@@ -9,7 +9,7 @@
     @click="popup()"
   >
     <v-icon>mdi-open-in-new</v-icon>
-    <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-pill-player-volume elevation-0 font-weight-medium text-white">Monitor Estendido</v-tooltip>
+    <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">Monitor Estendido</v-tooltip>
   </v-btn>
 </template>
 

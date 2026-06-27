@@ -12,7 +12,7 @@
           @click="$modules.close(module_id)"
         >
           <v-icon>mdi-arrow-left</v-icon>
-          <v-tooltip activator="parent" location="bottom" open-delay="300" content-class="modern-pill-player-volume elevation-0 font-weight-medium text-white">Voltar</v-tooltip>
+          <v-tooltip activator="parent" location="bottom" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">Voltar</v-tooltip>
         </v-btn>
         
         <div class="d-flex align-center mr-auto">

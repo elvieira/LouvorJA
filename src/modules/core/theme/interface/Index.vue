@@ -61,44 +61,7 @@
                   </v-card-text>
                 </v-card>
 
-                <!-- Efeitos -->
-                <v-card class="settings-card rounded-xl pa-2 mb-6" flat style="background: var(--card-bg); box-shadow: var(--shadow);">
-                  <v-card-text class="pa-6">
-                    <div class="d-flex align-center mb-6">
-                      <v-icon color="primary" class="mr-3" size="28">mdi-transition-masked</v-icon>
-                      <div>
-                        <h3 class="font-weight-bold" style="color: var(--sidebar-text); font-size: 1.1rem; line-height: 1.2;">Efeitos Visuais</h3>
-                      </div>
-                    </div>
-                    <v-switch v-model="fade_effect" label="Adicionar efeito de esmaecimento nas telas" color="primary" inset hide-details class="font-weight-medium" />
-                  </v-card-text>
-                </v-card>
 
-                <!-- Imagem de Fundo -->
-                <v-card class="settings-card rounded-xl pa-2 mb-6" flat style="background: var(--card-bg); box-shadow: var(--shadow);">
-                  <v-card-text class="pa-6">
-                    <div class="d-flex align-center mb-6 justify-space-between">
-                      <div class="d-flex align-center">
-                        <v-icon color="primary" class="mr-3" size="28">mdi-image-multiple</v-icon>
-                        <div>
-                          <h3 class="font-weight-bold" style="color: var(--sidebar-text); font-size: 1.1rem; line-height: 1.2;">Imagem de Fundo</h3>
-                        </div>
-                      </div>
-                      <v-btn variant="outlined" color="primary" prepend-icon="mdi-restore" class="text-none">Restaurar</v-btn>
-                    </div>
-                    <v-row>
-                      <v-col cols="12" sm="4">
-                        <v-text-field v-model="bg_color" type="color" label="Cor do Fundo" variant="outlined" density="comfortable" hide-details />
-                      </v-col>
-                      <v-col cols="12" sm="8">
-                        <v-file-input v-model="bg_image" label="Imagem" variant="outlined" density="comfortable" hide-details prepend-icon="" prepend-inner-icon="mdi-camera" />
-                      </v-col>
-                      <v-col cols="12" sm="6">
-                        <v-select v-model="bg_align" :items="['Centro', 'Preencher', 'Ajustar']" label="Alinhamento" variant="outlined" density="comfortable" hide-details />
-                      </v-col>
-                    </v-row>
-                  </v-card-text>
-                </v-card>
               </div>
             </div>
           </v-tabs-window-item>
@@ -118,15 +81,49 @@
                         <div class="text-caption" style="color: var(--sidebar-text-secondary);">Idioma de interface do aplicativo</div>
                       </div>
                     </div>
-                    <v-select
-                      v-model="language"
-                      :items="['Português', 'English', 'Español']"
-                      variant="outlined"
-                      density="comfortable"
-                      hide-details
-                      bg-color="transparent"
-                      class="font-weight-medium"
-                    />
+                    <v-menu :close-on-content-click="true" location="bottom start">
+                      <template #activator="{ props }">
+                        <v-btn
+                          v-bind="props"
+                          variant="flat"
+                          color="var(--card-bg, #1a1a1a)"
+                          rounded="xl"
+                          class="text-none px-4 elevation-1 w-100"
+                          style="height: 44px; border: 1px solid var(--border-color, rgba(255,255,255,0.05));"
+                        >
+                          <div class="d-flex align-center justify-space-between w-100" style="color: var(--sidebar-text);">
+                            <span class="text-truncate font-weight-medium text-body-2">
+                              {{ language }}
+                            </span>
+                            <v-icon size="small" class="opacity-50">mdi-menu-down</v-icon>
+                          </div>
+                        </v-btn>
+                      </template>
+                      <v-card
+                        class="modern-glass-menu elevation-0 mt-2"
+                        theme="dark"
+                        rounded="lg"
+                        style="overflow: hidden; min-width: 200px;"
+                      >
+                        <v-list class="py-2" bg-color="transparent">
+                          <v-list-item
+                            v-for="item in ['Português', 'English', 'Español']"
+                            :key="item"
+                            :active="item === language"
+                            active-color="white"
+                            class="mx-2 rounded-lg mb-1"
+                            style="min-height: 40px;"
+                            @click="language = item"
+                          >
+                            <div class="d-flex align-center">
+                              <span class="text-body-2 font-weight-medium" :class="item === language ? 'text-white' : 'text-white-50'">
+                                {{ item }}
+                              </span>
+                            </div>
+                          </v-list-item>
+                        </v-list>
+                      </v-card>
+                    </v-menu>
                   </v-card-text>
                 </v-card>
 
@@ -230,43 +227,21 @@
           <v-tabs-window-item :value="3" class="h-100">
             <div class="h-100 overflow-auto px-6 pb-6">
               <div class="settings-container mx-auto pb-4" style="max-width: 600px;">
-                <!-- Player de Áudio/Vídeo -->
-                <v-card class="settings-card rounded-xl pa-2 mb-6" flat style="background: var(--card-bg); box-shadow: var(--shadow);">
-                  <v-card-text class="pa-6">
-                    <div class="d-flex align-center mb-6">
-                      <v-icon color="primary" class="mr-3" size="28">mdi-play-network</v-icon>
-                      <div>
-                        <h3 class="font-weight-bold" style="color: var(--sidebar-text); font-size: 1.1rem; line-height: 1.2;">Player de Áudio/Vídeo</h3>
-                        <div class="text-caption" style="color: var(--sidebar-text-secondary);">Configurações de reprodução de mídia local</div>
-                      </div>
+                <v-alert
+                  type="warning"
+                  variant="tonal"
+                  class="mb-6 rounded-xl"
+                  border="start"
+                  elevation="0"
+                >
+                  <div class="d-flex align-center">
+                    <v-icon class="mr-3" size="32">mdi-hammer-wrench</v-icon>
+                    <div>
+                      <div class="text-subtitle-1 font-weight-bold">Em Desenvolvimento</div>
+                      <div class="text-body-2">As configurações de Mídia & Player estão sendo construídas e não estão disponíveis no momento.</div>
                     </div>
-                    
-                    <v-select v-model="player_monitor" :items="['Monitor 1', 'Monitor 2']" label="Abrir no monitor" variant="outlined" density="comfortable" class="mb-4" hide-details />
-                    <v-switch v-model="exec_audio_player" label="Executar arquivos de áudio no player do programa" color="primary" inset hide-details class="mb-2 font-weight-medium" />
-                    <v-switch v-model="exec_video_player" label="Executar arquivos de vídeo no player do programa" color="primary" inset hide-details class="mb-2 font-weight-medium" />
-                    <v-switch v-model="player_fullscreen" label="Exibir vídeo em tela cheia" color="primary" inset hide-details class="font-weight-medium" />
-                    
-                    <v-alert type="info" variant="tonal" class="mt-4 text-caption" density="compact">
-                      Nota: Se o áudio/vídeo não for suportado pelo player, o arquivo será automaticamente aberto no player nativo.
-                    </v-alert>
-                  </v-card-text>
-                </v-card>
-
-                <!-- Vídeos On-line -->
-                <v-card class="settings-card rounded-xl pa-2 mb-6" flat style="background: var(--card-bg); box-shadow: var(--shadow);">
-                  <v-card-text class="pa-6">
-                    <div class="d-flex align-center mb-6">
-                      <v-icon color="primary" class="mr-3" size="28">mdi-youtube</v-icon>
-                      <div>
-                        <h3 class="font-weight-bold" style="color: var(--sidebar-text); font-size: 1.1rem; line-height: 1.2;">Vídeos On-line</h3>
-                      </div>
-                    </div>
-                    
-                    <v-select v-model="online_monitor" :items="['Monitor 1', 'Monitor 2']" label="Abrir no monitor" variant="outlined" density="comfortable" class="mb-4" hide-details />
-                    <v-switch v-model="online_fullscreen" label="Exibir em tela cheia" color="primary" inset hide-details class="mb-4 font-weight-medium" />
-                    <v-select v-model="youtube_mode" :items="['Vídeo', 'Áudio']" label="Ao executar link do Youtube na liturgia, abrir:" variant="outlined" density="comfortable" hide-details />
-                  </v-card-text>
-                </v-card>
+                  </div>
+                </v-alert>
               </div>
             </div>
           </v-tabs-window-item>
@@ -308,12 +283,72 @@
                       </div>
                     </div>
                     
+                    <div class="mb-6">
+                      <div class="text-body-2 font-weight-bold mb-2" style="color: var(--sidebar-text);">Projetar nas seguintes telas:</div>
+                      <div v-if="slideMonitorList.length > 0" class="d-flex flex-wrap pa-3 rounded-lg" style="gap: 16px; border: 1px solid var(--border-color); background: rgba(0,0,0,0.02);">
+                        <v-checkbox
+                          v-for="monitor in slideMonitorList"
+                          :key="monitor.value"
+                          v-model="slide_monitor"
+                          :value="monitor.value"
+                          :label="monitor.title"
+                          color="primary"
+                          hide-details
+                          density="compact"
+                          class="font-weight-medium"
+                        ></v-checkbox>
+                      </div>
+                      <v-alert v-else type="info" variant="tonal" density="compact" class="mt-2 text-caption">
+                        Nenhum monitor estendido (secundário) detectado no sistema.
+                      </v-alert>
+                    </div>
+
                     <v-row class="mb-2">
                       <v-col cols="12" sm="6">
-                        <v-select v-model="slide_monitor" :items="slideMonitorList" multiple chips label="Abrir nos monitores selecionados" variant="outlined" density="comfortable" hide-details />
-                      </v-col>
-                      <v-col cols="12" sm="6">
-                        <v-select v-model="slide_align" :items="['Centro', 'Esquerda', 'Direita']" label="Alinhamento da letra" variant="outlined" density="comfortable" hide-details />
+                        <div class="text-caption font-weight-medium mb-1" style="color: var(--sidebar-text-secondary);">Alinhamento da letra</div>
+                        <v-menu :close-on-content-click="true" location="bottom start">
+                          <template #activator="{ props }">
+                            <v-btn
+                              v-bind="props"
+                              variant="flat"
+                              color="var(--card-bg, #1a1a1a)"
+                              rounded="xl"
+                              class="text-none px-4 elevation-1 w-100"
+                              style="height: 44px; border: 1px solid var(--border-color, rgba(255,255,255,0.05));"
+                            >
+                              <div class="d-flex align-center justify-space-between w-100" style="color: var(--sidebar-text);">
+                                <span class="text-truncate font-weight-medium text-body-2">
+                                  {{ slide_align }}
+                                </span>
+                                <v-icon size="small" class="opacity-50">mdi-menu-down</v-icon>
+                              </div>
+                            </v-btn>
+                          </template>
+                          <v-card
+                            class="modern-glass-menu elevation-0 mt-2"
+                            theme="dark"
+                            rounded="lg"
+                            style="overflow: hidden; min-width: 200px;"
+                          >
+                            <v-list class="py-2" bg-color="transparent">
+                              <v-list-item
+                                v-for="item in ['Centro', 'Esquerda', 'Direita']"
+                                :key="item"
+                                :active="item === slide_align"
+                                active-color="white"
+                                class="mx-2 rounded-lg mb-1"
+                                style="min-height: 40px;"
+                                @click="slide_align = item"
+                              >
+                                <div class="d-flex align-center">
+                                  <span class="text-body-2 font-weight-medium" :class="item === slide_align ? 'text-white' : 'text-white-50'">
+                                    {{ item }}
+                                  </span>
+                                </div>
+                              </v-list-item>
+                            </v-list>
+                          </v-card>
+                        </v-menu>
                       </v-col>
                     </v-row>
                     
@@ -322,10 +357,96 @@
                     
                     <v-row class="mt-2 mb-2">
                       <v-col cols="12" sm="6">
-                        <v-select v-model="operator_monitor" :items="['1', '2']" label="Abrir Tela do Operador no monitor:" variant="outlined" density="comfortable" hide-details />
+                        <div class="text-caption font-weight-medium mb-1" style="color: var(--sidebar-text-secondary);">Abrir Tela do Operador no monitor:</div>
+                        <v-menu :close-on-content-click="true" location="bottom start">
+                          <template #activator="{ props }">
+                            <v-btn
+                              v-bind="props"
+                              variant="flat"
+                              color="var(--card-bg, #1a1a1a)"
+                              rounded="xl"
+                              class="text-none px-4 elevation-1 w-100"
+                              style="height: 44px; border: 1px solid var(--border-color, rgba(255,255,255,0.05));"
+                            >
+                              <div class="d-flex align-center justify-space-between w-100" style="color: var(--sidebar-text);">
+                                <span class="text-truncate font-weight-medium text-body-2">
+                                  {{ operator_monitor }}
+                                </span>
+                                <v-icon size="small" class="opacity-50">mdi-menu-down</v-icon>
+                              </div>
+                            </v-btn>
+                          </template>
+                          <v-card
+                            class="modern-glass-menu elevation-0 mt-2"
+                            theme="dark"
+                            rounded="lg"
+                            style="overflow: hidden; min-width: 200px;"
+                          >
+                            <v-list class="py-2" bg-color="transparent">
+                              <v-list-item
+                                v-for="item in ['1', '2']"
+                                :key="item"
+                                :active="item === operator_monitor"
+                                active-color="white"
+                                class="mx-2 rounded-lg mb-1"
+                                style="min-height: 40px;"
+                                @click="operator_monitor = item"
+                              >
+                                <div class="d-flex align-center">
+                                  <span class="text-body-2 font-weight-medium" :class="item === operator_monitor ? 'text-white' : 'text-white-50'">
+                                    {{ item }}
+                                  </span>
+                                </div>
+                              </v-list-item>
+                            </v-list>
+                          </v-card>
+                        </v-menu>
                       </v-col>
                       <v-col cols="12" sm="6">
-                        <v-select v-model="return_monitor" :items="['1', '2']" label="Abrir Tela de Retorno no monitor:" variant="outlined" density="comfortable" hide-details />
+                        <div class="text-caption font-weight-medium mb-1" style="color: var(--sidebar-text-secondary);">Abrir Tela de Retorno no monitor:</div>
+                        <v-menu :close-on-content-click="true" location="bottom start">
+                          <template #activator="{ props }">
+                            <v-btn
+                              v-bind="props"
+                              variant="flat"
+                              color="var(--card-bg, #1a1a1a)"
+                              rounded="xl"
+                              class="text-none px-4 elevation-1 w-100"
+                              style="height: 44px; border: 1px solid var(--border-color, rgba(255,255,255,0.05));"
+                            >
+                              <div class="d-flex align-center justify-space-between w-100" style="color: var(--sidebar-text);">
+                                <span class="text-truncate font-weight-medium text-body-2">
+                                  {{ return_monitor }}
+                                </span>
+                                <v-icon size="small" class="opacity-50">mdi-menu-down</v-icon>
+                              </div>
+                            </v-btn>
+                          </template>
+                          <v-card
+                            class="modern-glass-menu elevation-0 mt-2"
+                            theme="dark"
+                            rounded="lg"
+                            style="overflow: hidden; min-width: 200px;"
+                          >
+                            <v-list class="py-2" bg-color="transparent">
+                              <v-list-item
+                                v-for="item in ['1', '2']"
+                                :key="item"
+                                :active="item === return_monitor"
+                                active-color="white"
+                                class="mx-2 rounded-lg mb-1"
+                                style="min-height: 40px;"
+                                @click="return_monitor = item"
+                              >
+                                <div class="d-flex align-center">
+                                  <span class="text-body-2 font-weight-medium" :class="item === return_monitor ? 'text-white' : 'text-white-50'">
+                                    {{ item }}
+                                  </span>
+                                </div>
+                              </v-list-item>
+                            </v-list>
+                          </v-card>
+                        </v-menu>
                       </v-col>
                     </v-row>
                     
@@ -336,34 +457,7 @@
                   </v-card-text>
                 </v-card>
 
-                <!-- Sistema Avançado (Utilitários originais) -->
-                <v-card class="settings-card rounded-xl pa-2 mb-6" flat style="background: var(--card-bg); box-shadow: var(--shadow);">
-                  <v-card-text class="pa-6">
-                    <div class="d-flex align-center mb-6">
-                      <v-icon color="primary" class="mr-3" size="28">mdi-monitor-dashboard</v-icon>
-                      <div>
-                        <h3 class="font-weight-bold" style="color: var(--sidebar-text); font-size: 1.1rem; line-height: 1.2;">Utilitários de Desempenho</h3>
-                      </div>
-                    </div>
-                    
-                    <v-switch
-                      v-model="hardware_accel"
-                      color="primary"
-                      label="Aceleração de Hardware"
-                      hide-details
-                      inset
-                      class="mb-2 font-weight-medium"
-                    />
-                    <v-switch
-                      v-model="fullscreen_mode"
-                      color="primary"
-                      label="Iniciar programa em Tela Cheia"
-                      hide-details
-                      inset
-                      class="font-weight-medium"
-                    />
-                  </v-card-text>
-                </v-card>
+
               </div>
             </div>
           </v-tabs-window-item>
@@ -377,6 +471,7 @@
 <script>
 import manifest from "../manifest.json";
 import MenuToggleButton from "@/components/MenuToggleButton.vue";
+import $media from "@/helpers/Media";
 
 export default {
   name: manifest.id,
@@ -480,13 +575,16 @@ export default {
       this.$userdata.set("show_home_history", val);
     },
     slide_monitor(val) {
-      if (val) this.$userdata.set("modules.theme.slide_monitor", val);
+      if (val !== undefined && val !== null) {
+        this.$userdata.set("modules.theme.slide_monitor", val);
+        $media.syncMonitors();
+      }
     },
     slideMonitorList: {
       handler(newList) {
         if (newList.length > 0 && this.rawDisplays.length > 0) {
-          if (!this.slide_monitor || this.slide_monitor.length === 0) {
-            // Select all extended monitors by default if none are selected
+          if (this.slide_monitor === undefined || this.slide_monitor === null) {
+            // Select all extended monitors by default only if NEVER configured before
             this.slide_monitor = newList.map(m => m.value);
           }
         }

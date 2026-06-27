@@ -36,16 +36,50 @@
             rounded
             style="max-width: 100px;"
           />
-          <v-autocomplete
-            v-model="bible.id_bible_version"
-            :items="versions_list"
-            hide-details
-            density="comfortable"
-            variant="solo"
-            rounded
-            style="max-width: 350px;"
-            prepend-inner-icon="mdi-book-open-page-variant"
-          />
+          <v-menu :close-on-content-click="true" location="bottom end">
+            <template #activator="{ props }">
+              <v-btn
+                v-bind="props"
+                variant="flat"
+                color="var(--card-bg, #1a1a1a)"
+                rounded="xl"
+                class="text-none px-4 elevation-1"
+                style="height: 44px; max-width: 350px; border: 1px solid var(--border-color, rgba(255,255,255,0.05));"
+              >
+                <div class="d-flex align-center text-truncate w-100" style="color: var(--sidebar-text);">
+                  <v-icon size="small" class="mr-3 opacity-70">mdi-book-open-page-variant</v-icon>
+                  <span class="text-truncate font-weight-medium text-body-2">
+                    {{ versions_list.find(v => v.value === bible.id_bible_version)?.title || 'Selecionar Versão' }}
+                  </span>
+                  <v-icon size="small" class="ml-3 opacity-50">mdi-menu-down</v-icon>
+                </div>
+              </v-btn>
+            </template>
+            <v-card
+              class="modern-glass-menu elevation-0 mt-2"
+              theme="dark"
+              rounded="lg"
+              style="overflow: hidden; max-width: 350px;"
+            >
+              <v-list class="py-2" bg-color="transparent">
+                <v-list-item
+                  v-for="version in versions_list"
+                  :key="version.value"
+                  :active="version.value === bible.id_bible_version"
+                  active-color="white"
+                  class="mx-2 rounded-lg mb-1"
+                  style="min-height: 40px;"
+                  @click="bible.id_bible_version = version.value"
+                >
+                  <div class="d-flex align-center">
+                    <span class="text-body-2 font-weight-medium" :class="version.value === bible.id_bible_version ? 'text-white' : 'text-white-50'">
+                      {{ version.title }}
+                    </span>
+                  </div>
+                </v-list-item>
+              </v-list>
+            </v-card>
+          </v-menu>
         </div>
       </div>
 
@@ -132,7 +166,7 @@
                 @shortkey="prevVerse()"
               >
                 <v-icon>mdi-chevron-left</v-icon>
-                <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-pill-player-volume elevation-0 font-weight-medium text-white">Voltar Versículo</v-tooltip>
+                <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">Voltar Versículo</v-tooltip>
               </v-btn>
               <v-btn
                 v-shortkey="['arrowright']"
@@ -144,7 +178,7 @@
                 @shortkey="nextVerse()"
               >
                 <v-icon>mdi-chevron-right</v-icon>
-                <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-pill-player-volume elevation-0 font-weight-medium text-white">Avançar Versículo</v-tooltip>
+                <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">Avançar Versículo</v-tooltip>
               </v-btn>
               <v-btn
                 v-shortkey="['del']"
@@ -157,7 +191,7 @@
                 @shortkey="clean()"
               >
                 <v-icon>mdi-eraser</v-icon>
-                <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-pill-player-volume elevation-0 font-weight-medium text-white">Apagar</v-tooltip>
+                <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">Apagar</v-tooltip>
               </v-btn>
               <v-btn
                 variant="tonal"
@@ -168,7 +202,7 @@
                 @click="showConfigModal = true"
               >
                 <v-icon>mdi-palette</v-icon>
-                <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-pill-player-volume elevation-0 font-weight-medium text-white">Personalizar</v-tooltip>
+                <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">Personalizar</v-tooltip>
               </v-btn>
               <v-divider vertical class="mx-2" />
               <LScreenBtn module="bible" />

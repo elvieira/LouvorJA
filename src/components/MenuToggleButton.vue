@@ -1,7 +1,7 @@
 <template>
   <button aria-label="Abrir menu" class="menu-toggle-btn" @click="$emit('toggle-sidebar')">
     <v-icon>mdi-menu</v-icon>
-    <v-tooltip activator="parent" location="bottom" open-delay="300" content-class="modern-pill-player-volume elevation-0 font-weight-medium text-white">Menu</v-tooltip>
+    <v-tooltip activator="parent" location="bottom" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">Menu</v-tooltip>
   </button>
 </template>
 

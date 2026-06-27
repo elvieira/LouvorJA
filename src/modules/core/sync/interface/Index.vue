@@ -12,7 +12,7 @@
               </div>
               <v-btn icon variant="text" @click="closeModule">
                 <v-icon>mdi-close</v-icon>
-                <v-tooltip activator="parent" location="bottom" open-delay="300" content-class="modern-pill-player-volume elevation-0 font-weight-medium text-white">Fechar</v-tooltip>
+                <v-tooltip activator="parent" location="bottom" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">Fechar</v-tooltip>
               </v-btn>
             </div>
             <p class="text-caption mb-0" style="color: var(--sidebar-text-secondary);">
@@ -104,7 +104,7 @@
                     @click="cancelAlbum(album)"
                   >
                     <v-icon>mdi-close</v-icon>
-                    <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-pill-player-volume elevation-0 font-weight-medium text-white">Cancelar</v-tooltip>
+                    <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">Cancelar</v-tooltip>
                   </v-btn>
 
                   <div v-else-if="album.status === 'downloaded'" class="d-flex align-center">
@@ -124,7 +124,7 @@
                       @click="deleteAlbum(album)"
                     >
                       <v-icon>mdi-delete</v-icon>
-                      <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-pill-player-volume elevation-0 font-weight-medium text-white">Excluir Coletânea</v-tooltip>
+                      <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">Excluir Coletânea</v-tooltip>
                     </v-btn>
                   </div>
                 </template>

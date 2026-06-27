@@ -1,38 +1,46 @@
 <template>
-  <Window
-    v-model="module.show"
-    :title="config?.title"
-    :subtitle="
-      (config?.subtitle || '') +
-        (config?.track > 0 ? ' | ' + t('track') + ' ' + config.track : '')
-    "
-    closable
-    size="small"
-    class="modern-lyric-window"
-    @close="$media.closeLyric()"
-  >
-    <div class="h-100">
-      <v-skeleton-loader v-if="module.loading" type="text@5" />
-      <div v-else class="lyric-content-wrapper pa-4">
-        <div v-for="line in lyric" :key="line.id_lyric" class="lyric-line mb-3">
-          <b v-if="line.aux_lyric" class="d-block text-primary text-caption mb-1 text-uppercase font-weight-bold">{{ line.aux_lyric }}</b>
-          <span class="lyric-text">{{ line.lyric }}</span>
-        </div>
-      </div>
+  <v-slide-y-reverse-transition>
+    <div v-if="module?.show" class="module-full-page d-flex align-center justify-center bg-transparent" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 100; background: rgba(0,0,0,0.4) !important; backdrop-filter: blur(2px);">
+      <v-card class="rounded-xl overflow-hidden elevation-24" width="100%" max-width="450" style="background: var(--card-bg); max-height: 75vh; display: flex; flex-direction: column;">
+        <v-card-text class="pa-0 d-flex flex-column" style="height: 100%; min-height: 0; overflow: hidden;">
+          <!-- Header -->
+          <div class="pa-6 pb-4 flex-shrink-0" style="background: rgba(0,0,0,0.02);">
+            <div class="d-flex align-center justify-space-between mb-2">
+              <div class="d-flex align-center">
+                <v-icon color="primary" size="32" class="mr-3">mdi-music-note-outline</v-icon>
+                <h2 class="text-h5 font-weight-bold mb-0" style="color: var(--sidebar-text);">{{ config?.title }}</h2>
+              </div>
+              <v-btn icon variant="text" @click="$media.closeLyric()">
+                <v-icon>mdi-close</v-icon>
+                <v-tooltip activator="parent" location="bottom" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">Fechar</v-tooltip>
+              </v-btn>
+            </div>
+            <p v-if="config?.subtitle || config?.track > 0" class="text-caption mb-0" style="color: var(--sidebar-text-secondary);">
+              {{ config?.subtitle || '' }}{{ config?.subtitle && config?.track > 0 ? ' | ' : '' }}{{ config?.track > 0 ? t('track') + ' ' + config.track : '' }}
+            </p>
+          </div>
+          
+          <!-- Content -->
+          <div class="pa-6 pt-4 flex-grow-1" style="overflow-y: auto;">
+            <v-skeleton-loader v-if="module.loading" type="text@5" />
+            <div v-else class="lyric-content-wrapper">
+              <div v-for="line in lyric" :key="line.id_lyric" class="lyric-line mb-4">
+                <b v-if="line.aux_lyric" class="d-block text-primary text-caption mb-1 text-uppercase font-weight-bold" style="letter-spacing: 0.5px;">{{ line.aux_lyric }}</b>
+                <span class="lyric-text text-body-1" style="color: var(--sidebar-text); font-weight: 500;">{{ line.lyric }}</span>
+              </div>
+            </div>
+          </div>
+        </v-card-text>
+      </v-card>
     </div>
-  </Window>
+  </v-slide-y-reverse-transition>
 </template>
 
 <script>
 import manifest from "../manifest.json";
 
-import Window from "@/components/Window.vue";
-
 export default {
   name: "LyricModule",
-  components: {
-    Window,
-  },
   computed: {
     /* COMPUTEDS OBRIGATÓRIAS - INÍCIO */
     /* NÃO MODIFICAR */
@@ -64,45 +72,12 @@ export default {
 </script>
 
 <style lang="scss">
-.modern-lyric-window {
-  .v-card {
-    background: var(--glass-bg) !important;
-    backdrop-filter: blur(28px) saturate(180%);
-    -webkit-backdrop-filter: blur(28px) saturate(180%);
-    box-shadow: 0 24px 48px rgba(0,0,0,0.4) !important;
-    border: 1px solid var(--glass-border);
-  }
+.lyric-content-wrapper {
+  font-size: 1.2rem;
+  line-height: 1.7;
+}
 
-  /* Modificando estilos nativos do Window.vue para integrar com o card escuro */
-  .v-card-title {
-    color: var(--glass-text);
-    font-size: 1.4rem;
-    font-weight: 600; line-height: 1;
-  }
-  .v-card-subtitle {
-    color: var(--glass-text-secondary) !important;
-  }
-  .v-btn {
-    color: var(--glass-text-secondary) !important;
-    &:hover {
-      color: var(--glass-text) !important;
-    }
-  }
-
-  .lyric-content-wrapper {
-    font-size: 1.2rem;
-    line-height: 1.7;
-    color: var(--glass-text);
-  }
-
-  .lyric-text {
-    font-weight: 500;
-  }
-  
-  .text-primary {
-    color: var(--accent-blue) !important;
-    letter-spacing: 1px;
-    opacity: 0.9;
-  }
+.lyric-text {
+  font-weight: 500;
 }
 </style>

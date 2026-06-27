@@ -32,7 +32,7 @@
                 @click="maximizePlayer" 
               >
                 <v-icon>mdi-arrow-expand-all</v-icon>
-                <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-pill-player-volume elevation-0 font-weight-medium text-white">Maximizar</v-tooltip>
+                <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">Maximizar</v-tooltip>
               </v-btn>
               <v-btn 
                 icon
@@ -43,7 +43,7 @@
                 @click="showMiniPlayer = false" 
               >
                 <v-icon>mdi-minus</v-icon>
-                <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-pill-player-volume elevation-0 font-weight-medium text-white">Minimizar</v-tooltip>
+                <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">Minimizar</v-tooltip>
               </v-btn>
             </div>
             <div class="position-relative w-100 bg-black" style="height: 180px;">

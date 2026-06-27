@@ -176,16 +176,34 @@ export default {
         }
 
         const primary = displays.find(d => d.isPrimary) || displays[0];
-        
+
         // Remove primary from selected monitors to avoid covering controls
         selectedMonitors = selectedMonitors.filter(m => m !== primary.id);
 
         if (selectedMonitors.length > 0) {
           const { default: $popup } = await import("@/helpers/Popup");
-          selectedMonitors.forEach(monitorId => {
-            $popup.open({ module: 'media', fullscreen: true, monitorId: monitorId });
-          });
+          await $popup.syncMonitors(selectedMonitors, 'media', true);
         }
+      }
+    }
+  },
+
+  async syncMonitors() {
+    if (window.electronAPI && window.electronAPI.getDisplays) {
+      const displays = await window.electronAPI.getDisplays();
+      if (displays && displays.length > 1) {
+        let selectedMonitors = $userdata.get("modules.theme.slide_monitor");
+        if (!Array.isArray(selectedMonitors)) {
+          selectedMonitors = selectedMonitors ? [selectedMonitors] : [];
+        }
+
+        const primary = displays.find(d => d.isPrimary) || displays[0];
+        selectedMonitors = selectedMonitors.filter(m => m !== primary.id);
+
+        const isMediaActive = $appdata.get("modules.media.id_music") != null;
+
+        const { default: $popup } = await import("@/helpers/Popup");
+        await $popup.syncMonitors(selectedMonitors, 'media', isMediaActive);
       }
     }
   },
