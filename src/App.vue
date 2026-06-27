@@ -28,6 +28,42 @@ export default {
       this.$dev.toogle();
       //}
     },
+    handleGlobalKeydown(e) {
+      // Ignore if user is typing in an input or textarea
+      if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName) || document.activeElement.isContentEditable) {
+        return;
+      }
+
+      const isFullscreen = this.$appdata.get("modules.media.config.fullscreen");
+      const isMediaModuleOpen = this.$appdata.get("modules.media.show");
+      const isMinimized = this.$appdata.get("modules.media.minimized");
+
+      // Only active in fullscreen or if media module is opened and not minimized
+      const isActive = isFullscreen || (isMediaModuleOpen && !isMinimized);
+
+      if (!isActive) return;
+
+      if (e.code === 'Space') {
+        e.preventDefault();
+        const isPaused = this.$appdata.get("modules.media.config.is_paused");
+        this.$media.pause(!isPaused);
+      } else if (e.code === 'ArrowRight') {
+        e.preventDefault();
+        this.$media.nextSlide();
+      } else if (e.code === 'ArrowLeft') {
+        e.preventDefault();
+        this.$media.prevSlide();
+      } else if (e.code === 'Escape') {
+        e.preventDefault();
+        this.$media.close();
+      } else if (e.code === 'KeyF') {
+        e.preventDefault();
+        this.$media.fullscreen(!isFullscreen);
+      } else if (e.code === 'KeyM') {
+        e.preventDefault();
+        this.$media.minimize();
+      }
+    }
   },
   created() {
     this.$userdata.load();
@@ -35,6 +71,12 @@ export default {
     if (theme !== "") {
       this.$vuetify.theme.global.name = theme;
     }
+  },
+  mounted() {
+    window.addEventListener("keydown", this.handleGlobalKeydown);
+  },
+  unmounted() {
+    window.removeEventListener("keydown", this.handleGlobalKeydown);
   }
 };
 </script>

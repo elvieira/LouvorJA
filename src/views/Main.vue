@@ -24,21 +24,27 @@
           >
             <div class="mini-player-toolbar d-flex justify-end pa-1 position-absolute w-100" style="z-index: 10;">
               <v-btn 
-                icon="mdi-arrow-expand-all" 
+                icon
                 size="x-small" 
                 variant="flat" 
                 color="rgba(0,0,0,0.6)" 
                 class="mx-1 hover-btn"
                 @click="maximizePlayer" 
-              />
+              >
+                <v-icon>mdi-arrow-expand-all</v-icon>
+                <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-pill-player-volume elevation-0 font-weight-medium text-white">Maximizar</v-tooltip>
+              </v-btn>
               <v-btn 
-                icon="mdi-minus" 
+                icon
                 size="x-small" 
                 variant="flat" 
                 color="rgba(0,0,0,0.6)" 
                 class="hover-btn"
                 @click="showMiniPlayer = false" 
-              />
+              >
+                <v-icon>mdi-minus</v-icon>
+                <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-pill-player-volume elevation-0 font-weight-medium text-white">Minimizar</v-tooltip>
+              </v-btn>
             </div>
             <div class="position-relative w-100 bg-black" style="height: 180px;">
               <LSlide

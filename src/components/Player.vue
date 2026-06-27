@@ -1,7 +1,7 @@
 <template>
   <div 
     ref="playerContainer"
-    :class="location === 'footer' ? 'footer-player-bar d-flex align-center w-100 px-4 py-2' : 'modern-pill-player d-flex align-center px-6 py-2 mx-auto'" 
+    :class="location === 'footer' ? 'footer-player-bar d-flex align-center w-100 px-4 py-2' : (location === 'fullscreen' ? 'fullscreen-player-bar d-flex align-center px-6 py-2 w-100' : 'modern-pill-player d-flex align-center px-6 py-2 mx-auto')" 
   >
     <!-- INFO (Música e Álbum) -->
     <div v-if="playerWidth >= 880" class="player-info d-flex flex-column mr-6" :style="location === 'footer' ? 'max-width: 300px; min-width: 200px;' : 'max-width: 220px; min-width: 150px;'">
@@ -12,34 +12,43 @@
     <!-- CONTROLES PRINCIPAIS (Prev, Play, Next) -->
     <div class="d-flex align-center mr-6">
       <v-btn
-        icon="mdi-skip-previous"
+        icon
         variant="text"
         :color="defaultTextColor"
         size="small"
         class="mx-1"
         @click="prev"
-      />
+      >
+        <v-icon>mdi-skip-previous</v-icon>
+        <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-pill-player-volume elevation-0 font-weight-medium text-white">Anterior</v-tooltip>
+      </v-btn>
       <v-btn
-        :icon="media.config.is_paused ? 'mdi-play-circle' : 'mdi-pause-circle'"
+        icon
         variant="text"
         :color="defaultTextColor"
         size="large"
         class="mx-1 play-btn"
         @click="play"
-      />
+      >
+        <v-icon>{{ media.config.is_paused ? 'mdi-play-circle' : 'mdi-pause-circle' }}</v-icon>
+        <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-pill-player-volume elevation-0 font-weight-medium text-white">{{ media.config.is_paused ? 'Reproduzir' : 'Pausar' }}</v-tooltip>
+      </v-btn>
       <v-btn
-        icon="mdi-skip-next"
+        icon
         variant="text"
         :color="defaultTextColor"
         size="small"
         class="mx-1"
         @click="next"
-      />
+      >
+        <v-icon>mdi-skip-next</v-icon>
+        <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-pill-player-volume elevation-0 font-weight-medium text-white">Próxima</v-tooltip>
+      </v-btn>
     </div>
 
     <!-- TIMELINE E TEMPO -->
     <div v-if="media.config.audio" class="player-timeline-wrapper d-flex align-center flex-grow-1 mr-6" style="min-width: 150px;">
-      <span class="text-caption mr-3 font-weight-medium" :class="secondaryTextClass" style="opacity: 0.8;">{{ $datetime.shortTime(media.config.current_time) }}</span>
+      <span class="text-caption mr-3 font-weight-medium" :class="location === 'window' || location === 'fullscreen' ? 'text-white' : secondaryTextClass" style="opacity: 0.8;">{{ $datetime.shortTime(media.config.current_time) }}</span>
       <v-progress-linear
         v-model="media.config.progress"
         clickable
@@ -48,22 +57,22 @@
         :stream="!media.loading"
         :buffer-value="media.config.buffered"
         :color="location === 'footer' ? 'var(--accent-blue)' : 'white'"
-        :bg-color="timelineBgColor"
-        :bg-opacity="1"
+        :bg-opacity="0"
         rounded
         class="flex-grow-1 timeline-slider"
         @click="changeProgress"
       />
-      <span class="text-caption ml-3 font-weight-medium" :class="secondaryTextClass" style="opacity: 0.8;">{{ $datetime.shortTime(media.config.duration) }}</span>
+      <span class="text-caption ml-3 font-weight-medium" :class="location === 'window' || location === 'fullscreen' ? 'text-white' : secondaryTextClass" style="opacity: 0.8;">{{ $datetime.shortTime(media.config.duration) }}</span>
     </div>
 
     <!-- VOLUME -->
-    <div v-if="media.config.audio" class="d-flex align-center mr-4">
+    <div v-if="media.config.audio" class="d-flex align-center">
       <v-menu
         location="top center"
         :close-on-content-click="false"
         open-on-hover
         :open-delay="50"
+        :attach="location === 'fullscreen'"
       >
         <template #activator="{ props }">
           <v-btn
@@ -78,10 +87,9 @@
         </template>
         <v-card 
           class="py-2 px-4 rounded-lg d-flex align-center" 
-          :class="location === 'footer' ? '' : 'modern-pill-player-volume'"
+          :class="location === 'footer' ? 'elevation-3' : 'modern-pill-player-volume elevation-0'"
           :color="location === 'footer' && !isDark ? '#f4f5f7' : ''" 
           :theme="location === 'footer' && !isDark ? 'light' : 'dark'" 
-          elevation="8" 
           min-width="130" 
           height="40"
           style="overflow: hidden;"
@@ -112,32 +120,43 @@
             size="small"
             :color="mode.color && mode.color !== 'white' ? mode.color : defaultTextColor"
             v-bind="props"
-            :icon="mode.tray_icon"
+            icon
             class="mx-1"
-          />
+          >
+            <v-icon>{{ mode.tray_icon }}</v-icon>
+            <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-pill-player-volume elevation-0 font-weight-medium text-white">Tipo de Áudio</v-tooltip>
+          </v-btn>
         </template>
-        <v-list
-          class="elevation-3"
+        <v-card
+          :class="location === 'footer' ? 'elevation-3' : 'modern-pill-player-volume elevation-0'"
+          :color="location === 'footer' && !isDark ? '#f4f5f7' : ''" 
+          :theme="location === 'footer' && !isDark ? 'light' : 'dark'" 
           rounded="lg"
-          :bg-color="location === 'footer' && !isDark ? 'white' : 'var(--card-bg)'"
-          :theme="location === 'footer' && !isDark ? 'light' : 'dark'"
+          style="overflow: hidden;"
         >
-          <template v-for="(mode, key) in menu_modes" :key="key">
-            <v-divider v-if="mode.title == '-'" class="my-1 border-opacity-25" />
-            <v-list-item
-              v-else
-              :active="mode.active"
-              :disabled="mode.disabled"
-              active-color="var(--accent-blue)"
-              @click="mode.click"
-            >
-              <template #prepend>
-                <v-icon :icon="mode.icon" />
-              </template>
-              {{ mode.title }}
-            </v-list-item>
-          </template>
-        </v-list>
+          <v-list
+            class="py-2"
+            :bg-color="location === 'footer' ? (isDark ? 'var(--card-bg)' : 'white') : 'transparent'"
+          >
+            <template v-for="(mode, key) in menu_modes" :key="key">
+              <v-divider v-if="mode.title == '-'" class="my-2 border-opacity-25" />
+              <v-list-item
+                v-else
+                :active="mode.active"
+                :disabled="mode.disabled"
+                :active-color="location === 'footer' ? 'var(--accent-blue)' : 'white'"
+                class="mx-2 rounded-lg mb-1"
+                style="min-height: 40px;"
+                @click="mode.click"
+              >
+                <div class="d-flex align-center">
+                  <v-icon :icon="mode.icon" size="small" class="mr-3" />
+                  <span class="text-body-2 font-weight-medium">{{ mode.title }}</span>
+                </div>
+              </v-list-item>
+            </template>
+          </v-list>
+        </v-card>
       </v-menu>
 
       <!-- Extensão de Tela -->
@@ -153,53 +172,68 @@
         v-if="location === 'footer' && !showMiniPlayer"
         variant="text"
         size="small"
-        icon="mdi-arrow-expand-all"
+        icon
         :color="defaultTextColor"
         class="mx-1"
         @click="maximize()"
-      />
+      >
+        <v-icon>mdi-arrow-expand-all</v-icon>
+        <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-pill-player-volume elevation-0 font-weight-medium text-white">Maximizar</v-tooltip>
+      </v-btn>
 
       <!-- Fechar (Apenas no Footer) -->
       <v-btn
         v-if="location === 'footer'"
         variant="text"
         size="small"
-        icon="mdi-close"
+        icon
         :color="defaultTextColor"
         class="mx-1"
         @click="close()"
-      />
+      >
+        <v-icon>mdi-close</v-icon>
+        <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-pill-player-volume elevation-0 font-weight-medium text-white">Fechar</v-tooltip>
+      </v-btn>
 
       <!-- Fullscreen (Apenas no Window/Fullscreen) -->
       <v-btn
         v-if="location == 'fullscreen'"
         variant="text"
         size="small"
-        icon="mdi-fullscreen-exit"
+        icon
         color="white"
         class="mx-1"
         @click="fullscreen(false)"
-      />
+      >
+        <v-icon>mdi-fullscreen-exit</v-icon>
+        <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-pill-player-volume elevation-0 font-weight-medium text-white">Sair da Tela Cheia</v-tooltip>
+      </v-btn>
       <v-btn
         v-else-if="location == 'window'"
         variant="text"
         size="small"
-        icon="mdi-fullscreen"
+        icon
         color="white"
         class="mx-1"
         @click="fullscreen()"
-      />
+      >
+        <v-icon>mdi-fullscreen</v-icon>
+        <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-pill-player-volume elevation-0 font-weight-medium text-white">Tela Cheia</v-tooltip>
+      </v-btn>
 
       <!-- Botão de Playlist (Apenas no Window) -->
       <v-btn 
         v-if="location == 'window' && playerWidth >= 880"
         variant="text" 
         size="small" 
-        icon="mdi-format-list-bulleted" 
+        icon 
         :color="isPlaylistOpen ? 'var(--accent-blue)' : 'white'" 
         class="ml-2" 
         @click="togglePlaylist" 
-      />
+      >
+        <v-icon>mdi-format-list-bulleted</v-icon>
+        <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-pill-player-volume elevation-0 font-weight-medium text-white">Lista de Slides</v-tooltip>
+      </v-btn>
     </div>
   </div>
 </template>
@@ -263,7 +297,7 @@ export default {
           title: this.$t("modules.media.general.sung"),
           color: "info",
           active: this.media.config.mode == "audio",
-          icon: "mdi-play-box-multiple",
+          icon: "mdi-play-circle",
           tray_icon: "mdi-account-voice",
           click: () =>
             this.open({
@@ -278,7 +312,7 @@ export default {
           color: "success",
           active: this.media.config.mode == "instrumental",
           disabled: !this.has_instrumental_music,
-          icon: "mdi-play-box-multiple-outline",
+          icon: "mdi-play-circle-outline",
           tray_icon: "mdi-music-note",
           click: () =>
             this.open({
@@ -292,7 +326,7 @@ export default {
           title: this.$t("modules.media.general.no_audio"),
           color: "error",
           active: this.media.config.mode == "no_audio",
-          icon: "mdi-checkbox-multiple-blank-outline",
+          icon: "mdi-monitor",
           tray_icon: "mdi-music-off",
           click: () =>
             this.open({
@@ -420,6 +454,20 @@ export default {
   min-height: 60px;
   width: auto !important;
   display: inline-flex !important;
+  align-items: center;
+  position: relative;
+  overflow: visible;
+}
+
+.fullscreen-player-bar {
+  background: rgba(15, 15, 20, 0.8) !important;
+  backdrop-filter: blur(28px) saturate(160%);
+  -webkit-backdrop-filter: blur(28px) saturate(160%);
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 -4px 32px rgba(0, 0, 0, 0.5);
+  min-height: 64px;
+  width: 100% !important;
+  display: flex !important;
   align-items: center;
   position: relative;
   overflow: visible;

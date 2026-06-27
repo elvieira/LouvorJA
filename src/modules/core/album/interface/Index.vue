@@ -5,12 +5,15 @@
       <div class="search-header pb-0 flex-shrink-0" style="padding-top: 24px; padding-left: 24px; padding-right: 24px; display: flex; align-items: center;">
         <MenuToggleButton style="margin-right: 16px;" @toggle-sidebar="toggleSidebar" />
         <v-btn
-          icon="mdi-arrow-left"
+          icon
           variant="text"
           size="small"
           style="margin-right: 16px; color: var(--sidebar-text-secondary);"
           @click="$modules.close(module_id)"
-        />
+        >
+          <v-icon>mdi-arrow-left</v-icon>
+          <v-tooltip activator="parent" location="bottom" open-delay="300" content-class="modern-pill-player-volume elevation-0 font-weight-medium text-white">Voltar</v-tooltip>
+        </v-btn>
         
         <div class="d-flex align-center mr-auto">
           <div class="album-cover-box d-flex align-center justify-center mr-4" :style="module?.data?.color ? `background: ${module.data.color}` : ''" style="width: 48px; height: 48px; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);">

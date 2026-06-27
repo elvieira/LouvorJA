@@ -10,7 +10,10 @@
                 <v-icon color="primary" size="32" class="mr-3">mdi-library</v-icon>
                 <h2 class="text-h5 font-weight-bold mb-0" style="color: var(--sidebar-text);">Biblioteca Local</h2>
               </div>
-              <v-btn icon="mdi-close" variant="text" @click="closeModule"></v-btn>
+              <v-btn icon variant="text" @click="closeModule">
+                <v-icon>mdi-close</v-icon>
+                <v-tooltip activator="parent" location="bottom" open-delay="300" content-class="modern-pill-player-volume elevation-0 font-weight-medium text-white">Fechar</v-tooltip>
+              </v-btn>
             </div>
             <p class="text-caption mb-0" style="color: var(--sidebar-text-secondary);">
               Baixe as coletâneas para poder reproduzir as músicas.
@@ -77,7 +80,6 @@
                 
                 <v-list-item-subtitle v-else class="text-caption" style="color: var(--sidebar-text-secondary);">
                   {{ album.subtitle || '' }}
-                  {{ album.status === 'downloaded' ? ' · Disponível offline' : '' }}
                 </v-list-item-subtitle>
                 
                 <template #append>
@@ -98,9 +100,12 @@
                     variant="tonal"
                     size="small"
                     class="rounded-lg ml-2"
-                    icon="mdi-close"
+                    icon
                     @click="cancelAlbum(album)"
-                  ></v-btn>
+                  >
+                    <v-icon>mdi-close</v-icon>
+                    <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-pill-player-volume elevation-0 font-weight-medium text-white">Cancelar</v-tooltip>
+                  </v-btn>
 
                   <div v-else-if="album.status === 'downloaded'" class="d-flex align-center">
                     <v-chip
@@ -115,10 +120,12 @@
                       color="error"
                       variant="text"
                       size="small"
-                      icon="mdi-delete"
-                      title="Excluir Coletânea"
+                      icon
                       @click="deleteAlbum(album)"
-                    ></v-btn>
+                    >
+                      <v-icon>mdi-delete</v-icon>
+                      <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-pill-player-volume elevation-0 font-weight-medium text-white">Excluir Coletânea</v-tooltip>
+                    </v-btn>
                   </div>
                 </template>
               </v-list-item>

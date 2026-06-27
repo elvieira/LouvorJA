@@ -127,37 +127,49 @@
                 :disabled="!(select_bible?.verses && select_bible.verses.length > 0)"
                 variant="tonal"
                 size="small"
-                icon="mdi-chevron-left"
+                icon
                 @click="prevVerse()"
                 @shortkey="prevVerse()"
-              />
+              >
+                <v-icon>mdi-chevron-left</v-icon>
+                <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-pill-player-volume elevation-0 font-weight-medium text-white">Voltar Versículo</v-tooltip>
+              </v-btn>
               <v-btn
                 v-shortkey="['arrowright']"
                 :disabled="!(select_bible?.verses && select_bible.verses.length > 0)"
                 variant="tonal"
                 size="small"
-                icon="mdi-chevron-right"
+                icon
                 @click="nextVerse()"
                 @shortkey="nextVerse()"
-              />
+              >
+                <v-icon>mdi-chevron-right</v-icon>
+                <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-pill-player-volume elevation-0 font-weight-medium text-white">Avançar Versículo</v-tooltip>
+              </v-btn>
               <v-btn
                 v-shortkey="['del']"
                 :disabled="!(select_bible?.verses && select_bible.verses.length > 0)"
                 variant="tonal"
                 color="error"
                 size="small"
-                icon="mdi-eraser"
+                icon
                 @click="clean()"
                 @shortkey="clean()"
-              />
+              >
+                <v-icon>mdi-eraser</v-icon>
+                <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-pill-player-volume elevation-0 font-weight-medium text-white">Apagar</v-tooltip>
+              </v-btn>
               <v-btn
                 variant="tonal"
                 color="primary"
                 size="small"
-                icon="mdi-palette"
+                icon
                 class="mx-1 config-palette-btn"
                 @click="showConfigModal = true"
-              />
+              >
+                <v-icon>mdi-palette</v-icon>
+                <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-pill-player-volume elevation-0 font-weight-medium text-white">Personalizar</v-tooltip>
+              </v-btn>
               <v-divider vertical class="mx-2" />
               <LScreenBtn module="bible" />
             </div>

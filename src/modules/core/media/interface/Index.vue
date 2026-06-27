@@ -64,20 +64,26 @@
         <!-- Minimizar e Fechar flutuantes -->
         <v-btn
           class="custom-system-btn"
-          icon="mdi-minus"
+          icon
           variant="flat"
           size="small"
           color="white"
           @click="$media.minimize()"
-        />
+        >
+          <v-icon>mdi-minus</v-icon>
+          <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-pill-player-volume elevation-0 font-weight-medium text-white">Minimizar</v-tooltip>
+        </v-btn>
         <v-btn
           class="custom-system-btn"
-          icon="mdi-close"
+          icon
           variant="flat"
           size="small"
           color="white"
           @click="$media.close()"
-        />
+        >
+          <v-icon>mdi-close</v-icon>
+          <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-pill-player-volume elevation-0 font-weight-medium text-white">Fechar</v-tooltip>
+        </v-btn>
       </div>
     </template>
 

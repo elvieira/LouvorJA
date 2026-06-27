@@ -4,10 +4,13 @@
     :variant="variant"
     :size="size"
     :active="is_popup_opened"
-    icon="mdi-open-in-new"
+    icon
     :class="{ 'rotate-icon': is_selected }"
     @click="popup()"
-  />
+  >
+    <v-icon>mdi-open-in-new</v-icon>
+    <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-pill-player-volume elevation-0 font-weight-medium text-white">Monitor Estendido</v-tooltip>
+  </v-btn>
 </template>
 
 <script>

@@ -1,7 +1,7 @@
 {
     "alerts": {
         "not_loaded": "¡Ocurrió un error al cargar este audio!",
-        "close": "¿Quieres cerrar esta presentacion?"
+        "close": "¿Quieres cerrar esta canción?"
     },
     "general": {
         "sung": "Cantado",
