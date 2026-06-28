@@ -135,12 +135,7 @@ export default {
     const is_dev = import.meta.env.VITE_APP_MODE === "development";
     this.$appdata.set("is_dev", is_dev);
 
-    if (!is_dev) {
-      window.addEventListener("beforeunload", (event) => {
-        event.preventDefault();
-        event.returnValue = "";
-      });
-    }
+    // beforeunload foi removido para usar o diálogo customizado de fechamento no Titlebar
 
     this.$appdata.set(
       "is_mobile",
@@ -156,7 +151,7 @@ export default {
     }
 
     window.addEventListener("message", (event) => {
-      if (event.origin === window.location.origin) {
+      if (event.origin === window.location.origin || event.origin === 'file://' || event.origin === 'null') {
         if (event.data === "mounted") {
           const popupSource = event.source;
           if (popupSource) {
@@ -164,7 +159,7 @@ export default {
             Object.keys(data).map((item) => {
               popupSource.postMessage(
                 { param: item, value: data[item] },
-                window.location.origin,
+                "*",
               );
             });
           }

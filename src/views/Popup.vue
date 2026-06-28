@@ -20,7 +20,7 @@ export default {
   mounted() {
     this.$appdata.set("is_popup", true);
     window.addEventListener("message", (event) => {
-      if (event.origin === window.location.origin) {
+      if (event.origin === window.location.origin || event.origin === 'file://' || event.origin === 'null') {
         this.message = event.data;
         if (event.data.param) {
           this.$appdata.set(event.data.param, event.data.value);
@@ -28,7 +28,7 @@ export default {
       }
     });
 
-    window.opener.postMessage("mounted", window.location.origin);
+    window.opener.postMessage("mounted", "*");
   },
   methods: {
     loadModuleComponent() {

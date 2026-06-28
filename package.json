@@ -19,7 +19,7 @@
     "git:tag": "git tag -a -f v%npm_package_version% -m \"Versão %npm_package_version%\" && git push origin -f v%npm_package_version% && git push -u origin main",
     "git:publish": "git pull origin main && git checkout main && git merge develop && git push -u origin main && git checkout develop",
     "electron:dev": "concurrently -k \"vite\" \"wait-on http://localhost:5173 && electron .\"",
-    "electron:build": "VITE_BASE_URL=./ vite build && electron-builder"
+    "electron:build": "vite build --base=./ && electron-builder"
   },
   "dependencies": {
     "@mdi/font": "^7.4.47",
@@ -66,7 +66,7 @@
   ],
   "build": {
     "appId": "com.louvorja.app",
-    "productName": "LouvorJA",
+    "productName": "Louvor JA",
     "directories": {
       "output": "dist-electron"
     },
@@ -75,13 +75,16 @@
       "electron/**/*"
     ],
     "mac": {
-      "target": "dmg"
+      "target": "dmg",
+      "icon": "public/ico/favicon.png"
     },
     "win": {
-      "target": "nsis"
+      "target": "nsis",
+      "icon": "public/ico/favicon.png"
     },
     "linux": {
-      "target": "AppImage"
+      "target": "AppImage",
+      "icon": "public/ico/favicon.png"
     }
   }
 }

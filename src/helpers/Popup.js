@@ -1,5 +1,6 @@
 import $appdata from "@/helpers/AppData";
 import $window from "@/helpers/Window";
+import { markRaw } from "vue";
 
 export default {
   async open(params) {
@@ -21,9 +22,9 @@ export default {
       } else {
         let features = `width=800,height=600,monitor=${params.monitorId}`;
         if (params.fullscreen) features += ",fullscreen=yes";
-        let newPopup = $window.open("/popup", `PopupWindow_${params.monitorId}`, features);
+        let newPopup = $window.open("#/popup", `PopupWindow_${params.monitorId}`, features);
         newPopup.monitorId = params.monitorId;
-        popups.push(newPopup);
+        popups.push(markRaw(newPopup));
       }
     } else {
       // Fallback single popup
@@ -32,7 +33,7 @@ export default {
       } else {
         let features = "width=800,height=600";
         if (params.fullscreen) features += ",fullscreen=yes";
-        popups = [$window.open("/popup", "PopupWindow", features)];
+        popups = [markRaw($window.open("#/popup", "PopupWindow", features))];
       }
     }
 
@@ -72,9 +73,9 @@ export default {
         let existing = popups.find(p => p.monitorId === monitorId);
         if (!existing || existing.closed) {
           let features = `width=800,height=600,monitor=${monitorId},fullscreen=yes`;
-          let newPopup = $window.open("/popup", `PopupWindow_${monitorId}`, features);
+          let newPopup = $window.open("#/popup", `PopupWindow_${monitorId}`, features);
           newPopup.monitorId = monitorId;
-          popups.push(newPopup);
+          popups.push(markRaw(newPopup));
         }
       }
       if (monitors.length > 0) {

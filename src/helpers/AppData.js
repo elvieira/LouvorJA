@@ -23,7 +23,7 @@ export default {
         if (!popup.closed) {
           activePopups.push(popup);
           try {
-            popup.postMessage({ param, value }, window.location.origin);
+            popup.postMessage({ param, value }, "*");
           } catch (e) {
             console.log(e);
           }

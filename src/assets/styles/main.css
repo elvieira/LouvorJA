@@ -71,11 +71,26 @@
     background-color: var(--main-bg) !important;
 }
 
-html,
+html {
+    overflow: hidden !important;
+}
+
 body {
     overflow: hidden !important;
     margin: 0 !important;
     padding: 0 !important;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+input, textarea {
+    -webkit-user-select: auto;
+    user-select: auto;
+}
+
+/* Previne o comportamento padrão de arrastar imagens (ghost dragging) */
+img, a {
+    -webkit-user-drag: none;
 }
 
 /* SCROLL GLOBAL */

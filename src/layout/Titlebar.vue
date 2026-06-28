@@ -20,6 +20,9 @@
 </template>
 
 <script>
+import $appdata from "@/helpers/AppData";
+import $alert from "@/helpers/Alert";
+
 export default {
   name: "AppTitlebar",
   data() {
@@ -41,6 +44,27 @@ export default {
       window.electronAPI.onWindowMaximizedState((state) => {
         this.isMaximized = state;
       });
+
+      // Intercepta pedido de fechamento
+      window.electronAPI.onRequestCloseApp(() => {
+        const isMediaActive = $appdata.get("modules.media.id_music") != null || $appdata.get("modules.media.show");
+        let popups = $appdata.get("popups") || [];
+        const hasProjector = popups.some(p => !p.closed);
+
+        if (isMediaActive || hasProjector) {
+          $alert.yesno({
+            title: "Encerrar Aplicativo?",
+            text: "Existe uma mídia ativa ou projeção em andamento. Deseja realmente sair?",
+            translate: false
+          }, (btn) => {
+            if (btn === "yes") {
+              this.executeClose();
+            }
+          });
+        } else {
+          this.executeClose();
+        }
+      });
     }
   },
   methods: {
@@ -52,6 +76,11 @@ export default {
     },
     close() {
       if (this.isElectron) window.electronAPI.windowControl('close');
+    },
+    executeClose() {
+      if (this.isElectron) {
+        window.electronAPI.forceQuitApp();
+      }
     }
   }
 }
@@ -62,7 +91,7 @@ export default {
   height: 32px;
   width: 100%;
   position: relative;
-  z-index: 9999;
+  z-index: 99999;
   user-select: none;
   border-bottom: 1px solid var(--border-color);
 }

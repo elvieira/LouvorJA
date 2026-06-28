@@ -5,7 +5,7 @@
         <div v-if="showContent" class="text-center" style="max-width: 500px; width: 100%;">
         <img src="/ico/favicon.svg" width="80" class="mb-6 pulse-anim" />
         <h2 class="text-h4 font-weight-bold mb-2" style="color: var(--sidebar-text);">
-          {{ isFirstBoot ? 'Preparando o LouvorJA' : 'Iniciando o LouvorJA' }}
+          {{ isFirstBoot ? 'Preparando o Louvor JA' : 'Iniciando o Louvor JA' }}
         </h2>
         <p class="text-subtitle-1 mb-8" style="color: var(--sidebar-text-secondary);">
           Aguarde instantes enquanto organizamos tudo para você.<br/>

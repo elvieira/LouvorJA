@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from "vue-router";
+import { createRouter, createWebHashHistory } from "vue-router";
 import Main from "@/views/Main.vue";
 import Popup from "@/views/Popup.vue";
 
@@ -16,7 +16,7 @@ const routes = [
 ];
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL ?? "/"),
+  history: createWebHashHistory(import.meta.env.BASE_URL ?? "/"),
   routes,
 });
 

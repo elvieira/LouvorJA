@@ -20,6 +20,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onWindowMaximizedState: (callback) => {
     ipcRenderer.on('window-maximized-state', (_event, isMaximized) => callback(isMaximized));
   },
+  onRequestCloseApp: (callback) => {
+    ipcRenderer.on('request-close-app', () => callback());
+  },
+  forceQuitApp: () => ipcRenderer.invoke('force-quit-app'),
   
   // Escuta eventos de navegação do menu nativo
   onNavigateModule: (callback) => {

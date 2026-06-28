@@ -1,28 +1,73 @@
 const { app, BrowserWindow, Menu, ipcMain, protocol, net } = require('electron');
 const path = require('path');
 const fs = require('fs');
+const crypto = require('crypto');
+
+// Chave estática para ofuscação (não é segurança alta, apenas ofuscação)
+const ENCRYPTION_KEY = Buffer.from('v389s8dkj238910s8a7d3h2j1k9s8d7f', 'utf8'); // 32 bytes
+const IV_LENGTH = 16;
+
+function encryptData(text) {
+  try {
+    const iv = crypto.randomBytes(IV_LENGTH);
+    const cipher = crypto.createCipheriv('aes-256-cbc', ENCRYPTION_KEY, iv);
+    let encrypted = cipher.update(text, 'utf8', 'hex');
+    encrypted += cipher.final('hex');
+    return iv.toString('hex') + ':' + encrypted;
+  } catch (e) {
+    console.error('Erro ao ofuscar dados', e);
+    return null;
+  }
+}
+
+function decryptData(text) {
+  try {
+    const textParts = text.split(':');
+    if (textParts.length !== 2) return null;
+    const iv = Buffer.from(textParts[0], 'hex');
+    const encryptedText = Buffer.from(textParts[1], 'hex');
+    const decipher = crypto.createDecipheriv('aes-256-cbc', ENCRYPTION_KEY, iv);
+    let decrypted = decipher.update(encryptedText, 'hex', 'utf8');
+    decrypted += decipher.final('utf8');
+    return decrypted;
+  } catch (e) {
+    console.error('Erro ao desofuscar dados', e);
+    return null;
+  }
+}
+
+app.setName('Louvor JA');
 
 // Configuração dos diretórios locais
 const userDataPath = app.getPath('userData');
-const dbPath = path.join(userDataPath, 'database');
-const mediaPath = path.join(userDataPath, 'media');
+const sysDbPath = path.join(userDataPath, '.sysdata');
+const oldDbPath = path.join(userDataPath, 'database'); // Para migração/limpeza
+const mediaPath = path.join(userDataPath, 'Media');
 const coversPath = path.join(mediaPath, 'covers');
 const musicPath = path.join(mediaPath, 'music');
 const slidesPath = path.join(mediaPath, 'slides');
 
+// Auto-limpeza do banco antigo (texto plano)
+if (fs.existsSync(oldDbPath)) {
+  try {
+    const fsExtra = require('fs-extra');
+    fsExtra.removeSync(oldDbPath);
+  } catch(e) {}
+}
+
 // Garantir que as pastas existam
-[dbPath, mediaPath, coversPath, musicPath, slidesPath].forEach(dir => {
+[sysDbPath, mediaPath, coversPath, musicPath, slidesPath].forEach(dir => {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 });
 
-// IPC Handlers: Textos (JSON)
+// IPC Handlers: Textos (JSON ofuscado)
 ipcMain.handle('clear-all-data', async () => {
   try {
     const fsExtra = require('fs-extra');
-    if (fsExtra.existsSync(dbPath)) fsExtra.emptyDirSync(dbPath);
+    if (fsExtra.existsSync(sysDbPath)) fsExtra.emptyDirSync(sysDbPath);
     if (fsExtra.existsSync(mediaPath)) fsExtra.emptyDirSync(mediaPath);
     // Recria as pastas vazias caso o emptyDir tenha falhado em recriar a raiz do mediaPath
-    [dbPath, mediaPath, coversPath, musicPath, slidesPath].forEach(dir => {
+    [sysDbPath, mediaPath, coversPath, musicPath, slidesPath].forEach(dir => {
       if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
     });
     return true;
@@ -34,9 +79,13 @@ ipcMain.handle('clear-all-data', async () => {
 
 ipcMain.handle('get-local-db', async (event, filename) => {
   try {
-    const filePath = path.join(dbPath, `${filename}.json`);
+    const filePath = path.join(sysDbPath, `${filename}.bin`);
     if (fs.existsSync(filePath)) {
-      return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+      const encryptedContent = fs.readFileSync(filePath, 'utf8');
+      const decryptedString = decryptData(encryptedContent);
+      if (decryptedString) {
+        return JSON.parse(decryptedString);
+      }
     }
     return null;
   } catch (error) {
@@ -46,9 +95,14 @@ ipcMain.handle('get-local-db', async (event, filename) => {
 
 ipcMain.handle('save-local-db', async (event, filename, data) => {
   try {
-    const filePath = path.join(dbPath, `${filename}.json`);
-    fs.writeFileSync(filePath, JSON.stringify(data), 'utf8');
-    return true;
+    const filePath = path.join(sysDbPath, `${filename}.bin`);
+    const jsonString = JSON.stringify(data);
+    const encryptedContent = encryptData(jsonString);
+    if (encryptedContent) {
+      fs.writeFileSync(filePath, encryptedContent, 'utf8');
+      return true;
+    }
+    return false;
   } catch (error) {
     return false;
   }
@@ -403,9 +457,17 @@ function createWindow() {
     // Em produção, carrega o build estático
     mainWindow.loadFile(path.join(__dirname, '..', 'dist', 'index.html'));
   }
+
+  // Intercepta o evento de fechar para perguntar ao usuário
+  mainWindow.on('close', (e) => {
+    if (!global.isQuitting) {
+      e.preventDefault();
+      mainWindow.webContents.send('request-close-app');
+    }
+  });
 }
 
-app.setName('Louvor JA');
+
 
 // Registra o protocolo customizado como privilegiado ANTES do app estar pronto (Ignora CORS e permite Fetch)
 protocol.registerSchemesAsPrivileged([
@@ -413,6 +475,22 @@ protocol.registerSchemesAsPrivileged([
 ]);
 
 app.whenReady().then(() => {
+  // Bloqueios de Segurança para Produção (Impede DevTools e Reload)
+  if (!isDev) {
+    app.on('browser-window-created', (event, window) => {
+      window.webContents.on('before-input-event', (event, input) => {
+        const isReload = (input.control && input.key.toLowerCase() === 'r') || input.key === 'F5';
+        const isDevTools = (input.control && input.shift && input.key.toLowerCase() === 'i') || input.key === 'F12';
+        if (isReload || isDevTools) {
+          event.preventDefault();
+        }
+      });
+      window.webContents.on('devtools-opened', () => {
+        window.webContents.closeDevTools();
+      });
+    });
+  }
+
   // Protocolo customizado para carregar mídia local offline com suporte robusto a Range
   protocol.handle('local', async (request) => {
     let filePath = decodeURIComponent(request.url.slice('local://'.length));
@@ -428,7 +506,7 @@ app.whenReady().then(() => {
     if (filePath.startsWith('media/')) {
       fallbackPath = filePath.slice('media'.length); // ex: /covers/1995.bmp
       const userDataPath = app.getPath('userData');
-      const mediaPath = path.join(userDataPath, 'media');
+      const mediaPath = path.join(userDataPath, 'Media'); // A pasta no disco tem M maiúsculo
       filePath = path.join(mediaPath, fallbackPath);
       isMediaFallback = true;
     } else if (process.platform === 'win32' && filePath.match(/^\/[a-zA-Z]:\//)) {
@@ -545,10 +623,21 @@ ipcMain.handle('window-control', (event, action) => {
       win.maximize();
     }
   } else if (action === 'close') {
-    win.close();
+    // Em vez de fechar direto, pede confirmação
+    if (win === BrowserWindow.getAllWindows()[0] || win.id === 1) { // mainWindow
+      win.webContents.send('request-close-app');
+    } else {
+      win.close();
+    }
   } else if (action === 'is-maximized') {
     return win.isMaximized();
   }
+});
+
+// Encerra o aplicativo inteiro à força após confirmação do usuário
+ipcMain.handle('force-quit-app', () => {
+  global.isQuitting = true;
+  app.quit();
 });
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
