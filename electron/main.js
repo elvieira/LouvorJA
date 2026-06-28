@@ -371,11 +371,73 @@ protocol.registerSchemesAsPrivileged([
 ]);
 
 app.whenReady().then(() => {
-  // Protocolo customizado para carregar mídia local offline
+  // Protocolo customizado para carregar mídia local offline com suporte robusto a Range
   protocol.handle('local', (request) => {
     const filePath = decodeURIComponent(request.url.slice('local://'.length));
-    const urlModule = require('url');
-    return net.fetch(urlModule.pathToFileURL(filePath).href);
+    const fs = require('fs');
+
+    try {
+      if (!fs.existsSync(filePath)) {
+        return new Response("Not Found", { status: 404 });
+      }
+
+      const stat = fs.statSync(filePath);
+      const total = stat.size;
+      const range = request.headers.get('range');
+
+      let mimeType = 'application/octet-stream';
+      if (filePath.endsWith('.mp3')) mimeType = 'audio/mpeg';
+      else if (filePath.endsWith('.mp4')) mimeType = 'video/mp4';
+      else if (filePath.endsWith('.jpg') || filePath.endsWith('.jpeg')) mimeType = 'image/jpeg';
+      else if (filePath.endsWith('.png')) mimeType = 'image/png';
+
+      if (range) {
+        const parts = range.replace(/bytes=/, "").split("-");
+        const partialstart = parts[0];
+        const partialend = parts[1];
+
+        const start = parseInt(partialstart, 10);
+        let end = partialend ? parseInt(partialend, 10) : total - 1;
+
+        // Limita o chunk para evitar estouro de memória (Max 10MB por requisição)
+        const MAX_CHUNK = 10 * 1024 * 1024;
+        if ((end - start) + 1 > MAX_CHUNK) {
+          end = start + MAX_CHUNK - 1;
+        }
+        
+        const chunksize = (end - start) + 1;
+
+        // Lê exatamente o bloco necessário direto para a RAM e fecha o arquivo IMEDIATAMENTE
+        const buffer = Buffer.alloc(chunksize);
+        const fd = fs.openSync(filePath, 'r');
+        fs.readSync(fd, buffer, 0, chunksize, start);
+        fs.closeSync(fd);
+
+        return new Response(buffer, {
+          status: 206,
+          headers: {
+            'Content-Range': `bytes ${start}-${end}/${total}`,
+            'Accept-Ranges': 'bytes',
+            'Content-Length': chunksize,
+            'Content-Type': mimeType
+          }
+        });
+      } else {
+        // Sem range, lemos de uma vez
+        const buffer = fs.readFileSync(filePath);
+        return new Response(buffer, {
+          status: 200,
+          headers: {
+            'Content-Length': total,
+            'Content-Type': mimeType,
+            'Accept-Ranges': 'bytes'
+          }
+        });
+      }
+    } catch (e) {
+      console.error("Local protocol error:", e);
+      return new Response("Internal Server Error", { status: 500 });
+    }
   });
 
   createWindow();
