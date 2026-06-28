@@ -1,5 +1,6 @@
 <template>
   <v-app id="app-container">
+    <AppTitlebar />
     <FirstBootLoader />
     <AppLoading />
     <v-btn
@@ -14,22 +15,21 @@
 <script>
 import AppLoading from "@/layout/Loading.vue";
 import FirstBootLoader from "@/layout/FirstBootLoader.vue";
+import AppTitlebar from "@/layout/Titlebar.vue";
 
 export default {
   name: "App",
   components: {
     AppLoading,
     FirstBootLoader,
+    AppTitlebar,
   },
   methods: {
     handleKeydown() {
       console.log("click ");
-      //if (event.shiftKey && event.key === "A") {
       this.$dev.toogle();
-      //}
     },
     handleGlobalKeydown(e) {
-      // Ignore if user is typing in an input or textarea
       if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName) || document.activeElement.isContentEditable) {
         return;
       }
@@ -38,7 +38,6 @@ export default {
       const isMediaModuleOpen = this.$appdata.get("modules.media.show");
       const isMinimized = this.$appdata.get("modules.media.minimized");
 
-      // Only active in fullscreen or if media module is opened and not minimized
       const isActive = isFullscreen || (isMediaModuleOpen && !isMinimized);
 
       if (!isActive) return;

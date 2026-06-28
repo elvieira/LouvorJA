@@ -16,14 +16,12 @@ loadFonts();
 
 const app = createApp(App);
 
-//Modules
 import ModuleManager from "@/helpers/ModuleManager";
 
-// Instalar plugins
 app.use(router);
 app.use(vuetify);
 app.use(store);
-app.use(helpersPlugin); // Plugin de helpers (substitui o mixin global)
+app.use(helpersPlugin);
 app.use(shortkey, { prevent: ["input", "textarea"] });
 app.use(VueFullscreen);
 

@@ -18,12 +18,12 @@ export default defineConfig(({ mode }) => {
         autoImport: true,
       }),
       VitePWA({
-        registerType: "autoUpdate", // Registra o Service Worker para atualizar automaticamente
+        registerType: "autoUpdate",
         devOptions: {
-          enabled: true, // Ativa o PWA também durante o desenvolvimento
+          enabled: true,
         },
         workbox: {
-          globPatterns: ["**/*.{html,js,css,svg,png}"], // Arquivos que o Service Worker deve cachear
+          globPatterns: ["**/*.{html,js,css,svg,png}"],
         },
         manifest: {
           name: "LouvorJA",

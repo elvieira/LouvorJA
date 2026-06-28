@@ -33,11 +33,9 @@ export default {
   methods: {
     loadModuleComponent() {
       return defineAsyncComponent(() => {
-        // Try to load from modules interface directory
         return import(
           `@/modules/core/${this.module}/interface/Popup.vue`
         ).catch(() => {
-          // Try to load from CUSTOM module interface directory
           return import(`@/modules/${this.module}/interface/Popup.vue`).catch(
             (e) => {
               this.$alert.error({

@@ -1,19 +1,14 @@
 <template>
-  <!-- Nova Sidebar -->
   <AppSidebar v-model="sidebarOpen" />
 
   <AppAlert />
 
-  <!-- Container principal com margem para sidebar -->
   <div class="main-container" :class="{ 'sidebar-open': sidebarOpen }" @toggle-sidebar="toggleSidebar">
     <v-main class="bg-main">
-      <!-- Módulos aparecem dentro do v-main (incluindo a Home) -->
       <AppModules />
       
-      <!-- TrayArea mantido (área de minimizados) -->
       <AppTrayArea />
 
-      <!-- MINI PLAYER POPUP -->
       <transition name="fade-slide">
         <div v-if="isMinimized && showMiniPlayer" class="mini-player-popup elevation-12">
           <v-card
@@ -120,20 +115,16 @@ export default {
     },
   },
   mounted() {
-    // Garantir que nenhum módulo inicie aberto (previne estados "zumbi" do HMR)
     this.closeAllModules();
 
-    //Carregar os dados salvos
     this.$userdata.load();
 
-    //Carrega o tema
     const theme = this.$userdata.get("theme");
     if (theme !== "") {
       this.$vuetify.theme.global.name = theme;
     }
     this.$appdata.set("is_dark", this.$vuetify.theme.global.current.dark);
 
-    //Carrega o idioma
     const lang = this.$userdata.get("language");
     if (lang !== "") {
       this.$i18n.locale = lang;
@@ -141,19 +132,16 @@ export default {
       this.$userdata.set("language", this.$i18n.locale);
     }
 
-    //Checa se está em modo de desenvolvimento
     const is_dev = import.meta.env.VITE_APP_MODE === "development";
     this.$appdata.set("is_dev", is_dev);
 
     if (!is_dev) {
-      //Prevenir REFRESH
       window.addEventListener("beforeunload", (event) => {
         event.preventDefault();
         event.returnValue = "";
       });
     }
 
-    //Checa as plataformas
     this.$appdata.set(
       "is_mobile",
       this.$vuetify.display.platform.android ||
@@ -199,7 +187,6 @@ export default {
     /*********************************************************************/
     /*********************************************************************/
 
-    // Listeners para menu nativo do Electron
     if (window.electronAPI && window.electronAPI.isElectron) {
       window.electronAPI.onNavigateModule((moduleId) => {
         this.$modules.open(moduleId);
@@ -207,7 +194,6 @@ export default {
       window.electronAPI.onNavigateRoute((routeName) => {
         if (routeName === "help") {
           this.$modules.open("home");
-          // Navega para a rota help se existir
           if (this.$router) {
             this.$router.push({ name: routeName }).catch(() => {});
           }
@@ -224,7 +210,6 @@ export default {
       for (const key of Object.keys(modules)) {
         this.$appdata.set(`modules.${key}.show`, false);
       }
-      // Garante que a Home sempre reabra após a inicialização forçada de limpeza
       if (this.$appdata.get("modules.home")) {
         this.$appdata.set("modules.home.show", true);
       }
@@ -238,16 +223,14 @@ export default {
 </script>
 
 <style scoped>
-/* Container principal com margem para sidebar */
 .main-container {
   margin-left: var(--sidebar-width);
   transition: margin-left 0.3s ease;
-  min-height: 100vh;
+  height: calc(100vh - 32px);
   display: flex;
   flex-direction: column;
 }
 
-/* Mobile: sem margem (sidebar em overlay) */
 @media (max-width: 1024px) {
   .main-container {
     margin-left: 0 !important;

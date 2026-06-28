@@ -382,10 +382,6 @@ export default {
   box-shadow: 0 4px 10px rgba(0, 151, 215, 0.3);
 }
 
-.collections-page-scroll {
-
-}
-
 .collections-grid-wrap {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));

@@ -127,6 +127,17 @@
                       <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">Excluir Coletânea</v-tooltip>
                     </v-btn>
                   </div>
+                  
+                  <v-btn
+                    v-else-if="album.status === 'error'"
+                    color="error"
+                    variant="tonal"
+                    size="small"
+                    class="text-none font-weight-bold rounded-lg px-3"
+                    @click="downloadAlbum(album)"
+                  >
+                    <v-icon start size="16">mdi-refresh</v-icon> Tentar Novamente
+                  </v-btn>
                 </template>
               </v-list-item>
             </v-list>
@@ -387,22 +398,28 @@ export default {
         
         let downloaded = 0;
         const batchSize = 5;
+        let hasError = false;
         
         album.progressText = 'Baixando...';
         
         for (let i = 0; i < allMediaFiles.length; i += batchSize) {
-          if (this.cancelToken || album.cancelToken) {
-            album.status = 'idle';
-            return;
+          if (this.cancelToken || album.cancelToken || hasError || !navigator.onLine) {
+            if (!navigator.onLine) hasError = true;
+            break;
           }
           
           const batch = allMediaFiles.slice(i, i + batchSize);
           await Promise.all(batch.map(async (media) => {
+            if (hasError) return;
             const fullUrl = $path.file(media.url);
             const relativePath = media.url.replace(/^\/(musics|images|covers)\//, '');
             const exists = await window.electronAPI.checkMedia(media.type, relativePath);
             if (!exists) {
-              await window.electronAPI.downloadMedia(fullUrl, media.type, relativePath);
+              const success = await window.electronAPI.downloadMedia(fullUrl, media.type, relativePath);
+              if (!success) {
+                hasError = true;
+                return;
+              }
             }
             downloaded++;
             album.downloadedCount = downloaded;
@@ -410,7 +427,17 @@ export default {
           }));
         }
         
-        if (this.cancelToken) {
+        if (hasError) {
+          album.status = 'error';
+          album.progressText = !navigator.onLine ? 'Sem internet' : 'Falha no download';
+          if (!this.isDownloadingAll) {
+            this.$alert.error({
+              title: "Falha no download",
+              text: "Não foi possível baixar os arquivos. Verifique sua conexão com a internet.",
+              translate: false
+            });
+          }
+        } else if (this.cancelToken || album.cancelToken) {
           album.status = 'idle';
           album.progressText = 'Cancelado';
         } else {
@@ -442,6 +469,15 @@ export default {
           if (this.cancelToken) break;
           if (album.status === 'idle') {
             await this.downloadAlbum(album);
+            if (album.status === 'error' && !navigator.onLine) {
+              this.cancelAll();
+              this.$alert.error({
+                title: "Sem conexão",
+                text: "O download em lote foi cancelado porque não há conexão com a internet.",
+                translate: false
+              });
+              break;
+            }
           }
         }
         if (this.cancelToken) break;

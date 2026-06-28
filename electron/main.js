@@ -90,7 +90,9 @@ ipcMain.handle('check-media', async (event, destFolderType, filename) => {
   const decodedFilename = decodeURIComponent(filename);
   const filePath = path.join(destFolder, decodedFilename);
   if (fs.existsSync(filePath)) {
-    return `local://${filePath}`;
+    // Retorna o formato limpo para manter consistência e legibilidade no frontend
+    const cleanFilename = decodedFilename.replace(/\\/g, '/');
+    return `local://media/${destFolderType === 'covers' ? 'covers' : destFolderType}/${cleanFilename}`;
   }
   return false;
 });
@@ -172,8 +174,8 @@ const isDev = !app.isPackaged;
 
 function createWindow() {
   const mainWindow = new BrowserWindow({
-    width: 1280,
-    height: 800,
+    width: 1300,
+    height: 900,
     minWidth: 920,
     minHeight: 760,
     title: 'Louvor JA',
@@ -182,11 +184,21 @@ function createWindow() {
       contextIsolation: true,
       nodeIntegration: false,
     },
+    frame: false,
+    titleBarStyle: 'hidden',
   });
 
   // Garante que o título não seja sobrescrito pelo HTML
   mainWindow.on('page-title-updated', (event) => {
     event.preventDefault();
+  });
+
+  // Emite eventos de maximizar/desmaximizar para o Vue atualizar o ícone
+  mainWindow.on('maximize', () => {
+    mainWindow.webContents.send('window-maximized-state', true);
+  });
+  mainWindow.on('unmaximize', () => {
+    mainWindow.webContents.send('window-maximized-state', false);
   });
 
   // Menu nativo personalizado
@@ -372,12 +384,35 @@ protocol.registerSchemesAsPrivileged([
 
 app.whenReady().then(() => {
   // Protocolo customizado para carregar mídia local offline com suporte robusto a Range
-  protocol.handle('local', (request) => {
-    const filePath = decodeURIComponent(request.url.slice('local://'.length));
+  protocol.handle('local', async (request) => {
+    let filePath = decodeURIComponent(request.url.slice('local://'.length));
+    
+    // O Chromium as vezes insere uma barra extra logo após o protocolo, tornando /media/
+    if (filePath.startsWith('/media/')) {
+      filePath = filePath.slice(1);
+    }
+    
+    let isMediaFallback = false;
+    let fallbackPath = '';
+    
+    if (filePath.startsWith('media/')) {
+      fallbackPath = filePath.slice('media'.length); // ex: /covers/1995.bmp
+      const userDataPath = app.getPath('userData');
+      const mediaPath = path.join(userDataPath, 'media');
+      filePath = path.join(mediaPath, fallbackPath);
+      isMediaFallback = true;
+    } else if (process.platform === 'win32' && filePath.match(/^\/[a-zA-Z]:\//)) {
+      filePath = filePath.slice(1); // Remove a barra inicial extra no Windows
+    }
+    
     const fs = require('fs');
 
     try {
       if (!fs.existsSync(filePath)) {
+        if (isMediaFallback) {
+          const apiUrl = `https://api.louvorja.com.br/file${fallbackPath.replace(/\\/g, '/')}`;
+          return await net.fetch(apiUrl);
+        }
         return new Response("Not Found", { status: 404 });
       }
 
@@ -386,10 +421,15 @@ app.whenReady().then(() => {
       const range = request.headers.get('range');
 
       let mimeType = 'application/octet-stream';
-      if (filePath.endsWith('.mp3')) mimeType = 'audio/mpeg';
-      else if (filePath.endsWith('.mp4')) mimeType = 'video/mp4';
-      else if (filePath.endsWith('.jpg') || filePath.endsWith('.jpeg')) mimeType = 'image/jpeg';
-      else if (filePath.endsWith('.png')) mimeType = 'image/png';
+      const lowerPath = filePath.toLowerCase();
+      if (lowerPath.endsWith('.mp3')) mimeType = 'audio/mpeg';
+      else if (lowerPath.endsWith('.mp4')) mimeType = 'video/mp4';
+      else if (lowerPath.endsWith('.jpg') || lowerPath.endsWith('.jpeg')) mimeType = 'image/jpeg';
+      else if (lowerPath.endsWith('.png')) mimeType = 'image/png';
+      else if (lowerPath.endsWith('.bmp')) mimeType = 'image/bmp';
+      else if (lowerPath.endsWith('.webp')) mimeType = 'image/webp';
+      else if (lowerPath.endsWith('.gif')) mimeType = 'image/gif';
+      else if (lowerPath.endsWith('.svg')) mimeType = 'image/svg+xml';
 
       if (range) {
         const parts = range.replace(/bytes=/, "").split("-");
@@ -462,6 +502,24 @@ app.whenReady().then(() => {
   });
 });
 
+// Controle customizado da barra de título
+ipcMain.handle('window-control', (event, action) => {
+  const win = BrowserWindow.fromWebContents(event.sender);
+  if (!win) return;
+  if (action === 'minimize') {
+    win.minimize();
+  } else if (action === 'maximize') {
+    if (win.isMaximized()) {
+      win.unmaximize();
+    } else {
+      win.maximize();
+    }
+  } else if (action === 'close') {
+    win.close();
+  } else if (action === 'is-maximized') {
+    return win.isMaximized();
+  }
+});
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit();

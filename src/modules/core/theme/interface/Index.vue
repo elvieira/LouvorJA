@@ -1,7 +1,6 @@
 <template>
   <v-slide-y-reverse-transition>
     <div v-if="module?.show" class="module-full-page dashboard-home d-flex flex-column bg-main">
-      <!-- Cabeçalho Integrado com Abas -->
       <div class="search-header pb-0 flex-shrink-0" style="padding-top: 24px; padding-left: 24px; padding-right: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
         <div class="d-flex align-center" style="flex-shrink: 0;">
           <MenuToggleButton style="margin-right: 16px; flex-shrink: 0;" @toggle-sidebar="toggleSidebar" />
@@ -24,15 +23,12 @@
         </div>
       </div>
 
-      <!-- Área Principal com Window -->
       <div class="content-main flex-grow-1 w-100" style="overflow: hidden; padding-top: 24px; background: var(--main-bg);">
         <v-tabs-window v-model="tab" class="h-100 w-100">
           
-          <!-- Aba 1: Aparência -->
           <v-tabs-window-item :value="1" class="h-100">
             <div class="h-100 overflow-auto px-6 pb-6">
               <div class="settings-container mx-auto pb-4" style="max-width: 600px;">
-                <!-- Tema -->
                 <v-card class="settings-card rounded-xl pa-2 mb-6" flat style="background: var(--card-bg); box-shadow: var(--shadow);">
                   <v-card-text class="pa-6">
                     <div class="d-flex align-center mb-6">
@@ -66,12 +62,10 @@
             </div>
           </v-tabs-window-item>
 
-          <!-- Aba 2: Geral -->
           <v-tabs-window-item :value="2" class="h-100">
             <div class="h-100 overflow-auto px-6 pb-6">
               <div class="settings-container mx-auto d-flex flex-column" style="max-width: 600px; gap: 24px;">
                 
-                <!-- Idioma -->
                 <v-card class="settings-card rounded-xl pa-2" flat style="background: var(--card-bg); box-shadow: var(--shadow);">
                   <v-card-text class="pa-6">
                     <div class="d-flex align-center mb-6">
@@ -127,7 +121,6 @@
                   </v-card-text>
                 </v-card>
 
-                <!-- Layout da Página Inicial -->
                 <v-card class="settings-card rounded-xl pa-2" flat style="background: var(--card-bg); box-shadow: var(--shadow);">
                   <v-card-text class="pa-6">
                     <div class="d-flex align-center mb-6">
@@ -141,7 +134,6 @@
                   </v-card-text>
                 </v-card>
 
-                <!-- Histórico -->
                 <v-card class="settings-card rounded-xl pa-2" flat style="background: var(--card-bg); box-shadow: var(--shadow);">
                   <v-card-text class="pa-6">
                     <div class="d-flex align-center justify-space-between">
@@ -168,7 +160,6 @@
                   </v-card-text>
                 </v-card>
 
-                <!-- Dados e Inicialização -->
                 <v-card class="settings-card rounded-xl pa-2" flat style="background: var(--card-bg); box-shadow: var(--shadow);">
                   <v-card-text class="pa-6">
                     <div class="d-flex align-center justify-space-between mb-4">
@@ -223,7 +214,6 @@
             </div>
           </v-tabs-window-item>
 
-          <!-- Aba 3: Mídia & Player -->
           <v-tabs-window-item :value="3" class="h-100">
             <div class="h-100 overflow-auto px-6 pb-6">
               <div class="settings-container mx-auto pb-4" style="max-width: 600px;">
@@ -246,11 +236,9 @@
             </div>
           </v-tabs-window-item>
 
-          <!-- Aba 4: Projeção & Telas -->
           <v-tabs-window-item :value="4" class="h-100">
             <div class="h-100 overflow-auto px-6 pb-6">
               <div class="settings-container mx-auto pb-4" style="max-width: 600px;">
-                <!-- Monitores -->
                 <v-card class="settings-card rounded-xl pa-2 mb-6" flat style="background: var(--card-bg); box-shadow: var(--shadow);">
                   <v-card-text class="pa-6">
                     <div class="d-flex align-center mb-6">
@@ -261,7 +249,6 @@
                     </div>
                     
                     <div class="d-flex flex-wrap mb-4" style="gap: 16px;">
-                      <!-- Visual loop for monitors -->
                       <div v-for="(display, index) in rawDisplays" :key="display.id" 
                            class="d-flex flex-column align-center justify-center rounded-sm" 
                            :style="`background: ${display.isPrimary ? '#000' : 'rgba(120,120,120,0.1)'}; color: ${display.isPrimary ? '#fff' : 'inherit'}; width: 140px; height: 90px; border: ${display.isPrimary ? '2px solid var(--accent-blue)' : '1px solid var(--border-color)'};`">
@@ -273,7 +260,6 @@
                   </v-card-text>
                 </v-card>
 
-                <!-- Slides de Músicas -->
                 <v-card class="settings-card rounded-xl pa-2 mb-6" flat style="background: var(--card-bg); box-shadow: var(--shadow);">
                   <v-card-text class="pa-6">
                     <div class="d-flex align-center mb-6">
@@ -485,13 +471,11 @@ export default {
     hardware_accel: true,
     fullscreen_mode: false,
     
-    // Tab 1: Aparência
     fade_effect: false,
     bg_color: '#000000',
     bg_image: null,
     bg_align: 'Centro',
     
-    // Tab 3: Mídia & Player
     player_monitor: 'Monitor 1',
     exec_audio_player: false,
     exec_video_player: false,
@@ -500,7 +484,6 @@ export default {
     online_fullscreen: true,
     youtube_mode: 'Vídeo',
     
-    // Tab 4: Projeção & Telas
     slide_monitor: [],
     slide_align: 'Centro',
     slide_fullscreen: true,
@@ -546,17 +529,14 @@ export default {
       }));
     },
     slideMonitorList() {
-      // Retorna todos os monitores exceto o principal para evitar projeção por cima dos controles
       return this.monitorList.filter(m => !m.isPrimary);
     }
   },
   mounted() {
-    // Configura o toggle inicial para coincidir com o modo ativo
     if(this.$userdata.get("theme")){
       this.$vuetify.theme.global.name = this.$userdata.get("theme");
     }
     
-    // Load show_home_history
     const saved_home_history = this.$userdata.get("show_home_history");
     if (saved_home_history !== undefined && saved_home_history !== null) {
       this.$data.show_home_history = saved_home_history;
@@ -565,7 +545,7 @@ export default {
     let savedSlideMonitor = this.$userdata.get("modules.theme.slide_monitor");
     if (savedSlideMonitor) {
       if (!Array.isArray(savedSlideMonitor)) {
-        savedSlideMonitor = [savedSlideMonitor]; // Migrate string to array
+        savedSlideMonitor = [savedSlideMonitor];
       }
       this.slide_monitor = savedSlideMonitor;
     }
@@ -584,7 +564,6 @@ export default {
       handler(newList) {
         if (newList.length > 0 && this.rawDisplays.length > 0) {
           if (this.slide_monitor === undefined || this.slide_monitor === null) {
-            // Select all extended monitors by default only if NEVER configured before
             this.slide_monitor = newList.map(m => m.value);
           }
         }
@@ -612,7 +591,6 @@ export default {
     resetHistory() {
       if (confirm("Tem certeza que deseja resetar o histórico de coletâneas e músicas mais tocadas?")) {
         this.$history.clearAll();
-        // Dispara um alerta ou recarrega para aplicar a home (se desejar, mas Vue reatividade no Storage não é automática sem store. Uma msg é o suficiente)
         alert("Histórico resetado com sucesso! Atualize a página inicial para ver as mudanças.");
       }
     },

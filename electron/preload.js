@@ -15,6 +15,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Limpar dados locais
   clearAllData: () => ipcRenderer.invoke('clear-all-data'),
   
+  // Controles de Janela Customizados
+  windowControl: (action) => ipcRenderer.invoke('window-control', action),
+  onWindowMaximizedState: (callback) => {
+    ipcRenderer.on('window-maximized-state', (_event, isMaximized) => callback(isMaximized));
+  },
+  
   // Escuta eventos de navegação do menu nativo
   onNavigateModule: (callback) => {
     ipcRenderer.on('navigate-module', (_event, moduleId) => callback(moduleId));

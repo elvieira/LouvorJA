@@ -1,6 +1,3 @@
-// @/plugins/helpers.js
-// Plugin para fornecer helpers globalmente usando provide/inject (Vue 3 best practice)
-
 import Modules from "@/helpers/Modules";
 import Dev from "@/helpers/Dev";
 import String from "@/helpers/String";
@@ -15,13 +12,10 @@ import Popup from "@/helpers/Popup";
 import Database from "@/helpers/Database";
 import History from "@/helpers/History";
 
-// Símbolos de injeção (garantem unicidade e evitam colisões)
 export const HelpersSymbol = Symbol("helpers");
 
-// Plugin de instalação
 export default {
   install(app) {
-    // Criar objeto com todos os helpers
     const helpers = {
       userdata: UserData,
       appdata: AppData,
@@ -38,14 +32,9 @@ export default {
       history: History,
     };
 
-    // Fornecer helpers globalmente
     app.provide(HelpersSymbol, helpers);
-
-    // Também adicionar ao globalProperties para compatibilidade retroativa
-    // (permite usar this.$helpers nos componentes Options API)
-    app.config.globalProperties.$helpers = helpers;
     
-    // Manter compatibilidade com o código existente
+    app.config.globalProperties.$helpers = helpers;
     app.config.globalProperties.$userdata = UserData;
     app.config.globalProperties.$appdata = AppData;
     app.config.globalProperties.$modules = Modules;
