@@ -273,60 +273,95 @@ function createWindow() {
       ],
     }] : []),
     {
-      label: 'Navegação',
+      label: 'Página Inicial',
       submenu: [
         {
-          label: 'Página Inicial',
+          label: 'Ir para Página Inicial',
           accelerator: 'CmdOrCtrl+H',
           click: () => {
             mainWindow.webContents.send('navigate-module', 'home');
           },
-        },
-        { type: 'separator' },
+        }
+      ]
+    },
+    {
+      label: 'Álbuns e Coletâneas',
+      submenu: [
         {
-          label: 'Álbuns e Coletâneas',
-          submenu: [
-            {
-              label: 'Hinário Adventista',
-              click: () => {
-                mainWindow.webContents.send('navigate-module', 'hymnal');
-              },
-            },
-            {
-              label: 'Hinário Adventista - 1996',
-              click: () => {
-                mainWindow.webContents.send('navigate-module', 'hymnal_1996');
-              },
-            },
-            {
-              label: 'Álbuns',
-              click: () => {
-                mainWindow.webContents.send('navigate-module', 'collections');
-              },
-            },
-          ],
+          label: 'Hinário Adventista',
+          click: () => {
+            mainWindow.webContents.send('navigate-module', 'hymnal');
+          },
         },
         {
-          label: 'Bíblia',
+          label: 'Hinário Adventista - 1996',
+          click: () => {
+            mainWindow.webContents.send('navigate-module', 'hymnal_1996');
+          },
+        },
+        {
+          label: 'Álbuns',
+          click: () => {
+            mainWindow.webContents.send('navigate-module', 'collections');
+          },
+        },
+      ],
+    },
+    {
+      label: 'Bíblia',
+      submenu: [
+        {
+          label: 'Abrir Bíblia',
+          accelerator: 'CmdOrCtrl+B',
           click: () => {
             mainWindow.webContents.send('navigate-module', 'bible');
           },
-        },
-        { type: 'separator' },
+        }
+      ]
+    },
+    {
+      label: 'Utilitários',
+      submenu: [
+        {
+          label: 'Módulos utilitários',
+          enabled: false
+        }
+      ]
+    },
+    {
+      label: 'Biblioteca Local',
+      submenu: [
+        {
+          label: 'Abrir Biblioteca',
+          accelerator: 'CmdOrCtrl+L',
+          click: () => {
+            mainWindow.webContents.send('navigate-module', 'sync');
+          },
+        }
+      ]
+    },
+    {
+      label: 'Configurações',
+      submenu: [
+        {
+          label: 'Abrir Configurações',
+          accelerator: 'CmdOrCtrl+,',
+          click: () => {
+            mainWindow.webContents.send('navigate-module', 'theme');
+          },
+        }
+      ]
+    },
+    {
+      label: 'Ajuda',
+      submenu: [
         {
           label: 'Ajuda e Sobre',
           click: () => {
             mainWindow.webContents.send('navigate-route', 'help');
           },
-        },
-        {
-          label: 'Configurações',
-          accelerator: 'CmdOrCtrl+,',
-          click: () => {
-            mainWindow.webContents.send('navigate-module', 'theme');
-          },
-        },
-      ],
+        }
+      ]
     },
     {
       label: 'Editar',
@@ -338,33 +373,6 @@ function createWindow() {
         { role: 'copy', label: 'Copiar' },
         { role: 'paste', label: 'Colar' },
         { role: 'selectAll', label: 'Selecionar Tudo' },
-      ],
-    },
-    {
-      label: 'Visualizar',
-      submenu: [
-        { role: 'reload', label: 'Recarregar' },
-        { role: 'forceReload', label: 'Forçar Recarregamento' },
-        { role: 'toggleDevTools', label: 'Ferramentas do Desenvolvedor' },
-        { type: 'separator' },
-        { role: 'resetZoom', label: 'Zoom Padrão' },
-        { role: 'zoomIn', label: 'Aumentar Zoom' },
-        { role: 'zoomOut', label: 'Diminuir Zoom' },
-        { type: 'separator' },
-        { role: 'togglefullscreen', label: 'Tela Cheia' },
-      ],
-    },
-    {
-      label: 'Janela',
-      submenu: [
-        { role: 'minimize', label: 'Minimizar' },
-        { role: 'zoom', label: 'Zoom' },
-        ...(process.platform === 'darwin' ? [
-          { type: 'separator' },
-          { role: 'front', label: 'Trazer para Frente' },
-        ] : [
-          { role: 'close', label: 'Fechar' },
-        ]),
       ],
     },
   ];

@@ -162,29 +162,7 @@
 
                 <v-card class="settings-card rounded-xl pa-2" flat style="background: var(--card-bg); box-shadow: var(--shadow);">
                   <v-card-text class="pa-6">
-                    <div class="d-flex align-center justify-space-between mb-4">
-                      <div class="d-flex align-start">
-                        <v-icon color="warning" class="mr-3 mt-1" size="28">mdi-monitor-star</v-icon>
-                        <div>
-                          <h3 class="font-weight-bold mb-1" style="color: var(--sidebar-text); font-size: 1.1rem; line-height: 1.2;">Tela de Carregamento</h3>
-                          <div class="text-caption" style="color: var(--sidebar-text-secondary); max-width: 300px;">
-                            Força a exibição da tela de carregamento inicial para fins de teste ou demonstração visual.
-                          </div>
-                        </div>
-                      </div>
-                      <v-btn
-                        color="warning"
-                        variant="flat"
-                        prepend-icon="mdi-eye"
-                        class="rounded-lg text-none px-6 font-weight-bold"
-                        @click="showBootScreen"
-                        elevation="2"
-                      >
-                        Visualizar Tela
-                      </v-btn>
-                    </div>
 
-                    <v-divider class="my-4"></v-divider>
 
                     <div class="d-flex align-center justify-space-between">
                       <div class="d-flex align-start">
@@ -608,10 +586,7 @@ export default {
           alert("Apenas disponível na versão desktop.");
         }
       }
-    },
-    showBootScreen() {
-      window.dispatchEvent(new CustomEvent('show-boot-screen'));
-    },
+    }
   },
 };
 </script>
