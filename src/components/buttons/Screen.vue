@@ -9,11 +9,13 @@
     @click="popup()"
   >
     <v-icon>mdi-open-in-new</v-icon>
-    <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">Monitor Estendido</v-tooltip>
+    <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">Projetar</v-tooltip>
   </v-btn>
 </template>
 
 <script>
+import $userdata from "@/helpers/UserData";
+
 export default {
   name: "ButtonScreenComponent",
   props: {
@@ -45,11 +47,28 @@ export default {
     },
   },
   methods: {
-    popup() {
+    async popup() {
       if (this.is_selected) {
         this.$popup.exit();
       } else {
-        this.$popup.open(this.module);
+        let selectedMonitors = [];
+        if (window.electronAPI && window.electronAPI.getDisplays) {
+          const displays = await window.electronAPI.getDisplays();
+          if (displays && displays.length > 1) {
+            let configMonitors = $userdata.get("modules.theme.slide_monitor");
+            if (!Array.isArray(configMonitors)) {
+              configMonitors = configMonitors ? [configMonitors] : [];
+            }
+            const primary = displays.find(d => d.isPrimary) || displays[0];
+            selectedMonitors = configMonitors.filter(m => m !== primary.id);
+          }
+        }
+        
+        if (selectedMonitors.length > 0) {
+          await this.$popup.syncMonitors(selectedMonitors, this.module, true);
+        } else {
+          this.$popup.open({ module: this.module, fullscreen: true });
+        }
       }
     },
   },
