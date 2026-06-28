@@ -8,7 +8,7 @@ export default {
     }
 
     let popups = $appdata.get("popups") || [];
-    
+
     // Clear out closed popups
     popups = popups.filter(p => !p.closed);
 
@@ -55,7 +55,7 @@ export default {
   async syncMonitors(monitors, moduleName = 'media', forceOpen = false) {
     let popups = $appdata.get("popups") || [];
     popups = popups.filter(p => !p.closed);
-    
+
     // Close popups that are not in the new `monitors` list
     popups.forEach(popup => {
       if (popup.monitorId && !monitors.includes(popup.monitorId)) {
@@ -65,25 +65,25 @@ export default {
 
     // Clean array
     popups = popups.filter(p => !p.closed);
-    
+
     // Open missing monitors if projection is currently active or forced
     if ($appdata.get("popup_module") === moduleName || forceOpen) {
-        for (const monitorId of monitors) {
-            let existing = popups.find(p => p.monitorId === monitorId);
-            if (!existing || existing.closed) {
-                let features = `width=800,height=600,monitor=${monitorId},fullscreen=yes`;
-                let newPopup = $window.open("/popup", `PopupWindow_${monitorId}`, features);
-                newPopup.monitorId = monitorId;
-                popups.push(newPopup);
-            }
+      for (const monitorId of monitors) {
+        let existing = popups.find(p => p.monitorId === monitorId);
+        if (!existing || existing.closed) {
+          let features = `width=800,height=600,monitor=${monitorId},fullscreen=yes`;
+          let newPopup = $window.open("/popup", `PopupWindow_${monitorId}`, features);
+          newPopup.monitorId = monitorId;
+          popups.push(newPopup);
         }
-        if (monitors.length > 0) {
-           $appdata.set("popup_module", moduleName);
-        } else if (popups.length === 0) {
-           $appdata.set("popup_module", "");
-        }
+      }
+      if (monitors.length > 0) {
+        $appdata.set("popup_module", moduleName);
+      } else if (popups.length === 0) {
+        $appdata.set("popup_module", "");
+      }
     }
-    
+
     $appdata.set("popups", popups);
     if (popups.length > 0) {
       $appdata.set("popup", popups[0]);

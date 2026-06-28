@@ -1,7 +1,7 @@
 <template>
-  <div v-if="isElectron" class="app-titlebar d-flex align-center justify-space-between pl-3" :style="{ background: 'var(--main-bg)', color: 'var(--sidebar-text)' }">
+  <div v-if="isElectron && isMainApp" class="app-titlebar d-flex align-center justify-space-between pl-3" :style="{ background: 'var(--main-bg)', color: 'var(--sidebar-text)' }">
     <div class="d-flex align-center titlebar-drag-area flex-grow-1 h-100">
-      <v-icon size="16" class="mr-2" style="opacity: 0.7;">mdi-music-note-eighth</v-icon>
+      <img src="/ico/favicon.svg" width="16" height="16" class="mr-2" style="opacity: 0.9;" alt="Icone" />
       <span class="text-caption font-weight-medium" style="opacity: 0.9; letter-spacing: 0.5px;">Louvor JA</span>
     </div>
     
@@ -27,6 +27,11 @@ export default {
       isMaximized: false,
       isElectron: false
     };
+  },
+  computed: {
+    isMainApp() {
+      return this.$route.name !== 'Popup';
+    }
   },
   async mounted() {
     if (window.electronAPI && window.electronAPI.isElectron) {

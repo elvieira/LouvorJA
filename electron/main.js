@@ -179,13 +179,13 @@ function createWindow() {
     minWidth: 920,
     minHeight: 760,
     title: 'Louvor JA',
+    icon: path.join(__dirname, '../public/ico/favicon.png'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
     },
-    frame: false,
-    titleBarStyle: 'hidden',
+    frame: false
   });
 
   // Garante que o título não seja sobrescrito pelo HTML
@@ -337,32 +337,62 @@ function createWindow() {
     const monitorMatch = features.match(/monitor=(\d+)/);
     const targetMonitorId = monitorMatch ? parseInt(monitorMatch[1]) : null;
 
-    if (isFullscreen && displays.length > 1) {
+    if (isFullscreen) {
       let targetDisplay = null;
       if (targetMonitorId) {
         targetDisplay = displays.find(d => d.id === targetMonitorId);
       }
 
-      if (!targetDisplay) {
+      if (!targetDisplay && displays.length > 1) {
         const primary = screen.getPrimaryDisplay();
-        targetDisplay = displays.find(d => d.id !== primary.id && (d.bounds.x !== primary.bounds.x || d.bounds.y !== primary.bounds.y));
+        targetDisplay = displays.find(d => d.id !== primary.id);
       }
 
-      if (targetDisplay) {
-        windowConfig.x = targetDisplay.bounds.x;
-        windowConfig.y = targetDisplay.bounds.y;
-        windowConfig.width = targetDisplay.bounds.width;
-        windowConfig.height = targetDisplay.bounds.height;
-        windowConfig.fullscreen = true;
-        windowConfig.resizable = false;
-        windowConfig.frame = false;
+      if (!targetDisplay) {
+        targetDisplay = screen.getPrimaryDisplay();
       }
+
+      windowConfig.x = targetDisplay.bounds.x;
+      windowConfig.y = targetDisplay.bounds.y;
+      windowConfig.width = targetDisplay.bounds.width;
+      windowConfig.height = targetDisplay.bounds.height;
+      windowConfig.resizable = false;
+      windowConfig.frame = false;
+      windowConfig.autoHideMenuBar = true;
+      windowConfig.skipTaskbar = true;
+      windowConfig.fullscreen = true;
     }
 
     return {
       action: 'allow',
       overrideBrowserWindowOptions: windowConfig
     };
+  });
+
+  // Fallback: se fullscreen não cobrir a tela toda, forçar bounds + alwaysOnTop
+  mainWindow.webContents.on('did-create-window', (childWindow) => {
+    const opts = childWindow.getBounds();
+    const { screen } = require('electron');
+    const display = screen.getDisplayMatching(opts);
+    
+    const isProjection = !childWindow.isResizable() && 
+                         opts.width >= display.bounds.width * 0.9;
+    
+    if (isProjection) {
+      childWindow.once('show', () => {
+        setTimeout(() => {
+          if (childWindow.isDestroyed()) return;
+          const currentBounds = childWindow.getBounds();
+          // Se os bounds não batem com o display, forçar correção
+          if (currentBounds.width !== display.bounds.width || 
+              currentBounds.height !== display.bounds.height) {
+            childWindow.setFullScreen(false);
+            childWindow.setBounds(display.bounds);
+            childWindow.setAlwaysOnTop(true, 'screen-saver');
+          }
+        }, 200);
+      });
+    }
   });
 
   if (isDev) {
@@ -386,15 +416,15 @@ app.whenReady().then(() => {
   // Protocolo customizado para carregar mídia local offline com suporte robusto a Range
   protocol.handle('local', async (request) => {
     let filePath = decodeURIComponent(request.url.slice('local://'.length));
-    
+
     // O Chromium as vezes insere uma barra extra logo após o protocolo, tornando /media/
     if (filePath.startsWith('/media/')) {
       filePath = filePath.slice(1);
     }
-    
+
     let isMediaFallback = false;
     let fallbackPath = '';
-    
+
     if (filePath.startsWith('media/')) {
       fallbackPath = filePath.slice('media'.length); // ex: /covers/1995.bmp
       const userDataPath = app.getPath('userData');
@@ -404,7 +434,7 @@ app.whenReady().then(() => {
     } else if (process.platform === 'win32' && filePath.match(/^\/[a-zA-Z]:\//)) {
       filePath = filePath.slice(1); // Remove a barra inicial extra no Windows
     }
-    
+
     const fs = require('fs');
 
     try {
@@ -444,7 +474,7 @@ app.whenReady().then(() => {
         if ((end - start) + 1 > MAX_CHUNK) {
           end = start + MAX_CHUNK - 1;
         }
-        
+
         const chunksize = (end - start) + 1;
 
         // Lê exatamente o bloco necessário direto para a RAM e fecha o arquivo IMEDIATAMENTE
