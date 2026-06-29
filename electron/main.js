@@ -4,7 +4,7 @@ const fs = require('fs');
 const crypto = require('crypto');
 
 // Chave estática para ofuscação (não é segurança alta, apenas ofuscação)
-const ENCRYPTION_KEY = Buffer.from('v389s8dkj238910s8a7d3h2j1k9s8d7f', 'utf8'); // 32 bytes
+const ENCRYPTION_KEY = Buffer.from('v389s8dkj238910s8a7d3h2j1k9s8d7f', 'utf8');
 const IV_LENGTH = 16;
 
 function encryptData(text) {
@@ -38,16 +38,14 @@ function decryptData(text) {
 
 app.setName('Louvor JA');
 
-// Configuração dos diretórios locais
 const userDataPath = app.getPath('userData');
 const sysDbPath = path.join(userDataPath, '.sysdata');
-const oldDbPath = path.join(userDataPath, 'database'); // Para migração/limpeza
+const oldDbPath = path.join(userDataPath, 'database');
 const mediaPath = path.join(userDataPath, 'Media');
 const coversPath = path.join(mediaPath, 'covers');
 const musicPath = path.join(mediaPath, 'music');
 const slidesPath = path.join(mediaPath, 'slides');
 
-// Auto-limpeza do banco antigo (texto plano)
 if (fs.existsSync(oldDbPath)) {
   try {
     const fsExtra = require('fs-extra');
@@ -55,18 +53,15 @@ if (fs.existsSync(oldDbPath)) {
   } catch (e) { }
 }
 
-// Garantir que as pastas existam
 [sysDbPath, mediaPath, coversPath, musicPath, slidesPath].forEach(dir => {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 });
 
-// IPC Handlers: Textos (JSON ofuscado)
 ipcMain.handle('clear-all-data', async () => {
   try {
     const fsExtra = require('fs-extra');
     if (fsExtra.existsSync(sysDbPath)) fsExtra.emptyDirSync(sysDbPath);
     if (fsExtra.existsSync(mediaPath)) fsExtra.emptyDirSync(mediaPath);
-    // Recria as pastas vazias caso o emptyDir tenha falhado em recriar a raiz do mediaPath
     [sysDbPath, mediaPath, coversPath, musicPath, slidesPath].forEach(dir => {
       if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
     });
@@ -108,10 +103,9 @@ ipcMain.handle('save-local-db', async (event, filename, data) => {
   }
 });
 
-// IPC Handlers: Mídia Binária (Imagens e Áudios)
 ipcMain.handle('download-media', async (event, url, destFolderType, filename) => {
   try {
-    let destFolder = coversPath; // default
+    let destFolder = coversPath;
     if (destFolderType === 'music') destFolder = musicPath;
     else if (destFolderType === 'slides') destFolder = slidesPath;
 
@@ -144,7 +138,6 @@ ipcMain.handle('check-media', async (event, destFolderType, filename) => {
   const decodedFilename = decodeURIComponent(filename);
   const filePath = path.join(destFolder, decodedFilename);
   if (fs.existsSync(filePath)) {
-    // Retorna o formato limpo para manter consistência e legibilidade no frontend
     const cleanFilename = decodedFilename.replace(/\\/g, '/');
     return `local://media/${destFolderType === 'covers' ? 'covers' : destFolderType}/${cleanFilename}`;
   }
@@ -167,10 +160,9 @@ ipcMain.handle('delete-media', async (event, destFolderType, filename) => {
       return false;
     }
   }
-  return true; // Already deleted
+  return true;
 });
 
-// IPC Handlers: Informações de Tela (Monitores)
 ipcMain.handle('get-displays', () => {
   const { screen } = require('electron');
   return screen.getAllDisplays().map(d => ({
@@ -223,7 +215,6 @@ ipcMain.handle('identify-displays', () => {
   return true;
 });
 
-// Determine se está em modo de desenvolvimento
 const isDev = !app.isPackaged;
 
 function createWindow() {
@@ -242,12 +233,10 @@ function createWindow() {
     frame: false
   });
 
-  // Garante que o título não seja sobrescrito pelo HTML
   mainWindow.on('page-title-updated', (event) => {
     event.preventDefault();
   });
 
-  // Emite eventos de maximizar/desmaximizar para o Vue atualizar o ícone
   mainWindow.on('maximize', () => {
     mainWindow.webContents.send('window-maximized-state', true);
   });
@@ -363,24 +352,11 @@ function createWindow() {
         }
       ]
     },
-    {
-      label: 'Editar',
-      submenu: [
-        { role: 'undo', label: 'Desfazer' },
-        { role: 'redo', label: 'Refazer' },
-        { type: 'separator' },
-        { role: 'cut', label: 'Recortar' },
-        { role: 'copy', label: 'Copiar' },
-        { role: 'paste', label: 'Colar' },
-        { role: 'selectAll', label: 'Selecionar Tudo' },
-      ],
-    },
   ];
 
   const menu = Menu.buildFromTemplate(menuTemplate);
   Menu.setApplicationMenu(menu);
 
-  // Interceptar aberturas de janelas para projetar no segundo monitor se necessário
   mainWindow.webContents.setWindowOpenHandler(({ url, features }) => {
     const isFullscreen = features.includes('fullscreen=yes');
     const { screen } = require('electron');
@@ -424,7 +400,7 @@ function createWindow() {
       windowConfig.hasShadow = false;
       windowConfig.autoHideMenuBar = true;
       windowConfig.skipTaskbar = true;
-      // Removido o fullscreen: true na criação, pois o Electron buga e joga pro monitor 1
+      // O fullscreen puro não é ativado na criação no Windows para evitar o bug 
     }
 
     return {
@@ -433,29 +409,18 @@ function createWindow() {
     };
   });
 
-  // Fallback e fix para fullscreen em monitores estendidos
   mainWindow.webContents.on('did-create-window', (childWindow) => {
     if (!childWindow.isResizable()) {
-      // É uma janela de projeção (fullscreen)
       childWindow.once('ready-to-show', () => {
         if (process.platform === 'win32') {
-          // Solução específica para Windows: borda falsa que preenche a tela
           const { screen } = require('electron');
           const bounds = childWindow.getBounds();
           const display = screen.getDisplayMatching(bounds);
           
-          console.log('[PROJECTION] Display bounds detectado:', display.bounds);
-          console.log('[PROJECTION] ScaleFactor do Display:', display.scaleFactor);
-
-          // Removemos o maximize pois é assíncrono e estava falhando
           childWindow.setFullScreen(false);
           childWindow.setBounds(display.bounds);
           childWindow.setAlwaysOnTop(true, 'screen-saver');
-          
-          // Logando o que de fato ficou aplicado
-          console.log('[PROJECTION] Janela setada para:', childWindow.getBounds());
         } else {
-          // No Mac e Linux, o setFullScreen funciona perfeitamente no monitor correto
           childWindow.setFullScreen(true);
         }
       });

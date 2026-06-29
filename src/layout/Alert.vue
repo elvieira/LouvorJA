@@ -64,9 +64,9 @@ export default {
 }
 
 .modern-alert-card {
-  background: #ffffff !important;
+  background: var(--card-bg) !important;
   border: 1px solid var(--glass-border) !important;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.15) !important;
+  box-shadow: var(--shadow-hover) !important;
 
   .v-card-title {
     font-weight: 600;

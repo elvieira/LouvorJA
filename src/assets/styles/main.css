@@ -52,13 +52,13 @@
     --border-color: rgba(255, 255, 255, 0.12);
     --sidebar-text: #ffffff; /* White text */
     --sidebar-text-secondary: #8b8e9b; /* Muted text */
-    --sidebar-hover: rgba(108, 93, 211, 0.15); /* Soft purple hover */
+    --sidebar-hover: rgba(0, 151, 215, 0.15); /* Soft blue hover */
     --shadow: 0 8px 24px rgba(0, 0, 0, 0.4); /* Sombra mais pronunciada para destacar os cards */
     --shadow-hover: 0 12px 32px rgba(0, 0, 0, 0.5);
     
-    /* Variáveis baseadas no Accent para o modo escuro */
-    --accent-blue: #6c5dd3; /* Soft purple from reference */
-    --accent-blue-dark: #5b4dbf; 
+    /* Variáveis baseadas no Accent para o modo escuro (mantendo azul do modo claro) */
+    --accent-blue: #0097d7; 
+    --accent-blue-dark: #0077b3; 
     
     /* Glassmorphism Dark */
     --glass-bg: rgba(43, 47, 66, 0.85); /* rgba do novo card-bg */
