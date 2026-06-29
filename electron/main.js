@@ -336,7 +336,7 @@ function createWindow() {
           label: 'Abrir Configurações',
           accelerator: 'CmdOrCtrl+,',
           click: () => {
-            mainWindow.webContents.send('navigate-module', 'config');
+            mainWindow.webContents.send('navigate-module', 'theme');
           },
         }
       ]

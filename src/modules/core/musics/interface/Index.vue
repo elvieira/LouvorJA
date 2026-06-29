@@ -251,6 +251,7 @@ export default {
       this.$media.openAlbum(id_album);
     },
     close() {
+      //Se fechar a janela, não manter o histórico de pesquisa.
       this.search = "";
     },
   },

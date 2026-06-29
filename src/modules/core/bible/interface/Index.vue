@@ -1,6 +1,7 @@
 <template>
   <v-slide-y-reverse-transition>
     <div v-if="module?.show" class="module-full-page dashboard-home d-flex flex-column">
+      <!-- Cabeçalho Integrado -->
       <div class="search-header pb-0 flex-shrink-0" style="padding-top: 24px; padding-left: 24px; padding-right: 24px; display: flex; align-items: center;">
         <MenuToggleButton style="margin-right: 16px;" @toggle-sidebar="toggleSidebar" />
 
@@ -14,6 +15,7 @@
         </div>
 
         <div class="search-bar ml-4 d-flex align-center" style="flex: 1; justify-content: flex-end; gap: 16px;">
+          <!-- Na direita do cabeçalho, os selects de versão e navegação para mobile -->
           <v-autocomplete
             v-if="compact"
             v-model="bible.id_bible_book"
@@ -81,8 +83,11 @@
         </div>
       </div>
 
+      <!-- Área de Conteúdo -->
       <div class="content-main d-flex flex-row flex-grow-1" style="overflow: hidden; padding: 24px; min-height: 0; gap: 24px;">
+        <!-- Coluna da Esquerda (Livros e Capítulos) -->
         <div v-if="!compact" class="bible-navigation d-flex flex-row flex-shrink-0" style="width: 40%; min-width: 350px; max-width: 400px; background: var(--card-bg, #fff); border-radius: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid var(--border-color, rgba(0,0,0,0.05)); min-height: 0;">
+          <!-- Lista de Livros -->
           <div class="books-col h-100 d-flex flex-column" style="width: 65%; border-right: 1px solid var(--border-color, rgba(0,0,0,0.05));">
             <div class="pa-4 pb-2">
               <h3 style="font-size: 1.1rem; color: var(--sidebar-text); font-weight: 600; line-height: 1;">
@@ -113,6 +118,7 @@
             </div>
           </div>
 
+          <!-- Lista de Capítulos -->
           <div class="chapters-col h-100 d-flex flex-column" style="width: 35%;">
             <div class="pa-4 pb-2">
               <h3 style="font-size: 1.1rem; color: var(--sidebar-text); font-weight: 600; line-height: 1;">
@@ -141,7 +147,9 @@
           </div>
         </div>
 
+        <!-- Coluna da Direita (Versículos e Projeção) -->
         <div class="bible-verses-col d-flex flex-column flex-grow-1" style="background: var(--card-bg, #fff); border-radius: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid var(--border-color, rgba(0,0,0,0.05)); min-height: 0;">
+          <!-- Título do Texto Atual -->
           <div class="pa-4 d-flex justify-space-between align-center" style="border-bottom: 1px solid var(--border-color, rgba(0,0,0,0.05));">
             <h3 class="scriptural-reference-title" style="font-size: 1.3rem; color: var(--sidebar-text); font-weight: 600; line-height: 1;">
               {{ scripturalReference(bible) }}
@@ -201,6 +209,7 @@
             </div>
           </div>
 
+          <!-- Lista de Versículos -->
           <div class="pa-4 flex-grow-1" style="position: relative; min-height: 0; overflow-y: scroll; overflow-x: hidden;">
             <v-skeleton-loader v-if="loading_book || loading_verses" type="list-item-two-line@5" />
             <v-list v-else class="pa-0 bg-transparent">
@@ -229,6 +238,7 @@
             </v-list>
           </div>
 
+          <!-- Preview de Projeção -->
           <div style="height: 220px; flex-shrink: 0; background: #000;">
             <Screen />
           </div>
@@ -237,6 +247,7 @@
     </div>
   </v-slide-y-reverse-transition>
 
+  <!-- Modal de Configuração da Bíblia -->
   <ConfigModal v-if="!loading" v-model="showConfigModal" />
 </template>
 
@@ -601,13 +612,16 @@ export default {
 
       for (let i = 1; i <= numbers.length; i++) {
         if (numbers[i] === end + 1) {
+          // O número atual é uma continuação da sequência
           end = numbers[i];
         } else {
+          // A sequência terminou
           if (start === end) {
             result.push(`${start}`);
           } else {
             result.push(`${start}-${end}`);
           }
+          // Reinicia para a próxima sequência
           start = numbers[i];
           end = numbers[i];
         }
@@ -632,14 +646,15 @@ export default {
     },
 
     getSelectedVerses(keys) {
-      keys.sort((a, b) => a - b);
+      keys.sort((a, b) => a - b); // Ordena os versículos para garantir a sequência correta
+      let result = "";
       let previousKey = null;
 
       keys.forEach((key) => {
         if (previousKey !== null && key - previousKey > 1) {
-          result += " [...] ";
+          result += " [...] "; // Adiciona "..." se os versos não forem sequenciais
         } else if (result) {
-          result += " ";
+          result += " "; // Adiciona um espaço entre versos consecutivos
         }
         result += this.verses[key];
         previousKey = key;

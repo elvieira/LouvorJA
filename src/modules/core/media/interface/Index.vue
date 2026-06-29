@@ -12,8 +12,10 @@
     @minimize="$media.minimize()"
     @resize="resize"
   >
+    <!-- Substitui completamente a toolbar do Window para flutuar no canto esquerdo -->
     <template #toolbar>
       <div class="modern-media-toolbar d-flex align-center">
+        <!-- Menu do Sistema -->
         <v-menu v-if="is_online">
           <template #activator="{ props }">
             <v-btn
@@ -59,6 +61,7 @@
           </v-card>
         </v-menu>
 
+        <!-- Minimizar e Fechar flutuantes -->
         <v-btn
           class="custom-system-btn"
           icon
@@ -85,6 +88,7 @@
     </template>
 
     <div class="player-main-container position-relative w-100 h-100 d-flex flex-row overflow-hidden bg-black">
+      <!-- Visual e Tela de Letras (Forçada a expandir - Cover) -->
       <div class="player-visual-area flex-grow-1 position-relative transition-all" style="z-index: 1;">
         <fullscreen
           v-model="fullscreen"
@@ -107,6 +111,7 @@
         </fullscreen>
       </div>
 
+      <!-- Lista Lateral de Letras (Ocultável) - Glassmorphism -->
       <div class="player-playlist-area transition-all" :class="{'playlist-open': isPlaylistOpen, 'playlist-closed': !isPlaylistOpen}">
         <v-list class="playlist-scroll h-100 pa-4 bg-transparent pt-6" :width="340" theme="dark">
           <v-list-item
@@ -153,6 +158,7 @@
         </v-list>
       </div>
 
+      <!-- The Pill Player (Flutuante no fundo) -->
       <div class="floating-pill-container position-absolute w-100 d-flex justify-center" style="bottom: 40px; z-index: 20; pointer-events: none;">
         <div style="pointer-events: auto;">
           <LPlayer location="window" />
@@ -263,6 +269,7 @@ export default {
 </script>
 
 <style lang="scss">
+/* Estilo Moderno e Cinemático do Window */
 .modern-media-window {
   .v-card {
     border-radius: 20px !important;
@@ -272,10 +279,12 @@ export default {
     border: none !important;
   }
   
+  /* Remove margens e paddings nativos da Window.vue */
   .v-card-text {
     padding: 0 !important;
   }
 
+  /* Toolbar Substituída para flutuar no canto ESQUERDO SUPERIOR */
   .modern-media-toolbar {
     position: absolute;
     top: 20px;
@@ -288,6 +297,7 @@ export default {
     box-shadow: 0 4px 15px rgba(0,0,0,0.3) !important;
     border: 1px solid rgba(255, 255, 255, 0.05);
 
+    /* Oculta os botões originais que podem tentar renderizar se o slot não substituir tudo */
   }
 
   .custom-system-btn {
@@ -305,6 +315,7 @@ export default {
   }
 }
 
+/* Container Principal e Forçar vídeo a preencher bordas pretas */
 .player-main-container {
   height: 100%;
 }
@@ -313,6 +324,7 @@ export default {
   z-index: 1;
 }
 
+/* Força as imagens ou vídeos de fundo a preencherem a div sem deixar listras pretas */
 .visual-content-wrapper img, 
 .visual-content-wrapper video,
 .visual-content-wrapper iframe,
@@ -325,6 +337,7 @@ export default {
   left: 0 !important;
 }
 
+/* Área da Playlist com Animação Deslizante (Design Dark/Glass) */
 .player-playlist-area {
   z-index: 2;
   background: linear-gradient(to right, rgba(0,0,0,0) 0%, rgba(0,0,0,0.4) 100%);

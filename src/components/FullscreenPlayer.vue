@@ -33,7 +33,7 @@ export default {
     };
   },
   beforeUnmount() {
-    clearTimeout(this.timeout);
+    clearTimeout(this.timeout); // Limpa o temporizador ao destruir o componente
   },
   methods: {
     mouseMove() {
@@ -52,13 +52,13 @@ export default {
       this.startHideTimer();
     },
     showChild() {
-      this.visible = true;
-      clearTimeout(this.timeout);
+      this.visible = true; // Torna a div filho visível
+      clearTimeout(this.timeout); // Cancela qualquer temporizador ativo
     },
     startHideTimer() {
-      clearTimeout(this.timeout);
+      clearTimeout(this.timeout); // Cancela qualquer temporizador anterior
       this.timeout = setTimeout(() => {
-        this.visible = false;
+        this.visible = false; // Oculta a div filho após um tempo
       }, 1000);
     },
   },

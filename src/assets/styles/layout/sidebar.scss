@@ -1,3 +1,4 @@
+// Estilos para a Sidebar
 .dashboard-sidebar {
   width: var(--sidebar-width);
   background: var(--sidebar-bg);
@@ -223,6 +224,7 @@
   }
 }
 
+// === OVERLAY ===
 .sidebar-overlay {
   display: none;
   position: fixed;
@@ -234,6 +236,7 @@
   z-index: 9998;
 }
 
+// Responsividade da sidebar
 @media (max-width: 1024px) {
   .dashboard-sidebar .nav-item.close-item {
     display: block !important;

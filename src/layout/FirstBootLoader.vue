@@ -95,6 +95,7 @@ export default {
         await this.runFirstBootSync();
       } else {
         this.isFirstBoot = false;
+        // Inicialização de charme animada (aprox. 2 segundos)
         this.statusText = "Carregando ambiente...";
         this.progress = 0;
         
