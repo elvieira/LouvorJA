@@ -52,7 +52,7 @@ if (fs.existsSync(oldDbPath)) {
   try {
     const fsExtra = require('fs-extra');
     fsExtra.removeSync(oldDbPath);
-  } catch(e) {}
+  } catch (e) { }
 }
 
 // Garantir que as pastas existam
@@ -420,9 +420,11 @@ function createWindow() {
       windowConfig.height = targetDisplay.bounds.height;
       windowConfig.resizable = false;
       windowConfig.frame = false;
+      windowConfig.thickFrame = false;
+      windowConfig.hasShadow = false;
       windowConfig.autoHideMenuBar = true;
       windowConfig.skipTaskbar = true;
-      windowConfig.fullscreen = true;
+      // Removido o fullscreen: true na criação, pois o Electron buga e joga pro monitor 1
     }
 
     return {
@@ -431,28 +433,31 @@ function createWindow() {
     };
   });
 
-  // Fallback: se fullscreen não cobrir a tela toda, forçar bounds + alwaysOnTop
+  // Fallback e fix para fullscreen em monitores estendidos
   mainWindow.webContents.on('did-create-window', (childWindow) => {
-    const opts = childWindow.getBounds();
-    const { screen } = require('electron');
-    const display = screen.getDisplayMatching(opts);
-    
-    const isProjection = !childWindow.isResizable() && 
-                         opts.width >= display.bounds.width * 0.9;
-    
-    if (isProjection) {
-      childWindow.once('show', () => {
-        setTimeout(() => {
-          if (childWindow.isDestroyed()) return;
-          const currentBounds = childWindow.getBounds();
-          // Se os bounds não batem com o display, forçar correção
-          if (currentBounds.width !== display.bounds.width || 
-              currentBounds.height !== display.bounds.height) {
-            childWindow.setFullScreen(false);
-            childWindow.setBounds(display.bounds);
-            childWindow.setAlwaysOnTop(true, 'screen-saver');
-          }
-        }, 200);
+    if (!childWindow.isResizable()) {
+      // É uma janela de projeção (fullscreen)
+      childWindow.once('ready-to-show', () => {
+        if (process.platform === 'win32') {
+          // Solução específica para Windows: borda falsa que preenche a tela
+          const { screen } = require('electron');
+          const bounds = childWindow.getBounds();
+          const display = screen.getDisplayMatching(bounds);
+          
+          console.log('[PROJECTION] Display bounds detectado:', display.bounds);
+          console.log('[PROJECTION] ScaleFactor do Display:', display.scaleFactor);
+
+          // Removemos o maximize pois é assíncrono e estava falhando
+          childWindow.setFullScreen(false);
+          childWindow.setBounds(display.bounds);
+          childWindow.setAlwaysOnTop(true, 'screen-saver');
+          
+          // Logando o que de fato ficou aplicado
+          console.log('[PROJECTION] Janela setada para:', childWindow.getBounds());
+        } else {
+          // No Mac e Linux, o setFullScreen funciona perfeitamente no monitor correto
+          childWindow.setFullScreen(true);
+        }
       });
     }
   });
