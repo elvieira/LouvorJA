@@ -1,14 +1,11 @@
 <template>
-  <!-- Overlay para fechar sidebar em mobile -->
   <div
     v-if="isOpen && isMobile"
     class="sidebar-overlay"
     @click="closeSidebar"
   />
 
-  <!-- Sidebar -->
   <div class="dashboard-sidebar" :class="{ open: isOpen }">
-    <!-- Logo Section -->
     <div class="sidebar-header">
       <div class="logo-container">
         <img src="/ico/favicon.svg" alt="LouvorJA" class="logo-svg" />
@@ -18,9 +15,7 @@
       </div>
     </div>
 
-    <!-- Main Navigation (centralized) -->
     <nav class="sidebar-nav-main">
-      <!-- Botão de fechar integrado na navegação (mobile) -->
       <div class="nav-item close-item">
         <button class="close-sidebar-btn" @click="closeSidebar">
           <v-icon class="nav-icon">
@@ -30,7 +25,6 @@
         </button>
       </div>
       
-      <!-- Página Inicial -->
       <div class="nav-item main-item" :class="{ active: currentModule === 'home' }">
         <a href="#" class="nav-link" @click.prevent="navigateTo('home')">
           <v-icon class="nav-icon">
@@ -40,9 +34,7 @@
         </a>
       </div>
 
-      <!-- Módulos agrupados por categoria -->
       <template v-for="(group, groupKey) in moduleGroups" :key="groupKey">
-        <!-- Grupo Bible: sem submenu, abre direto -->
         <div
           v-if="groupKey === 'bible'"
           class="nav-item main-item"
@@ -56,7 +48,6 @@
           </a>
         </div>
         
-        <!-- Outros grupos: com submenu -->
         <div 
           v-else 
           class="nav-item main-item"
@@ -91,7 +82,6 @@
         </div>
       </template>
 
-      <!-- Módulos individuais (sem grupo) -->
       <template v-for="(module, moduleKey) in individualModules" :key="moduleKey">
         <div
           v-if="shouldShowModule(moduleKey)"
@@ -108,7 +98,6 @@
       </template>
     </nav>
 
-    <!-- Footer Navigation -->
     <div class="sidebar-footer">
       <div v-if="isDesktop" class="nav-item" :class="{ active: currentModule === 'sync' }">
         <a href="#" class="nav-link" @click.prevent="openModule('sync')">
@@ -151,8 +140,8 @@
           <span class="nav-text">{{ $t("sidebar.help") }}</span>
         </a>
       </div>
-      <div class="nav-item" :class="{ active: currentModule === 'theme' }">
-        <a href="#" class="nav-link" @click.prevent="openModule('theme')">
+      <div class="nav-item" :class="{ active: currentModule === 'config' }">
+        <a href="#" class="nav-link" @click.prevent="openModule('config')">
           <v-icon class="nav-icon">
             mdi-cog
           </v-icon>
@@ -200,11 +189,9 @@ export default {
       return this.$route.name?.toLowerCase() || "";
     },
     currentModule() {
-      // Detecta qual módulo está aberto
       const modules = this.$appdata.get("modules") || {};
       const overlays = ["album", "media", "lyric"];
       
-      // Se a sincronização (que é um overlay visual) estiver aberta, ela ganha prioridade na barra lateral
       if (modules['sync']?.show) {
         return 'sync';
       }
@@ -220,7 +207,6 @@ export default {
       const groups = this.$appdata.get("module_group") || {};
       const result = {};
       
-      // Adicionar ícones aos grupos
       const groupIcons = {
         musics: "mdi-play",
         bible: "mdi-book",
@@ -243,14 +229,12 @@ export default {
       const groups = this.$appdata.get("module_group") || {};
       const groupedModuleIds = new Set();
       
-      // Coletar IDs dos módulos que estão em grupos
       Object.values(groups).forEach((group) => {
         if (group.modules) {
           group.modules.forEach((id) => groupedModuleIds.add(id));
         }
       });
       
-      // Retornar apenas módulos que não estão em nenhum grupo
       const result = {};
       for (const [key, module] of Object.entries(allModules)) {
         if (!groupedModuleIds.has(key) && module.showInMainMenu) {
@@ -302,7 +286,6 @@ export default {
       const isCurrentlyOpen = this.submenuOpen[submenu];
       let wasAnyOtherOpen = false;
       
-      // Fecha todos os submenus primeiro
       Object.keys(this.submenuOpen).forEach(key => {
         if (key !== submenu && this.submenuOpen[key]) {
           wasAnyOtherOpen = true;
@@ -312,12 +295,11 @@ export default {
       
       clearTimeout(this.submenuTimeout);
       
-      // Se o submenu clicado não estava aberto, abre ele agora
       if (!isCurrentlyOpen) {
         if (wasAnyOtherOpen) {
           this.submenuTimeout = setTimeout(() => {
             this.submenuOpen[submenu] = true;
-          }, 300); // Tempo da transição CSS
+          }, 300);
         } else {
           this.submenuOpen[submenu] = true;
         }
@@ -331,12 +313,10 @@ export default {
       const module = this.$appdata.get(`modules.${moduleId}`);
       if (!module) return false;
       
-      // Verifica idioma
       if (module.language && module.language !== this.language) {
         return false;
       }
       
-      // Verifica modo desenvolvimento
       if (module.development && !this.isDev) {
         return false;
       }

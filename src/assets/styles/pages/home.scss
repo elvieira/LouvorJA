@@ -1,4 +1,3 @@
-// Estilos para a página Home
 .dashboard-home {
   width: 100%;
   height: 100%;
@@ -52,7 +51,6 @@
   height: calc(100vh - 70px);
 }
 
-// === SEÇÕES DO DASHBOARD ===
 .dashboard-section {
   margin-bottom: 40px;
   display: flex;
@@ -84,7 +82,6 @@
   }
 }
 
-// === GRID DE COLEÇÕES ===
 .collections-grid {
   display: flex;
   padding: 5px;
@@ -101,7 +98,6 @@
   
 }
 
-// === CARDS ===
 .collection-card {
   background: var(--card-bg);
   border-radius: var(--border-radius);
@@ -159,7 +155,6 @@
   }
 }
 
-// === LISTA DE MÚSICAS ===
 .music-list {
   background: var(--card-bg);
   border-radius: var(--border-radius);
@@ -269,7 +264,6 @@
   }
 }
 
-// Responsividade
 @media (max-width: 1024px) {  
   .search-header {
     padding: 16px 20px 8px 20px;

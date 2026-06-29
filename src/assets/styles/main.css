@@ -5,63 +5,52 @@
     font-style: normal;
 }
 
-/* === VARIÁVEIS CSS GLOBAIS === */
 :root {
-    /* Cores principais */
     --accent-blue: #0097d7;
     --accent-blue-dark: #0077b3;
     --accent-yellow: #ffc107;
     
-    /* Backgrounds */
     --main-bg: #f5f7fb;
     --card-bg: #ffffff;
     --sidebar-bg: #ffffff;
     --sidebar-border: #e0e0e0;
     --border-color: #e0e0e0;
     
-    /* Textos */
     --sidebar-text: #333333;
     --sidebar-text-secondary: #666666;
     
-    /* Estados */
     --sidebar-hover: rgba(0, 151, 215, 0.08);
     --sidebar-active: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-blue-dark) 100%);
     
-    /* Sombras */
     --shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     --shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.12);
     
-    /* Layout */
     --sidebar-width: 350px;
     --border-radius: 12px;
     --transition: all 0.3s ease;
     
-    /* Glassmorphism */
     --glass-bg: rgba(255, 255, 255, 0.75);
     --glass-border: rgba(0, 0, 0, 0.05);
     --glass-text: #333333;
     --glass-text-secondary: #666666;
 }
 
-/* Tema escuro */
 .v-theme--dark {
-    --main-bg: #15141e; /* Fundo principal mais escuro para aumentar contraste */
-    --card-bg: #2b2f42; /* Cards mais claros e azulados */
-    --sidebar-bg: #181722; /* Sidebar combinando com o fundo principal, mas com leve diferença */
-    --sidebar-border: rgba(255, 255, 255, 0.12); /* Borda visível mas discreta */
+    --main-bg: #15141e;
+    --card-bg: #2b2f42;
+    --sidebar-bg: #181722;
+    --sidebar-border: rgba(255, 255, 255, 0.12);
     --border-color: rgba(255, 255, 255, 0.12);
-    --sidebar-text: #ffffff; /* White text */
-    --sidebar-text-secondary: #8b8e9b; /* Muted text */
-    --sidebar-hover: rgba(0, 151, 215, 0.15); /* Soft blue hover */
-    --shadow: 0 8px 24px rgba(0, 0, 0, 0.4); /* Sombra mais pronunciada para destacar os cards */
+    --sidebar-text: #ffffff;
+    --sidebar-text-secondary: #8b8e9b;
+    --sidebar-hover: rgba(0, 151, 215, 0.15);
+    --shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
     --shadow-hover: 0 12px 32px rgba(0, 0, 0, 0.5);
     
-    /* Variáveis baseadas no Accent para o modo escuro (mantendo azul do modo claro) */
     --accent-blue: #0097d7; 
     --accent-blue-dark: #0077b3; 
     
-    /* Glassmorphism Dark */
-    --glass-bg: rgba(43, 47, 66, 0.85); /* rgba do novo card-bg */
+    --glass-bg: rgba(43, 47, 66, 0.85);
     --glass-border: rgba(255, 255, 255, 0.08);
     --glass-text: #ffffff;
     --glass-text-secondary: #8b8e9b;
@@ -88,12 +77,10 @@ input, textarea {
     user-select: auto;
 }
 
-/* Previne o comportamento padrão de arrastar imagens (ghost dragging) */
 img, a {
     -webkit-user-drag: none;
 }
 
-/* SCROLL GLOBAL */
 *::-webkit-scrollbar {
     height: 8px;
     width: 8px;
@@ -101,16 +88,16 @@ img, a {
 
 *::-webkit-scrollbar-track {
     border-radius: 8px;
-    background-color: rgba(128, 128, 128, 0.15); /* Barra cinza transparente para adaptar a claro e escuro */
+    background-color: rgba(128, 128, 128, 0.15);
 }
 
 *::-webkit-scrollbar-thumb {
     border-radius: 5px;
-    background-color: var(--accent-blue, #0d6efd); /* Scroller em azul */
+    background-color: var(--accent-blue, #0d6efd);
 }
 
 *::-webkit-scrollbar-thumb:hover {
-    background-color: var(--accent-yellow, #ffc107); /* Amarelo quando o mouse passa no scroller */
+    background-color: var(--accent-yellow, #ffc107);
 }
 
 *::-webkit-scrollbar-thumb:active {

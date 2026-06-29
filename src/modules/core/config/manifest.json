@@ -1,0 +1,16 @@
+{
+  "id": "config",
+  "name": "Configurações",
+  "version": "1.0.0",
+  "description": "Configurações gerais do sistema. Gerencia a aparência, histórico de uso, preferências de mídia e dados armazenados do aplicativo.",
+  "author": "maycorolbuche & elvieira",
+  "category": null,
+  "showInMainMenu": false,
+  "icon": "mdi-palette",
+  "minAppVersion": "1.0.0",
+  "dependencies": [],
+  "permissions": [],
+  "moduleOptions": {
+    "size": "small"
+  }
+}

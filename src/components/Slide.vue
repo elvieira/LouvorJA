@@ -135,7 +135,7 @@ export default {
           color: "rgba(255, 255, 255, 0.95)",
           textTransform: "uppercase",
           fontWeight: "700",
-          letterSpacing: "0.4em", // Mais espaçado para dar um ar premium
+          letterSpacing: "0.4em",
           marginBottom: `${this.fontSizePc(3)}px`,
           textShadow: "0px 4px 16px rgba(0,0,0,0.8)",
           textAlign: "center",
@@ -156,13 +156,13 @@ export default {
     style_text(slide) {
       if (slide.cover) {
         return {
-          fontSize: `${this.fontSizePc(24)}px`, // Fonte maior
+          fontSize: `${this.fontSizePc(24)}px`,
           color: "#f6c32a",
-          fontWeight: "900", // Mais espessa
+          fontWeight: "900",
           textTransform: "uppercase",
-          letterSpacing: "-0.01em", // Um pouco mais fechado para fontes grandes fica elegante
+          letterSpacing: "-0.01em",
           textAlign: "center",
-          textShadow: "0px 10px 30px rgba(0, 0, 0, 0.9), 0px 2px 6px rgba(0, 0, 0, 0.7)", // Sombra dupla para super destaque
+          textShadow: "0px 10px 30px rgba(0, 0, 0, 0.9), 0px 2px 6px rgba(0, 0, 0, 0.7)",
           lineHeight: "1.1",
         };
       } 
@@ -172,7 +172,7 @@ export default {
         padding: `${this.fontSizePc(5)}px ${this.fontSizePc(8)}px`,
         textAlign: "center",
         textTransform: "uppercase",
-        fontSize: `${this.fontSizePc(15)}px`, // Letra um pouco maior (era 12)
+        fontSize: `${this.fontSizePc(15)}px`,
         color: this.repeat ? "#f6c32a" : "#ffffff",
         fontWeight: "700",
         letterSpacing: "0.03em",

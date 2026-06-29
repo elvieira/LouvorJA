@@ -17,7 +17,6 @@
       <v-divider class="mt-2 mb-4" />
 
       <v-card-text class="pa-4 pt-0" style="color: var(--sidebar-text);">
-        <!-- Fundo -->
         <div class="text-subtitle-1 font-weight-bold mb-2">
           Fundo da Projeção
         </div>
@@ -37,7 +36,6 @@
           </div>
         </div>
 
-        <!-- Texto Principal -->
         <div class="text-subtitle-1 font-weight-bold mb-2 mt-4">
           Texto Principal
         </div>
@@ -61,7 +59,6 @@
           </div>
         </div>
 
-        <!-- Alinhamento -->
         <div class="text-subtitle-1 font-weight-bold mb-2">
           Alinhamento
         </div>
@@ -86,7 +83,6 @@
           </v-btn-toggle>
         </div>
 
-        <!-- Referência Scriptural -->
         <div class="text-subtitle-1 font-weight-bold mb-2">
           Referência (Ex: Números 28:3)
         </div>
@@ -175,7 +171,6 @@ export default {
     },
     localConfig: {
       handler(val) {
-        // Atualiza em tempo real a projeção para o preview funcionar enquanto arrasta
         this.$appdata.set("modules.bible.config", val);
       },
       deep: true,
@@ -198,7 +193,7 @@ export default {
     },
     saveAndClose() {
       this.$appdata.set("modules.bible.config", this.localConfig);
-      this.$userdata.set("bible_config", this.localConfig); // Persiste nos dados do usuário se aplicável
+      this.$userdata.set("bible_config", this.localConfig);
       this.close();
     },
     close() {

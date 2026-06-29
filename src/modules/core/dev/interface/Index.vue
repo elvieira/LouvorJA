@@ -1,7 +1,6 @@
 <template>
   <v-slide-y-reverse-transition>
     <div v-if="module?.show" class="module-full-page dashboard-home d-flex flex-column">
-      <!-- Cabeçalho Integrado do Módulo -->
       <div class="search-header pb-0 flex-shrink-0" style="padding-top: 24px; padding-left: 24px; padding-right: 24px; display: flex; align-items: center; justify-content: space-between;">
         <div class="d-flex align-center">
           <MenuToggleButton style="margin-right: 16px;" @toggle-sidebar="toggleSidebar" />
@@ -31,17 +30,14 @@
         </div>
       </div>
 
-      <!-- Conteúdo Principal -->
       <div class="content-main d-flex flex-column flex-grow-1" style="overflow: hidden; padding-top: 16px;">
         <v-tabs-window v-model="tab" class="h-100 w-100">
-          <!-- Aba 1: Módulos -->
           <v-tabs-window-item :value="1" class="h-100">
             <div class="h-100 overflow-auto pa-4">
               <ModuleList />
             </div>
           </v-tabs-window-item>
 
-          <!-- Aba 2: Variáveis Globais -->
           <v-tabs-window-item :value="2" class="h-100">
             <div class="h-100 overflow-auto pa-4">
               <v-card class="glass-card pa-4" elevation="0">
@@ -50,7 +46,6 @@
             </div>
           </v-tabs-window-item>
 
-          <!-- Aba 3: Variáveis do Usuário -->
           <v-tabs-window-item :value="3" class="h-100">
             <div class="h-100 overflow-auto pa-4">
               <v-card class="glass-card pa-4" elevation="0">
@@ -59,7 +54,6 @@
             </div>
           </v-tabs-window-item>
 
-          <!-- Aba 4: Variáveis do Vue -->
           <v-tabs-window-item :value="4" class="h-100">
             <div class="h-100 overflow-auto pa-4">
               <v-card class="glass-card pa-4" elevation="0">
@@ -126,7 +120,6 @@ export default {
 <style lang="scss">
 @use "@/assets/styles/pages/home.scss";
 
-/* Estilos específicos para a tela de dev */
 .vjs-tree {
   font-family: 'JetBrains Mono', 'Fira Code', monospace !important;
   font-size: 14px;

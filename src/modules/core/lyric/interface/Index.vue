@@ -3,7 +3,6 @@
     <div v-if="module?.show" class="module-full-page d-flex align-center justify-center bg-transparent" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 100; background: rgba(0,0,0,0.4) !important; backdrop-filter: blur(2px);">
       <v-card class="rounded-xl overflow-hidden elevation-24" width="100%" max-width="450" style="background: var(--card-bg); max-height: 75vh; display: flex; flex-direction: column;">
         <v-card-text class="pa-0 d-flex flex-column" style="height: 100%; min-height: 0; overflow: hidden;">
-          <!-- Header -->
           <div class="pa-6 pb-4 flex-shrink-0" style="background: rgba(0,0,0,0.02);">
             <div class="d-flex align-center justify-space-between mb-2">
               <div class="d-flex align-center">
@@ -20,7 +19,6 @@
             </p>
           </div>
           
-          <!-- Content -->
           <div class="pa-6 pt-4 flex-grow-1" style="overflow-y: auto;">
             <v-skeleton-loader v-if="module.loading" type="text@5" />
             <div v-else class="lyric-content-wrapper">

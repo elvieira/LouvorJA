@@ -71,7 +71,6 @@ export default {
   },
   methods: {
     sortModules(modules) {
-      //Ordena pelo idioma selecionado
       return this.$modules.sort(modules, this.$t);
     },
   },

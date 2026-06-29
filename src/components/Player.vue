@@ -3,13 +3,11 @@
     ref="playerContainer"
     :class="location === 'footer' ? 'footer-player-bar d-flex align-center w-100 px-4 py-2' : (location === 'fullscreen' ? 'fullscreen-player-bar d-flex align-center px-6 py-2 w-100' : 'modern-pill-player d-flex align-center px-6 py-2 mx-auto')" 
   >
-    <!-- INFO (Música e Álbum) -->
     <div v-if="playerWidth >= 880" class="player-info d-flex flex-column mr-6" :style="location === 'footer' ? 'max-width: 300px; min-width: 200px;' : 'max-width: 220px; min-width: 150px;'">
       <span class="text-subtitle-2 font-weight-bold text-truncate" :class="defaultTextClass" style="line-height: 1.2;">{{ media.config.title }}</span>
       <span class="text-caption text-truncate" :class="secondaryTextClass" style="line-height: 1.2;">{{ media.config.subtitle }}</span>
     </div>
 
-    <!-- CONTROLES PRINCIPAIS (Prev, Play, Next) -->
     <div class="d-flex align-center mr-6">
       <v-btn
         icon
@@ -46,7 +44,6 @@
       </v-btn>
     </div>
 
-    <!-- TIMELINE E TEMPO -->
     <div v-if="media.config.audio" class="player-timeline-wrapper d-flex align-center flex-grow-1 mr-6" style="min-width: 150px;">
       <span class="text-caption mr-3 font-weight-medium" :class="location === 'window' || location === 'fullscreen' ? 'text-white' : secondaryTextClass" style="opacity: 0.8;">{{ $datetime.shortTime(media.config.current_time) }}</span>
       <v-progress-linear
@@ -65,7 +62,6 @@
       <span class="text-caption ml-3 font-weight-medium" :class="location === 'window' || location === 'fullscreen' ? 'text-white' : secondaryTextClass" style="opacity: 0.8;">{{ $datetime.shortTime(media.config.duration) }}</span>
     </div>
 
-    <!-- VOLUME -->
     <div v-if="media.config.audio" class="d-flex align-center">
       <v-menu
         location="top center"
@@ -110,9 +106,7 @@
       </v-menu>
     </div>
 
-    <!-- AÇÕES SECUNDÁRIAS -->
     <div class="d-flex align-center">
-      <!-- Status Mode (Áudio/Instrumental/Letra) -->
       <v-menu v-if="location !== 'fullscreen' && playerWidth >= 880" :close-on-content-click="true">
         <template #activator="{ props }">
           <v-btn
@@ -161,7 +155,6 @@
 
 
 
-      <!-- Maximizar (Apenas no Footer e se o Mini Player estiver fechado) -->
       <v-btn
         v-if="location === 'footer' && !showMiniPlayer"
         variant="text"
@@ -175,7 +168,6 @@
         <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">Maximizar</v-tooltip>
       </v-btn>
 
-      <!-- Fechar (Apenas no Footer) -->
       <v-btn
         v-if="location === 'footer'"
         variant="text"
@@ -189,7 +181,6 @@
         <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">Fechar</v-tooltip>
       </v-btn>
 
-      <!-- Fullscreen (Apenas no Window/Fullscreen) -->
       <v-btn
         v-if="location == 'fullscreen'"
         variant="text"
@@ -215,7 +206,6 @@
         <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">Tela Cheia</v-tooltip>
       </v-btn>
 
-      <!-- Botão de Playlist (Apenas no Window) -->
       <v-btn 
         v-if="location == 'window' && playerWidth >= 880"
         variant="text" 
@@ -375,7 +365,6 @@ export default {
         if (vCard) {
           target = vCard;
         } else {
-          // Fallback para o contêiner principal se não achar v-card
           target = target.closest(".floating-pill-container")?.parentNode || target.parentNode;
         }
       } else if (this.location === "fullscreen") {
