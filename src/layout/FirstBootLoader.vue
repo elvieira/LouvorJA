@@ -177,7 +177,20 @@ export default {
             this.progress = data.progress;
           });
           
+          if (window.electronAPI.onDownloadDbProgress) {
+            window.electronAPI.onDownloadDbProgress((data) => {
+              this.progress = data.progress;
+            });
+          }
+          
           await this.fetchAndSave("config");
+          
+          this.statusText = "Baixando banco de dados...";
+          this.progress = 0;
+          await window.electronAPI.downloadDatabase();
+          
+          this.statusText = "Extraindo dados locais...";
+          this.progress = 0;
           
           const success = await window.electronAPI.extractLocalDb();
           if (success) {

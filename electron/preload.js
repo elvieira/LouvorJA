@@ -11,6 +11,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   
   clearAllData: () => ipcRenderer.invoke('clear-all-data'),
   extractLocalDb: () => ipcRenderer.invoke('extract-local-db'),
+  downloadDatabase: () => ipcRenderer.invoke('download-database'),
   
   windowControl: (action) => ipcRenderer.invoke('window-control', action),
   onWindowMaximizedState: (callback) => {
@@ -29,6 +30,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   },
   onExtractProgress: (callback) => {
     ipcRenderer.on('extract-progress', (_event, data) => callback(data));
+  },
+  onDownloadDbProgress: (callback) => {
+    ipcRenderer.on('download-db-progress', (_event, data) => callback(data));
   },
   
   getDisplays: () => ipcRenderer.invoke('get-displays'),

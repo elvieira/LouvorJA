@@ -5,6 +5,7 @@ const fsExtra = require('fs-extra');
 const crypto = require('crypto');
 const { autoUpdater } = require('electron-updater');
 const DbExtractor = require('./DbExtractor');
+const ftp = require('basic-ftp');
 
 // Chave estática para ofuscação (não é segurança alta, apenas ofuscação)
 const ENCRYPTION_KEY = Buffer.from('v389s8dkj238910s8a7d3h2j1k9s8d7f', 'utf8');
@@ -108,12 +109,7 @@ ipcMain.handle('save-local-db', async (event, filename, data) => {
 
 ipcMain.handle('extract-local-db', async (event) => {
   try {
-    let finalDbPath;
-    if (isDev) {
-      finalDbPath = path.join(__dirname, '..', 'resources', 'database.db');
-    } else {
-      finalDbPath = path.join(process.resourcesPath, 'resources', 'database.db');
-    }
+    const finalDbPath = path.join(app.getPath('userData'), 'database.db');
     
     if (!fs.existsSync(finalDbPath)) {
       throw new Error(`Arquivo não encontrado em: ${finalDbPath}`);
@@ -123,9 +119,88 @@ ipcMain.handle('extract-local-db', async (event) => {
     await extractor.extract((data) => {
       event.sender.send('extract-progress', data);
     });
+    
+    // Excluir após extração para economizar espaço
+    try {
+      fs.unlinkSync(finalDbPath);
+    } catch(e) {
+      console.error('Erro ao excluir database.db após extração:', e);
+    }
+    
     return true;
   } catch (error) {
     console.error('Erro na extração do banco:', error);
+    return false;
+  }
+});
+
+ipcMain.handle('download-database', async (event) => {
+  try {
+    const response = await net.fetch('https://api.louvorja.com.br/params?type=env');
+    if (!response.ok) throw new Error('Falha ao buscar parâmetros');
+    const text = await response.text();
+    
+    const params = {};
+    text.split('\n').forEach(line => {
+      const idx = line.indexOf('=');
+      if (idx > 0) {
+        params[line.slice(0, idx).trim()] = line.slice(idx + 1).trim();
+      }
+    });
+    
+    const connFtp = params['conn_ftp'];
+    if (!connFtp) throw new Error('conn_ftp não encontrado');
+    
+    const payload = Buffer.from('pc_name=Electron&lang=PT').toString('base64');
+    const ftpUrl = connFtp + (connFtp.includes('?') ? '&' : '?') + 'data=' + payload + '&lang=PT';
+    
+    const ftpResponse = await net.fetch(ftpUrl);
+    if (!ftpResponse.ok) throw new Error('Falha ao autorizar FTP');
+    const encodedFtpParams = await ftpResponse.text();
+    
+    const decodedFtpText = Buffer.from(encodedFtpParams, 'base64').toString('utf8');
+    const ftpParams = {};
+    decodedFtpText.split('\n').forEach(line => {
+      const idx = line.indexOf('=');
+      if (idx > 0) {
+        ftpParams[line.slice(0, idx).trim()] = line.slice(idx + 1).trim();
+      }
+    });
+    
+    const client = new ftp.Client();
+    
+    await client.access({
+      host: ftpParams['host'],
+      user: ftpParams['username'],
+      password: ftpParams['password'],
+      port: parseInt(ftpParams['port'] || '21'),
+      secure: false
+    });
+    
+    const finalDbPath = path.join(app.getPath('userData'), 'database.db');
+    const langPrefix = (ftpParams['lang'] || 'pt').toLowerCase();
+    const remotePath = (ftpParams['root'] || '/') + (ftpParams['root']?.endsWith('/') ? '' : '/') + `config/${langPrefix}_database.db`;
+    
+    let size = 0;
+    try {
+      size = await client.size(remotePath);
+    } catch (e) {
+      console.warn('Não foi possível obter o tamanho do arquivo via FTP:', e.message);
+    }
+    
+    client.trackProgress(info => {
+      if (size > 0) {
+        const percent = Math.floor((info.bytesOverall / size) * 100);
+        event.sender.send('download-db-progress', { progress: percent });
+      }
+    });
+    
+    await client.downloadTo(finalDbPath, remotePath);
+    client.close();
+    
+    return true;
+  } catch (error) {
+    console.error('Erro no download do banco:', error);
     return false;
   }
 });
