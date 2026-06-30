@@ -151,8 +151,8 @@
           <span class="nav-text">{{ $t("sidebar.help") }}</span>
         </a>
       </div>
-      <div class="nav-item" :class="{ active: currentModule === 'theme' }">
-        <a href="#" class="nav-link" @click.prevent="openModule('theme')">
+      <div class="nav-item" :class="{ active: currentModule === 'config' }">
+        <a href="#" class="nav-link" @click.prevent="openModule('config')">
           <v-icon class="nav-icon">
             mdi-cog
           </v-icon>

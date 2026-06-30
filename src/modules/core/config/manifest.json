@@ -1,0 +1,16 @@
+{
+  "id": "config",
+  "name": "Configurações",
+  "version": "1.0.0",
+  "description": "Configurações gerais do sistema. Gerencie a aparência, preferências do programa e comportamentos de projeção da tela.",
+  "author": "elvieira",
+  "category": null,
+  "showInMainMenu": false,
+  "icon": "mdi-cog",
+  "minAppVersion": "1.0.0",
+  "dependencies": [],
+  "permissions": [],
+  "moduleOptions": {
+    "size": "small"
+  }
+}

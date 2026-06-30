@@ -55,7 +55,7 @@ export default {
         if (window.electronAPI && window.electronAPI.getDisplays) {
           const displays = await window.electronAPI.getDisplays();
           if (displays && displays.length > 1) {
-            let configMonitors = $userdata.get("modules.theme.slide_monitor");
+            let configMonitors = $userdata.get("modules.config.slide_monitor");
             if (!Array.isArray(configMonitors)) {
               configMonitors = configMonitors ? [configMonitors] : [];
             }

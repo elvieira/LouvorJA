@@ -170,7 +170,7 @@ export default {
     if (window.electronAPI && window.electronAPI.getDisplays) {
       const displays = await window.electronAPI.getDisplays();
       if (displays && displays.length > 1) {
-        let selectedMonitors = $userdata.get("modules.theme.slide_monitor");
+        let selectedMonitors = $userdata.get("modules.config.slide_monitor");
         if (!Array.isArray(selectedMonitors)) {
           selectedMonitors = selectedMonitors ? [selectedMonitors] : [];
         }
@@ -192,7 +192,7 @@ export default {
     if (window.electronAPI && window.electronAPI.getDisplays) {
       const displays = await window.electronAPI.getDisplays();
       if (displays && displays.length > 1) {
-        let selectedMonitors = $userdata.get("modules.theme.slide_monitor");
+        let selectedMonitors = $userdata.get("modules.config.slide_monitor");
         if (!Array.isArray(selectedMonitors)) {
           selectedMonitors = selectedMonitors ? [selectedMonitors] : [];
         }

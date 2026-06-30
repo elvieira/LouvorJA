@@ -520,7 +520,7 @@ export default {
       this.$data.show_home_history = saved_home_history;
     }
 
-    let savedSlideMonitor = this.$userdata.get("modules.theme.slide_monitor");
+    let savedSlideMonitor = this.$userdata.get("modules.config.slide_monitor");
     if (savedSlideMonitor) {
       if (!Array.isArray(savedSlideMonitor)) {
         savedSlideMonitor = [savedSlideMonitor];
@@ -534,7 +534,7 @@ export default {
     },
     slide_monitor(val) {
       if (val !== undefined && val !== null) {
-        this.$userdata.set("modules.theme.slide_monitor", val);
+        this.$userdata.set("modules.config.slide_monitor", val);
         $media.syncMonitors();
       }
     },
