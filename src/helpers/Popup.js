@@ -10,11 +10,8 @@ export default {
 
     let popups = $appdata.get("popups") || [];
 
-    // Clear out closed popups
     popups = popups.filter(p => !p.closed);
 
-    // Se houver um monitorId especificado, abrimos um novo popup (ou reutilizamos se já existir naquele monitor)
-    // Se não, mantemos o comportamento padrão (apenas 1)
     if (params.monitorId) {
       let existing = popups.find(p => p.monitorId === params.monitorId);
       if (existing && !existing.closed) {
@@ -27,7 +24,6 @@ export default {
         popups.push(markRaw(newPopup));
       }
     } else {
-      // Fallback single popup
       if (popups.length > 0 && !popups[0].closed) {
         popups[0].focus();
       } else {
@@ -57,17 +53,14 @@ export default {
     let popups = $appdata.get("popups") || [];
     popups = popups.filter(p => !p.closed);
 
-    // Close popups that are not in the new `monitors` list
     popups.forEach(popup => {
       if (popup.monitorId && !monitors.includes(popup.monitorId)) {
         popup.close();
       }
     });
 
-    // Clean array
     popups = popups.filter(p => !p.closed);
 
-    // Open missing monitors if projection is currently active or forced
     if ($appdata.get("popup_module") === moduleName || forceOpen) {
       for (const monitorId of monitors) {
         let existing = popups.find(p => p.monitorId === monitorId);

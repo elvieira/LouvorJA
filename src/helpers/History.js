@@ -6,7 +6,6 @@ const TOP_SONGS_KEY = "history_top_songs";
 const MAX_RECENT_COLLECTIONS = 7;
 const MAX_TOP_SONGS = 20;
 
-// Inicializa o estado reativo
 setTimeout(() => {
   if (!$appdata.exists(RECENT_COLLECTIONS_KEY)) {
     $appdata.set(RECENT_COLLECTIONS_KEY, $storage.get(RECENT_COLLECTIONS_KEY, []));
@@ -24,7 +23,6 @@ export default {
   addRecentCollection(data) {
     if (!data || !data.id) return;
 
-    // Use storage to get the fresh list just in case
     let collections = $storage.get(RECENT_COLLECTIONS_KEY, []);
 
     const filtered = collections.filter(
@@ -54,9 +52,6 @@ export default {
     return $appdata.get(RECENT_COLLECTIONS_KEY, $storage.get(RECENT_COLLECTIONS_KEY, []));
   },
 
-  /**
-   * Incrementa o contador de reprodução de uma música.
-   */
   addSongPlay(data) {
     if (!data || !data.id_music) return;
 
@@ -84,9 +79,6 @@ export default {
     $appdata.set(TOP_SONGS_KEY, songs);
   },
 
-  /**
-   * Retorna as músicas mais tocadas (reativo).
-   */
   getTopSongs(limit = MAX_TOP_SONGS) {
     const songs = $appdata.get(TOP_SONGS_KEY, $storage.get(TOP_SONGS_KEY, {}));
     return Object.values(songs)

@@ -2,7 +2,6 @@
   <v-slide-y-reverse-transition>
     <div v-if="module?.show" class="module-full-page dashboard-home d-flex flex-column">
       <div class="search-header-container" :class="(searchQuery || shouldShowHistory) ? 'search-header d-flex align-center w-100' : 'hero-search-header d-flex flex-column align-center justify-center'" :style="(searchQuery || shouldShowHistory) ? 'padding: 24px 32px 10px 32px; position: relative;' : 'flex: 1; position: relative; padding: 32px; transition: all 0.5s ease;'">
-        <!-- Botão menu em telas pequenas -->
         <div :style="(searchQuery || shouldShowHistory) ? 'flex: 1; display: flex; align-items: center;' : 'position: absolute; top: 24px; left: 32px;'">
           <MenuToggleButton style="margin: 0;" @toggle-sidebar="toggleSidebar" />
         </div>
@@ -12,7 +11,6 @@
           <h1 class="hero-title mb-8" style="font-size: 2.5rem; font-weight: 700; color: var(--sidebar-text);">O que vamos cantar?</h1>
         </div>
         
-        <!-- Centro (Barra de pesquisa) -->
         <div class="search-bar" :style="(searchQuery || shouldShowHistory) ? 'flex: 2; display: flex; justify-content: center; transition: all 0.5s ease;' : 'width: 100%; max-width: 650px; transition: all 0.5s ease;'">
           <v-text-field
             v-model="searchQuery"
@@ -29,13 +27,10 @@
           />
         </div>
 
-        <!-- Lado direito (Espaçador para manter o centro perfeito) -->
         <div v-if="(searchQuery || shouldShowHistory)" style="flex: 1;"></div>
       </div>
 
-      <!-- Conteúdo Principal -->
       <div class="content-main" v-if="searchQuery || shouldShowHistory">
-        <!-- Resultados da Pesquisa -->
         <div v-if="searchQuery" class="dashboard-section music-section h-100 d-flex flex-column" style="min-height: 0;">
           <h2 class="section-title mb-4">
             Resultados da Pesquisa
@@ -92,7 +87,6 @@
         </div>
 
         <template v-else-if="shouldShowHistory && !searchQuery">
-          <!-- Coletâneas Recentes -->
           <div class="dashboard-section collections-section">
             <h2 class="section-title">
               {{ t("recent_collections") }}
@@ -136,7 +130,6 @@
             </div>
           </div>
 
-          <!-- Músicas Mais Tocadas -->
           <div class="dashboard-section music-section">
             <h2 class="section-title">
               {{ t("top_songs") }}
@@ -217,7 +210,6 @@ export default {
     },
     /* COMPUTEDS OBRIGATÓRIAS - FIM */
 
-    // Pega todos os módulos de música disponíveis
     musicModules() {
       const modules = this.$appdata.get("modules") || {};
       const musicGroup = this.$appdata.get("module_group.musics") || {};
@@ -236,17 +228,14 @@ export default {
       return result;
     },
 
-    // Retorna se deve exibir o histórico (baseado na config e se há itens)
     shouldShowHistory() {
       return this.show_home_history && (this.displayCollections.length > 0 || this.topSongs.length > 0);
     },
     
-    // Coletâneas para exibir (dinâmico via histórico)
     displayCollections() {
       const recentCollections = this.$history.getRecentCollections();
       
       return recentCollections.map((item) => {
-        // Mescla informações dinâmicas carregadas assincronamente
         const dynInfo = this.dynamicCollectionInfo[item.id] || {};
         
         return {
@@ -257,7 +246,6 @@ export default {
       });
     },
     
-    // Músicas mais tocadas (dinâmico via histórico)
     topSongs() {
       return this.$history.getTopSongs(20);
     },
@@ -269,7 +257,6 @@ export default {
   watch: {
     displayCollections: {
       handler(newVal) {
-        // Quando a lista mudar, busca informações dos álbuns (se faltar)
         this.fetchCollectionInfo();
       },
       deep: true,
@@ -299,7 +286,6 @@ export default {
     /* METHODS OBRIGATÓRIOS - FIM */
 
     async fetchCollectionInfo() {
-      // Cria uma cópia da lista de coleções para iterar
       const collections = this.displayCollections;
       
       for (const col of collections) {
@@ -310,7 +296,6 @@ export default {
             if (col.type === "album") {
               const data = await this.$database.get(`album_${col.id}`);
               if (data) {
-                // albums tem uma lista de músicas em .musics (ou .data, dependendo da API)
                 info.songCount = data.musics ? data.musics.length : (data.data ? data.data.length : 0);
                 info.url_image = data.url_image;
               }
@@ -329,7 +314,6 @@ export default {
               }
             }
 
-            // Fallback para buscar a imagem nas categorias, independentemente do tipo salvo
             if (!info.url_image) {
               if (!allCategories) {
                 allCategories = await this.$database.get(`${this.$i18n.locale}_categories`);
@@ -345,7 +329,6 @@ export default {
               }
             }
             
-            // Verificar imagens locais
             if (info.url_image && window.electronAPI) {
               const imgRelativePath = info.url_image.replace(/^\/(musics|images|covers)\//, '');
               const localCheck = await window.electronAPI.checkMedia('covers', imgRelativePath);
@@ -354,7 +337,6 @@ export default {
               }
             }
             
-            // Atualiza de forma reativa
             this.dynamicCollectionInfo = {
               ...this.dynamicCollectionInfo,
               [col.id]: info,
@@ -369,7 +351,6 @@ export default {
     getCollectionImage(collection) {
       const name = this.getCollectionName(collection) || '';
       
-      // 1996 tem prioridade na verificação para não cair na regra geral do hinário
       if (
         collection.id === 'hymnal_1996' || 
         collection.module === 'hymnal_1996' || 
@@ -401,7 +382,6 @@ export default {
     },
 
     toggleSidebar() {
-      // Emite para o Main.vue via evento global
       const mainEl = document.querySelector(".main-container");
       if (mainEl) {
         mainEl.dispatchEvent(new CustomEvent("toggle-sidebar"));

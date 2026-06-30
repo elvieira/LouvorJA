@@ -8,7 +8,6 @@ const isDesktop = !!(window.electronAPI && window.electronAPI.isElectron);
 export default {
   async get(file) {
     try {
-      // 1. Cache em memória (session storage)
       const cache_name = `db:${file}`;
       const cache = $storage.get(cache_name, null, "session");
 
@@ -17,7 +16,6 @@ export default {
         return cache;
       }
 
-      // 2. Desktop: Tenta disco local primeiro
       if (isDesktop) {
         const localData = await window.electronAPI.getLocalDb(file);
         if (localData) {
@@ -28,7 +26,6 @@ export default {
         $dev.write("BD local não encontrado, baixando e salvando:", file);
       }
 
-      // 3. Fetch da API web
       const date = new Date().toISOString().slice(0, 10).replace(/-/g, "");
       $dev.write("Abrindo BD", `${$path.db(`/${file}`)}?${date}`);
       const response = await fetch(`${$path.db(`/${file}`)}?${date}`, {
@@ -43,7 +40,6 @@ export default {
       $dev.write("Salvando BD em cache", file);
       $storage.set(cache_name, data, "session");
 
-      // 4. Desktop: Salva no disco local automaticamente para próximos acessos
       if (isDesktop) {
         await window.electronAPI.saveLocalDb(file, data);
         $dev.write("BD salvo no disco local para acesso offline:", file);

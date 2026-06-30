@@ -1,7 +1,6 @@
 <template>
   <v-slide-y-reverse-transition>
     <div v-if="module?.show" class="module-full-page dashboard-home d-flex flex-column" :style="`z-index: 100;`">
-      <!-- Cabeçalho Integrado do Álbum -->
       <div class="search-header pb-0 flex-shrink-0" style="padding-top: 24px; padding-left: 24px; padding-right: 24px; display: flex; align-items: center;">
         <MenuToggleButton style="margin-right: 16px;" @toggle-sidebar="toggleSidebar" />
         <v-btn
@@ -33,7 +32,6 @@
         </div>
       </div>
 
-      <!-- Conteúdo Principal da Listagem -->
       <div class="content-main d-flex flex-column flex-grow-1" style="overflow: hidden; padding-top: 16px;">
         <v-progress-linear
           v-if="loading"
@@ -42,7 +40,6 @@
         />
 
         <div v-if="!loading" class="music-list flex-grow-1 d-flex flex-column" style="background: transparent; box-shadow: none; min-height: 0;">
-          <!-- Tabela de músicas do álbum com o mesmo estilo dos hinários -->
           <v-table class="modern-hymnal-table flex-grow-1 d-flex flex-column" style="min-height: 0; background: transparent;">
             <tbody class="music-list-container">
               <tr
@@ -124,7 +121,6 @@ export default {
 </script>
 
 <style lang="scss">
-/* Estilos aplicados do formato dashboard-home para o album full-page */
 .module-full-page {
   position: absolute;
   top: 0;

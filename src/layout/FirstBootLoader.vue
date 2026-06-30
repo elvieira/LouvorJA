@@ -65,7 +65,6 @@ export default {
 
     window.addEventListener('show-boot-screen', this.handleManualShow);
     
-    // Aguarda 1 segundo antes de exibir os componentes internos e fazer o check
     setTimeout(async () => {
       this.showContent = true;
       await this.checkFirstBoot();
@@ -98,12 +97,10 @@ export default {
       
       this.isOpen = true;
       
-      // Verifica se os dados essenciais já existem de forma completa
       const isComplete = await window.electronAPI.getLocalDb("system_first_boot_complete");
       if (!isComplete || !isComplete.complete) {
         this.isFirstBoot = true;
         
-        // Se já existirem fragmentos, limpa tudo antes de recomeçar
         this.statusText = "Preparando nova instalação...";
         if (window.electronAPI.clearAllData) {
           await window.electronAPI.clearAllData();
@@ -112,7 +109,6 @@ export default {
         await this.runFirstBootSync();
       } else {
         this.isFirstBoot = false;
-        // Inicialização de charme animada (aprox. 2 segundos)
         this.statusText = "Carregando ambiente...";
         this.progress = 0;
         
@@ -160,11 +156,9 @@ export default {
         this.progress = 2;
         this.statusText = "Preparando...";
         
-        // 1. Config
         await this.fetchAndSave("config");
         this.progress = 5;
         
-        // 2. Categorias e Hinários (contém as coletâneas com os álbuns e os hinários)
         const categories = await this.fetchAndSave("pt_categories");
         const hymnal = await this.fetchAndSave("pt_hymnal");
         const hymnal1996 = await this.fetchAndSave("pt_hymnal_1996");
@@ -176,7 +170,6 @@ export default {
         
         let allSongIds = new Set();
 
-        // Adicionar as músicas dos hinários à lista de letras para baixar
         if (hymnal && Array.isArray(hymnal)) {
           hymnal.forEach(song => allSongIds.add(song.id_music));
         }
@@ -184,7 +177,6 @@ export default {
           hymnal1996.forEach(song => allSongIds.add(song.id_music));
         }
 
-        // 3. Álbuns e Capas — extrair todos os álbuns de todas as categorias
         let allAlbumIds = new Set();
         for (const cat of categories) {
           if (cat.albums && Array.isArray(cat.albums)) {
@@ -205,7 +197,6 @@ export default {
             albumData.musics.forEach(song => allSongIds.add(song.id_music));
           }
           
-          // Baixar a capa do álbum
           if (albumData && albumData.url_image) {
             const imgFilename = albumData.url_image.split('/').pop();
             await this.downloadCoverImage(albumData.url_image, imgFilename);
@@ -215,7 +206,6 @@ export default {
           this.progress = 10 + Math.floor((processedAlbums / totalAlbums) * 25);
         }
         
-        // 4. Letras de Músicas (JSON) — em lotes
         const songIds = Array.from(allSongIds);
         const totalSongs = songIds.length;
         let processedSongs = 0;
@@ -229,12 +219,10 @@ export default {
           this.progress = 35 + Math.floor((processedSongs / totalSongs) * 50);
         }
         
-        // 5. Bíblias — livros e versões (índices)
         await this.fetchAndSave("pt_bible_book");
         const bibleVersions = await this.fetchAndSave("pt_bible_version");
         this.progress = 90;
         
-        // 6. Baixar os capítulos da Bíblia (todos os capítulos de todas as versões)
         const bibleBooks = await window.electronAPI.getLocalDb("pt_bible_book");
         if (bibleBooks && Array.isArray(bibleBooks) && bibleVersions && Array.isArray(bibleVersions)) {
           let totalChapters = bibleBooks.reduce((sum, b) => sum + b.chapters, 0) * bibleVersions.length;
@@ -246,7 +234,6 @@ export default {
               for (let ch = 1; ch <= book.chapters; ch++) {
                 chapterBatch.push(`bible_${version.id_bible_version}_${book.id_bible_book}_${ch}`);
               }
-              // Baixa todos os capítulos desse livro em lotes de 10
               for (let i = 0; i < chapterBatch.length; i += 10) {
                 const batch = chapterBatch.slice(i, i + 10);
                 await Promise.all(batch.map(file => this.fetchAndSave(file)));
@@ -261,7 +248,6 @@ export default {
           }
         }
         
-        // 7. Marca como instalação limpa concluída
         await window.electronAPI.saveLocalDb("system_first_boot_complete", { complete: true });
         
         this.progress = 100;

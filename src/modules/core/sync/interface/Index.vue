@@ -3,7 +3,6 @@
     <div v-if="module?.show" class="module-full-page d-flex align-center justify-center bg-transparent" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 100; background: rgba(0,0,0,0.4) !important; backdrop-filter: blur(2px);">
       <v-card class="rounded-xl overflow-hidden elevation-24" width="100%" max-width="600" style="background: var(--card-bg); max-height: 90vh; display: flex; flex-direction: column;">
         <v-card-text class="pa-0 d-flex flex-column" style="height: 100%; min-height: 0; overflow: hidden;">
-          <!-- Header -->
           <div class="pa-6 pb-4 flex-shrink-0" style="background: rgba(0,0,0,0.02);">
             <div class="d-flex align-center justify-space-between mb-2">
               <div class="d-flex align-center">
@@ -20,7 +19,6 @@
             </p>
           </div>
           
-          <!-- Bulk Actions -->
           <div v-if="categoriesWithAlbums.length > 0" class="px-6 pb-2 d-flex gap-2">
             <v-btn 
               v-if="!isDownloadingAll"
@@ -43,7 +41,6 @@
             </v-btn>
           </div>
 
-          <!-- Lista de Coletâneas (Álbuns agrupados por categoria) -->
           <div class="pa-6 pt-2 flex-grow-1" style="overflow-y: auto;">
           <div v-for="cat in categoriesWithAlbums" :key="cat.id_category" class="mb-4">
             <h3 class="text-subtitle-2 font-weight-bold text-uppercase mb-2 px-1" style="color: var(--sidebar-text-secondary); letter-spacing: 0.5px;">
@@ -220,7 +217,6 @@ export default {
         
         let result = [];
         
-        // --- 1. Adicionar os Hinários como uma "Coletânea Especial" ---
         let hymnalsList = [];
         const hymnal = await $db.get("pt_hymnal");
         const hymnal1996 = await $db.get("pt_hymnal_1996");
@@ -261,13 +257,11 @@ export default {
           });
         }
         
-        // --- 2. Adicionar as outras categorias e álbuns ---
         for (const cat of categories) {
           if (!cat.albums || cat.albums.length === 0) continue;
           
           let albumsList = [];
           for (const a of cat.albums) {
-            // Verificar se temos a capa local
             let coverUrl = null;
             if (a.url_image) {
               const imgRelativePath = a.url_image.replace(/^\/(musics|images|covers)\//, '');
@@ -333,10 +327,9 @@ export default {
           let fetched = 0;
           const totalToFetch = hymnalData.length;
 
-          // Hinário é um array direto de músicas
           for (const song of hymnalData) {
             fetched++;
-            album.progress = Math.floor((fetched / totalToFetch) * 10); // 0 a 10% na preparação
+            album.progress = Math.floor((fetched / totalToFetch) * 10);
             const musicData = await $db.get(`music_${song.id_music}`);
             if (musicData) {
               if (musicData.url_music) musicFiles.push(musicData.url_music);
@@ -351,7 +344,6 @@ export default {
             }
           }
         } else {
-          // Busca os dados do álbum normal para pegar a lista de músicas
           const albumData = await $db.get(`album_${album.id_album}`);
           if (!albumData || !albumData.musics || !Array.isArray(albumData.musics)) {
             album.status = 'idle';
@@ -361,10 +353,9 @@ export default {
           let fetched = 0;
           const totalToFetch = albumData.musics.length;
           
-          // Coletar todas as URLs de mp3 (cantado + instrumental)
           for (const song of albumData.musics) {
             fetched++;
-            album.progress = Math.floor((fetched / totalToFetch) * 10); // 0 a 10% na preparação
+            album.progress = Math.floor((fetched / totalToFetch) * 10);
             const musicData = await $db.get(`music_${song.id_music}`);
             if (musicData) {
               if (musicData.url_music) musicFiles.push(musicData.url_music);
@@ -380,7 +371,6 @@ export default {
           }
         }
         
-        // Remove duplicatas
         musicFiles = [...new Set(musicFiles)];
         slideFiles = [...new Set(slideFiles)];
         

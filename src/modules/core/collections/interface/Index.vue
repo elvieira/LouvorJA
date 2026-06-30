@@ -1,7 +1,6 @@
 <template>
   <v-slide-y-reverse-transition>
     <div v-if="module?.show" class="module-full-page dashboard-home d-flex flex-column">
-      <!-- Cabeçalho Integrado do Módulo -->
       <div class="search-header pb-0 flex-shrink-0" style="padding-top: 24px; padding-left: 24px; padding-right: 24px; display: flex; align-items: center;">
         <MenuToggleButton style="margin-right: 16px;" @toggle-sidebar="toggleSidebar" />
 
@@ -73,7 +72,6 @@
         </div>
       </div>
 
-      <!-- Conteúdo Principal do Grid de Coleções -->
       <div class="content-main d-flex flex-column flex-grow-1" style="overflow: hidden; padding-top: 16px;">
         <v-progress-linear
           v-if="loading"
@@ -290,7 +288,6 @@ export default {
       if (this.categories.length > 0) {
         this.categories.sort((a, b) => a.order - b.order);
         
-        // Verificar imagens locais
         if (window.electronAPI) {
           for (const cat of this.categories) {
             if (cat.albums) {
@@ -328,7 +325,6 @@ export default {
         const musics = [];
         const allAlbums = this.categories.reduce((acc, cat) => acc.concat(cat.albums), []);
         
-        // Remove duplicatas de álbuns
         const uniqueAlbums = [...new Map(allAlbums.map(a => [a.id_album, a])).values()];
         
         const promises = uniqueAlbums.map(a => this.$database.get(`album_${a.id_album}`));
@@ -362,7 +358,6 @@ export default {
 </script>
 
 <style lang="scss">
-/* Container do modo tela cheia integrado */
 .module-full-page {
   position: absolute;
   top: 0;
@@ -389,7 +384,6 @@ export default {
   padding: 0 16px 24px 16px;
   
   .collection-card {
-    /* Força o width 100% para ocupar o cell do grid, sobrescrevendo flex-shrink do home.scss se houver */
     width: 100%;
     min-width: 0;
     flex-shrink: 1;

@@ -10,7 +10,6 @@ export default {
       return;
     }
 
-    // Se o player de música está aberto e não minimizado, minimiza automaticamente
     const mediaShow = $appdata.get("modules.media.show");
     const mediaMinimized = $appdata.get("modules.media.minimized", false);
     if (mediaShow && !mediaMinimized) {
@@ -43,10 +42,8 @@ export default {
     $dev.write("close", id);
     $appdata.set(`modules.${id}.show`, false);
 
-    //Remove da TrayArea
     this.removeTray(id);
 
-    // Se nenhum módulo ficou ativo, reabre a home
     const modules = $appdata.get("modules") || {};
     const hasActive = Object.keys(modules).some((key) => modules[key].show);
     if (!hasActive && this.check("home")) {
@@ -69,7 +66,6 @@ export default {
     $dev.write("minimize", id);
     $appdata.set(`modules.${id}.show`, false);
 
-    //Adiciona na TrayArea
     this.addTray(id);
   },
   get(list = null) {
