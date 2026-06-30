@@ -8,8 +8,7 @@
           {{ isFirstBoot ? 'Preparando o Louvor JA' : 'Iniciando o Louvor JA' }}
         </h2>
         <p class="text-subtitle-1 mb-8" style="color: var(--sidebar-text-secondary);">
-          Aguarde instantes enquanto organizamos tudo para você.<br/>
-          <span v-if="isFirstBoot" class="font-italic text-caption">Na primeira inicialização, este processo pode demorar alguns minutos.</span>
+          Aguarde instantes enquanto organizamos tudo para você.
         </p>
 
         <div class="mb-2 d-flex justify-space-between align-center px-4">
@@ -175,7 +174,6 @@ export default {
           this.statusText = "Preparando...";
           
           window.electronAPI.onExtractProgress((data) => {
-            this.statusText = data.text;
             this.progress = data.progress;
           });
           
@@ -183,6 +181,33 @@ export default {
           
           const success = await window.electronAPI.extractLocalDb();
           if (success) {
+            this.statusText = "Baixando capas dos álbuns...";
+            this.progress = 0;
+            
+            // Baixa todas as capas
+            const categories = await window.electronAPI.getLocalDb("pt_categories");
+            if (categories && Array.isArray(categories)) {
+              let allImages = new Set();
+              for (const cat of categories) {
+                if (cat.albums && Array.isArray(cat.albums)) {
+                  cat.albums.forEach(a => {
+                    if (a.url_image) allImages.add(a.url_image);
+                  });
+                }
+              }
+              
+              const imagesToDownload = Array.from(allImages);
+              const totalImages = imagesToDownload.length;
+              let processedImages = 0;
+              
+              for (const urlImage of imagesToDownload) {
+                const imgFilename = urlImage.split('/').pop();
+                await this.downloadCoverImage(urlImage, imgFilename);
+                processedImages++;
+                this.progress = Math.floor((processedImages / totalImages) * 100);
+              }
+            }
+
             await window.electronAPI.saveLocalDb("system_first_boot_complete", { complete: true });
             this.progress = 100;
             this.statusText = "Sincronização Concluída!";
@@ -190,6 +215,8 @@ export default {
             setTimeout(() => {
               this.isOpen = false;
               this.$emit('boot-complete');
+              // Auto-reload the app so all pre-loaded modules (like sync) detect the new images
+              window.location.reload();
             }, 1000);
             return;
           }

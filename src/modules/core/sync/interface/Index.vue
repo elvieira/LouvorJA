@@ -266,7 +266,7 @@ export default {
             if (a.url_image) {
               const imgRelativePath = a.url_image.replace(/^\/(musics|images|covers)\//, '');
               const localCheck = await window.electronAPI.checkMedia('covers', imgRelativePath);
-              if (localCheck) coverUrl = localCheck;
+              coverUrl = localCheck || $path.file(a.url_image);
             }
             
             albumsList.push({
