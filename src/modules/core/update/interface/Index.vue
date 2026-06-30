@@ -163,6 +163,9 @@ export default {
     setupAutoUpdateListeners() {
       if (!window.electronAPI) return;
       
+      // Reseta o estado sempre que o app inicia para evitar status 'presos' de sessões anteriores
+      this.$appdata.set("modules.update.status", "idle");
+      
       window.electronAPI.onUpdateAvailable((info) => {
         this.$appdata.set("modules.update.status", "available");
         this.updateVersion = info.version;
