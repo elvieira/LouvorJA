@@ -30,10 +30,9 @@
               <v-btn
                 v-bind="props"
                 variant="flat"
-                color="var(--card-bg, #1a1a1a)"
                 rounded="xl"
-                class="text-none px-4 elevation-1"
-                style="height: 44px; max-width: 220px; border: 1px solid var(--border-color, rgba(255,255,255,0.05));"
+                class="text-none px-4"
+                style="height: 44px; max-width: 220px; background: var(--card-bg); box-shadow: var(--shadow);"
               >
                 <div class="d-flex align-center text-truncate w-100" style="color: var(--sidebar-text);">
                   <v-icon size="small" class="mr-3 opacity-70">mdi-filter-variant</v-icon>
@@ -45,23 +44,22 @@
               </v-btn>
             </template>
             <v-card
-              class="modern-glass-menu elevation-0 mt-2"
-              theme="dark"
+              class="mt-2"
               rounded="lg"
-              style="overflow: hidden; max-width: 220px;"
+              style="overflow: hidden; max-width: 220px; background: var(--card-bg); box-shadow: var(--shadow);"
             >
               <v-list class="py-2" bg-color="transparent">
                 <v-list-item
                   v-for="cat in categoryOptions"
                   :key="cat.id_category"
                   :active="cat.id_category === id_category"
-                  active-color="white"
+                  color="primary"
                   class="mx-2 rounded-lg mb-1"
                   style="min-height: 40px;"
                   @click="id_category = cat.id_category"
                 >
                   <div class="d-flex align-center">
-                    <span class="text-body-2 font-weight-medium" :class="cat.id_category === id_category ? 'text-white' : 'text-white-50'">
+                    <span class="text-body-2 font-weight-medium" :class="cat.id_category === id_category ? '' : 'opacity-70'">
                       {{ cat.name }}
                     </span>
                   </div>

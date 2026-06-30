@@ -80,10 +80,9 @@
                         <v-btn
                           v-bind="props"
                           variant="flat"
-                          color="var(--card-bg, #1a1a1a)"
                           rounded="xl"
-                          class="text-none px-4 elevation-1 w-100"
-                          style="height: 44px; border: 1px solid var(--border-color, rgba(255,255,255,0.05));"
+                          class="text-none px-4 w-100"
+                          style="height: 44px; background: var(--card-bg); box-shadow: var(--shadow);"
                         >
                           <div class="d-flex align-center justify-space-between w-100" style="color: var(--sidebar-text);">
                             <span class="text-truncate font-weight-medium text-body-2">
@@ -94,23 +93,22 @@
                         </v-btn>
                       </template>
                       <v-card
-                        class="modern-glass-menu elevation-0 mt-2"
-                        theme="dark"
+                        class="mt-2"
                         rounded="lg"
-                        style="overflow: hidden; min-width: 200px;"
+                        style="overflow: hidden; min-width: 200px; background: var(--card-bg); box-shadow: var(--shadow);"
                       >
                         <v-list class="py-2" bg-color="transparent">
                           <v-list-item
                             v-for="item in ['Português', 'English', 'Español']"
                             :key="item"
                             :active="item === language"
-                            active-color="white"
+                            color="primary"
                             class="mx-2 rounded-lg mb-1"
                             style="min-height: 40px;"
                             @click="language = item"
                           >
                             <div class="d-flex align-center">
-                              <span class="text-body-2 font-weight-medium" :class="item === language ? 'text-white' : 'text-white-50'">
+                              <span class="text-body-2 font-weight-medium" :class="item === language ? '' : 'opacity-70'">
                                 {{ item }}
                               </span>
                             </div>
@@ -275,10 +273,9 @@
                             <v-btn
                               v-bind="props"
                               variant="flat"
-                              color="var(--card-bg, #1a1a1a)"
                               rounded="xl"
-                              class="text-none px-4 elevation-1 w-100"
-                              style="height: 44px; border: 1px solid var(--border-color, rgba(255,255,255,0.05));"
+                              class="text-none px-4 w-100"
+                              style="height: 44px; background: var(--card-bg); box-shadow: var(--shadow);"
                             >
                               <div class="d-flex align-center justify-space-between w-100" style="color: var(--sidebar-text);">
                                 <span class="text-truncate font-weight-medium text-body-2">
@@ -289,23 +286,22 @@
                             </v-btn>
                           </template>
                           <v-card
-                            class="modern-glass-menu elevation-0 mt-2"
-                            theme="dark"
+                            class="mt-2"
                             rounded="lg"
-                            style="overflow: hidden; min-width: 200px;"
+                            style="overflow: hidden; min-width: 200px; background: var(--card-bg); box-shadow: var(--shadow);"
                           >
                             <v-list class="py-2" bg-color="transparent">
                               <v-list-item
                                 v-for="item in ['Centro', 'Esquerda', 'Direita']"
                                 :key="item"
                                 :active="item === slide_align"
-                                active-color="white"
+                                color="primary"
                                 class="mx-2 rounded-lg mb-1"
                                 style="min-height: 40px;"
                                 @click="slide_align = item"
                               >
                                 <div class="d-flex align-center">
-                                  <span class="text-body-2 font-weight-medium" :class="item === slide_align ? 'text-white' : 'text-white-50'">
+                                  <span class="text-body-2 font-weight-medium" :class="item === slide_align ? '' : 'opacity-70'">
                                     {{ item }}
                                   </span>
                                 </div>
@@ -327,10 +323,9 @@
                             <v-btn
                               v-bind="props"
                               variant="flat"
-                              color="var(--card-bg, #1a1a1a)"
                               rounded="xl"
-                              class="text-none px-4 elevation-1 w-100"
-                              style="height: 44px; border: 1px solid var(--border-color, rgba(255,255,255,0.05));"
+                              class="text-none px-4 w-100"
+                              style="height: 44px; background: var(--card-bg); box-shadow: var(--shadow);"
                             >
                               <div class="d-flex align-center justify-space-between w-100" style="color: var(--sidebar-text);">
                                 <span class="text-truncate font-weight-medium text-body-2">
@@ -341,23 +336,22 @@
                             </v-btn>
                           </template>
                           <v-card
-                            class="modern-glass-menu elevation-0 mt-2"
-                            theme="dark"
+                            class="mt-2"
                             rounded="lg"
-                            style="overflow: hidden; min-width: 200px;"
+                            style="overflow: hidden; min-width: 200px; background: var(--card-bg); box-shadow: var(--shadow);"
                           >
                             <v-list class="py-2" bg-color="transparent">
                               <v-list-item
                                 v-for="item in ['1', '2']"
                                 :key="item"
                                 :active="item === operator_monitor"
-                                active-color="white"
+                                color="primary"
                                 class="mx-2 rounded-lg mb-1"
                                 style="min-height: 40px;"
                                 @click="operator_monitor = item"
                               >
                                 <div class="d-flex align-center">
-                                  <span class="text-body-2 font-weight-medium" :class="item === operator_monitor ? 'text-white' : 'text-white-50'">
+                                  <span class="text-body-2 font-weight-medium" :class="item === operator_monitor ? '' : 'opacity-70'">
                                     {{ item }}
                                   </span>
                                 </div>
@@ -373,10 +367,9 @@
                             <v-btn
                               v-bind="props"
                               variant="flat"
-                              color="var(--card-bg, #1a1a1a)"
                               rounded="xl"
-                              class="text-none px-4 elevation-1 w-100"
-                              style="height: 44px; border: 1px solid var(--border-color, rgba(255,255,255,0.05));"
+                              class="text-none px-4 w-100"
+                              style="height: 44px; background: var(--card-bg); box-shadow: var(--shadow);"
                             >
                               <div class="d-flex align-center justify-space-between w-100" style="color: var(--sidebar-text);">
                                 <span class="text-truncate font-weight-medium text-body-2">
@@ -387,23 +380,22 @@
                             </v-btn>
                           </template>
                           <v-card
-                            class="modern-glass-menu elevation-0 mt-2"
-                            theme="dark"
+                            class="mt-2"
                             rounded="lg"
-                            style="overflow: hidden; min-width: 200px;"
+                            style="overflow: hidden; min-width: 200px; background: var(--card-bg); box-shadow: var(--shadow);"
                           >
                             <v-list class="py-2" bg-color="transparent">
                               <v-list-item
                                 v-for="item in ['1', '2']"
                                 :key="item"
                                 :active="item === return_monitor"
-                                active-color="white"
+                                color="primary"
                                 class="mx-2 rounded-lg mb-1"
                                 style="min-height: 40px;"
                                 @click="return_monitor = item"
                               >
                                 <div class="d-flex align-center">
-                                  <span class="text-body-2 font-weight-medium" :class="item === return_monitor ? 'text-white' : 'text-white-50'">
+                                  <span class="text-body-2 font-weight-medium" :class="item === return_monitor ? '' : 'opacity-70'">
                                     {{ item }}
                                   </span>
                                 </div>

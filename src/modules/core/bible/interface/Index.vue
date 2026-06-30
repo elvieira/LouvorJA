@@ -39,10 +39,9 @@
               <v-btn
                 v-bind="props"
                 variant="flat"
-                color="var(--card-bg, #1a1a1a)"
                 rounded="xl"
-                class="text-none px-4 elevation-1"
-                style="height: 44px; max-width: 350px; border: 1px solid var(--border-color, rgba(255,255,255,0.05));"
+                class="text-none px-4"
+                style="height: 44px; max-width: 350px; background: var(--card-bg); box-shadow: var(--shadow);"
               >
                 <div class="d-flex align-center text-truncate w-100" style="color: var(--sidebar-text);">
                   <v-icon size="small" class="mr-3 opacity-70">mdi-book-open-page-variant</v-icon>
@@ -54,23 +53,22 @@
               </v-btn>
             </template>
             <v-card
-              class="modern-glass-menu elevation-0 mt-2"
-              theme="dark"
+              class="mt-2"
               rounded="lg"
-              style="overflow: hidden; max-width: 350px;"
+              style="overflow: hidden; max-width: 350px; background: var(--card-bg); box-shadow: var(--shadow);"
             >
               <v-list class="py-2" bg-color="transparent">
                 <v-list-item
                   v-for="version in versions_list"
                   :key="version.value"
                   :active="version.value === bible.id_bible_version"
-                  active-color="white"
+                  color="primary"
                   class="mx-2 rounded-lg mb-1"
                   style="min-height: 40px;"
                   @click="bible.id_bible_version = version.value"
                 >
                   <div class="d-flex align-center">
-                    <span class="text-body-2 font-weight-medium" :class="version.value === bible.id_bible_version ? 'text-white' : 'text-white-50'">
+                    <span class="text-body-2 font-weight-medium" :class="version.value === bible.id_bible_version ? '' : 'opacity-70'">
                       {{ version.title }}
                     </span>
                   </div>
