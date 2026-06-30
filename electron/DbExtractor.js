@@ -2,6 +2,23 @@ const Database = require('better-sqlite3');
 const path = require('path');
 const fs = require('fs-extra');
 const { app } = require('electron');
+const crypto = require('crypto');
+
+const ENCRYPTION_KEY = Buffer.from('v389s8dkj238910s8a7d3h2j1k9s8d7f', 'utf8');
+const IV_LENGTH = 16;
+
+function encryptData(text) {
+  try {
+    const iv = crypto.randomBytes(IV_LENGTH);
+    const cipher = crypto.createCipheriv('aes-256-cbc', ENCRYPTION_KEY, iv);
+    let encrypted = cipher.update(text, 'utf8', 'hex');
+    encrypted += cipher.final('hex');
+    return iv.toString('hex') + ':' + encrypted;
+  } catch (e) {
+    console.error('Erro ao ofuscar dados', e);
+    return null;
+  }
+}
 
 class DbExtractor {
   constructor(dbPath) {
@@ -37,8 +54,12 @@ class DbExtractor {
   }
 
   saveJson(filename, data) {
-    const filePath = path.join(this.sysdataDir, filename);
-    fs.writeFileSync(filePath, JSON.stringify(data));
+    const filePath = path.join(this.sysdataDir, `${filename}.bin`);
+    const jsonString = JSON.stringify(data);
+    const encryptedContent = encryptData(jsonString);
+    if (encryptedContent) {
+      fs.writeFileSync(filePath, encryptedContent, 'utf8');
+    }
   }
 
   extractCategories(db) {

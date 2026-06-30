@@ -86,6 +86,27 @@ ipcMain.handle('get-local-db', async (event, filename) => {
         return JSON.parse(decryptedString);
       }
     }
+    
+    // Fallback: busca versão não criptografada/sem extensão (ex: do DbExtractor)
+    const plainFilePath = path.join(sysDbPath, filename);
+    if (fs.existsSync(plainFilePath)) {
+      const content = fs.readFileSync(plainFilePath, 'utf8');
+      const data = JSON.parse(content);
+      
+      // Converte para o novo formato criptografado em background
+      try {
+        const encryptedContent = encryptData(content);
+        if (encryptedContent) {
+          fs.writeFileSync(filePath, encryptedContent, 'utf8');
+          fs.unlinkSync(plainFilePath);
+        }
+      } catch (e) {
+        console.error("Erro ao converter BD legado:", e);
+      }
+      
+      return data;
+    }
+    
     return null;
   } catch (error) {
     return null;
@@ -532,7 +553,7 @@ function createWindow() {
   if (isDev) {
     // Em desenvolvimento, carrega o servidor Vite
     mainWindow.loadURL('http://localhost:5173');
-    // mainWindow.webContents.openDevTools();
+    mainWindow.webContents.openDevTools();
   } else {
     // Em produção, carrega o build estático
     mainWindow.loadFile(path.join(__dirname, '..', 'dist', 'index.html'));
