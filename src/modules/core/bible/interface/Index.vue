@@ -13,35 +13,27 @@
           </h2>
         </div>
 
-        <!-- Barra de busca avançada -->
-        <v-text-field
-          v-if="!compact"
-          v-model="searchQuery"
-          :placeholder="t('search_placeholder')"
-          hide-details
-          density="comfortable"
-          variant="solo-filled"
-          rounded="xl"
-          prepend-inner-icon="mdi-magnify"
-          clearable
-          @update:modelValue="handleSearch"
-          style="max-width: 400px;"
-        />
-        <v-autocomplete
-          v-else-if="searchActive"
-          v-model="bible.id_bible_book"
-          :items="books_list"
-          :placeholder="t('book')"
-          hide-details
-          density="comfortable"
-          variant="solo-filled"
-          rounded="xl"
-          prepend-inner-icon="mdi-book"
-          @update:modelValue="handleSearch"
-          style="max-width: 200px;"
-        />
-
-        <div class="search-bar ml-4 d-flex align-center" style="gap: 16px;">
+        <div class="search-bar ml-4 d-flex align-center" style="flex: 1; justify-content: flex-end; gap: 16px;">
+          <v-autocomplete
+            v-if="compact"
+            v-model="bible.id_bible_book"
+            :items="books_list"
+            hide-details
+            density="comfortable"
+            variant="solo"
+            rounded
+            style="max-width: 150px;"
+          />
+          <v-autocomplete
+            v-if="compact"
+            v-model="bible.chapter"
+            :items="chapters_list"
+            hide-details
+            density="comfortable"
+            variant="solo"
+            rounded
+            style="max-width: 100px;"
+          />
           <v-menu :close-on-content-click="true" location="bottom end">
             <template #activator="{ props }">
               <v-btn
@@ -264,42 +256,38 @@ export default {
     MenuToggleButton,
   },
   data: () => ({
-         lang: null,
-         loading: false,
-         loading_book: false,
-         loading_verses: false,
-         loading_search: false,
-         searchQuery: "",
-         searchResults: [],
-         searchActive: false,
-         tab: null,
-         width: 0,
-         height: 0,
-         bible: {
-           id_bible_version: null,
-           id_bible_book: null,
-           version: null,
-           book: null,
-           chapter: null,
-           verses: [],
-         },
-         select_bible: {
-           id_bible_version: null,
-           id_bible_book: null,
-           version: null,
-           book: null,
-           chapter: null,
-           verses: [],
-           scriptural_reference: null,
-           text: null,
-         },
-         versions: [],
-         books: [],
-         verses: [],
-         last_verse: 1,
-         last_bible_file: null,
-         showConfigModal: false,
-       }),
+    lang: null,
+    loading: false,
+    loading_book: false,
+    loading_verses: false,
+    tab: null,
+    width: 0,
+    height: 0,
+    bible: {
+      id_bible_version: null,
+      id_bible_book: null,
+      version: null,
+      book: null,
+      chapter: null,
+      verses: [],
+    },
+    select_bible: {
+      id_bible_version: null,
+      id_bible_book: null,
+      version: null,
+      book: null,
+      chapter: null,
+      verses: [],
+      scriptural_reference: null,
+      text: null,
+    },
+    versions: [],
+    books: [],
+    verses: [],
+    last_verse: 1,
+    last_bible_file: null,
+    showConfigModal: false,
+  }),
   computed: {
     /* COMPUTEDS OBRIGATÓRIAS - INÍCIO */
     /* NÃO MODIFICAR */
@@ -386,188 +374,68 @@ export default {
     await this.loadData();
   },
   methods: {
-    methods: {
-      /* METHODS OBRIGATÓRIOS - INÍCIO */
-      /* NÃO MODIFICAR */
-      t(text) {
-        return this.$t(`modules.${this.module_id}.${text}`);
-      },
-      toggleSidebar() {
-        const mainEl = document.querySelector(".main-container");
-        if (mainEl) {
-          mainEl.dispatchEvent(new CustomEvent("toggle-sidebar"));
-        }
-      },
-      send(param, value) {
-        this.$appdata.set(`modules.${this.module_id}.data.${param}`, value);
-      },
-      async loadData() {
-        this.loading = true;
+    /* METHODS OBRIGATÓRIOS - INÍCIO */
+    /* NÃO MODIFICAR */
+    t(text) {
+      return this.$t(`modules.${this.module_id}.${text}`);
+    },
+    /* METHODS OBRIGATÓRIOS - FIM */
+    toggleSidebar() {
+      const mainEl = document.querySelector(".main-container");
+      if (mainEl) {
+        mainEl.dispatchEvent(new CustomEvent("toggle-sidebar"));
+      }
+    },
+    send(param, value) {
+      this.$appdata.set(`modules.${this.module_id}.data.${param}`, value);
+    },
+    async loadData() {
+      this.loading = true;
 
-        if (this.books.length <= 0) {
-          this.loading_book = true;
-          this.books = await this.$database.get(
-            `${this.$i18n.locale}_bible_book`,
-          );
-          if (!this.bible.id_bible_book) {
-            await this.selBook(this.books[0].id_bible_book);
-          }
-          this.loading_book = false;
+      if (this.books.length <= 0) {
+        this.loading_book = true;
+        this.books = await this.$database.get(
+          `${this.$i18n.locale}_bible_book`,
+        );
+        if (!this.bible.id_bible_book) {
+          await this.selBook(this.books[0].id_bible_book);
         }
+        this.loading_book = false;
+      }
 
-        if (this.versions.length <= 0) {
-          this.versions = await this.$database.get(
-            `${this.$i18n.locale}_bible_version`,
-          );
-          if (!this.bible.id_bible_version) {
-            await this.selVersion(this.versions[0].id_bible_version);
-          }
+      if (this.versions.length <= 0) {
+        this.versions = await this.$database.get(
+          `${this.$i18n.locale}_bible_version`,
+        );
+        if (!this.bible.id_bible_version) {
+          await this.selVersion(this.versions[0].id_bible_version);
         }
+      }
 
-        const bible_file = `bible_${this.bible.id_bible_version}_${this.bible.id_bible_book}_${this.bible.chapter}`;
-        if (bible_file != this.last_bible_file) {
-          this.loading_verses = true;
-          this.verses = {};
-          this.verses = await this.$database.get(bible_file);
-          this.last_bible_file = bible_file;
-          this.loading_verses = false;
-        }
+      const bible_file = `bible_${this.bible.id_bible_version}_${this.bible.id_bible_book}_${this.bible.chapter}`;
+      if (bible_file != this.last_bible_file) {
+        this.loading_verses = true;
+        this.verses = {};
+        this.verses = await this.$database.get(bible_file);
+        this.last_bible_file = bible_file;
+        this.loading_verses = false;
+      }
 
-        if (
-          this.select_bible.id_bible_book == this.bible.id_bible_book &&
-          this.select_bible.chapter == this.bible.chapter &&
-          this.select_bible.id_bible_version == this.bible.id_bible_version
-        ) {
-          this.bible.verses = this.select_bible.verses;
-        }
+      if (
+        this.select_bible.id_bible_book == this.bible.id_bible_book &&
+        this.select_bible.chapter == this.bible.chapter &&
+        this.select_bible.id_bible_version == this.bible.id_bible_version
+      ) {
+        this.bible.verses = this.select_bible.verses;
+      }
 
-        this.lang = this.$i18n.locale;
-        this.loading = false;
-      },
-      resize(data) {
-        this.width = data.container_width;
-        this.height = data.container_height;
-      },
-      
-      // ========== NOVOS MÉTODOS PARA BUSCA AVANÇADA ==========
-      
-      async handleSearch() {
-        this.loading_search = true;
-        
-        if (!this.searchQuery || this.searchQuery.trim() === '') {
-          this.searchActive = false;
-          this.searchResults = [];
-        } else {
-          this.searchActive = true;
-          
-          // Buscar por palavra-chave nos versículos
-          if (this.bible.id_bible_book && this.bible.chapter) {
-            const bible_file = `bible_${this.bible.id_bible_version}_${this.bible.id_bible_book}_${this.bible.chapter}`;
-            const versesData = await this.$database.get(bible_file);
-            
-            const searchTerm = this.searchQuery.toLowerCase();
-            const results = [];
-            
-            Object.entries(versesData).forEach(([verseNum, verseText]) => {
-              const verseNumInt = parseInt(verseNum);
-              if (verseText.toLowerCase().includes(searchTerm)) {
-                results.push({
-                  book: this.book.name,
-                  chapter: this.bible.chapter,
-                  verse: verseNumInt,
-                  text: verseText,
-                  reference: `${this.book.name} ${this.bible.chapter}:${verseNumInt}`
-                });
-              }
-            });
-            
-            this.searchResults = results;
-          }
-        }
-        
-        this.loading_search = false;
-      },
-      
-      async searchInBook(bookId, searchTerm) {
-        const book = this.books.find(b => b.id_bible_book === bookId);
-        if (!book) return [];
-        
-        this.searchActive = true;
-        this.searchResults = [];
-        this.loading_search = true;
-        
-        const results = [];
-        
-        // Buscar em todos os capítulos do livro
-        for (let chapter = 1; chapter <= book.chapters; chapter++) {
-          const bible_file = `bible_${this.bible.id_bible_version}_${bookId}_${chapter}`;
-          try {
-            const versesData = await this.$database.get(bible_file);
-            
-            Object.entries(versesData).forEach(([verseNum, verseText]) => {
-              const verseNumInt = parseInt(verseNum);
-              if (verseText.toLowerCase().includes(searchTerm.toLowerCase())) {
-                results.push({
-                  book: book.name,
-                  chapter: chapter,
-                  verse: verseNumInt,
-                  text: verseText,
-                  reference: `${book.name} ${chapter}:${verseNumInt}`
-                });
-              }
-            });
-          } catch (e) {
-            // Capítulo pode não existir na versão
-            continue;
-          }
-        }
-        
-        this.searchResults = results;
-        this.loading_search = false;
-        return results;
-      },
-      
-      async focusSearch() {
-        // Autocomplete para livros bíblicos
-        this.searchActive = true;
-        this.searchQuery = '';
-      },
-      
-      clearSearch() {
-        this.searchActive = false;
-        this.searchQuery = '';
-        this.searchResults = [];
-      },
-
-      async selVersion(id_bible_version) {
-        if (id_bible_version) {
-          this.bible.id_bible_version = id_bible_version;
-        }
-        this.bible.version = this.version?.abbreviation;
-        this.bible.verses = [];
-        this.last_verse = 1;
-        await this.loadData();
-      },
-      async selBook(id_bible_book) {
-        if (id_bible_book) {
-          this.bible.id_bible_book = id_bible_book;
-        }
-        this.bible.book = this.book.name;
-        this.bible.verses = [];
-        this.last_verse = 1;
-        if (!this.bible.chapter) {
-          this.selChapter(1);
-        } else if (this.bible.chapter > this.book.chapters) {
-          this.selChapter(this.book.chapters);
-        } else {
-          await this.loadData();
-        }
-
-        const element = document.getElementById(`listBook_${id_bible_book}`);
-        if (element) {
-          element.scrollIntoView({ behavior: "smooth", block: "center" });
-        }
-      },
+      this.lang = this.$i18n.locale;
+      this.loading = false;
+    },
+    resize(data) {
+      this.width = data.container_width;
+      this.height = data.container_height;
+    },
 
     async selVersion(id_bible_version) {
       if (id_bible_version) {

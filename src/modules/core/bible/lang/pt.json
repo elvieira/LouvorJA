@@ -1,17 +1,3 @@
 {
-  "title": "Bíblia",
-  "search_placeholder": "Buscar por palavra ou livro...",
-  "book": "Livro",
-  "chapter": "Capítulo",
-  "verse": "Versículo",
-  "verse_plural": "Versículos",
-  "search_results": "Resultados da busca",
-  "no_results": "Nenhum resultado encontrado",
-  "select_all": "Selecionar todos",
-  "clear_selection": "Limpar seleção",
-  "projection_settings": "Configurações de Projeção",
-  "font_family": "Tipo de letra",
-  "font_size": "Tamanho da letra",
-  "text_color": "Cor do texto",
-  "background_color": "Cor de fundo"
+    "title": "Bíblia"
 }
