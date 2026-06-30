@@ -429,11 +429,13 @@ export default {
         
         if (hasError) {
           album.status = 'error';
-          album.progressText = !navigator.onLine ? 'Sem internet' : 'Falha no download';
+          album.progressText = !navigator.onLine ? 'Sem internet' : 'Falha no servidor';
           if (!this.isDownloadingAll) {
             this.$alert.error({
               title: "Falha no download",
-              text: "Não foi possível baixar os arquivos. Verifique sua conexão com a internet.",
+              text: !navigator.onLine 
+                ? "Não foi possível baixar os arquivos. Verifique sua conexão com a internet." 
+                : "Não foi possível concluir o download pois o servidor está indisponível no momento. Tente novamente mais tarde.",
               translate: false
             });
           }

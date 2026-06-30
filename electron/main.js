@@ -416,7 +416,7 @@ function createWindow() {
           const { screen } = require('electron');
           const bounds = childWindow.getBounds();
           const display = screen.getDisplayMatching(bounds);
-          
+
           childWindow.setFullScreen(false);
           childWindow.setBounds(display.bounds);
           childWindow.setAlwaysOnTop(true, 'screen-saver');
@@ -430,7 +430,7 @@ function createWindow() {
   if (isDev) {
     // Em desenvolvimento, carrega o servidor Vite
     mainWindow.loadURL('http://localhost:5173');
-    // mainWindow.webContents.openDevTools(); // Removido a pedido para não abrir automaticamente
+    // mainWindow.webContents.openDevTools();
   } else {
     // Em produção, carrega o build estático
     mainWindow.loadFile(path.join(__dirname, '..', 'dist', 'index.html'));

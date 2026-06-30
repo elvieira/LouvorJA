@@ -19,12 +19,22 @@
         
         <div class="px-4">
           <v-progress-linear
+            v-if="!hasError"
             v-model="progress"
             color="primary"
             height="8"
             rounded
             striped
           ></v-progress-linear>
+          
+          <v-btn
+            v-else
+            color="primary"
+            class="mt-4"
+            @click="retrySync"
+          >
+            Tentar Novamente
+          </v-btn>
         </div>
         </div>
       </transition>
@@ -44,6 +54,7 @@ export default {
       progress: 0,
       statusText: "Iniciando...",
       isFirstBoot: false,
+      hasError: false,
     };
   },
   mounted() {
@@ -75,6 +86,12 @@ export default {
           this.isOpen = false;
         }, 5000);
       }, 1000);
+    },
+    async retrySync() {
+      this.hasError = false;
+      this.progress = 0;
+      this.statusText = "Tentando novamente...";
+      await this.runFirstBootSync();
     },
     async checkFirstBoot() {
       if (!window.electronAPI || !window.electronAPI.isElectron) return;
@@ -114,12 +131,16 @@ export default {
       }
     },
     async fetchFromApi(file) {
-      const date = new Date().toISOString().slice(0, 10).replace(/-/g, "");
-      const response = await fetch(`${$path.db(`/${file}`)}?${date}`, {
-        headers: { "Api-Token": import.meta.env.VITE_API_TOKEN },
-      });
-      if (!response.ok) return null;
-      return await response.json();
+      try {
+        const date = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+        const response = await fetch(`${$path.db(`/${file}`)}?${date}`, {
+          headers: { "Api-Token": import.meta.env.VITE_API_TOKEN },
+        });
+        if (!response.ok) throw new Error("Servidor retornou erro");
+        return await response.json();
+      } catch (error) {
+        throw error;
+      }
     },
     async fetchAndSave(file) {
       const data = await this.fetchFromApi(file);
@@ -251,7 +272,10 @@ export default {
         
       } catch (error) {
         console.error("Erro na instalação offline:", error);
-        this.statusText = "Ocorreu um erro. Verifique sua conexão e reinicie o aplicativo.";
+        this.statusText = !navigator.onLine 
+          ? "Sem conexão com a internet. Conecte-se para continuar." 
+          : "O servidor parece estar indisponível no momento. Tente novamente mais tarde.";
+        this.hasError = true;
       }
     }
   }
