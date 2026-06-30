@@ -1,0 +1,20 @@
+{
+  "title": "Sorteo",
+  "names_tab": "Sorteo de Nombres",
+  "numbers_tab": "Sorteo de Números",
+  "names_placeholder": "Escribe un nombre por línea...",
+  "names_info": "Escribe los nombres para el sorteo, uno por línea.",
+  "min_label": "Valor mínimo",
+  "max_label": "Valor máximo",
+  "draw_btn": "¡Sortear!",
+  "result_title": "Resultado",
+  "drawing": "Sorteando...",
+  "history_title": "Historial",
+  "clear_history": "Limpiar historial",
+  "no_history": "Ningún sorteo realizado aún.",
+  "names_result": "Nombre sorteado",
+  "number_result": "Número sorteado",
+  "at": "a las",
+  "empty_names_error": "Añade al menos 2 nombres para sortear.",
+  "invalid_range_error": "El valor mínimo debe ser menor que el máximo."
+}

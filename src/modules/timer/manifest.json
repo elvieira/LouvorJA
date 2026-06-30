@@ -1,0 +1,14 @@
+{
+  "active": true,
+  "id": "timer",
+  "name": "Cronômetro de Culto",
+  "version": "1.0.0",
+  "description": "Cronômetro e timer regressivo para controle de tempo do culto.",
+  "author": "louvorja",
+  "category": "utilities",
+  "icon": "mdi-timer-outline",
+  "showInMainMenu": false,
+  "minAppVersion": "1.0.0",
+  "dependencies": [],
+  "permissions": []
+}

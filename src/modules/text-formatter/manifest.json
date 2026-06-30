@@ -1,0 +1,14 @@
+{
+  "active": true,
+  "id": "text-formatter",
+  "name": "Formatação de Texto",
+  "version": "1.0.0",
+  "description": "Formatar e estilizar texto para exibição na tela e projeção.",
+  "author": "louvorja",
+  "category": "utilities",
+  "icon": "mdi-format-text",
+  "showInMainMenu": false,
+  "minAppVersion": "1.0.0",
+  "dependencies": [],
+  "permissions": []
+}

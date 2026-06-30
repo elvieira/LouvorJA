@@ -1,0 +1,17 @@
+{
+  "title": "Favoritos",
+  "no_favorites": "Nenhum favorito adicionado ainda.",
+  "no_favorites_hint": "Toque no ícone de coração em qualquer música para adicioná-la aqui.",
+  "songs_section": "Músicas Favoritas",
+  "collections_section": "Coleções Favoritas",
+  "songs_count": "{count} música(s)",
+  "remove": "Remover dos favoritos",
+  "play_all": "Tocar todas",
+  "clear_all": "Limpar todos os favoritos",
+  "confirm_clear": "Tem certeza que deseja remover todos os favoritos?",
+  "confirm_remove": "Remover \"{name}\" dos favoritos?",
+  "yes": "Sim",
+  "no": "Não",
+  "added": "Adicionado aos favoritos",
+  "removed": "Removido dos favoritos"
+}

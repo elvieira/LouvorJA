@@ -1,0 +1,14 @@
+{
+  "active": true,
+  "id": "favorites",
+  "name": "Favoritos",
+  "version": "1.0.0",
+  "description": "Gerenciar músicas e coleções favoritas.",
+  "author": "louvorja",
+  "category": "musics",
+  "icon": "mdi-heart-outline",
+  "showInMainMenu": true,
+  "minAppVersion": "1.0.0",
+  "dependencies": [],
+  "permissions": []
+}
