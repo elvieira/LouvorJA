@@ -1,0 +1,18 @@
+{
+  "id": "update",
+  "name": "Atualização",
+  "version": "1.0.0",
+  "description": "Verificação e instalação de atualizações do programa.",
+  "author": "elvieira",
+  "category": null,
+  "showInMainMenu": false,
+  "icon": "mdi-cloud-download",
+  "minAppVersion": "1.0.0",
+  "dependencies": [],
+  "permissions": [],
+  "overlay": true,
+  "system": true,
+  "moduleOptions": {
+    "size": "small"
+  }
+}
