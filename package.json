@@ -27,6 +27,7 @@
     "basic-ftp": "^5.0.5",
     "core-js": "^3.46.0",
     "dotenv": "^16.6.1",
+    "electron-updater": "^6.8.9",
     "fs-extra": "^11.3.2",
     "roboto-fontface": "*",
     "systeminformation": "^5.31.11",
@@ -74,13 +75,22 @@
       "dist/**/*",
       "electron/**/*"
     ],
+    "publish": {
+      "provider": "github",
+      "owner": "elvieira",
+      "repo": "LouvorJA"
+    },
     "mac": {
-      "target": "dmg",
+      "target": ["dmg", "zip"],
       "icon": "public/ico/favicon.png"
     },
     "win": {
       "target": "nsis",
       "icon": "public/ico/favicon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
     },
     "linux": {
       "target": "AppImage",

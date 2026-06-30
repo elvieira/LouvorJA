@@ -132,6 +132,46 @@
         </a>
       </div>
       
+      <div v-if="isDesktop && updateStatus !== 'idle'" class="nav-item update-item" :class="{ 'pulse-animation': updateStatus === 'available' }">
+        <a 
+          href="#" 
+          class="nav-link" 
+          style="background: rgba(0, 151, 215, 0.1); border-radius: 8px;"
+          @click.prevent="handleUpdateClick"
+        >
+          <!-- Estado: Atualização disponível -->
+          <template v-if="updateStatus === 'available'">
+            <v-icon class="nav-icon" color="primary">mdi-cloud-download</v-icon>
+            <div class="d-flex flex-column" style="flex: 1; min-width: 0;">
+              <span class="nav-text font-weight-bold" style="color: var(--accent-blue); font-size: 12px;">Atualizar para v{{ updateVersion }}</span>
+            </div>
+          </template>
+          
+          <!-- Estado: Baixando -->
+          <template v-else-if="updateStatus === 'downloading'">
+            <v-icon class="nav-icon mdi-spin" color="primary">mdi-loading</v-icon>
+            <div class="d-flex flex-column" style="flex: 1; min-width: 0;">
+              <span class="nav-text font-weight-bold" style="color: var(--accent-blue); font-size: 12px;">Baixando... {{ downloadPercent }}%</span>
+              <div style="height: 3px; background: rgba(0,151,215,0.15); border-radius: 4px; margin-top: 4px; overflow: hidden;">
+                <div style="height: 100%; background: var(--accent-blue); border-radius: 4px; transition: width 0.3s ease;" :style="{ width: downloadPercent + '%' }"></div>
+              </div>
+            </div>
+          </template>
+          
+          <!-- Estado: Pronto para instalar -->
+          <template v-else-if="updateStatus === 'ready'">
+            <v-icon class="nav-icon" color="success">mdi-check-circle</v-icon>
+            <span class="nav-text font-weight-bold" style="color: #4caf50; font-size: 12px;">Reiniciar e Instalar</span>
+          </template>
+          
+          <!-- Estado: Erro -->
+          <template v-else-if="updateStatus === 'error'">
+            <v-icon class="nav-icon" color="error">mdi-alert-circle</v-icon>
+            <span class="nav-text" style="color: #f44336; font-size: 12px;">Erro ao atualizar</span>
+          </template>
+        </a>
+      </div>
+      
       <div class="nav-item" :class="{ active: currentRoute === 'help' }">
         <a href="#" class="nav-link" @click.prevent="navigateTo('help')">
           <v-icon class="nav-icon">
@@ -168,6 +208,9 @@ export default {
     return {
       submenuOpen: {},
       windowWidth: window.innerWidth,
+      updateStatus: 'idle', // idle | available | downloading | ready | error
+      updateVersion: '',
+      downloadPercent: 0,
     };
   },
   computed: {
@@ -327,10 +370,71 @@ export default {
       const module = this.$appdata.get(`modules.${moduleId}`);
       return module ? this.$t(module.title) : moduleId;
     },
+    setupAutoUpdateListeners() {
+      if (!window.electronAPI) return;
+      
+      window.electronAPI.onUpdateAvailable((info) => {
+        this.updateStatus = 'available';
+        this.updateVersion = info.version;
+      });
+      
+      window.electronAPI.onUpdateNotAvailable(() => {
+        this.updateStatus = 'idle';
+      });
+      
+      window.electronAPI.onUpdateDownloadProgress((progress) => {
+        this.updateStatus = 'downloading';
+        this.downloadPercent = progress.percent;
+      });
+      
+      window.electronAPI.onUpdateDownloaded(() => {
+        this.updateStatus = 'ready';
+      });
+      
+      window.electronAPI.onUpdateError(() => {
+        this.updateStatus = 'error';
+        setTimeout(() => {
+          this.updateStatus = 'idle';
+        }, 5000);
+      });
+    },
+    handleUpdateClick() {
+      if (!window.electronAPI) return;
+      
+      if (this.updateStatus === 'available') {
+        this.updateStatus = 'downloading';
+        this.downloadPercent = 0;
+        window.electronAPI.downloadUpdate();
+      } else if (this.updateStatus === 'ready') {
+        window.electronAPI.quitAndInstall();
+      } else if (this.updateStatus === 'error') {
+        this.updateStatus = 'idle';
+        window.electronAPI.checkForUpdates();
+      }
+    },
+  },
+  mounted() {
+    this.setupAutoUpdateListeners();
   },
 };
 </script>
 
 <style lang="scss">
 @use "@/assets/styles/layout/sidebar.scss";
+
+.pulse-animation {
+  animation: pulse-border 2s infinite;
+}
+
+@keyframes pulse-border {
+  0% {
+    box-shadow: 0 0 0 0 rgba(0, 151, 215, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(0, 151, 215, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 151, 215, 0);
+  }
+}
 </style>

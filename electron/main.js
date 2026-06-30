@@ -2,6 +2,7 @@ const { app, BrowserWindow, Menu, ipcMain, protocol, net } = require('electron')
 const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
+const { autoUpdater } = require('electron-updater');
 
 // Chave estática para ofuscação (não é segurança alta, apenas ofuscação)
 const ENCRYPTION_KEY = Buffer.from('v389s8dkj238910s8a7d3h2j1k9s8d7f', 'utf8');
@@ -621,4 +622,91 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit();
   }
+});
+
+// ==========================================
+// Auto-Updater
+// ==========================================
+autoUpdater.autoDownload = false;
+autoUpdater.autoInstallOnAppQuit = true;
+
+function setupAutoUpdater() {
+  const mainWin = BrowserWindow.getAllWindows()[0];
+  if (!mainWin) return;
+
+  autoUpdater.on('update-available', (info) => {
+    console.log('Update available:', info.version);
+    mainWin.webContents.send('update-available', {
+      version: info.version,
+      releaseDate: info.releaseDate,
+      releaseNotes: info.releaseNotes,
+    });
+  });
+
+  autoUpdater.on('update-not-available', (info) => {
+    console.log('No update available. Current version is up-to-date.');
+    mainWin.webContents.send('update-not-available', {
+      version: info.version,
+    });
+  });
+
+  autoUpdater.on('download-progress', (progress) => {
+    mainWin.webContents.send('update-download-progress', {
+      percent: Math.round(progress.percent),
+      bytesPerSecond: progress.bytesPerSecond,
+      transferred: progress.transferred,
+      total: progress.total,
+    });
+  });
+
+  autoUpdater.on('update-downloaded', (info) => {
+    console.log('Update downloaded:', info.version);
+    mainWin.webContents.send('update-downloaded', {
+      version: info.version,
+    });
+  });
+
+  autoUpdater.on('error', (error) => {
+    console.error('Auto-updater error:', error.message);
+    mainWin.webContents.send('update-error', {
+      message: error.message,
+    });
+  });
+
+  // Verifica atualizações 5 segundos após iniciar
+  setTimeout(() => {
+    autoUpdater.checkForUpdates().catch((err) => {
+      console.log('Check for updates failed:', err.message);
+    });
+  }, 5000);
+}
+
+ipcMain.handle('check-for-updates', async () => {
+  try {
+    const result = await autoUpdater.checkForUpdates();
+    return result;
+  } catch (error) {
+    console.error('Check for updates error:', error.message);
+    return null;
+  }
+});
+
+ipcMain.handle('download-update', async () => {
+  try {
+    await autoUpdater.downloadUpdate();
+    return true;
+  } catch (error) {
+    console.error('Download update error:', error.message);
+    return false;
+  }
+});
+
+ipcMain.handle('quit-and-install', () => {
+  global.isQuitting = true;
+  autoUpdater.quitAndInstall(false, true);
+});
+
+// Configura o auto-updater quando o app estiver pronto
+app.whenReady().then(() => {
+  setupAutoUpdater();
 });
