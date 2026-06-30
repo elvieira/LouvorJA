@@ -1,0 +1,18 @@
+{
+  "title": "Sorteio",
+  "description": "Sorteio aleatorio de nomes e numeros",
+  "add_placeholder": "Digite um nome por linha...",
+  "load_file": "Carregar Lista",
+  "sortear": "Sortear",
+  "projetar": "Projetar",
+  "limpar_projecao": "Limpar Projecao",
+  "no_repeat": "Sem repeticao",
+  "history": "Historico",
+  "clear_history": "Limpar Historico",
+  "no_participants": "Adicione participantes para comecar",
+  "all_drawn": "Todos ja foram sorteados",
+  "drawn_count": "Sorteados: {n}/{total}",
+  "result": "Resultado",
+  "clear_list": "Limpar Lista",
+  "winner_of": "{name} foi sorteado(a)!"
+}
