@@ -170,114 +170,35 @@ export default {
     },
     async runFirstBootSync() {
       try {
-        this.progress = 2;
-        this.statusText = "Preparando...";
-        
-        await this.fetchAndSave("config");
-        this.progress = 5;
-        
-        const categories = await this.fetchAndSave("pt_categories");
-        const hymnal = await this.fetchAndSave("pt_hymnal");
-        const hymnal1996 = await this.fetchAndSave("pt_hymnal_1996");
-        this.progress = 10;
-        
-        if (!categories || !Array.isArray(categories)) {
-          throw new Error("Falha ao baixar categorias");
-        }
-        
-        let allSongIds = new Set();
-
-        if (hymnal && Array.isArray(hymnal)) {
-          hymnal.forEach(song => allSongIds.add(song.id_music));
-        }
-        if (hymnal1996 && Array.isArray(hymnal1996)) {
-          hymnal1996.forEach(song => allSongIds.add(song.id_music));
-        }
-
-        let allAlbumIds = new Set();
-        for (const cat of categories) {
-          if (cat.albums && Array.isArray(cat.albums)) {
-            cat.albums.forEach(a => allAlbumIds.add(a.id_album));
+        if (window.electronAPI) {
+          this.progress = 0;
+          this.statusText = "Preparando...";
+          
+          window.electronAPI.onExtractProgress((data) => {
+            this.statusText = data.text;
+            this.progress = data.progress;
+          });
+          
+          await this.fetchAndSave("config");
+          
+          const success = await window.electronAPI.extractLocalDb();
+          if (success) {
+            await window.electronAPI.saveLocalDb("system_first_boot_complete", { complete: true });
+            this.progress = 100;
+            this.statusText = "Sincronização Concluída!";
+            
+            setTimeout(() => {
+              this.isOpen = false;
+              this.$emit('boot-complete');
+            }, 1000);
+            return;
           }
         }
         
-        const albumIds = Array.from(allAlbumIds);
-        let processedAlbums = 0;
-        const totalAlbums = albumIds.length;
-        
-        this.statusText = "Baixando arquivos...";
-        
-        for (const albumId of albumIds) {
-          const albumData = await this.fetchAndSave(`album_${albumId}`);
-          
-          if (albumData && albumData.musics && Array.isArray(albumData.musics)) {
-            albumData.musics.forEach(song => allSongIds.add(song.id_music));
-          }
-          
-          if (albumData && albumData.url_image) {
-            const imgFilename = albumData.url_image.split('/').pop();
-            await this.downloadCoverImage(albumData.url_image, imgFilename);
-          }
-          
-          processedAlbums++;
-          this.progress = 10 + Math.floor((processedAlbums / totalAlbums) * 25);
-        }
-        
-        const songIds = Array.from(allSongIds);
-        const totalSongs = songIds.length;
-        let processedSongs = 0;
-        
-        const batchSize = 5;
-        for (let i = 0; i < songIds.length; i += batchSize) {
-          const batch = songIds.slice(i, i + batchSize);
-          await Promise.all(batch.map(id => this.fetchAndSave(`music_${id}`)));
-          
-          processedSongs += batch.length;
-          this.progress = 35 + Math.floor((processedSongs / totalSongs) * 50);
-        }
-        
-        await this.fetchAndSave("pt_bible_book");
-        const bibleVersions = await this.fetchAndSave("pt_bible_version");
-        this.progress = 90;
-        
-        const bibleBooks = await window.electronAPI.getLocalDb("pt_bible_book");
-        if (bibleBooks && Array.isArray(bibleBooks) && bibleVersions && Array.isArray(bibleVersions)) {
-          let totalChapters = bibleBooks.reduce((sum, b) => sum + b.chapters, 0) * bibleVersions.length;
-          let processedChapters = 0;
-          
-          for (const version of bibleVersions) {
-            for (const book of bibleBooks) {
-              const chapterBatch = [];
-              for (let ch = 1; ch <= book.chapters; ch++) {
-                chapterBatch.push(`bible_${version.id_bible_version}_${book.id_bible_book}_${ch}`);
-              }
-              for (let i = 0; i < chapterBatch.length; i += 5) {
-                const batch = chapterBatch.slice(i, i + 5);
-                await Promise.all(batch.map(file => this.fetchAndSave(file)));
-                processedChapters += batch.length;
-                this.progress = 90 + Math.floor((processedChapters / totalChapters) * 10);
-                
-                if (this.progress >= 95) {
-                  this.statusText = "Finalizando...";
-                }
-              }
-            }
-          }
-        }
-        
-        await window.electronAPI.saveLocalDb("system_first_boot_complete", { complete: true });
-        
-        this.progress = 100;
-        this.statusText = "Finalizando...";
-        setTimeout(() => {
-          this.isOpen = false;
-        }, 1500);
-        
-      } catch (error) {
-        console.error("Erro na instalação offline:", error);
-        this.statusText = !navigator.onLine 
-          ? "Sem conexão com a internet. Conecte-se para continuar." 
-          : "O servidor parece estar indisponível no momento. Tente novamente mais tarde.";
+        throw new Error("Falha ao extrair banco de dados local.");
+      } catch (err) {
+        console.error("Erro na sincronização inicial:", err);
+        this.statusText = "Erro na extração. Tente novamente.";
         this.hasError = true;
       }
     }

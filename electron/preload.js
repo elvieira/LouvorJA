@@ -10,6 +10,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   deleteMedia: (destFolderType, filename) => ipcRenderer.invoke('delete-media', destFolderType, filename),
   
   clearAllData: () => ipcRenderer.invoke('clear-all-data'),
+  extractLocalDb: () => ipcRenderer.invoke('extract-local-db'),
   
   windowControl: (action) => ipcRenderer.invoke('window-control', action),
   onWindowMaximizedState: (callback) => {
@@ -25,6 +26,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   },
   onNavigateRoute: (callback) => {
     ipcRenderer.on('navigate-route', (_event, routeName) => callback(routeName));
+  },
+  onExtractProgress: (callback) => {
+    ipcRenderer.on('extract-progress', (_event, data) => callback(data));
   },
   
   getDisplays: () => ipcRenderer.invoke('get-displays'),

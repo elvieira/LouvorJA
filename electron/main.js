@@ -1,8 +1,10 @@
 const { app, BrowserWindow, Menu, ipcMain, protocol, net } = require('electron');
 const path = require('path');
 const fs = require('fs');
+const fsExtra = require('fs-extra');
 const crypto = require('crypto');
 const { autoUpdater } = require('electron-updater');
+const DbExtractor = require('./DbExtractor');
 
 // Chave estática para ofuscação (não é segurança alta, apenas ofuscação)
 const ENCRYPTION_KEY = Buffer.from('v389s8dkj238910s8a7d3h2j1k9s8d7f', 'utf8');
@@ -100,6 +102,30 @@ ipcMain.handle('save-local-db', async (event, filename, data) => {
     }
     return false;
   } catch (error) {
+    return false;
+  }
+});
+
+ipcMain.handle('extract-local-db', async (event) => {
+  try {
+    let finalDbPath;
+    if (isDev) {
+      finalDbPath = path.join(__dirname, '..', 'resources', 'database.db');
+    } else {
+      finalDbPath = path.join(process.resourcesPath, 'resources', 'database.db');
+    }
+    
+    if (!fs.existsSync(finalDbPath)) {
+      throw new Error(`Arquivo não encontrado em: ${finalDbPath}`);
+    }
+    
+    const extractor = new DbExtractor(finalDbPath);
+    await extractor.extract((data) => {
+      event.sender.send('extract-progress', data);
+    });
+    return true;
+  } catch (error) {
+    console.error('Erro na extração do banco:', error);
     return false;
   }
 });
@@ -431,7 +457,7 @@ function createWindow() {
   if (isDev) {
     // Em desenvolvimento, carrega o servidor Vite
     mainWindow.loadURL('http://localhost:5173');
-    // mainWindow.webContents.openDevTools();
+    mainWindow.webContents.openDevTools();
   } else {
     // Em produção, carrega o build estático
     mainWindow.loadFile(path.join(__dirname, '..', 'dist', 'index.html'));
