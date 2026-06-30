@@ -1,6 +1,6 @@
 {
   "name": "louvorja",
-  "version": "1.6.1",
+  "version": "1.6.2",
   "private": true,
   "main": "electron/main.js",
   "scripts": {
@@ -89,11 +89,17 @@
       "target": [
         {
           "target": "dmg",
-          "arch": ["x64", "arm64"]
+          "arch": [
+            "x64",
+            "arm64"
+          ]
         },
         {
           "target": "zip",
-          "arch": ["x64", "arm64"]
+          "arch": [
+            "x64",
+            "arm64"
+          ]
         }
       ],
       "icon": "public/ico/favicon.png"
