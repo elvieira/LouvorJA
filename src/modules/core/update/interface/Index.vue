@@ -11,7 +11,9 @@
               </div>
               <div>
                 <div class="text-h6 font-weight-bold" style="color: var(--sidebar-text); line-height: 1.2;">Nova Versão Disponível</div>
-                <div class="text-caption mt-1" style="color: var(--sidebar-text-secondary);">v{{ updateVersion || '1.5.1' }}</div>
+                <div class="text-caption mt-1" style="color: var(--sidebar-text-secondary);">
+                  {{ updateVersion ? 'v' + updateVersion : 'Processando informações...' }}
+                </div>
               </div>
             </div>
             <v-btn icon variant="text" size="small" @click="close">
@@ -20,25 +22,29 @@
           </div>
         </div>
 
+        <!-- Conteúdo Carregando -->
+        <div v-if="!updateVersion" style="padding: 40px 24px; text-align: center;">
+          <v-progress-circular indeterminate color="primary" size="32" class="mb-3"></v-progress-circular>
+          <div class="text-body-2" style="color: var(--sidebar-text-secondary);">Buscando detalhes da atualização...</div>
+        </div>
+
         <!-- Release Notes -->
-        <div style="padding: 20px 24px; max-height: 320px; overflow-y: auto;">
+        <div v-else-if="releaseNotes" style="padding: 20px 24px; max-height: 320px; overflow-y: auto;">
           <div class="text-subtitle-2 font-weight-bold mb-3" style="color: var(--sidebar-text);">
             <v-icon size="18" class="mr-1" color="primary">mdi-text-box-outline</v-icon>
             O que há de novo
           </div>
           <div 
-            v-if="releaseNotes" 
             class="release-notes-content text-body-2"
             style="color: var(--sidebar-text-secondary); line-height: 1.7;"
             v-html="releaseNotes"
           ></div>
-          <div 
-            v-else 
-            class="text-body-2" 
-            style="color: var(--sidebar-text-secondary); line-height: 1.7; padding: 16px; background: rgba(0,151,215,0.05); border-radius: 12px;"
-          >
-            <p style="margin: 0;">Melhorias de desempenho, correções de bugs e novas funcionalidades estão disponíveis nesta versão.</p>
-          </div>
+        </div>
+
+        <!-- Sem notas informadas -->
+        <div v-else style="padding: 30px 24px; text-align: center; opacity: 0.7;">
+           <v-icon size="40" color="primary" class="mb-3">mdi-update</v-icon>
+           <div class="text-body-2" style="color: var(--sidebar-text-secondary);">Esta atualização não contém notas detalhadas de lançamento.</div>
         </div>
 
         <v-divider style="opacity: 0.1;" />
