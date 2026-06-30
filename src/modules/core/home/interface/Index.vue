@@ -287,6 +287,7 @@ export default {
 
     async fetchCollectionInfo() {
       const collections = this.displayCollections;
+      let allCategories;
       
       for (const col of collections) {
         if (!this.dynamicCollectionInfo[col.id]) {

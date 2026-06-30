@@ -126,15 +126,32 @@ export default {
         }, 100);
       }
     },
-    async fetchFromApi(file) {
+    async fetchFromApi(file, retries = 5, delayMs = 1000) {
       try {
         const date = new Date().toISOString().slice(0, 10).replace(/-/g, "");
         const response = await fetch(`${$path.db(`/${file}`)}?${date}`, {
           headers: { "Api-Token": import.meta.env.VITE_API_TOKEN },
         });
-        if (!response.ok) throw new Error("Servidor retornou erro");
+        
+        if (response.status === 429 && retries > 0) {
+          console.warn(`Rate limit 429 em ${file}. Tentando novamente em ${delayMs}ms...`);
+          await new Promise(resolve => setTimeout(resolve, delayMs));
+          return this.fetchFromApi(file, retries - 1, delayMs * 1.5);
+        }
+        
+        if (!response.ok) {
+          if (retries > 0 && response.status >= 500) {
+            await new Promise(resolve => setTimeout(resolve, delayMs));
+            return this.fetchFromApi(file, retries - 1, delayMs * 1.5);
+          }
+          throw new Error(`Servidor retornou erro ${response.status}`);
+        }
         return await response.json();
       } catch (error) {
+        if (retries > 0 && (error.message.includes("Failed to fetch") || error.message.includes("NetworkError"))) {
+          await new Promise(resolve => setTimeout(resolve, delayMs));
+          return this.fetchFromApi(file, retries - 1, delayMs * 1.5);
+        }
         throw error;
       }
     },
@@ -210,7 +227,7 @@ export default {
         const totalSongs = songIds.length;
         let processedSongs = 0;
         
-        const batchSize = 15;
+        const batchSize = 5;
         for (let i = 0; i < songIds.length; i += batchSize) {
           const batch = songIds.slice(i, i + batchSize);
           await Promise.all(batch.map(id => this.fetchAndSave(`music_${id}`)));
@@ -234,8 +251,8 @@ export default {
               for (let ch = 1; ch <= book.chapters; ch++) {
                 chapterBatch.push(`bible_${version.id_bible_version}_${book.id_bible_book}_${ch}`);
               }
-              for (let i = 0; i < chapterBatch.length; i += 10) {
-                const batch = chapterBatch.slice(i, i + 10);
+              for (let i = 0; i < chapterBatch.length; i += 5) {
+                const batch = chapterBatch.slice(i, i + 5);
                 await Promise.all(batch.map(file => this.fetchAndSave(file)));
                 processedChapters += batch.length;
                 this.progress = 90 + Math.floor((processedChapters / totalChapters) * 10);

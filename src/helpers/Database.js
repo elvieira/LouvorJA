@@ -27,15 +27,53 @@ export default {
       }
 
       const date = new Date().toISOString().slice(0, 10).replace(/-/g, "");
-      $dev.write("Abrindo BD", `${$path.db(`/${file}`)}?${date}`);
-      const response = await fetch(`${$path.db(`/${file}`)}?${date}`, {
-        headers: {
-          "Api-Token": import.meta.env.VITE_API_TOKEN,
-        },
-      });
+      const url = `${$path.db(`/${file}`)}?${date}`;
+      $dev.write("Abrindo BD", url);
+      
+      let data = null;
+      let retries = 3;
+      let delayMs = 1000;
+      
+      while (retries > 0) {
+        try {
+          const response = await fetch(url, {
+            headers: {
+              "Api-Token": import.meta.env.VITE_API_TOKEN,
+            },
+          });
 
-      if (!response.ok) throw new Error();
-      const data = await response.json();
+          if (response.status === 429) {
+            $dev.write(`Rate limit 429 em ${file}. Tentando novamente...`, delayMs);
+            await new Promise(r => setTimeout(r, delayMs));
+            retries--;
+            delayMs *= 1.5;
+            continue;
+          }
+
+          if (!response.ok) {
+            if (response.status >= 500) {
+              await new Promise(r => setTimeout(r, delayMs));
+              retries--;
+              delayMs *= 1.5;
+              continue;
+            }
+            throw new Error(`Status ${response.status}`);
+          }
+          
+          data = await response.json();
+          break; // Sucesso
+        } catch (error) {
+          if (retries > 1 && (error.message.includes("Failed to fetch") || error.message.includes("NetworkError"))) {
+            await new Promise(r => setTimeout(r, delayMs));
+            retries--;
+            delayMs *= 1.5;
+            continue;
+          }
+          throw error;
+        }
+      }
+
+      if (!data) throw new Error("Falha ao baixar dados após várias tentativas");
 
       $dev.write("Salvando BD em cache", file);
       $storage.set(cache_name, data, "session");
