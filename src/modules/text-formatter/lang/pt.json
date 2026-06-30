@@ -1,0 +1,22 @@
+{
+  "title": "Formatação de Texto",
+  "input_label": "Digite o texto",
+  "input_placeholder": "Digite ou cole o texto aqui...",
+  "output_label": "Texto formatado",
+  "options_label": "Opções de formatação",
+  "uppercase": "MAIÚSCULAS",
+  "lowercase": "minúsculas",
+  "capitalize": "Primeira Maiúscula",
+  "sentence_case": "Início de frase",
+  "title_case": "Estilo Título",
+  "remove_accents": "Remover acentos",
+  "remove_extra_spaces": "Remover espaços extras",
+  "reverse_text": "Inverter texto",
+  "center_align": "Centralizar",
+  "copy_btn": "Copiar",
+  "copied": "Copiado!",
+  "clear_btn": "Limpar",
+  "char_count": "Caracteres: {count}",
+  "word_count": "Palavras: {count}",
+  "line_count": "Linhas: {count}"
+}

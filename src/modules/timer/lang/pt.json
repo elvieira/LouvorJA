@@ -1,0 +1,20 @@
+{
+  "title": "Cronômetro de Culto",
+  "presets": "Predefinições",
+  "custom": "Personalizado",
+  "minutes": "Minutos",
+  "start": "Iniciar",
+  "pause": "Pausar",
+  "resume": "Continuar",
+  "reset": "Resetar",
+  "time_up": "TEMPO ESGOTADO!",
+  "elapsed": "Tempo decorrido",
+  "remaining": "Tempo restante",
+  "status_running": "Em andamento",
+  "status_paused": "Pausado",
+  "status_stopped": "Parado",
+  "alert_title": "Tempo esgotado!",
+  "alert_text": "O cronômetro atingiu o tempo definido.",
+  "min": "min",
+  "sec": "seg"
+}
