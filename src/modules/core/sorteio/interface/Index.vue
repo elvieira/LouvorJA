@@ -150,26 +150,9 @@
                 </div>
               </div>
 
-              <!-- Projection buttons -->
+              <!-- Projection button (standard LouvorJA flow) -->
               <div v-if="winner !== null" class="sorteio-projection-actions">
-                <v-btn
-                  v-if="!isProjected"
-                  variant="outlined"
-                  size="small"
-                  prepend-icon="mdi-projector"
-                  @click="projetar"
-                >
-                  {{ t("projetar") }}
-                </v-btn>
-                <v-btn
-                  v-else
-                  variant="outlined"
-                  size="small"
-                  prepend-icon="mdi-projector-off"
-                  @click="clearProjection"
-                >
-                  {{ t("limpar_projecao") }}
-                </v-btn>
+                <LScreenBtn module="sorteio" />
               </div>
             </div>
 
@@ -213,9 +196,13 @@
 
 <script>
 import manifest from "../manifest.json";
+import LScreenBtn from "@/components/buttons/Screen.vue";
 
 export default {
   name: manifest.id,
+  components: {
+    LScreenBtn,
+  },
   data() {
       return {
         manifest,
@@ -227,7 +214,7 @@ export default {
         noRepeat: false,
         drawnSet: new Set(),
         history: [],
-        isProjected: false,
+
         rollInterval: null,
         mode: "names",
         minNumber: 1,
@@ -355,7 +342,7 @@ export default {
       this.participants = [];
       this.winner = null;
       this.drawnSet = new Set();
-      this.isProjected = false;
+      this.$appdata.set("modules.sorteio.projection", null);
       this.$userdata.set("sorteio_participants", "");
       this.$userdata.set("sorteio_winner", null);
     },
@@ -415,9 +402,10 @@ export default {
               this.$userdata.set("sorteio_history", this.history);
               this.$userdata.set("sorteio_winner", chosen);
 
-              if (this.isProjected) {
-                this.projetar();
-              }
+              // Update projection data for popup screen
+              this.$appdata.set("modules.sorteio.projection", {
+                name: chosen,
+              });
             } else {
               const randomIndex = Math.floor(Math.random() * totalPool.length);
               this.currentRollingName = totalPool[randomIndex];
@@ -425,24 +413,10 @@ export default {
           }, 50);
         },
 
-    projetar() {
-      if (!this.winner) return;
-      this.isProjected = true;
-      this.$appdata.set("modules.sorteio.projection", {
-        name: this.winner,
-      });
-    },
-
-    clearProjection() {
-      this.isProjected = false;
-      this.$appdata.set("modules.sorteio.projection", null);
-    },
-
     clearHistory() {
       this.history = [];
       this.drawnSet = new Set();
       this.winner = null;
-      this.isProjected = false;
       this.$userdata.set("sorteio_history", []);
       this.$userdata.set("sorteio_winner", null);
       this.$appdata.set("modules.sorteio.projection", null);
