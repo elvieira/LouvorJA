@@ -1,0 +1,241 @@
+/* Timer Module Styles — LouvorJA */
+/* Design tokens: CSS variables from main.css */
+
+.timer-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  width: 100%;
+  height: 100%;
+  align-content: start;
+}
+
+@media (max-width: 1024px) {
+  .timer-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+.timer-left,
+.timer-right {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  height: 100%;
+}
+
+.timer-card {
+  background: var(--card-bg);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  padding: 20px;
+  transition: var(--transition);
+  border: 1px solid var(--border-color);
+}
+
+.timer-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.timer-card-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--sidebar-text);
+  margin: 0;
+}
+
+.timer-mode-selector {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.timer-inputs {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.timer-time-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  background: var(--card-bg);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
+  margin-bottom: 20px;
+}
+
+.timer-display-value {
+  font-size: 5rem;
+  font-weight: bold;
+  color: var(--accent-blue);
+  font-family: 'Courier New', Courier, monospace;
+  letter-spacing: 0.05em;
+}
+
+.timer-display-label {
+  font-size: 0.875rem;
+  color: var(--sidebar-text);
+  opacity: 0.7;
+  margin-top: 8px;
+}
+
+.timer-controls {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.timer-presets {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+
+.timer-history {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  background: var(--card-bg);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
+  padding: 16px;
+}
+
+.timer-history-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  background: var(--card-bg);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
+  margin-bottom: 8px;
+  transition: var(--transition);
+}
+
+.timer-history-item:last-child {
+  margin-bottom: 0;
+}
+
+.timer-history-item:hover {
+  border-color: var(--accent-blue);
+}
+
+.timer-history-time {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--sidebar-text);
+  font-family: 'Courier New', Courier, monospace;
+}
+
+.timer-history-timestamp {
+  font-size: 0.75rem;
+  color: var(--sidebar-text);
+  opacity: 0.6;
+}
+
+/* Worship mode */
+.timer-parts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 16px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.timer-part-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: var(--card-bg);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
+  transition: var(--transition);
+}
+
+.timer-part-item:hover {
+  border-color: var(--accent-blue);
+}
+
+.timer-part-name {
+  flex: 1;
+  font-weight: 600;
+  color: var(--sidebar-text);
+}
+
+.timer-part-duration {
+  font-family: 'Courier New', Courier, monospace;
+  color: var(--accent-blue);
+  font-weight: 600;
+}
+
+.timer-part-active {
+  border-color: var(--accent-blue);
+  background: rgba(33, 150, 243, 0.05);
+}
+
+/* Animations */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.2; }
+}
+
+.timer-blink {
+  animation: blink 1s ease-in-out infinite;
+}
+/* Add Time controls */
+.timer-add-time {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 12px;
+  background: var(--card-bg);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
+}
+
+/* Projection actions */
+.timer-projection-actions {
+  display: flex;
+  justify-content: center;
+  padding: 8px;
+}
+
+/* Audio settings */
+.timer-audio-settings {
+  padding: 12px;
+  background: rgba(0,0,0,0.05);
+  border-radius: 8px;
+}
+
+/* Display colors */
+.timer-display-red {
+  color: #f44336 !important;
+}
+
+.timer-display-orange {
+  color: #ff9800 !important;
+}
+
+/* Worship badge */
+.timer-worship-badge {
+  font-size: 14px;
+  color: rgba(0,0,0,0.6);
+  margin-top: 8px;
+  text-align: center;
+  padding: 4px 12px;
+  background: rgba(0,0,0,0.05);
+  border-radius: 6px;
+  display: inline-block;
+}
