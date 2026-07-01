@@ -6,33 +6,42 @@
         <div style="background: linear-gradient(135deg, rgba(0,151,215,0.15) 0%, rgba(0,151,215,0.05) 100%); padding: 24px 24px 20px;">
           <div class="d-flex align-center justify-space-between">
             <div class="d-flex align-center" style="gap: 12px;">
-              <div style="background: rgba(0,151,215,0.15); border-radius: 12px; padding: 10px; display: flex; align-items: center; justify-content: center;">
-                <v-icon color="primary" size="28">mdi-rocket-launch</v-icon>
-              </div>
               <div>
-                <div class="text-h6 font-weight-bold" style="color: var(--sidebar-text); line-height: 1.2;">Nova Versão Disponível</div>
+                <div class="text-h6 font-weight-bold" style="color: var(--sidebar-text); line-height: 1.2;">
+                  {{ updateStatus === 'not-available' ? 'Tudo atualizado!' : 'Nova Versão Disponível' }}
+                </div>
                 <div class="text-caption mt-1" style="color: var(--sidebar-text-secondary);">
-                  {{ updateVersion ? 'v' + updateVersion : 'Processando informações...' }}
+                  {{ updateVersion ? 'v' + updateVersion : (updateStatus === 'not-available' ? 'Nenhuma atualização pendente.' : 'Processando informações...') }}
                 </div>
               </div>
             </div>
-            <v-btn icon variant="text" size="small" @click="close">
+            <v-btn icon variant="text" @click="close">
               <v-icon>mdi-close</v-icon>
+              <v-tooltip activator="parent" location="bottom" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">Fechar</v-tooltip>
             </v-btn>
           </div>
         </div>
 
         <!-- Conteúdo Carregando -->
-        <div v-if="!updateVersion" style="padding: 40px 24px; text-align: center;">
+        <div v-if="updateStatus === 'checking' || (updateStatus === 'idle' && !updateVersion && updateStatus !== 'not-available')" style="padding: 40px 24px; text-align: center;">
           <v-progress-circular indeterminate color="primary" size="32" class="mb-3"></v-progress-circular>
           <div class="text-body-2" style="color: var(--sidebar-text-secondary);">Buscando detalhes da atualização...</div>
+        </div>
+        
+        <!-- Não há atualizações -->
+        <div v-else-if="updateStatus === 'not-available'" style="padding: 40px 24px; text-align: center;">
+          <v-icon color="success" size="64" class="mb-4">mdi-check-circle-outline</v-icon>
+          <div class="text-h6 font-weight-bold" style="color: var(--sidebar-text);">Aplicativo Atualizado</div>
+          <div class="text-body-2" style="color: var(--sidebar-text-secondary); max-width: 300px; margin: 0 auto;">
+            O seu aplicativo já está utilizando a última versão estável.
+          </div>
         </div>
 
         <!-- Release Notes -->
         <div v-else-if="releaseNotes" style="padding: 20px 24px; max-height: 320px; overflow-y: auto;">
           <div class="text-subtitle-2 font-weight-bold mb-3" style="color: var(--sidebar-text);">
             <v-icon size="18" class="mr-1" color="primary">mdi-text-box-outline</v-icon>
-            O que há de novo
+            O que há de novo?
           </div>
           <div 
             class="release-notes-content text-body-2"
@@ -66,22 +75,15 @@
           </div>
 
           <div class="d-flex justify-end" style="gap: 12px;">
-            <v-btn 
-              v-if="updateStatus !== 'downloading'"
-              variant="text" 
-              rounded="xl" 
-              class="text-none"
-              @click="close"
-            >
-              Depois
-            </v-btn>
-            
             <!-- Botão: Atualizar Agora -->
             <v-btn 
               v-if="updateStatus === 'available'"
               color="primary" 
-              rounded="xl" 
-              class="text-none px-6"
+              variant="flat"
+              rounded="lg" 
+              class="text-none px-6 font-weight-bold"
+              height="44"
+              elevation="2"
               prepend-icon="mdi-download"
               @click="startDownload"
             >
@@ -92,8 +94,10 @@
             <v-btn 
               v-else-if="updateStatus === 'downloading'"
               color="primary" 
-              rounded="xl" 
-              class="text-none px-6"
+              variant="tonal"
+              rounded="lg" 
+              class="text-none px-6 font-weight-bold"
+              height="44"
               disabled
               prepend-icon="mdi-loading mdi-spin"
             >
@@ -104,8 +108,11 @@
             <v-btn 
               v-else-if="updateStatus === 'ready'"
               color="success" 
-              rounded="xl" 
-              class="text-none px-6"
+              variant="flat"
+              rounded="lg" 
+              class="text-none px-6 font-weight-bold"
+              height="44"
+              elevation="2"
               prepend-icon="mdi-restart"
               @click="installUpdate"
             >
@@ -116,8 +123,11 @@
             <v-btn 
               v-else-if="updateStatus === 'error'"
               color="error" 
-              rounded="xl" 
-              class="text-none px-6"
+              variant="flat"
+              rounded="lg" 
+              class="text-none px-6 font-weight-bold"
+              height="44"
+              elevation="2"
               prepend-icon="mdi-refresh"
               @click="retryUpdate"
             >
@@ -159,6 +169,24 @@ export default {
       return this.$appdata.get("modules.update.status") || 'idle';
     }
   },
+  watch: {
+    show(val) {
+      if (val) {
+        if (this.updateStatus === 'idle' || this.updateStatus === 'not-available' || this.updateStatus === 'error') {
+          this.$appdata.set("modules.update.status", "checking");
+          if (window.electronAPI) {
+            window.electronAPI.checkForUpdates().then(result => {
+              if (!result) {
+                this.$appdata.set("modules.update.status", "not-available");
+              }
+            }).catch(() => {
+              this.$appdata.set("modules.update.status", "error");
+            });
+          }
+        }
+      }
+    }
+  },
   mounted() {
     this.setupAutoUpdateListeners();
   },
@@ -179,7 +207,7 @@ export default {
       });
       
       window.electronAPI.onUpdateNotAvailable(() => {
-        this.$appdata.set("modules.update.status", "idle");
+        this.$appdata.set("modules.update.status", "not-available");
       });
       
       window.electronAPI.onUpdateDownloadProgress((progress) => {
@@ -208,9 +236,15 @@ export default {
       }
     },
     retryUpdate() {
-      this.$appdata.set("modules.update.status", "idle");
+      this.$appdata.set("modules.update.status", "checking");
       if (window.electronAPI) {
-        window.electronAPI.checkForUpdates();
+        window.electronAPI.checkForUpdates().then(result => {
+          if (!result) {
+            this.$appdata.set("modules.update.status", "not-available");
+          }
+        }).catch(() => {
+          this.$appdata.set("modules.update.status", "error");
+        });
       }
     },
   }

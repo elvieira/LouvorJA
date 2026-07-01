@@ -188,10 +188,7 @@ export default {
       });
       window.electronAPI.onNavigateRoute((routeName) => {
         if (routeName === "help") {
-          this.$modules.open("home");
-          if (this.$router) {
-            this.$router.push({ name: routeName }).catch(() => {});
-          }
+          this.$modules.open("help");
         }
       });
     }

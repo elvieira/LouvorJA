@@ -132,7 +132,7 @@
         </a>
       </div>
       
-      <div v-if="updateStatus !== 'idle'" class="nav-item update-item" :class="{ 'pulse-animation': updateStatus === 'available' }">
+      <div v-if="['available', 'downloading', 'ready'].includes(updateStatus)" class="nav-item update-item" :class="{ 'pulse-animation': updateStatus === 'available' }">
         <a 
           href="#" 
           class="nav-link" 
@@ -144,8 +144,8 @@
         </a>
       </div>
       
-      <div class="nav-item" :class="{ active: currentRoute === 'help' }">
-        <a href="#" class="nav-link" @click.prevent="navigateTo('help')">
+      <div class="nav-item" :class="{ active: currentModule === 'help' }">
+        <a href="#" class="nav-link" @click.prevent="openModule('help')">
           <v-icon class="nav-icon">
             mdi-help-circle
           </v-icon>

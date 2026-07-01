@@ -1,0 +1,16 @@
+{
+  "id": "help",
+  "name": "Ajuda e sobre",
+  "version": "1.0.0",
+  "description": "Informações sobre o aplicativo e ajuda.",
+  "author": "elvieira",
+  "category": null,
+  "showInMainMenu": false,
+  "icon": "mdi-help-circle",
+  "minAppVersion": "1.0.0",
+  "dependencies": [],
+  "permissions": [],
+  "moduleOptions": {
+    "size": "small"
+  }
+}
