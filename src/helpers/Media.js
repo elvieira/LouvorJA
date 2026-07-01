@@ -92,10 +92,23 @@ export default {
       });
     }
 
+    const disableIfExtended = $userdata.get("modules.config.slide_disable_main_if_extended") !== false;
+    const slideMonitors = $userdata.get("modules.config.slide_monitor") || [];
+    
+    let shouldMaximize = true;
+    
     if (minimized) {
-      this.minimize();
+      shouldMaximize = false;
     } else {
+      if (disableIfExtended && slideMonitors.length > 0) {
+        shouldMaximize = false;
+      }
+    }
+
+    if (shouldMaximize) {
       this.maximize();
+    } else {
+      this.minimize();
     }
 
     if (mode == "audio" || mode == "instrumental") {
@@ -390,35 +403,38 @@ export default {
 
   slides() {
     const data = $appdata.get("modules.media.data");
+    const showTitle = $userdata.get("modules.config.slide_show_title") !== false;
 
     let prev_image = data.url_image;
     let prev_image_position = data.image_position;
 
+    const lyricsSlides = Object.values(data.lyric || {})
+      .filter((lyric) => lyric.show_slide === 1)
+      .sort((a, b) => a.order - b.order)
+      .map((lyric) => {
+        if (lyric.url_image) {
+          prev_image = lyric.url_image;
+          prev_image_position = lyric.image_position;
+        }
+        return {
+          ...lyric,
+          cover: false,
+          lyric: lyric.lyric ? lyric.lyric.replace(/[\r\n]+/g, "<br>") : "",
+          url_image: prev_image,
+          image_position: prev_image_position,
+        };
+      });
+
     return [
       {
-        lyric: data.name,
+        lyric: showTitle ? data.name : "",
         cover: true,
         time: "00:00:00",
         instrumental_time: "00:00:00",
         url_image: data.url_image,
         image_position: data.image_position,
       },
-      ...Object.values(data.lyric || {})
-        .filter((lyric) => lyric.show_slide === 1)
-        .sort((a, b) => a.order - b.order)
-        .map((lyric) => {
-          if (lyric.url_image) {
-            prev_image = lyric.url_image;
-            prev_image_position = lyric.image_position;
-          }
-          return {
-            ...lyric,
-            cover: false,
-            lyric: lyric.lyric ? lyric.lyric.replace(/[\r\n]+/g, "<br>") : "",
-            url_image: prev_image,
-            image_position: prev_image_position,
-          };
-        }),
+      ...lyricsSlides
     ];
   },
 

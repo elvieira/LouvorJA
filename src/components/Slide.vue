@@ -9,10 +9,13 @@
         v-if="!slide.destroy"
         v-show="slide.active"
         class="position-absolute top-0 left-0 w-100 h-100"
-        :style="style_bg(slide)"
+        style="overflow: hidden; background-color: rgb(0,0,0);"
       >
+        <div class="position-absolute top-0 left-0 w-100 h-100" :style="style_bg(slide)"></div>
         <div
-          class="position-absolute top-0 left-0 w-100 h-100 d-flex justify-center align-center pa-6"
+          class="position-absolute top-0 left-0 w-100 h-100 d-flex justify-center"
+          :class="slideAlignClass"
+          :style="{ padding: `${Math.max(16, fontSizePc(4))}px` }"
         >
           <div class="d-flex flex-column align-center justify-center w-100">
             <div
@@ -48,6 +51,15 @@ export default {
     repeat: false,
     width: 0,
     height: 0,
+    slideAlignClass: 'align-center',
+    customTextFormat: false,
+    customFontSize: 100,
+    customFontColor: '#FFFFFF',
+    customFontWeight: '700',
+    customBg: false,
+    customBgColor: '#000000',
+    customBgImage: null,
+    customBgOpacity: 100,
   }),
   computed: {
     props_slide() {
@@ -76,15 +88,35 @@ export default {
     },
   },
   mounted() {
+    this.updateSettings();
     this.setSlide();
     this.windowResize();
     window.addEventListener("resize", this.windowResize);
+    window.addEventListener("storage", this.updateSettings);
   },
   unmounted() {
     window.removeEventListener("resize", this.windowResize);
+    window.removeEventListener("storage", this.updateSettings);
   },
   methods: {
+    updateSettings() {
+      const align = this.$userdata.get("modules.config.slide_align") || "Centro";
+      if (align === 'Cima') this.slideAlignClass = 'align-start';
+      else if (align === 'Baixo') this.slideAlignClass = 'align-end';
+      else this.slideAlignClass = 'align-center';
+
+      this.customTextFormat = this.$userdata.get("modules.config.slide_custom_text_format") || false;
+      this.customFontSize = this.$userdata.get("modules.config.slide_font_size") || 100;
+      this.customFontColor = this.$userdata.get("modules.config.slide_font_color") || '#FFFFFF';
+      this.customFontWeight = this.$userdata.get("modules.config.slide_font_weight") || '700';
+
+      this.customBg = this.$userdata.get("modules.config.slide_custom_bg") || false;
+      this.customBgColor = this.$userdata.get("modules.config.slide_bg_color") || '#000000';
+      this.customBgImage = this.$userdata.get("modules.config.slide_bg_image") || null;
+      this.customBgOpacity = this.$userdata.get("modules.config.slide_bg_opacity") ?? 100;
+    },
     setSlide() {
+      this.updateSettings();
       if (
         this.$string.clean(this.slides[1].text) ==
         this.$string.clean(this.props_slide.text) &&
@@ -109,9 +141,19 @@ export default {
       }
     },
     style_bg(slide) {
+      if (this.customBg) {
+        return {
+          backgroundColor: this.customBgColor,
+          backgroundImage: this.customBgImage ? `url(${this.customBgImage})` : 'none',
+          backgroundRepeat: "no-repeat",
+          backgroundPosition: "center center",
+          backgroundSize: "cover",
+          opacity: this.customBgOpacity / 100,
+        };
+      }
+
       return {
-        overflow: "hidden",
-        backgroundColor: "rgb(0, 0, 0)",
+        backgroundColor: "transparent",
         backgroundImage: `url(${slide.image})`,
         backgroundRepeat: "no-repeat",
         backgroundPosition: [
@@ -166,6 +208,27 @@ export default {
           lineHeight: "1.1",
         };
       } 
+
+      if (this.customTextFormat) {
+        const sizeMultiplier = this.customFontSize / 100;
+        return {
+          backgroundColor: "rgba(0, 0, 0, 0.25)",
+          border: `${Math.max(2, this.fontSizePc(0.4))}px solid rgba(255, 255, 255, 0.85)`,
+          padding: `${this.fontSizePc(5)}px ${this.fontSizePc(8)}px`,
+          backdropFilter: "blur(8px)",
+          WebkitBackdropFilter: "blur(8px)",
+          boxShadow: "0px 10px 30px rgba(0, 0, 0, 0.4)",
+          textAlign: "center",
+          textTransform: "uppercase",
+          fontSize: `${this.fontSizePc(15) * sizeMultiplier}px`,
+          color: this.repeat ? "#f6c32a" : this.customFontColor,
+          fontWeight: this.customFontWeight,
+          letterSpacing: "0.03em",
+          lineHeight: "1.4",
+          textShadow: "0px 2px 10px rgba(0, 0, 0, 0.8)",
+        };
+      }
+
       return {
         backgroundColor: "rgba(0, 0, 0, 0.25)",
         border: `${Math.max(2, this.fontSizePc(0.4))}px solid rgba(255, 255, 255, 0.85)`,
@@ -181,7 +244,6 @@ export default {
         WebkitBackdropFilter: "blur(8px)",
         boxShadow: "0px 10px 30px rgba(0, 0, 0, 0.4)",
       };
-      
     },
     fontSizePc(pc) {
       const v = Math.min(this.width, this.height);

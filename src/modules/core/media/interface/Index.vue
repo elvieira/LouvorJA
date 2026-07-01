@@ -237,6 +237,21 @@ export default {
     },
   },
   watch: {
+    'module.show'(newVal) {
+      if (newVal) {
+        const slideFullscreen = this.$userdata.get("modules.config.slide_fullscreen") !== false;
+        const disableIfExtended = this.$userdata.get("modules.config.slide_disable_main_if_extended") !== false;
+        const slideMonitors = this.$userdata.get("modules.config.slide_monitor") || [];
+        
+        if (slideFullscreen && !(disableIfExtended && slideMonitors.length > 0)) {
+          this.$nextTick(() => {
+            setTimeout(() => {
+              this.fullscreen = true;
+            }, 200);
+          });
+        }
+      }
+    },
     slide_index() {
       if (!this.module.show) {
         return;

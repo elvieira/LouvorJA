@@ -19,12 +19,14 @@
             </p>
           </div>
           
-          <div v-if="categoriesWithAlbums.length > 0" class="px-6 pb-2 d-flex gap-2">
+          <div v-if="categoriesWithAlbums.length > 0" class="px-6 pb-2 pt-2 d-flex w-100" style="gap: 16px;">
             <v-btn 
               v-if="!isDownloadingAll"
               color="primary" 
-              variant="tonal" 
-              class="text-none font-weight-bold flex-grow-1"
+              variant="flat" 
+              class="text-none font-weight-bold flex-grow-1 rounded-lg"
+              height="44"
+              elevation="2"
               @click="downloadAllAlbums"
               :disabled="hasNoIdleAlbums"
             >
@@ -33,13 +35,17 @@
             <v-btn 
               v-else
               color="error" 
-              variant="tonal" 
-              class="text-none font-weight-bold flex-grow-1"
+              variant="flat" 
+              class="text-none font-weight-bold flex-grow-1 rounded-lg"
+              height="44"
+              elevation="2"
               @click="cancelAll"
             >
               <v-icon start>mdi-close-circle-multiple</v-icon> Cancelar Todas
             </v-btn>
           </div>
+
+          <v-divider style="opacity: 0.1;" class="mx-6 mb-2"></v-divider>
 
           <div class="pa-6 pt-2 flex-grow-1" style="overflow-y: auto;">
           <div v-for="cat in categoriesWithAlbums" :key="cat.id_category" class="mb-4">
@@ -52,7 +58,7 @@
                 v-for="album in cat.albums" 
                 :key="album.id_album" 
                 class="mb-2 rounded-xl pa-3" 
-                style="background: transparent; border: 1px solid var(--border-color);"
+                style="background: var(--main-bg); box-shadow: inset 0 0 0 1px var(--border-color); transition: all 0.2s;"
               >
                 <template #prepend>
                   <v-avatar rounded="lg" size="48" color="primary" variant="tonal" class="mr-3">
@@ -83,9 +89,9 @@
                   <v-btn
                     v-if="album.status === 'idle'"
                     color="primary"
-                    variant="flat"
+                    variant="tonal"
                     size="small"
-                    class="text-none font-weight-bold rounded-lg px-3"
+                    class="text-none font-weight-bold rounded-lg px-4"
                     @click="downloadAlbum(album)"
                   >
                     <v-icon start size="16">mdi-download</v-icon> Baixar
