@@ -19,6 +19,7 @@ export const createI18nInstance = async () => {
     locale: "pt",
     fallbackLocale: "pt",
     messages,
+    globalInjection: true,
   });
 };
 
