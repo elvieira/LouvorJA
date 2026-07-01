@@ -1,0 +1,14 @@
+{
+  "title": "Cronómetro",
+  "presets": "Atajos",
+  "minutes": "minutos",
+  "seconds": "segundos",
+  "start": "Iniciar",
+  "pause": "Pausar",
+  "resume": "Reanudar",
+  "reset": "Reiniciar",
+  "timeUp": "TIEMPO AGOTADO",
+  "modeCountdown": "Regresivo",
+  "modeCountup": "Progresivo",
+  "noTimeSet": "Defina un tiempo o use el modo progresivo"
+}

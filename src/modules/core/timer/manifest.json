@@ -1,0 +1,12 @@
+{
+  "id": "timer",
+  "name": "Cronômetro",
+  "version": "1.0.0",
+  "description": "Cronômetro de culto com timer regressivo e progressivo, projecao em tela secundaria e alertas sonoros.",
+  "author": "rafaumeu",
+  "category": "utilities",
+  "icon": "mdi-timer-outline",
+  "minAppVersion": "1.0.0",
+  "dependencies": [],
+  "permissions": []
+}
