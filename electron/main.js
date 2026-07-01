@@ -48,7 +48,7 @@ const oldDbPath = path.join(userDataPath, 'database');
 const mediaPath = path.join(userDataPath, 'Media');
 const coversPath = path.join(mediaPath, 'covers');
 const musicPath = path.join(mediaPath, 'music');
-const slidesPath = path.join(mediaPath, 'slides');
+const slidesPath = path.join(mediaPath, 'images');
 
 if (fs.existsSync(oldDbPath)) {
   try {
@@ -275,7 +275,8 @@ ipcMain.handle('check-media', async (event, destFolderType, filename) => {
   const filePath = path.join(destFolder, decodedFilename);
   if (fs.existsSync(filePath)) {
     const cleanFilename = decodedFilename.replace(/\\/g, '/');
-    return `local://media/${destFolderType === 'covers' ? 'covers' : destFolderType}/${cleanFilename}`;
+    const mappedType = destFolderType === 'slides' ? 'images' : destFolderType;
+    return `local://media/${mappedType}/${cleanFilename}`;
   }
   return false;
 });
