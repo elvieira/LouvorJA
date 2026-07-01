@@ -284,11 +284,10 @@ export default {
       }
 
       if (this.categories.length > 0) {
-        this.categories.sort((a, b) => a.order - b.order);
-        
         if (window.electronAPI) {
           for (const cat of this.categories) {
             if (cat.albums) {
+              cat.albums = cat.albums.filter(a => ![712, 629].includes(a.id_album));
               for (const album of cat.albums) {
                 if (album.url_image) {
                   const imgRelativePath = album.url_image.replace(/^\/(musics|images|covers)\//, '');
@@ -301,6 +300,23 @@ export default {
             }
           }
         }
+        
+        // Remove categorias que ficaram sem álbuns
+        this.categories = this.categories.filter(cat => cat.albums && cat.albums.length > 0);
+        
+        // Ordenação personalizada
+        const orderMap = {
+          'CDs Oficiais/Ano': 2,
+          'Infantis': 98,
+          'Doxologia': 99
+        };
+        
+        this.categories.sort((a, b) => {
+          const orderA = orderMap[a.id_category] || orderMap[a.name] || 50;
+          const orderB = orderMap[b.id_category] || orderMap[b.name] || 50;
+          if (orderA !== orderB) return orderA - orderB;
+          return a.name.localeCompare(b.name);
+        });
       }
       
       this.id_category = 0;

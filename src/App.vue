@@ -16,6 +16,7 @@
 import AppLoading from "@/layout/Loading.vue";
 import FirstBootLoader from "@/layout/FirstBootLoader.vue";
 import AppTitlebar from "@/layout/Titlebar.vue";
+import BackgroundSync from "@/helpers/BackgroundSync";
 
 export default {
   name: "App",
@@ -91,6 +92,11 @@ export default {
         });
       }
     }
+    
+    // Inicia a sincronização silenciosa em background (se necessária)
+    setTimeout(() => {
+      BackgroundSync.start();
+    }, 5000);
   },
   unmounted() {
     window.removeEventListener("keydown", this.handleGlobalKeydown);

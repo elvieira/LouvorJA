@@ -262,6 +262,8 @@ export default {
           
           let albumsList = [];
           for (const a of cat.albums) {
+            if ([712, 629].includes(a.id_album)) continue;
+            
             let coverUrl = null;
             if (a.url_image) {
               const imgRelativePath = a.url_image.replace(/^\/(musics|images|covers)\//, '');
@@ -274,6 +276,7 @@ export default {
               name: a.name,
               subtitle: a.subtitle || '',
               coverUrl,
+              rawCoverUrl: a.url_image,
               status: manifest.includes(a.id_album) ? 'downloaded' : 'idle',
               progress: 0,
               totalCount: 0,
@@ -281,14 +284,31 @@ export default {
               isHymnal: false,
             });
           }
-          
-          result.push({
-            id_category: cat.id_category,
-            name: cat.name,
-            albums: albumsList,
-          });
+          if (albumsList.length > 0) {
+            result.push({
+              id_category: cat.id_category,
+              name: cat.name,
+              albums: albumsList,
+            });
+          }
         }
         
+        // Ordenação personalizada
+        const orderMap = {
+          'hymnals': 1,
+          'Hinários': 1,
+          'CDs Oficiais/Ano': 2,
+          'Infantis': 98,
+          'Doxologia': 99
+        };
+        
+        result.sort((a, b) => {
+          const orderA = orderMap[a.id_category] || orderMap[a.name] || 50;
+          const orderB = orderMap[b.id_category] || orderMap[b.name] || 50;
+          if (orderA !== orderB) return orderA - orderB;
+          return a.name.localeCompare(b.name);
+        });
+
         this.categoriesWithAlbums = result;
       } catch (e) {
         console.error("Erro ao carregar coletâneas:", e);
@@ -378,6 +398,10 @@ export default {
           ...musicFiles.map(url => ({ url, type: 'music' })),
           ...slideFiles.map(url => ({ url, type: 'slides' }))
         ];
+
+        if (album.rawCoverUrl) {
+          allMediaFiles.push({ url: album.rawCoverUrl, type: 'covers' });
+        }
         
         album.totalCount = allMediaFiles.length;
         if (album.totalCount === 0) {

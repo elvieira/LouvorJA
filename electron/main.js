@@ -240,8 +240,21 @@ ipcMain.handle('download-media', async (event, url, destFolderType, filename) =>
       fs.mkdirSync(fileDir, { recursive: true });
     }
 
-    const response = await net.fetch(url);
-    if (!response.ok) return false;
+    let response;
+    let retries = 4;
+    let delay = 1000;
+    while (retries > 0) {
+      response = await net.fetch(url);
+      if (response.status === 429 || response.status >= 500) {
+        await new Promise(r => setTimeout(r, delay));
+        retries--;
+        delay *= 1.5;
+      } else {
+        break;
+      }
+    }
+
+    if (!response || !response.ok) return false;
 
     const arrayBuffer = await response.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
@@ -620,7 +633,20 @@ app.whenReady().then(() => {
       if (!fs.existsSync(filePath)) {
         if (isMediaFallback) {
           const apiUrl = `https://api.louvorja.com.br/file${fallbackPath.replace(/\\/g, '/')}`;
-          return await net.fetch(apiUrl);
+          let response;
+          let retries = 4;
+          let delay = 1000;
+          while (retries > 0) {
+            response = await net.fetch(apiUrl);
+            if (response.status === 429 || response.status >= 500) {
+              await new Promise(r => setTimeout(r, delay));
+              retries--;
+              delay *= 1.5;
+            } else {
+              break;
+            }
+          }
+          return response;
         }
         return new Response("Not Found", { status: 404 });
       }

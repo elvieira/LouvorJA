@@ -194,33 +194,7 @@ export default {
           
           const success = await window.electronAPI.extractLocalDb();
           if (success) {
-            this.statusText = "Baixando capas dos álbuns...";
-            this.progress = 0;
-            
-            // Baixa todas as capas
-            const categories = await window.electronAPI.getLocalDb("pt_categories");
-            if (categories && Array.isArray(categories)) {
-              let allImages = new Set();
-              for (const cat of categories) {
-                if (cat.albums && Array.isArray(cat.albums)) {
-                  cat.albums.forEach(a => {
-                    if (a.url_image) allImages.add(a.url_image);
-                  });
-                }
-              }
-              
-              const imagesToDownload = Array.from(allImages);
-              const totalImages = imagesToDownload.length;
-              let processedImages = 0;
-              
-              for (const urlImage of imagesToDownload) {
-                const imgFilename = urlImage.split('/').pop();
-                await this.downloadCoverImage(urlImage, imgFilename);
-                processedImages++;
-                this.progress = Math.floor((processedImages / totalImages) * 100);
-              }
-            }
-
+            this.progress = 100;
             await window.electronAPI.saveLocalDb("system_first_boot_complete", { complete: true });
             this.progress = 100;
             this.statusText = "Sincronização Concluída!";

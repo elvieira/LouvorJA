@@ -280,9 +280,12 @@ class DbExtractor {
             ORDER BY verse ASC
           `).all(version.id_bible_version, book.id_bible_book, ch);
           
-          this.saveJson(`bible_${version.id_bible_version}_${book.id_bible_book}_${ch}`, {
-            data: verses.map(v => ({ verse: v.verse, text: v.text }))
-          });
+          const versesObj = {};
+          for (const v of verses) {
+            versesObj[v.verse] = v.text;
+          }
+          
+          this.saveJson(`bible_${version.id_bible_version}_${book.id_bible_book}_${ch}`, versesObj);
           
           processedChapters++;
           if (processedChapters % 100 === 0) {
