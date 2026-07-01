@@ -14,46 +14,89 @@
                   {{ t("title") }}
                 </h3>
               </div>
-              <v-textarea
-                v-model="participantText"
-                :placeholder="t('add_placeholder')"
-                variant="outlined"
-                rows="6"
-                hide-details
-                auto-grow
-                class="sorteio-textarea"
-                @update:model-value="saveParticipants"
-              />
-              <div class="sorteio-input-footer">
-                <p class="sorteio-count">
-                  {{ t("drawn_count", { n: drawnCount, total: participants.length }) }}
-                </p>
-                <div class="sorteio-card-actions">
-                  <v-btn
-                    variant="outlined"
-                    size="small"
-                    prepend-icon="mdi-file-upload"
-                    @click="triggerFileLoad"
-                  >
-                    {{ t("load_file") }}
+
+              <!-- Mode Selector -->
+              <div class="sorteio-mode-selector">
+                <v-btn-toggle v-model="mode" mandatory color="var(--accent-blue)">
+                  <v-btn value="names" size="small">
+                    <v-icon start>mdi-account-group</v-icon>
+                    {{ t("mode_names") }}
                   </v-btn>
-                  <input
-                    ref="fileInput"
-                    type="file"
-                    accept=".txt"
-                    style="display: none"
-                    @change="loadFile"
-                  />
-                  <v-btn
-                    variant="text"
-                    size="small"
-                    color="grey"
-                    prepend-icon="mdi-close"
-                    @click="clearList"
-                  >
-                    {{ t("clear_list") }}
+                  <v-btn value="numbers" size="small">
+                    <v-icon start>mdi-numeric</v-icon>
+                    {{ t("mode_numbers") }}
                   </v-btn>
+                </v-btn-toggle>
+              </div>
+
+              <!-- Names Mode -->
+              <div v-if="mode === 'names'" class="sorteio-names-input">
+                <v-textarea
+                  v-model="participantText"
+                  :placeholder="t('add_placeholder')"
+                  variant="outlined"
+                  rows="6"
+                  hide-details
+                  auto-grow
+                  class="sorteio-textarea"
+                  @update:model-value="saveParticipants"
+                />
+                <div class="sorteio-input-footer">
+                  <p class="sorteio-count">
+                    {{ t("drawn_count", { n: drawnCount, total: participants.length }) }}
+                  </p>
+                  <div class="sorteio-card-actions">
+                    <v-btn
+                      variant="outlined"
+                      size="small"
+                      prepend-icon="mdi-file-upload"
+                      @click="triggerFileLoad"
+                    >
+                      {{ t("load_file") }}
+                    </v-btn>
+                    <input
+                      ref="fileInput"
+                      type="file"
+                      accept=".txt"
+                      style="display: none"
+                      @change="loadFile"
+                    />
+                    <v-btn
+                      variant="text"
+                      size="small"
+                      color="grey"
+                      prepend-icon="mdi-close"
+                      @click="clearList"
+                    >
+                      {{ t("clear_list") }}
+                    </v-btn>
+                  </div>
                 </div>
+              </div>
+
+              <!-- Numbers Mode -->
+              <div v-else class="sorteio-numbers-input">
+                <div class="sorteio-numbers-fields">
+                  <v-text-field
+                    v-model.number="minNumber"
+                    :label="t('min_number')"
+                    type="number"
+                    variant="outlined"
+                    hide-details
+                    class="sorteio-number-field"
+                  />
+                  <v-text-field
+                    v-model.number="maxNumber"
+                    :label="t('max_number')"
+                    type="number"
+                    variant="outlined"
+                    hide-details
+                    class="sorteio-number-field"
+                  />
+                </div>
+                <p class="sorteio-count">
+                  {{ t("range_count", { total: numberRange.length }) }}
+                </p>
               </div>
             </div>
           </div>
@@ -66,7 +109,7 @@
                 <div v-if="isRolling" class="rolling-name">
                   {{ currentRollingName }}
                 </div>
-                <div v-else-if="winner" class="winner-name">
+                <div v-else-if="winner !== null" class="winner-name">
                   {{ winner }}
                 </div>
                 <div v-else class="no-result">
@@ -76,7 +119,10 @@
                   >
                     mdi-dice-multiple-outline
                   </v-icon>
-                  <p>{{ participants.length === 0 ? t("no_participants") : "" }}</p>
+                  <p>
+                    <span v-if="mode === 'names'">{{ participants.length === 0 ? t("no_participants") : "" }}</span>
+                    <span v-else>{{ t("no_range") }}</span>
+                  </p>
                 </div>
               </div>
 
@@ -105,7 +151,7 @@
               </div>
 
               <!-- Projection buttons -->
-              <div v-if="winner" class="sorteio-projection-actions">
+              <div v-if="winner !== null" class="sorteio-projection-actions">
                 <v-btn
                   v-if="!isProjected"
                   variant="outlined"
@@ -171,39 +217,57 @@ import manifest from "../manifest.json";
 export default {
   name: manifest.id,
   data() {
-    return {
-      manifest,
-      participantText: "",
-      participants: [],
-      winner: null,
-      isRolling: false,
-      currentRollingName: "",
-      noRepeat: false,
-      drawnSet: new Set(),
-      history: [],
-      isProjected: false,
-      rollInterval: null,
-    };
-  },
+      return {
+        manifest,
+        participantText: "",
+        participants: [],
+        winner: null,
+        isRolling: false,
+        currentRollingName: "",
+        noRepeat: false,
+        drawnSet: new Set(),
+        history: [],
+        isProjected: false,
+        rollInterval: null,
+        mode: "names",
+        minNumber: 1,
+        maxNumber: 100,
+      };
+    },
   computed: {
-    /* COMPUTEDS OBRIGATORIOS - INICIO */
-    /* NAO MODIFICAR */
-    module_id() {
-      return manifest.id;
-    },
-    module() {
-      return this.$modules.get(this.module_id);
-    },
-    /* COMPUTEDS OBRIGATORIOS - FIM */
+        /* COMPUTEDS OBRIGATORIOS - INICIO */
+        /* NAO MODIFICAR */
+        module_id() {
+          return manifest.id;
+        },
+        module() {
+          return this.$modules.get(this.module_id);
+        },
+        /* COMPUTEDS OBRIGATORIOS - FIM */
 
-    drawnCount() {
-      return this.drawnSet.size;
-    },
-    canSort() {
-      return this.participants.length === 0 || this.isRolling;
-    },
-  },
-  watch: {
+        drawnCount() {
+          return this.drawnSet.size;
+        },
+
+        numberRange() {
+          const min = Math.min(this.minNumber, this.maxNumber);
+          const max = Math.max(this.minNumber, this.maxNumber);
+          const range = [];
+          for (let i = min; i <= max; i++) {
+            range.push(i);
+          }
+          return range;
+        },
+
+        canSort() {
+          if (this.isRolling) return true;
+          if (this.mode === "names") {
+            return this.participants.length === 0;
+          }
+          return this.numberRange.length === 0;
+        },
+      },
+    watch: {
     "module.show": {
       handler(newVal) {
         if (newVal) {
@@ -302,57 +366,64 @@ export default {
     },
 
     sortear() {
-      const available = this.getAvailableParticipants();
+          let available = [];
+          let totalPool = [];
 
-      if (available.length === 0) {
-        this.winner = null;
-        this.$userdata.set("sorteio_winner", null);
-        return;
-      }
-
-      this.isRolling = true;
-      this.winner = null;
-
-      const duration = 2000 + Math.random() * 2000;
-      const startTime = Date.now();
-
-      this.rollInterval = setInterval(() => {
-        const elapsed = Date.now() - startTime;
-        if (elapsed >= duration) {
-          clearInterval(this.rollInterval);
-          this.rollInterval = null;
-
-          const index = Math.floor(Math.random() * available.length);
-          const chosen = available[index];
-
-          this.winner = chosen;
-          this.isRolling = false;
-          this.currentRollingName = "";
-
-          if (this.noRepeat) {
-            this.drawnSet = new Set([...this.drawnSet, chosen]);
+          if (this.mode === "names") {
+            available = this.getAvailableParticipants();
+            totalPool = this.participants;
+          } else {
+            available = this.numberRange.filter((n) => !this.drawnSet.has(n));
+            totalPool = this.numberRange;
           }
 
-          const now = new Date();
-          const timeStr = now.toLocaleTimeString("pt-BR", {
-            hour: "2-digit",
-            minute: "2-digit",
-          });
-          this.history = [{ name: chosen, time: timeStr }, ...this.history];
-          this.$userdata.set("sorteio_history", this.history);
-          this.$userdata.set("sorteio_winner", chosen);
-
-          if (this.isProjected) {
-            this.projetar();
+          if (available.length === 0) {
+            this.winner = null;
+            this.$userdata.set("sorteio_winner", null);
+            return;
           }
-        } else {
-          const randomIndex = Math.floor(
-            Math.random() * this.participants.length
-          );
-          this.currentRollingName = this.participants[randomIndex];
-        }
-      }, 50);
-    },
+
+          this.isRolling = true;
+          this.winner = null;
+
+          const duration = 2000 + Math.random() * 2000;
+          const startTime = Date.now();
+
+          this.rollInterval = setInterval(() => {
+            const elapsed = Date.now() - startTime;
+            if (elapsed >= duration) {
+              clearInterval(this.rollInterval);
+              this.rollInterval = null;
+
+              const index = Math.floor(Math.random() * available.length);
+              const chosen = available[index];
+
+              this.winner = chosen;
+              this.isRolling = false;
+              this.currentRollingName = "";
+
+              if (this.noRepeat) {
+                this.drawnSet = new Set([...this.drawnSet, chosen]);
+              }
+
+              const now = new Date();
+              const timeStr = now.toLocaleTimeString("pt-BR", {
+                hour: "2-digit",
+                minute: "2-digit",
+              });
+              this.history = [{ name: chosen, time: timeStr }, ...this.history];
+              this.$userdata.set("sorteio_history", this.history);
+              this.$userdata.set("sorteio_winner", chosen);
+
+              if (this.isProjected) {
+                this.projetar();
+              }
+            } else {
+              const randomIndex = Math.floor(Math.random() * totalPool.length);
+              this.currentRollingName = totalPool[randomIndex];
+            }
+          }, 50);
+        },
 
     projetar() {
       if (!this.winner) return;

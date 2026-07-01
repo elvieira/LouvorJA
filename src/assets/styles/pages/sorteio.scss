@@ -84,6 +84,51 @@
   }
 }
 
+// Mode Selector
+.sorteio-mode-selector {
+  margin-bottom: 16px;
+
+  .v-btn-toggle {
+    width: 100%;
+
+    .v-btn {
+      flex: 1;
+      justify-content: center;
+      gap: 8px;
+
+      .v-icon {
+        font-size: 18px;
+      }
+    }
+  }
+}
+
+// Numbers Input
+.sorteio-numbers-input {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+}
+
+.sorteio-numbers-fields {
+  display: flex;
+  gap: 12px;
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+  }
+}
+
+.sorteio-number-field {
+  flex: 1;
+
+  .v-field {
+    background: var(--main-bg) !important;
+    border-radius: var(--border-radius) !important;
+  }
+}
+
 // Result card
 .sorteio-result-card {
   display: flex;

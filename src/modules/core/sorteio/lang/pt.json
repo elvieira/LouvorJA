@@ -14,5 +14,11 @@
   "drawn_count": "Sorteados: {n}/{total}",
   "result": "Resultado",
   "clear_list": "Limpar Lista",
-  "winner_of": "{name} foi sorteado(a)!"
+  "winner_of": "{name} foi sorteado(a)!",
+  "mode_names": "Nomes",
+  "mode_numbers": "Numeros",
+  "min_number": "Numero minimo",
+  "max_number": "Numero maximo",
+  "range_count": "Total de numeros: {total}",
+  "no_range": "Defina o intervalo de numeros"
 }
