@@ -1,0 +1,333 @@
+// Sorteio Module Styles — LouvorJA
+// Design tokens: CSS variables from main.css
+
+.sorteio-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  width: 100%;
+  height: 100%;
+  align-content: start;
+}
+
+// Left column — Input
+.sorteio-left {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+// Right column — Result + History
+.sorteio-right {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-height: 0;
+}
+
+.sorteio-card {
+  background: var(--card-bg);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  padding: 24px;
+  transition: var(--transition);
+
+  &:hover {
+    box-shadow: var(--shadow-hover);
+  }
+}
+
+.sorteio-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.sorteio-card-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--sidebar-text);
+  margin: 0;
+}
+
+.sorteio-input-card {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.sorteio-input-footer {
+  margin-top: auto;
+  padding-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sorteio-card-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.sorteio-count {
+  font-size: 13px;
+  color: var(--sidebar-text-secondary);
+  margin: 0;
+}
+
+// Input card specific
+.sorteio-textarea {
+  .v-field {
+    background: var(--main-bg) !important;
+    border-radius: var(--border-radius) !important;
+  }
+}
+
+// Mode Selector
+.sorteio-mode-selector {
+  margin-bottom: 16px;
+
+  .v-btn-toggle {
+    width: 100%;
+
+    .v-btn {
+      flex: 1;
+      justify-content: center;
+      gap: 8px;
+
+      .v-icon {
+        font-size: 18px;
+      }
+    }
+  }
+}
+
+// Numbers Input
+.sorteio-numbers-input {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+}
+
+.sorteio-numbers-fields {
+  display: flex;
+  gap: 12px;
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+  }
+}
+
+.sorteio-number-field {
+  flex: 1;
+
+  .v-field {
+    background: var(--main-bg) !important;
+    border-radius: var(--border-radius) !important;
+  }
+}
+
+// Result card
+.sorteio-result-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px;
+}
+
+.sorteio-result-display {
+  width: 100%;
+  min-height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.rolling-name {
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--sidebar-text-secondary);
+  animation: pulse 0.15s ease-in-out infinite alternate;
+}
+
+.winner-name {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--accent-blue);
+  text-align: center;
+  animation: fadeIn 0.5s ease;
+  word-break: break-word;
+}
+
+.no-result {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+
+  p {
+    font-size: 14px;
+    color: var(--sidebar-text-secondary);
+    text-align: center;
+    margin: 0;
+  }
+}
+
+.sorteio-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.sorteio-btn-main {
+  min-width: 200px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 25px !important;
+}
+
+.sorteio-options {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.sorteio-projection-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+// History card — fills remaining space in right column
+.sorteio-history-card {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+
+  .sorteio-card-header {
+    flex-shrink: 0;
+  }
+}
+
+.sorteio-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+.sorteio-history-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-color);
+  transition: var(--transition);
+
+  &:hover {
+    background: var(--sidebar-hover);
+  }
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.sorteio-history-number {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent-blue);
+  min-width: 28px;
+  margin-right: 12px;
+}
+
+.sorteio-history-name {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--sidebar-text);
+}
+
+.sorteio-history-time {
+  font-size: 12px;
+  color: var(--sidebar-text-secondary);
+}
+
+// Animations
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes pulse {
+  from {
+    opacity: 0.5;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1.02);
+  }
+}
+
+// Responsive — stack to single column on tablets
+@media (max-width: 1024px) {
+  .sorteio-container {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .sorteio-card {
+    padding: 20px;
+  }
+
+  .winner-name {
+    font-size: 2rem;
+  }
+}
+
+// Mobile
+@media (max-width: 768px) {
+  .sorteio-container {
+    gap: 12px;
+  }
+
+  .sorteio-card {
+    padding: 16px;
+  }
+
+  .sorteio-result-card {
+    padding: 20px 16px;
+  }
+
+  .sorteio-result-display {
+    min-height: 80px;
+  }
+
+  .winner-name {
+    font-size: 1.5rem;
+  }
+
+  .rolling-name {
+    font-size: 1.5rem;
+  }
+
+  .sorteio-btn-main {
+    min-width: 160px;
+    font-size: 14px;
+  }
+}

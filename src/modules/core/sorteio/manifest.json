@@ -1,0 +1,12 @@
+{
+  "id": "sorteio",
+  "name": "Sorteio",
+  "version": "1.0.0",
+  "description": "Sorteio aleatorio de nomes e numeros com animacao visual.",
+  "author": "rafaumeu",
+  "category": "utilities",
+  "icon": "mdi-dice-multiple",
+  "minAppVersion": "1.0.0",
+  "dependencies": [],
+  "permissions": []
+}
