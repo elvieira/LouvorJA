@@ -56,7 +56,30 @@ export default {
           icon: "mdi-text-box-outline",
           click: () => this.$media.openLyric(this.id_music),
         },
+        {
+          tooltip: this.isFavorite ? "Remover dos Favoritos" : "Favoritar",
+          disabled: false,
+          icon: this.isFavorite ? "mdi-star" : "mdi-star-outline",
+          click: () => this.toggleFavorite(),
+        },
       ];
+    },
+    isFavorite() {
+      return this.$favorites.isFavorite(this.id_music);
+    },
+  },
+  watch: {
+    id_music: {
+      handler() {
+        this.$forceUpdate();
+      },
+      immediate: true,
+    },
+  },
+  methods: {
+    toggleFavorite() {
+      this.$favorites.toggle(this.id_music);
+      this.$forceUpdate();
     },
   },
 };

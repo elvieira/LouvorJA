@@ -5,5 +5,7 @@
     "top_songs": "Canciones más tocadas",
     "songs": "canciones",
     "no_songs_played": "Ninguna canción reproducida aún. ¡Abre una colección y reproduce una canción!",
+    "favorites": "Favoritos",
+    "no_favorites": "Sin favoritos aún. Haz clic en la estrella junto a cualquier canción!",
     "no_collections_played": "Ninguna colección accedida. ¡Reproduce una canción para registrarla aquí!"
 }
