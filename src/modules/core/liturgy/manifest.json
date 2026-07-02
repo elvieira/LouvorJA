@@ -1,0 +1,10 @@
+{
+  "id": "liturgy",
+  "name": "Liturgia",
+  "description": "Organizador de culto",
+  "category": "utilities",
+  "icon": "mdi-format-list-checks",
+  "version": "1.0.0",
+  "showInMainMenu": true,
+  "dependencies": []
+}

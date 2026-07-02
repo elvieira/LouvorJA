@@ -39,6 +39,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
   identifyDisplays: () => ipcRenderer.invoke('identify-displays'),
   onDisplaysChanged: (callback) => ipcRenderer.on('displays-changed', callback),
   
+  // File operations
+  selectFile: () => ipcRenderer.invoke('select-file'),
+  selectDirectory: () => ipcRenderer.invoke('select-directory'),
+  openPath: (filePath) => ipcRenderer.invoke('open-path', filePath),
+
   // Auto-Update
   checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),
   downloadUpdate: () => ipcRenderer.invoke('download-update'),

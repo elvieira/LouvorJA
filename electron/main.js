@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Menu, ipcMain, protocol, net } = require('electron');
+const { app, BrowserWindow, Menu, ipcMain, protocol, net, dialog, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const fsExtra = require('fs-extra');
@@ -567,7 +567,7 @@ function createWindow() {
   if (isDev) {
     // Em desenvolvimento, carrega o servidor Vite
     mainWindow.loadURL('http://localhost:5173');
-    // mainWindow.webContents.openDevTools();
+    mainWindow.webContents.openDevTools();
   } else {
     // Em produção, carrega o build estático
     mainWindow.loadFile(path.join(__dirname, '..', 'dist', 'index.html'));
@@ -774,6 +774,46 @@ app.on('window-all-closed', () => {
 });
 
 // ==========================================
+// File operations
+ipcMain.handle('select-file', async (event) => {
+  try {
+    const result = await dialog.showOpenDialog({
+      properties: ['openFile'],
+      title: 'Selecionar arquivo',
+    });
+    if (result.canceled) return null;
+    return result.filePaths[0] || null;
+  } catch (error) {
+    console.error('Erro ao selecionar arquivo:', error);
+    return null;
+  }
+});
+
+ipcMain.handle('select-directory', async (event) => {
+  try {
+    const result = await dialog.showOpenDialog({
+      properties: ['openDirectory'],
+      title: 'Selecionar pasta',
+    });
+    if (result.canceled) return null;
+    return result.filePaths[0] || null;
+  } catch (error) {
+    console.error('Erro ao selecionar pasta:', error);
+    return null;
+  }
+});
+
+ipcMain.handle('open-path', async (event, filePath) => {
+  try {
+    if (!filePath) return false;
+    shell.openPath(filePath);
+    return true;
+  } catch (error) {
+    console.error('Erro ao abrir arquivo:', error);
+    return false;
+  }
+});
+
 // Auto-Updater
 // ==========================================
 autoUpdater.autoDownload = false;
