@@ -1,0 +1,10 @@
+{
+  "id": "text",
+  "name": "Texto Interativo",
+  "description": "Editor de texto para projeção ao vivo",
+  "category": "utilities",
+  "icon": "mdi-format-text",
+  "version": "1.0.0",
+  "showInMainMenu": true,
+  "dependencies": []
+}
