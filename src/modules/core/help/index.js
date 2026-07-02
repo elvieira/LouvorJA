@@ -1,10 +1,12 @@
 import BaseModule from "../../BaseModule";
 import manifest from "./manifest.json";
+import pt from "./lang/pt.json";
+import es from "./lang/es.json";
 
 export default class extends BaseModule {
   constructor() {
-    // Load translations (optional later)
-    manifest.translations = { pt: {}, es: {} };
+    // Load translations
+    manifest.translations = { pt, es };
 
     // Load manifest
     super(manifest);

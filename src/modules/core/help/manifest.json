@@ -1,16 +1,16 @@
 {
   "id": "help",
-  "name": "Ajuda e sobre",
-  "version": "1.0.0",
-  "description": "Informações sobre o aplicativo e ajuda.",
+  "name": "Ajuda",
+  "version": "2.0.0",
+  "description": "Ajuda interativa, guia de uso e informacoes do aplicativo.",
   "author": "elvieira",
   "category": null,
   "showInMainMenu": false,
-  "icon": "mdi-help-circle",
+  "icon": "mdi-help-circle-outline",
   "minAppVersion": "1.0.0",
   "dependencies": [],
   "permissions": [],
   "moduleOptions": {
-    "size": "small"
+    "size": "full"
   }
 }
