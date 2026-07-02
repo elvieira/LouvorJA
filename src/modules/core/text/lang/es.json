@@ -1,0 +1,23 @@
+{
+  "title": "Texto Interactivo",
+  "placeholder": "Escriba el texto para proyección...",
+  "bold": "Negrita",
+  "italic": "Cursiva",
+  "underline": "Subrayado",
+  "strikethrough": "Tachado",
+  "align_left": "Izquierda",
+  "align_center": "Centrado",
+  "align_right": "Derecha",
+  "align_justify": "Justificado",
+  "font_size": "Tamaño",
+  "text_color": "Color del texto",
+  "bg_color": "Color de fondo",
+  "font_family": "Fuente",
+  "clear": "Limpiar",
+  "clear_confirm": "¿Limpiar todo el texto?",
+  "import_file": "Importar archivo",
+  "export_file": "Exportar archivo",
+  "save_draft": "Guardar borrador",
+  "draft_saved": "¡Borrador guardado!",
+  "projection_ready": "Listo para proyección"
+}
