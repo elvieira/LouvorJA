@@ -1,0 +1,16 @@
+{
+  "title": "Adventist Hymnal",
+  "inputs": {
+    "search": "Type the hymn number or name..."
+  },
+  "table": {
+    "track": "Track",
+    "music_name": "Name",
+    "album_name": "Album",
+    "duration": "Duration"
+  },
+  "data": {
+    "records": "Total records",
+    "not_found": "No records found with the selected filters! Try changing the search filters."
+  }
+}

@@ -1,7 +1,7 @@
 import { createI18n } from "vue-i18n";
 
 const loadLocaleMessages = async () => {
-  const locales = ["pt", "es"];
+  const locales = ["pt", "es", "en"];
   const messages = {};
 
   for (const locale of locales) {

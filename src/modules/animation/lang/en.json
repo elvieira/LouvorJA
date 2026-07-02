@@ -1,0 +1,16 @@
+{
+  "title": "Animation",
+  "text": "ENGLISH",
+  "modals": {
+    "create": {
+      "title": "Create animation",
+      "name": "Name",
+      "description": "Description"
+    },
+    "edit": {
+      "title": "Edit animation",
+      "name": "Name",
+      "description": "Description"
+    }
+  }
+}

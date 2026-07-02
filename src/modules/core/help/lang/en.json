@@ -1,0 +1,22 @@
+{
+  "title": "Help & About",
+  "tab_about": "About",
+  "tab_developers": "Developers",
+  "version_label": "Version",
+  "version_beta": "(Beta)",
+  "app_description": "Desktop application for managing and presenting songs, hymns, lyrics, and multimedia resources for churches. Made with love and technology to make worship even more fluid.",
+  "manual_title": "User Manual",
+  "manual_subtitle": "Learn to use all features",
+  "manual_button": "Access",
+  "support_title": "Support & Questions",
+  "support_subtitle": "Talk directly with the developers",
+  "support_button": "Contact",
+  "updates_title": "Updates",
+  "updates_subtitle": "Check for new available versions",
+  "updates_button": "Check",
+  "diagnostics_title": "Diagnostics",
+  "diagnostics_subtitle": "View logs and system information",
+  "diagnostics_button": "View",
+  "team_title": "Team and Contributors",
+  "team_description": "Information about the project's developers and contributors will be available here soon."
+}

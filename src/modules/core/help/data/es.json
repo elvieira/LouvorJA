@@ -1,0 +1,936 @@
+{
+  "items": {
+    "teclas-atalho": {
+      "title": "Atajos de Teclado",
+      "text": [
+        {
+          "type": "title",
+          "value": "General"
+        },
+        {
+          "type": "list",
+          "value": [
+            "<b>ESC</b> - Cierra la pantalla del segundo monitor / Cierra la canción / Cierra la ventana activa",
+            "<b>CTRL + W</b> - Cierra la pestaña actual",
+            "<b>CTRL + F</b> - Abre la búsqueda de canciones",
+            "<b>F1</b> - Abre la pantalla de ayuda",
+            "<b>F5</b> / <b>F9</b> - Proyecta la ventana actual (cuando esté disponible la función) / Proyecta la canción del Editor de Diapositivas"
+          ]
+        },
+        {
+          "type": "title",
+          "value": "Biblia / Búsqueda Bíblica"
+        },
+        {
+          "type": "list",
+          "value": [
+            "<b>Flecha Izquierda</b> / <b>Flecha Arriba</b> / <b>RePág</b> - Va al versículo anterior",
+            "<b>Flecha Derecha</b> / <b>Flecha Abajo</b> / <b>AvPág</b> - Va al siguiente versículo"
+          ]
+        },
+        {
+          "type": "title",
+          "value": "Proyección de Canción"
+        },
+        {
+          "type": "list",
+          "value": [
+            "<b>Flecha Izquierda</b> / <b>Flecha Arriba</b> / <b>RePág</b> - Va a la diapositiva anterior",
+            "<b>Flecha Derecha</b> / <b>Flecha Abajo</b> / <b>AvPág</b> - Va a la siguiente diapositiva",
+            "<b>Inicio</b> - Va a la primera diapositiva",
+            "<b>Fin</b> - Va a la última diapositiva",
+            "<b>Pausa</b> / <b>Play</b> / <b>CTRL + P</b> / <b>Barra Espaciadora</b> - Pausa la canción, o continúa si ya está pausada"
+          ]
+        },
+        {
+          "type": "title",
+          "value": "Editor de Diapositivas"
+        },
+        {
+          "type": "list",
+          "value": [
+            "<b>Flecha Izquierda</b> / <b>Flecha Arriba</b> / <b>RePág</b> - Va a la diapositiva anterior",
+            "<b>Flecha Derecha</b> / <b>Flecha Abajo</b> / <b>AvPág</b> - Va a la siguiente diapositiva",
+            "<b>Inicio</b> - Va a la primera diapositiva",
+            "<b>Fin</b> - Va a la última diapositiva",
+            "<b>Pausa</b> / <b>Play</b> / <b>CTRL + P</b> / <b>Barra Espaciadora</b> - Pausa la canción, o continúa si ya está pausada",
+            "<b>CTRL + Flecha Derecha</b> / <b>CTRL + Flecha Abajo</b> - Graba el tiempo y avanza la diapositiva",
+            "<b>CTRL + Flecha Izquierda</b> / <b>CTRL + Flecha Arriba</b> - Graba de forma retroactiva",
+            "<b>F5</b> / <b>F9</b> - Proyecta la canción"
+          ]
+        }
+      ]
+    },
+    "transmitir": {
+      "title": "Transmitir contenido para streaming",
+      "text": [
+        {
+          "type": "text",
+          "value": "El programa permite la transmisión de contenidos a servicios de streaming, como OBS y VMIX, a través del navegador."
+        },
+        {
+          "type": "text",
+          "value": "Para activar esta función, acceda al botón de Menú (en la esquina superior izquierda), y vaya a la opción \"Transmitir\". Defina la IP y el Puerto (o haga clic en \"Usar IP de red\", para usar la IP de red). Luego, haga clic en \"Iniciar Servidor\". En caso de error, intente cambiar el puerto."
+        },
+        {
+          "type": "text",
+          "value": "Una vez iniciado, las letras serán transmitidas a través del navegador, mediante la dirección que se muestra en esta pantalla. Copie esta dirección y péguela en el programa de streaming (insertando un objeto Navegador)."
+        }
+      ]
+    },
+    "hinario-busca": {
+      "title": "Búsqueda de Himnos",
+      "text": [
+        {
+          "type": "text",
+          "value": "En la pestaña \"Hinario\", el campo de búsqueda puede utilizarse de dos maneras:"
+        },
+        {
+          "type": "list",
+          "value": [
+            "<b>Número del Himno:</b> Al ingresar un número, se muestra el himno correspondiente al número digitado. Presione la tecla \"ENTER\" para ejecutar el himno, o haga doble clic sobre él.",
+            "<b>Palabra:</b> También puede colocar el nombre o parte del nombre del himno en este campo. Al colocar una palabra, se listan todos los himnos que contengan esa palabra. Ej.: Al digitar \"Jesús\", se muestran los himnos \"Nace Jesús\", \"Saludad el Nombre de Jesús\", \"Jesús es Mejor\", \"El Amor de Jesús\", etc..."
+          ]
+        },
+        {
+          "type": "text",
+          "value": "Para buscar un himno por la letra, utilice la opción \"Localizar Canciones\", dentro del menú \"Colectáneas\".",
+          "link": "localizar-musicas"
+        },
+        {
+          "type": "text",
+          "value": "Debajo del campo de búsqueda, existen algunas opciones que definen la forma en que el himno será abierto:"
+        },
+        {
+          "type": "list",
+          "value": [
+            "<b>Slide Cantado:</b> Abre las diapositivas del himno con audio cantado.",
+            "<b>Slide Playback:</b> Abre las diapositivas del himno con audio playback.",
+            "<b>Slide Sin Audio:</b> Abre las diapositivas del himno sin audio. En este modo, los tiempos quedan desactivados, debiendo el operador cambiar de diapositiva manualmente."
+          ]
+        }
+      ]
+    },
+    "reproduzir-hinos-sequencia": {
+      "title": "¿Cómo reproducir himnos del hinario en secuencia?",
+      "text": [
+        {
+          "type": "text",
+          "value": "En la pestaña \"Hinario\", seleccione un himno, y luego presione el botón \"En Secuencia\". Esto hará que el himno actual se ejecute, y al finalizar el himno, el siguiente himno se ejecutará a continuación."
+        },
+        {
+          "type": "text",
+          "value": "<b>Ej.:</b> Se ejecutó el himno 51. Al finalizar el mismo, se ejecutará el himno 52, luego el 53, y así sucesivamente."
+        }
+      ]
+    },
+    "exportar-musicas": {
+      "title": "Exportando Canciones",
+      "text": [
+        {
+          "type": "text",
+          "value": "Presione el botón \"Exportar Canción\" para exportar la canción actual en el formato del programa (slja). Este archivo puede ser modificado posteriormente en la pantalla \"Editor de Diapositivas\".",
+          "link": "editor-de-slides"
+        }
+      ]
+    },
+    "localizar-musicas": {
+      "title": "Localizar Canciones",
+      "text": [
+        {
+          "type": "text",
+          "value": "En la pantalla \"Localizar Canciones\", coloque el nombre de la canción a buscar. La canción será buscada de acuerdo con los filtros elegidos."
+        },
+        {
+          "type": "text",
+          "value": "<b>Consejo:</b> Utilice asterisco (<b>*</b>) para representar cualquier letra o palabra entre los términos. Por ejemplo: Al buscar por \"<b>Jesús * Mejor</b>\", el programa trae las canciones \"<b><u>Jesús</u> es <u>Mejor</u></b>\" y \"<b><u>Jesús</u> mi <u>Mejor</u> Amigo</b>\"."
+        },
+        {
+          "type": "text",
+          "value": "Si desea buscar canciones que comiencen con una letra determinada, basta con hacer clic en la pestaña correspondiente a la letra de la canción."
+        },
+        {
+          "type": "text",
+          "value": "En la lista de canciones, hay algunos iconos de identificación. Un icono de Youtube indica que es una colectánea de Youtube, es decir, el programa se conectará a internet para ejecutar la canción. El icono azul con las letras \"PB\" indica que la canción posee playback."
+        }
+      ]
+    },
+    "letras": {
+      "title": "Obteniendo la letra de los himnos / canciones",
+      "text": [
+        {
+          "type": "text",
+          "value": "Presione el botón \"Letra\" para abrir la ventana de letras de las canciones."
+        },
+        {
+          "type": "text",
+          "value": "En la ventana de letra de la canción, es posible ver la información del(os) álbum(es) donde la canción se encuentra dentro del programa, la letra, y un campo de búsqueda rápida dentro de la letra. Al utilizar este campo de búsqueda, la palabra digitada se destaca automáticamente en rojo en la letra."
+        }
+      ]
+    },
+    "relacao-de-hinos-dos-hinarios-1996-e-2022": {
+      "title": "Relación de Himnos de los Hinarios 1996 y 2022",
+      "text": [
+        {
+          "type": "text",
+          "value": "La relación de himnos entre los Hinarios 1996 y 2022 está disponible en la versión web de LouvorJA. Acceda a <b>louvorja.com.br</b> para visualizar la tabla completa de correspondencia entre los himnos de los dos hinarios."
+        }
+      ]
+    },
+    "hinario-reproducao": {
+      "title": "Reproducción de Himnos",
+      "text": [
+        {
+          "type": "text",
+          "value": "En el menú, es posible visualizar diversas formas por las cuales un himno puede ser abierto:"
+        },
+        {
+          "type": "list",
+          "value": [
+            "<b>Letra:</b> Abre una ventana con la letra de la canción.",
+            "<b>Slide - Cantado:</b> Abre las diapositivas del himno con audio cantado.",
+            "<b>Slide - Playback:</b> Abre las diapositivas del himno con audio playback.",
+            "<b>Slide - Sin Audio:</b> Abre las diapositivas del himno sin audio. En este modo, los tiempos quedan desactivados, debiendo el operador cambiar de diapositiva manualmente.",
+            "<b>Slide - En Secuencia:</b> Abre el himno actual, y al finalizar, ejecuta los siguientes himnos en secuencia, automáticamente.",
+            "<b>Archivo de Audio - Cantado:</b> Abre el archivo mp3 de la canción cantada.",
+            "<b>Archivo de Audio - Playback:</b> Abre el archivo mp3 del playback de la canción."
+          ]
+        }
+      ]
+    },
+    "coletaneas-online": {
+      "title": "Colectáneas En línea",
+      "text": [
+        {
+          "type": "text",
+          "value": "La pestaña Colectáneas En línea permite la ejecución de vídeos directamente de Youtube. Para ejecutar vídeos en esta sección, es necesario tener conexión a internet."
+        },
+        {
+          "type": "text",
+          "value": "En vídeos en línea, hay una selección de algunos canales para la ejecución de vídeos. Los botones de Actualizar permiten actualizar los canales, listas de reproducción o vídeos, en caso de haber nuevos contenidos."
+        },
+        {
+          "type": "text",
+          "value": "Es posible registrar vídeos en línea personalizados, accediendo al botón \"Vídeos Personalizados\"."
+        }
+      ]
+    },
+    "coletaneas-personalizadas": {
+      "title": "Colectáneas Personalizadas",
+      "text": [
+        {
+          "type": "text",
+          "value": "El programa permite la inserción de accesos directos a archivos personalizados. Para agregar archivos personalizados, acceda a la pestaña \"Colectáneas Personalizadas\"."
+        },
+        {
+          "type": "title",
+          "value": "Agregar Archivo / Álbum"
+        },
+        {
+          "type": "text",
+          "value": "Copie el archivo o el directorio (CTRL+C), y péguelo en esta pantalla (CTRL+V). O haga clic en el botón \"Agregar\" para añadir una nueva colectánea / archivo. Al hacer clic en este botón, se abrirá un panel de adición en el lado izquierdo de la pantalla, pudiendo opcionalmente elegir una imagen como portada de la colectánea. Para crear una lista de reproducción, basta con colocar el directorio del álbum, en lugar de la ruta del archivo."
+        },
+        {
+          "type": "title",
+          "value": "Eliminar Álbum"
+        },
+        {
+          "type": "text",
+          "value": "Haga clic con el botón derecho sobre la colectánea que desea modificar, y luego utilice la opción \"Eliminar\"."
+        },
+        {
+          "type": "text",
+          "value": "<b>Obs.:</b> Esta opción elimina solamente el enlace de la colectánea del Menú. No elimina el archivo de la respectiva colectánea."
+        },
+        {
+          "type": "text",
+          "value": "El botón \"Eliminar\" es solo informativo. Al hacer clic sobre él, se mostrará una alerta informando la manera correcta de eliminar una colectánea. Para eliminar todas las colectáneas al mismo tiempo, haga clic sobre la flecha al lado del botón \"Eliminar\", y luego seleccione la opción \"Eliminar Todas\". Todas las colectáneas serán eliminadas."
+        },
+        {
+          "type": "text",
+          "value": "<b>Obs.:</b> Esta opción elimina solamente los enlaces de las colectáneas del Menú. No elimina los archivos de las respectivas colectáneas."
+        }
+      ]
+    },
+    "playlist": {
+      "title": "Lista de Reproducción de las Colectáneas",
+      "text": [
+        {
+          "type": "text",
+          "value": "Al hacer clic sobre una colectánea en las pestañas \"JA/Min. Música\" o \"Colectáneas Diversas\", se abrirá una lista con las canciones que componen la colectánea. Basta con hacer clic sobre una canción para abrir la diapositiva."
+        },
+        {
+          "type": "text",
+          "value": "En esta pantalla, es posible proyectar la lista de canciones para el público (botón \"Proyectar Menú\"), y también reproducir todas las canciones en secuencia (botón \"Reproducir Todas\")."
+        },
+        {
+          "type": "text",
+          "value": "Delante del nombre de cada canción, existen botones de acción que abren la canción de forma diferente, como se muestra a continuación (en orden):"
+        },
+        {
+          "type": "list",
+          "value": [
+            "Abre las diapositivas con audio cantado.",
+            "Abre las diapositivas con audio playback.",
+            "Abre las diapositivas sin audio. En este modo, los tiempos quedan desactivados, debiendo el operador cambiar de diapositiva manualmente.",
+            "Abre el archivo mp3 de la canción cantada.",
+            "Abre el archivo mp3 de la canción playback.",
+            "Abre una ventana con la letra de la canción."
+          ]
+        }
+      ]
+    },
+    "busca-biblica": {
+      "title": "Buscando Pasajes Bíblicos",
+      "text": [
+        {
+          "type": "text",
+          "value": "Acceda a la pestaña \"Búsqueda Bíblica\" para buscar pasajes bíblicos. Utilice los filtros de búsqueda para definir los parámetros de la búsqueda de pasajes."
+        },
+        {
+          "type": "text",
+          "value": "<b>Consejo:</b> Utilice asterisco (<b>*</b>) para representar cualquier letra o palabra entre los términos. Por ejemplo: Al buscar por \"Dios*tierra\", el programa trae todos los pasajes bíblicos que tengan las palabras Dios y tierra, como por ejemplo: \"<b>En el principio creó <u>Dios</u> los cielos y la <u>tierra</u>.</b>\"."
+        }
+      ]
+    },
+    "exibir-varios-versos-biblicos": {
+      "title": "¿Cómo mostrar más de un versículo bíblico en la pantalla?",
+      "text": [
+        {
+          "type": "text",
+          "value": "Para mostrar más de un versículo bíblico, coloque los versículos deseados en el campo de búsqueda del versículo, según el ejemplo:"
+        },
+        {
+          "type": "list",
+          "value": [
+            "\"<b>1-3</b>\" - Versículos del 1 al 3",
+            "\"<b>1,3</b>\" - Versículos 1 y 3",
+            "\"<b>1-3,5</b>\" - Versículos del 1 al 3, y 5"
+          ]
+        },
+        {
+          "type": "text",
+          "value": "Después de colocar los versículos deseados, presione ENTER."
+        }
+      ]
+    },
+    "passagem-biblica": {
+      "title": "Mostrando Pasajes Bíblicos",
+      "text": [
+        {
+          "type": "text",
+          "value": "Seleccione el libro, capítulo y versículo para abrir el pasaje bíblico. Utilice la lista de versiones, en la barra de herramientas superior, para cambiar la versión bíblica."
+        },
+        {
+          "type": "text",
+          "value": "Es posible mostrar más de un versículo bíblico al mismo tiempo, o incluso versículos intercalados.",
+          "link": "exibir-varios-versos-biblicos"
+        }
+      ]
+    },
+    "formatacao": {
+      "title": "Formato de contenido",
+      "text": [
+        {
+          "type": "text",
+          "value": "Haga clic en el botón \"Formato\" para formatear el contenido de la pantalla. Se abrirá un panel lateral, permitiendo modificar la fuente, color, tamaño, imagen de fondo y disposición."
+        },
+        {
+          "type": "text",
+          "value": "Para restaurar el formato, basta con hacer clic en el botón \"Restaurar\"."
+        }
+      ]
+    },
+    "projetando-tela": {
+      "title": "Proyectando en Otro Monitor",
+      "text": [
+        {
+          "type": "text",
+          "value": "Haga clic en el botón Área Expandida para proyectar el contenido de la pantalla a otro monitor (el monitor secundario puede ser definido en el menú general > Opciones). Si no se detecta el segundo monitor, el contenido se abre en el monitor principal."
+        },
+        {
+          "type": "text",
+          "value": "Después de proyectar la pantalla, el icono será alterado, indicando que el contenido ya se encuentra proyectado. Presione nuevamente el botón para recoger el contenido expandido, o presione la tecla \"ESC\"."
+        },
+        {
+          "type": "text",
+          "value": "Para cambiar el monitor en el que la pantalla será expandida, haga clic sobre la flecha ubicada en el botón de \"Área Expandida\". Se abrirá un menú para la elección del monitor."
+        },
+        {
+          "type": "text",
+          "value": "<b>Obs.:</b> Esta opción queda registrada en el programa, de modo que al hacer clic en el botón de \"Área Expandida\" posteriormente, se abrirá el monitor seleccionado la última vez."
+        },
+        {
+          "type": "text",
+          "value": "La elección de pantalla para la proyección de contenidos también puede ser definida en el menú Opciones."
+        }
+      ]
+    },
+    "como-colocar-provai-e-vede": {
+      "title": "¿Cómo colocar los vídeos de Probai y Ved en el programa?",
+      "text": [
+        {
+          "type": "text",
+          "value": "Es posible colocar los vídeos de Probai y Ved a través de la pantalla \"Ítems Programados\".",
+          "link": "itens-agendados"
+        },
+        {
+          "type": "text",
+          "value": "Después de registrarlos, basta con colocarlos en la liturgia para que formen parte del cronograma del culto.",
+          "link": "liturgia"
+        },
+        {
+          "type": "text",
+          "value": "El programa no posee de forma nativa los vídeos de Probai y Ved. El usuario debe descargarlos de internet y colocarlos en el programa de forma manual (como se describe arriba)."
+        }
+      ]
+    },
+    "itens-agendados": {
+      "title": "Ítems Programados",
+      "text": [
+        {
+          "type": "text",
+          "value": "Esta pantalla permite la creación de ítems programados. Son aquellos ítems que forman parte de la programación, pero el contenido cambia cada sábado, como: Probai y Ved, Informativo Mundial de las Misiones, Momentos de Salud, entre otros."
+        },
+        {
+          "type": "text",
+          "value": "Haga clic en \"Agregar Categoría\" para añadir una nueva categoría. Al hacer clic, una categoría será creada automáticamente, y se mostrará una ventana para modificar el nombre de la misma."
+        },
+        {
+          "type": "title",
+          "value": "Agregar Ítems"
+        },
+        {
+          "type": "text",
+          "value": "Para agregar ítems, seleccione una categoría (creada anteriormente). Al hacer clic sobre la categoría, se abrirá una pantalla con un calendario. Haga doble clic sobre una fecha del calendario y elija el archivo que deberá ser abierto. Este archivo será almacenado para el día elegido."
+        },
+        {
+          "type": "title",
+          "value": "Vincular en la Liturgia"
+        },
+        {
+          "type": "text",
+          "value": "Es posible agregar un ítem programado en la liturgia. Basta con ir a la pantalla de Liturgia, hacer clic en \"Agregar Ítem\" y elegir el tipo de ítem \"Ítems Programados\". Se mostrarán todos los ítems programados registrados en esta pantalla. Al elegir el ítem, presione el botón \"Agregar\". Al hacer clic sobre un ítem programado en la liturgia, se abrirá el ítem registrado para el día actual.",
+          "link": "liturgia"
+        }
+      ]
+    },
+    "liturgia": {
+      "title": "Liturgia",
+      "text": [
+        {
+          "type": "text",
+          "value": "Pantalla para la organización de la secuencia de la programación, detallando las respectivas canciones y archivos que serán ejecutados."
+        },
+        {
+          "type": "title",
+          "value": "Agregando Ítems"
+        },
+        {
+          "type": "text",
+          "value": "Se pueden agregar ítems en esta pantalla copiando el archivo/directorio (CTRL+C) y pegándolo en esta pantalla (CTRL+V)."
+        },
+        {
+          "type": "text",
+          "value": "También se puede hacer clic en \"Agregar Ítem\", donde habrá más opciones para insertar ítems. Al hacer clic en este botón, se abrirá la pantalla donde deberá definirse el tipo de ítem que será insertado:"
+        },
+        {
+          "type": "list",
+          "value": [
+            "<b>Anotación:</b> No posee ningún tipo de acción al hacer clic sobre él. Es solo una anotación en la liturgia. Algo que no necesita acción (como \"Oración\" por ejemplo)",
+            "<b>Archivo/Directorio:</b> Abre un archivo o un directorio al hacer clic sobre él. Puede usarse para abrir un vídeo o una presentación en PowerPoint.",
+            "<b>Categoría:</b> No posee ningún tipo de acción. Es solo para separar los grupos de ítems.",
+            "<b>Ítems Programados:</b> Muestra todos los ítems registrados en la pantalla \"Ítems Programados\". Al hacer clic, abre el ítem programado para el día actual.",
+            "<b>Canción:</b> Lista todas las canciones de la colectánea. Puede configurarse para ejecutar una canción de la colectánea o elegirla en el momento al hacer clic sobre el ítem. Cuando se registra, se mostrarán las opciones de ejecución de la diapositiva.",
+            "<b>Sitio web:</b> Permite ejecutar un sitio web al hacer clic sobre el ítem."
+          ]
+        }
+      ]
+    },
+    "editor-de-slides": {
+      "title": "Editor de Diapositivas",
+      "text": [
+        {
+          "type": "text",
+          "value": "Esta pantalla permite la creación de diapositivas para ejecutar dentro del propio programa."
+        },
+        {
+          "type": "text",
+          "value": "Utilice el campo Texto Principal para agregar el texto a la diapositiva. El campo Texto Auxiliar es un texto menor, de apoyo, que aparece en la parte superior del texto principal."
+        },
+        {
+          "type": "text",
+          "value": "Para crear o eliminar diapositivas, utilice la pestaña \"Diapositivas\" del Editor de Diapositivas. Las acciones de cada botón están descritas a continuación:"
+        },
+        {
+          "type": "list",
+          "value": [
+            "<b>Nueva Diapositiva:</b> Crea una diapositiva en blanco, después de la diapositiva actual.",
+            "<b>Duplicar Diapositiva:</b> Duplica la diapositiva actual y su contenido (texto, formato, fondo, ...)",
+            "<b>Eliminar Diapositiva:</b> Elimina la diapositiva actual.",
+            "<b>Dividir Diapositiva:</b> Divide la diapositiva actual, de la siguiente forma: (1) Cada línea del texto generará una nueva diapositiva. (2) El carácter \"|\" dentro del texto generará un salto de línea dentro de la misma diapositiva.",
+            "<b>Fusionar Próx. Diapositiva:</b> Fusiona la diapositiva actual con la siguiente, manteniendo el formato de la diapositiva actual."
+          ]
+        }
+      ]
+    },
+    "gravando-tempos": {
+      "title": "Grabando intervalos",
+      "text": [
+        {
+          "type": "text",
+          "value": "Para grabar los intervalos, utilice la pestaña \"Audio/Grabación\" del Editor de Diapositivas. Las acciones de cada botón están descritas a continuación:"
+        },
+        {
+          "type": "list",
+          "value": [
+            "<b>Reproducir:</b> Reproduce las diapositivas. Es necesario poseer audio para utilizar esta opción. Al reproducir, los botones de grabación se habilitan.",
+            "<b>Grabar y Avanzar:</b> Avanza a la siguiente diapositiva y graba en el momento actual del audio.",
+            "<b>Grabar Inicio:</b> Graba el inicio de la diapositiva en el momento actual del audio.",
+            "<b>Grabar Retroactivo:</b> Retrocede un segundo y graba el inicio de la diapositiva.",
+            "<b>Eliminar Grabaciones:</b> Elimina todos los tiempos grabados de todas las diapositivas."
+          ]
+        }
+      ]
+    },
+    "estilos-css": {
+      "title": "Estilos CSS para la Letra en la Transmisión",
+      "text": [
+        {
+          "type": "text",
+          "value": "Los estilos CSS predefinidos para la letra en la transmisión están disponibles en la versión web de LouvorJA. En la versión Electron, puede configurar estilos CSS personalizados directamente en la pantalla de Transmisión. Para más detalles sobre cómo formatear la letra transmitida, consulte el artículo sobre formato CSS.",
+          "link": "css-streaming"
+        }
+      ]
+    },
+    "css-streaming": {
+      "title": "¿Cómo formatear la letra transmitida por el programa en OBS o VMIX?",
+      "text": [
+        {
+          "type": "text",
+          "value": "A continuación, algunos consejos sobre cómo manipular el CSS para cambiar la fuente, color o fondo del contenido proyectado para streaming. Si el programa permite la manipulación de CSS, basta con colocar los códigos, como se muestra a continuación:"
+        },
+        {
+          "type": "title",
+          "value": "Posicionar la letra en el pie de página"
+        },
+        {
+          "type": "code",
+          "value": "table td{vertical-align:bottom !important;}"
+        },
+        {
+          "type": "text",
+          "value": "Para alinear arriba, cambie \"bottom\" por \"top\"."
+        },
+        {
+          "type": "title",
+          "value": "Cambiar el tamaño de la fuente"
+        },
+        {
+          "type": "code",
+          "value": "*{font-size:50px !important;}"
+        },
+        {
+          "type": "text",
+          "value": "Donde \"50px\" es el tamaño. Cámbielo por otro valor si lo desea."
+        },
+        {
+          "type": "title",
+          "value": "Cambiar el color de la fuente"
+        },
+        {
+          "type": "code",
+          "value": "*{color:red !important;}"
+        },
+        {
+          "type": "text",
+          "value": "Donde \"red\" es el color de la fuente. Cámbielo por otro color en inglés si lo desea. También puede colocar el código hexadecimal del color (#FFFFFF por ejemplo)."
+        },
+        {
+          "type": "title",
+          "value": "Cambiar la fuente"
+        },
+        {
+          "type": "code",
+          "value": "*{font-family:Arial !important;}"
+        }
+      ]
+    },
+    "como-transmitir-streaming": {
+      "title": "¿Cómo transmitir la letra de la canción / biblia en OBS o VMIX?",
+      "text": [
+        {
+          "type": "text",
+          "value": "Es posible transmitir el contenido del programa a servicios de streaming.",
+          "link": "transmitir"
+        }
+      ]
+    },
+    "electron-configuracoes": {
+      "title": "Configuraciones de la Aplicación",
+      "status": "available",
+      "text": [
+        {
+          "type": "text",
+          "value": "La pantalla de Configuraciones permite personalizar el comportamiento y la apariencia de LouvorJA en la aplicación de escritorio. Acceda a ella a través del módulo \"Configuraciones\" en la barra lateral."
+        },
+        {
+          "type": "title",
+          "value": "Apariencia"
+        },
+        {
+          "type": "text",
+          "value": "En esta sección puede ajustar el tema visual de la aplicación, incluyendo modo claro u oscuro, colores de destaque y densidad de la interfaz. Los cambios se aplican inmediatamente."
+        },
+        {
+          "type": "title",
+          "value": "Monitor de Proyección"
+        },
+        {
+          "type": "text",
+          "value": "Defina qué monitor será utilizado para la proyección de contenido. LouvorJA detecta automáticamente los monitores conectados. Puede seleccionar el monitor secundario para proyección, dejando el monitor principal para el control. Vea más en <b>Proyectando en Otro Monitor</b>.",
+          "link": "projetando-tela"
+        },
+        {
+          "type": "title",
+          "value": "Comportamiento"
+        },
+        {
+          "type": "text",
+          "value": "Configure opciones como inicio automático con el sistema, minimización a la bandeja del sistema al cerrar y el comportamiento de las ventanas de proyección."
+        },
+        {
+          "type": "title",
+          "value": "Idioma"
+        },
+        {
+          "type": "text",
+          "value": "Seleccione el idioma de la interfaz de la aplicación. LouvorJA soporta Portugués y Español."
+        }
+      ]
+    },
+    "electron-sorteio": {
+      "title": "Sorteo",
+      "status": "available",
+      "text": [
+        {
+          "type": "text",
+          "value": "El módulo de Sorteo permite realizar sorteos de himnos o ítems personalizados durante el culto. Acceda a él a través del módulo \"Sorteo\" en la barra lateral."
+        },
+        {
+          "type": "title",
+          "value": "Cómo Usar"
+        },
+        {
+          "type": "list",
+          "value": [
+            "Acceda al módulo de Sorteo en la barra lateral.",
+            "Defina los parámetros del sorteo (intervalo de himnos, categoría, etc.).",
+            "Haga clic en \"Sortear\" para iniciar el sorteo animado.",
+            "El resultado se mostrará en la pantalla principal y puede ser proyectado para el público."
+          ]
+        },
+        {
+          "type": "title",
+          "value": "Configuraciones"
+        },
+        {
+          "type": "text",
+          "value": "Es posible configurar el intervalo de himnos para el sorteo (por ejemplo, sortear solo himnos entre 1 y 100), el tiempo de animación y si el resultado será automáticamente agregado a la liturgia.",
+          "link": "liturgia"
+        }
+      ]
+    },
+    "electron-cronometro": {
+      "title": "Cronómetro de Culto",
+      "status": "available",
+      "text": [
+        {
+          "type": "text",
+          "value": "El Cronómetro de Culto es una herramienta exclusiva de la aplicación Electron para controlar el tiempo durante el culto. Acceda a él a través del módulo \"Cronómetro\" en la barra lateral."
+        },
+        {
+          "type": "title",
+          "value": "Funcionalidades"
+        },
+        {
+          "type": "list",
+          "value": [
+            "<b>Cronómetro regresivo:</b> Defina un tiempo y acompañe la cuenta regresiva.",
+            "<b>Cronómetro progresivo:</b> Cuente el tiempo transcurrido a partir del inicio.",
+            "<b>Alertas visuales y sonoras:</b> Reciba alertas cuando el tiempo esté próximo a finalizar.",
+            "<b>Proyección del cronómetro:</b> Proyecte el cronómetro en la pantalla para que el público visualice el tiempo restante."
+          ]
+        },
+        {
+          "type": "title",
+          "value": "En la Pantalla de Proyección"
+        },
+        {
+          "type": "text",
+          "value": "Cuando está proyectado, el cronómetro se muestra de forma discreta en la pantalla de proyección, permitiendo que el público y la plataforma conozcan el tiempo restante de la actividad actual."
+        }
+      ]
+    },
+    "electron-liturgia": {
+      "title": "Liturgia (App Escritorio)",
+      "status": "available",
+      "text": [
+        {
+          "type": "text",
+          "value": "El módulo de Liturgia en la aplicación Electron ofrece la misma funcionalidad de la versión web, con mejoras en la experiencia de escritorio. Vea el artículo principal sobre <b>Liturgia</b> para más detalles sobre las funcionalidades básicas.",
+          "link": "liturgia"
+        },
+        {
+          "type": "title",
+          "value": "Recursos Exclusivos de Escritorio"
+        },
+        {
+          "type": "list",
+          "value": [
+            "<b>Guardado local:</b> Las liturgias se guardan localmente, funcionando incluso sin conexión a internet.",
+            "<b>Exportación/Importación:</b> Exporte e importe liturgias para compartir entre dispositivos.",
+            "<b>Arrastrar y soltar:</b> Agregue ítems a la liturgia arrastrando archivos directamente a la ventana.",
+            "<b>Atajos rápidos:</b> Utilice atajos de teclado para agilizar el armado de la liturgia."
+          ]
+        },
+        {
+          "type": "title",
+          "value": "Integración con el Cronómetro"
+        },
+        {
+          "type": "text",
+          "value": "Es posible vincular el Cronómetro de Culto a ítems de la liturgia, definiendo tiempos estimados para cada actividad.",
+          "link": "electron-cronometro"
+        }
+      ]
+    },
+    "electron-texto-interativo": {
+      "title": "Texto Interactivo",
+      "status": "coming_soon",
+      "text": [
+        {
+          "type": "text",
+          "value": "El Texto Interactivo permite crear textos editables que pueden ser proyectados y modificados en tiempo real durante el culto. Ideal para anuncios, avisos y mensajes especiales."
+        },
+        {
+          "type": "title",
+          "value": "Funcionalidades Planeadas"
+        },
+        {
+          "type": "list",
+          "value": [
+            "Creación de textos editables directamente en la pantalla de proyección.",
+            "Formato en tiempo real (negrita, cursiva, colores).",
+            "Plantillas predefinidas para avisos comunes.",
+            "Integración con la liturgia para textos contextuales."
+          ]
+        },
+        {
+          "type": "text",
+          "value": "Esta función está en desarrollo y estará disponible en una futura actualización de LouvorJA Electron."
+        }
+      ]
+    },
+    "electron-favoritos": {
+      "title": "Favoritos",
+      "status": "available",
+      "text": [
+        {
+          "type": "text",
+          "value": "El módulo de Favoritos permite guardar canciones, himnos y pasajes bíblicos de acceso frecuente para encontrarlos rápidamente."
+        },
+        {
+          "type": "title",
+          "value": "Cómo Agregar Favoritos"
+        },
+        {
+          "type": "list",
+          "value": [
+            "Al visualizar una canción, haga clic en el ícono de estrella para agregarla a los favoritos.",
+            "En la pestaña del Hinario, haga clic con el botón derecho sobre un himno y seleccione \"Agregar a los Favoritos\".",
+            "En la Biblia, al visualizar un pasaje, haga clic en el ícono de favorito para guardarlo."
+          ]
+        },
+        {
+          "type": "title",
+          "value": "Gestionando Favoritos"
+        },
+        {
+          "type": "text",
+          "value": "Acceda al módulo \"Favoritos\" en la barra lateral para ver todos los ítems guardados. Es posible organizar por categorías, eliminar ítems o agregarlos directamente a la liturgia.",
+          "link": "liturgia"
+        }
+      ]
+    },
+    "electron-biblioteca-local": {
+      "title": "Biblioteca Local y Sincronización",
+      "status": "available",
+      "text": [
+        {
+          "type": "text",
+          "value": "La aplicación Electron permite almacenar archivos multimedia localmente, garantizando que el contenido funcione incluso sin conexión a internet."
+        },
+        {
+          "type": "title",
+          "value": "Biblioteca Local"
+        },
+        {
+          "type": "text",
+          "value": "La biblioteca local almacena himnos, canciones y colectáneas en su computadora. Los archivos se organizan automáticamente por la aplicación y pueden gestionarse desde la pantalla de <b>Colectáneas Personalizadas</b>.",
+          "link": "coletaneas-personalizadas"
+        },
+        {
+          "type": "title",
+          "value": "Sincronización"
+        },
+        {
+          "type": "text",
+          "value": "LouvorJA Electron ofrece opciones de sincronización para mantener sus datos actualizados entre dispositivos:"
+        },
+        {
+          "type": "list",
+          "value": [
+            "<b>Sincronización de himnos:</b> Actualiza automáticamente la base de himnos cuando está conectado a internet.",
+            "<b>Sincronización de favoritos y liturgias:</b> Sincronice sus favoritos y liturgias entre la app de escritorio y la versión web.",
+            "<b>Respaldo local:</b> Exporte un respaldo completo de sus datos para restaurar en otro dispositivo."
+          ]
+        }
+      ]
+    },
+    "electron-atualizacoes": {
+      "title": "Actualizaciones",
+      "status": "available",
+      "text": [
+        {
+          "type": "text",
+          "value": "LouvorJA Electron posee un sistema de actualización automática que mantiene la aplicación siempre en la versión más reciente."
+        },
+        {
+          "type": "title",
+          "value": "Verificando Actualizaciones"
+        },
+        {
+          "type": "text",
+          "value": "Acceda al módulo \"Ayuda\" y haga clic en \"Verificar Actualizaciones\" para buscar manualmente nuevas versiones. La aplicación también verifica automáticamente al iniciar."
+        },
+        {
+          "type": "title",
+          "value": "Actualización Automática"
+        },
+        {
+          "type": "text",
+          "value": "Cuando haya una nueva versión disponible, la aplicación descarga automáticamente la actualización en segundo plano. Al reiniciar la aplicación, la nueva versión será instalada."
+        },
+        {
+          "type": "title",
+          "value": "Notas de Versión"
+        },
+        {
+          "type": "text",
+          "value": "Con cada actualización, las notas de versión están disponibles en la pantalla de actualizaciones, detallando las novedades, correcciones y mejoras implementadas."
+        }
+      ]
+    }
+  },
+  "categories": {
+    "general": {
+      "title": "General",
+      "icon": "mdi-cube-outline",
+      "items": [
+        "teclas-atalho",
+        "transmitir"
+      ]
+    },
+    "hymnal": {
+      "title": "Hinario",
+      "icon": "mdi-music-note",
+      "items": [
+        "hinario-busca",
+        "reproduzir-hinos-sequencia",
+        "exportar-musicas",
+        "localizar-musicas",
+        "letras",
+        "relacao-de-hinos-dos-hinarios-1996-e-2022",
+        "hinario-reproducao"
+      ]
+    },
+    "collections": {
+      "title": "Colectáneas",
+      "icon": "mdi-folder-music",
+      "items": [
+        "coletaneas-online",
+        "coletaneas-personalizadas",
+        "exportar-musicas",
+        "localizar-musicas",
+        "letras",
+        "playlist"
+      ]
+    },
+    "bible": {
+      "title": "Biblia",
+      "icon": "mdi-book-open-page-variant",
+      "items": [
+        "busca-biblica",
+        "exibir-varios-versos-biblicos",
+        "passagem-biblica",
+        "formatacao",
+        "projetando-tela"
+      ]
+    },
+    "utilities": {
+      "title": "Utilidades",
+      "icon": "mdi-puzzle-outline",
+      "items": [
+        "como-colocar-provai-e-vede",
+        "formatacao",
+        "itens-agendados",
+        "liturgia",
+        "projetando-tela"
+      ]
+    },
+    "slide_editor": {
+      "title": "Editor de Diapositivas",
+      "icon": "mdi-play-circle-outline",
+      "items": [
+        "editor-de-slides",
+        "gravando-tempos"
+      ]
+    },
+    "transmission": {
+      "title": "Transmisión",
+      "icon": "mdi-television-classic",
+      "items": [
+        "estilos-css",
+        "css-streaming",
+        "como-transmitir-streaming",
+        "transmitir"
+      ]
+    },
+    "faq": {
+      "title": "Preguntas Frecuentes",
+      "icon": "mdi-frequently-asked-questions",
+      "items": [
+        "como-colocar-provai-e-vede",
+        "exibir-varios-versos-biblicos",
+        "css-streaming",
+        "reproduzir-hinos-sequencia",
+        "como-transmitir-streaming"
+      ]
+    },
+    "electron": {
+      "title": "Recursos de la Aplicación",
+      "icon": "mdi-laptop",
+      "items": [
+        "electron-configuracoes",
+        "electron-sorteio",
+        "electron-cronometro",
+        "electron-liturgia",
+        "electron-texto-interativo",
+        "electron-favoritos",
+        "electron-biblioteca-local",
+        "electron-atualizacoes"
+      ]
+    }
+  }
+}

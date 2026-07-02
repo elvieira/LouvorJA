@@ -1,0 +1,20 @@
+{
+  "title": "Songs",
+  "inputs": {
+    "search": "Search by...",
+    "search_disabled": "Select a search option to enable search!",
+    "filter_name": "Name",
+    "filter_lyric": "Lyrics",
+    "filter_album": "Album",
+    "filter_instrumental": "With Playback"
+  },
+  "table": {
+    "music_name": "Name",
+    "album_name": "Album",
+    "duration": "Duration"
+  },
+  "data": {
+    "records": "Total records",
+    "not_found": "No records found with the selected filters! Try changing the search filters."
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "table": {
+    "track": "Track",
+    "music_name": "Name",
+    "duration": "Duration"
+  }
+}

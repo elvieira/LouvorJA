@@ -1,9 +1,9 @@
 {
     "app": {
-        "name": "Loor JA"
+        "name": "Louvor JA"
     },
     "sidebar": {
-        "home": "Página de inicio",
+        "home": "Inicio",
         "favorites": "Favoritos",
         "help": "Ayuda y acerca de",
         "settings": "Configuraciones"
@@ -38,7 +38,7 @@
         "close": "Cerrar",
         "yes": "Sí",
         "no": "No",
-        "wait": "Aguardar..."
+        "wait": "Espere..."
     },
     "messages": {
         "file_database_not_found": "Archivo de datos no encontrado!",

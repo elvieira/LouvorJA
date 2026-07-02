@@ -1,0 +1,9 @@
+{
+  "title": "Home",
+  "search_placeholder": "Search here...",
+  "recent_collections": "Recent Collections",
+  "top_songs": "Most Played Songs",
+  "songs": "songs",
+  "no_songs_played": "No songs played yet. Open a collection and play a song!",
+  "no_collections_played": "No collections accessed. Play a song to register it here!"
+}

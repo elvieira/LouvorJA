@@ -691,6 +691,13 @@ export default {
       this.$data.show_home_history = saved_home_history;
     }
 
+    const savedLocale = this.$userdata.get("locale");
+    if (savedLocale) {
+      const reverseMap = { pt: "Português", en: "English", es: "Español" };
+      this.language = reverseMap[savedLocale] || "Português";
+      this.$i18n.locale.value = savedLocale;
+    }
+
     let savedSlideMonitor = this.$userdata.get("modules.config.slide_monitor");
     if (savedSlideMonitor) {
       if (!Array.isArray(savedSlideMonitor)) {
@@ -726,6 +733,12 @@ export default {
     });
   },
   watch: {
+    language(val) {
+      const map = { "Português": "pt", "English": "en", "Español": "es" };
+      const locale = map[val] || "pt";
+      this.$i18n.locale.value = locale;
+      this.$userdata.set("locale", locale);
+    },
     show_home_history(val) {
       this.$userdata.set("show_home_history", val);
     },
