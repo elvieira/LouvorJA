@@ -132,6 +132,42 @@
 
           <div class="dashboard-section music-section">
             <h2 class="section-title">
+              {{ t("favorites") }}
+            </h2>
+            <div class="music-list">
+              <div class="music-list-container">
+                <div
+                  v-for="(song, index) in favorites"
+                  :key="song.id_music || index"
+                  class="music-item"
+                  @click="playSong(song)"
+                >
+                  <div class="music-number">
+                    <v-icon size="18" color="amber">mdi-star</v-icon>
+                  </div>
+                  <div class="music-info">
+                    <h4 class="music-title">{{ song.name }}</h4>
+                    <p class="music-artist">{{ song.album_name }}</p>
+                  </div>
+                  <div class="music-duration">
+                    {{ song.duration }}
+                  </div>
+                  <div style="padding-right: 12px;">
+                    <v-btn icon size="x-small" variant="text" color="error" @click.stop="removeFavorite(song.id_music)">
+                      <v-icon>mdi-close</v-icon>
+                    </v-btn>
+                  </div>
+                </div>
+                <div v-if="favorites.length === 0" class="empty-state">
+                  <v-icon size="48" color="grey-lighten-1">mdi-star-outline</v-icon>
+                  <p>{{ t("no_favorites") }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="dashboard-section music-section">
+            <h2 class="section-title">
               {{ t("top_songs") }}
             </h2>
             <div class="music-list">
@@ -229,7 +265,7 @@ export default {
     },
 
     shouldShowHistory() {
-      return this.show_home_history && (this.displayCollections.length > 0 || this.topSongs.length > 0);
+      return this.show_home_history && (this.displayCollections.length > 0 || this.favorites.length > 0 || this.topSongs.length > 0);
     },
     
     displayCollections() {
@@ -246,6 +282,9 @@ export default {
       });
     },
     
+    favorites() {
+      return this.$favorites.getFavorites();
+    },
     topSongs() {
       return this.$history.getTopSongs(20);
     },
@@ -416,6 +455,9 @@ export default {
       if (song.id_music) {
         this.$media.open({ id_music: song.id_music, mode: "audio" });
       }
+    },
+    removeFavorite(id_music) {
+      this.$favorites.toggle(id_music);
     },
     
     getCollectionName(collection) {

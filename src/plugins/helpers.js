@@ -11,6 +11,7 @@ import Alert from "@/helpers/Alert";
 import Popup from "@/helpers/Popup";
 import Database from "@/helpers/Database";
 import History from "@/helpers/History";
+import Favorites from "@/helpers/Favorites";
 
 export const HelpersSymbol = Symbol("helpers");
 
@@ -30,6 +31,7 @@ export default {
       popup: Popup,
       database: Database,
       history: History,
+      favorites: Favorites,
     };
 
     app.provide(HelpersSymbol, helpers);
@@ -48,5 +50,6 @@ export default {
     app.config.globalProperties.$popup = Popup;
     app.config.globalProperties.$database = Database;
     app.config.globalProperties.$history = History;
+    app.config.globalProperties.$favorites = Favorites;
   },
 };
