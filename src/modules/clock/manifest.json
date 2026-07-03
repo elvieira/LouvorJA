@@ -8,5 +8,15 @@
   "icon": "mdi-clock-outline",
   "minAppVersion": "1.0.0",
   "dependencies": [],
-  "permissions": []
+  "permissions": [],
+  "translations": {
+    "en": {
+      "name": "Clock",
+      "description": "Integrated clock utility. Displays the time and assists with the program activity schedule."
+    },
+    "es": {
+      "name": "Reloj",
+      "description": "Utilidad de reloj integrado. Muestra la hora y auxilia en el cronograma de actividades del programa."
+    }
+  }
 }

@@ -8,5 +8,15 @@
   "icon": "mdi-book-cross",
   "minAppVersion": "2.0.0",
   "dependencies": [],
-  "permissions": []
+  "permissions": [],
+  "translations": {
+    "en": {
+      "name": "Bible",
+      "description": "Holy Bible study and reading module. Offers quick navigation by books, chapters and verses with adaptable reading mode."
+    },
+    "es": {
+      "name": "Biblia",
+      "description": "Módulo de estudio y lectura de la Biblia Sagrada. Ofrece navegación rápida por libros, capítulos y versículos, con modo de lectura adaptable."
+    }
+  }
 }

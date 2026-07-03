@@ -8,5 +8,15 @@
   "icon": null,
   "minAppVersion": "1.0.0",
   "dependencies": [],
-  "permissions": []
+  "permissions": [],
+  "translations": {
+    "en": {
+      "name": "Slide",
+      "description": "Global Media Player. Manages all audio playback for the system, running in the background without interrupting navigation. ($media.open)"
+    },
+    "es": {
+      "name": "Slide",
+      "description": "Reproductor de Medios Global. Gestiona toda la reproducción de audio del sistema, ejecutándose en segundo plano sin interrumpir la navegación. ($media.open)"
+    }
+  }
 }

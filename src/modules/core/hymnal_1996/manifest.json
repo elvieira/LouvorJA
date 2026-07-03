@@ -12,5 +12,15 @@
     "media",
     "lyric"
   ],
-  "permissions": []
+  "permissions": [],
+  "translations": {
+    "en": {
+      "name": "Adventist Hymnal - 1996",
+      "description": "Adventist Hymnal (1996 Edition). Classic collection with the original lyrics and songs from the 1996 edition."
+    },
+    "es": {
+      "name": "Hinario Adventista - 1996",
+      "description": "Hinario Adventista (Edición 1996). Colección clásica con las letras y canciones originales de la edición de 1996."
+    }
+  }
 }

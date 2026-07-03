@@ -11,5 +11,15 @@
     "media",
     "lyric"
   ],
-  "permissions": []
+  "permissions": [],
+  "translations": {
+    "en": {
+      "name": "Adventist Hymnal",
+      "description": "Official Adventist Hymnal. Quick and practical access to all traditional hymns, organized numerically."
+    },
+    "es": {
+      "name": "Hinario Adventista",
+      "description": "Hinario Adventista Oficial. Acceso rápido y práctico a todos los alabanzas tradicionales, organizados numéricamente."
+    }
+  }
 }

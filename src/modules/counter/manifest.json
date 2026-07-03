@@ -10,5 +10,15 @@
   "icon": "mdi-counter",
   "minAppVersion": "1.0.0",
   "dependencies": [],
-  "permissions": []
+  "permissions": [],
+  "translations": {
+    "en": {
+      "name": "Counter Module",
+      "description": "Simple counter utility"
+    },
+    "es": {
+      "name": "Módulo Contador",
+      "description": "Utilidad de contador simple"
+    }
+  }
 }

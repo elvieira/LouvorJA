@@ -12,5 +12,15 @@
   "permissions": [],
   "moduleOptions": {
     "size": "small"
+  },
+  "translations": {
+    "en": {
+      "name": "Help & About",
+      "description": "Application information and help."
+    },
+    "es": {
+      "name": "Ayuda y acerca de",
+      "description": "Información sobre la aplicación y ayuda."
+    }
   }
 }

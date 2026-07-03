@@ -8,5 +8,15 @@
   "icon": null,
   "minAppVersion": "1.0.0",
   "dependencies": [],
-  "permissions": []
+  "permissions": [],
+  "translations": {
+    "en": {
+      "name": "Lyrics",
+      "description": "Lyrics display module. Shows synchronized text of the current song playing in the active player. ($media.openLyric)"
+    },
+    "es": {
+      "name": "Letra",
+      "description": "Módulo de visualización de letras. Muestra el texto sincronizado de la canción actual en reproducción en el reproductor activo. ($media.openLyric)"
+    }
+  }
 }

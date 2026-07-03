@@ -8,7 +8,7 @@
           </v-avatar>
           <div>
             <h3 class="module-title">
-              {{ module.manifest.name }}
+              {{ getModuleName(module) }}
             </h3>
             <div class="module-subtitle">
               by {{ module.manifest.author }} | v{{ module.manifest.version }}
@@ -37,7 +37,7 @@
       </div>
 
       <div class="module-description mb-4">
-        {{ module.manifest.description }}
+        {{ getModuleDescription(module) }}
       </div>
 
       <div v-if="module.manifest.dependencies && module.manifest.dependencies.length > 0" class="module-dependencies mb-4">
@@ -102,6 +102,20 @@
 <script>
 export default {
   name: "ModuleList",
+  methods: {
+    getModuleName(module) {
+      const locale = this.$i18n.locale;
+      const tr = module.manifest.translations;
+      if (tr && tr[locale] && tr[locale].name) return tr[locale].name;
+      return module.manifest.name;
+    },
+    getModuleDescription(module) {
+      const locale = this.$i18n.locale;
+      const tr = module.manifest.translations;
+      if (tr && tr[locale] && tr[locale].description) return tr[locale].description;
+      return module.manifest.description;
+    }
+  },
   computed: {
     modules() {
       return this.$appdata.get("modules");

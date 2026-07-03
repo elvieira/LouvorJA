@@ -17,5 +17,15 @@
       }
     }
   ],
-  "permissions": []
+  "permissions": [],
+  "translations": {
+    "en": {
+      "name": "Animation Plugin",
+      "description": "System animation module. Provides smooth transitions and micro-interactions for interface elements."
+    },
+    "es": {
+      "name": "Plugin de Animación",
+      "description": "Módulo de animaciones del sistema. Proporciona transiciones suaves y micro-interacciones para los elementos de la interfaz."
+    }
+  }
 }

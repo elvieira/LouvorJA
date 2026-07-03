@@ -10,5 +10,15 @@
   "dependencies": [
     "album"
   ],
-  "permissions": []
+  "permissions": [],
+  "translations": {
+    "en": {
+      "name": "Albums",
+      "description": "Music albums and collections hub. Organize, search and browse all music collections available in the system."
+    },
+    "es": {
+      "name": "Álbumes",
+      "description": "Centro de colecciones y álbumes musicales. Organiza, busca y navega por todas las colecciones de música disponibles en el sistema."
+    }
+  }
 }

@@ -12,5 +12,15 @@
   "permissions": [],
   "moduleOptions": {
     "size": "small"
+  },
+  "translations": {
+    "en": {
+      "name": "Settings",
+      "description": "General system settings. Manage appearance, program preferences and screen projection behaviors."
+    },
+    "es": {
+      "name": "Configuraciones",
+      "description": "Configuraciones generales del sistema. Gestiona la apariencia, preferencias del programa y comportamientos de proyección de pantalla."
+    }
   }
 }

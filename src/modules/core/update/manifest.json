@@ -14,5 +14,15 @@
   "system": true,
   "moduleOptions": {
     "size": "small"
+  },
+  "translations": {
+    "en": {
+      "name": "Update",
+      "description": "Program update verification and installation."
+    },
+    "es": {
+      "name": "Actualización",
+      "description": "Verificación e instalación de actualizaciones del programa."
+    }
   }
 }

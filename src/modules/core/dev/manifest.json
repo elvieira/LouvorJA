@@ -10,5 +10,15 @@
   "icon": "mdi-code-braces",
   "minAppVersion": "1.0.0",
   "dependencies": [],
-  "permissions": []
+  "permissions": [],
+  "translations": {
+    "en": {
+      "name": "Developer",
+      "description": "Developer Panel. Diagnostic tool that displays global variables, installed modules and settings in real time."
+    },
+    "es": {
+      "name": "Desarrollador",
+      "description": "Panel del Desarrollador. Herramienta de diagnóstico que muestra variables globales, módulos instalados y configuraciones en tiempo real."
+    }
+  }
 }

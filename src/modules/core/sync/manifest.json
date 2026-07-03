@@ -13,5 +13,15 @@
   "overlay": true,
   "moduleOptions": {
     "size": "small"
+  },
+  "translations": {
+    "en": {
+      "name": "Local Library",
+      "description": "Offline media synchronization."
+    },
+    "es": {
+      "name": "Biblioteca Local",
+      "description": "Sincronización de medios sin conexión."
+    }
   }
 }

@@ -13,5 +13,15 @@
     "lyric",
     "album"
   ],
-  "permissions": []
+  "permissions": [],
+  "translations": {
+    "en": {
+      "name": "Songs",
+      "description": "General Music Library. Module responsible for managing individual tracks or miscellaneous collections."
+    },
+    "es": {
+      "name": "Canciones",
+      "description": "Biblioteca General de Músicas. Módulo responsable de la gestión de pistas sueltas o colecciones diversas."
+    }
+  }
 }

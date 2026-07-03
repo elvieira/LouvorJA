@@ -8,5 +8,15 @@
   "icon": null,
   "minAppVersion": "1.0.0",
   "dependencies": [],
-  "permissions": []
+  "permissions": [],
+  "translations": {
+    "en": {
+      "name": "Album",
+      "description": "Album player and viewer. Manages the listing and continuous playback of tracks from a music album."
+    },
+    "es": {
+      "name": "Álbum",
+      "description": "Reproductor y visualizador de álbumes. Gestiona el listado y la reproducción continua de pistas de un álbum musical."
+    }
+  }
 }
