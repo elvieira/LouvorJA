@@ -258,6 +258,21 @@
       "inputs": {
         "search": "Digite o número ou nome do hino..."
       }
+    },
+    "dev": {
+      "title": "Desenvolvedor",
+      "global-variables": "Variáveis Globais",
+      "user-variables": "Variáveis do Usuário",
+      "vue-variables": "Variáveis do Vue",
+      "modules": "Módulos",
+      "description": "Painel do Desenvolvedor. Ferramenta de diagnóstico que exibe variáveis globais, módulos instalados e configurações em tempo real.",
+      "tags": {
+        "system": "sistema",
+        "no_category_chip": "sem categoria",
+        "development": "desenvolvimento",
+        "menu": "menu",
+        "dependencies": "Dependências:"
+      }
     }
   },
   "module_group": {

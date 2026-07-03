@@ -10,6 +10,9 @@
           <h2 class="section-title mb-0" style="color: var(--sidebar-text); font-size: 24px; font-weight: 600; line-height: 1;">
             {{ t('title') }}
           </h2>
+          <div class="module-subtitle-ml ml-4">
+            {{ t('description') }}
+          </div>
         </div>
 
         <div class="d-flex align-center">

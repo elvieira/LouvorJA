@@ -258,6 +258,21 @@
       "inputs": {
         "search": "Escribe el número o nombre del himno..."
       }
+    },
+    "dev": {
+      "title": "Desarrollador",
+      "global-variables": "Variables Globales",
+      "user-variables": "Variables del Usuario",
+      "vue-variables": "Variables de Vue",
+      "modules": "Módulos",
+      "description": "Panel del Desarrollador. Herramienta de diagnóstico que muestra variables globales, módulos instalados y configuraciones en tiempo real.",
+      "tags": {
+        "system": "sistema",
+        "no_category_chip": "sin categoría",
+        "development": "desarrollo",
+        "menu": "menu",
+        "dependencies": "Dependencias:"
+      }
     }
   },
   "module_group": {

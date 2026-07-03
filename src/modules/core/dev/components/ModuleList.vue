@@ -31,7 +31,7 @@
             variant="flat"
             class="font-weight-bold"
           >
-            system
+            {{ $t('modules.dev.tags.system') }}
           </v-chip>
         </div>
       </div>
@@ -42,7 +42,7 @@
 
       <div v-if="module.manifest.dependencies && module.manifest.dependencies.length > 0" class="module-dependencies mb-4">
         <div class="text-caption text-grey font-weight-bold mb-1">
-          Dependencies:
+        {{ $t('modules.dev.tags.dependencies') }}
         </div>
         <div class="d-flex flex-wrap gap-2">
           <v-chip
@@ -74,7 +74,7 @@
           size="small"
           variant="tonal"
         >
-          no-category
+          {{ $t('modules.dev.tags.no_category_chip') }}
         </v-chip>
         
         <v-chip
@@ -83,7 +83,7 @@
           size="small"
           variant="tonal"
         >
-          development
+          {{ $t('modules.dev.tags.development') }}
         </v-chip>
         
         <v-chip
@@ -92,7 +92,7 @@
           size="small"
           variant="tonal"
         >
-          menu
+          {{ $t('modules.dev.tags.menu') }}
         </v-chip>
       </div>
     </div>

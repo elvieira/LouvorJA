@@ -258,6 +258,21 @@
       "inputs": {
         "search": "Enter the hymn number or name..."
       }
+    },
+    "dev": {
+      "title": "Developer",
+      "global-variables": "Global Variables",
+      "user-variables": "User Variables",
+      "vue-variables": "Vue Variables",
+      "modules": "Modules",
+      "description": "Developer Panel. Diagnostic tool that displays global variables, installed modules and settings in real time.",
+      "tags": {
+        "system": "system",
+        "no_category_chip": "no category",
+        "development": "development",
+        "menu": "menu",
+        "dependencies": "Dependencies:"
+      }
     }
   },
   "module_group": {
