@@ -441,12 +441,12 @@
                         <v-icon size="20" color="primary" class="mr-2">
                           mdi-palette-outline
                         </v-icon>
-                        <span class="text-subtitle-1 font-weight-bold" style="color: var(--sidebar-text);">Personalização da Letra</span>
+                        <span class="text-subtitle-1 font-weight-bold" style="color: var(--sidebar-text);">{{ $t('config.lyric_customization.title') }}</span>
                       </div>
 
                       <div class="mb-6">
                         <div class="text-body-2 font-weight-medium mb-2" style="color: var(--sidebar-text-secondary);">
-                          Alinhamento da letra
+                          {{ $t('config.lyric_customization.alignment') }}
                         </div>
                         <v-btn-toggle
                           v-model="slide_align"
@@ -459,24 +459,24 @@
                           <v-btn value="Cima" class="flex-grow-1 text-none font-weight-bold">
                             <v-icon start size="20">
                               mdi-align-vertical-top
-                            </v-icon> Cima
+                            </v-icon> {{ $t('common.top') }}
                           </v-btn>
                           <v-btn value="Centro" class="flex-grow-1 text-none font-weight-bold">
                             <v-icon start size="20">
                               mdi-align-vertical-center
-                            </v-icon> Centro
+                            </v-icon> {{ $t('config.align_center') }}
                           </v-btn>
                           <v-btn value="Baixo" class="flex-grow-1 text-none font-weight-bold">
                             <v-icon start size="20">
                               mdi-align-vertical-bottom
-                            </v-icon> Baixo
+                            </v-icon> {{ $t('common.bottom') }}
                           </v-btn>
                         </v-btn-toggle>
                       </div>
                       
                       <v-switch
                         v-model="slide_show_title"
-                        label="Exibir título da música no primeiro slide"
+                        :label="$t('config.slides.show_title')"
                         color="primary"
                         inset
                         hide-details
@@ -487,7 +487,8 @@
                       <div class="mb-4">
                         <v-switch
                           v-model="slide_custom_text_format"
-                          label="Formatação de texto personalizada"
+                          label=""
+                          :label="$t('config.slides.custom_format')"
                           color="primary"
                           inset
                           hide-details
@@ -502,7 +503,7 @@
                                   <v-icon size="18" color="primary" class="mr-2">
                                     mdi-format-size
                                   </v-icon>
-                                  <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text);">Tamanho da letra</span>
+                                  <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text);">{{ $t('config.lyric_customization.font_size') }}</span>
                                 </div>
                                 <v-chip
                                   size="small"
@@ -555,7 +556,7 @@
                                 <v-icon size="18" color="primary" class="mr-2">
                                   mdi-palette
                                 </v-icon>
-                                <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text);">Cor da letra</span>
+                                <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text);">{{ $t('config.lyric_customization.font_color') }}</span>
                               </div>
                               <div class="d-flex flex-wrap align-center" style="gap: 10px;">
                                 <div
@@ -603,7 +604,7 @@
                                 <v-icon size="18" color="primary" class="mr-2">
                                   mdi-format-bold
                                 </v-icon>
-                                <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text);">Peso da fonte</span>
+                                <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text);">{{ $t('config.lyric_customization.font_weight') }}</span>
                               </div>
                               <v-btn-toggle
                                 v-model="slide_font_weight"
@@ -614,16 +615,16 @@
                                 style="height: 42px; background: var(--card-bg); box-shadow: inset 0 0 0 1px var(--border-color);"
                               >
                                 <v-btn value="400" class="flex-grow-1 text-none" style="font-weight: 400;">
-                                  Normal
+                                  {{ $t('config.font_weight.normal') }}
                                 </v-btn>
                                 <v-btn value="600" class="flex-grow-1 text-none" style="font-weight: 600;">
-                                  Semi
+                                  {{ $t('config.font_weight.semi') }}
                                 </v-btn>
                                 <v-btn value="700" class="flex-grow-1 text-none" style="font-weight: 700;">
-                                  Negrito
+                                  {{ $t('config.font_weight.bold') }}
                                 </v-btn>
                                 <v-btn value="900" class="flex-grow-1 text-none" style="font-weight: 900;">
-                                  Extra
+                                  {{ $t('config.font_weight.extra') }}
                                 </v-btn>
                               </v-btn-toggle>
                             </div>
@@ -635,7 +636,7 @@
                       <div>
                         <v-switch
                           v-model="slide_custom_bg"
-                          label="Fundo personalizado"
+                          :label="$t('config.custom_background')"
                           color="primary"
                           inset
                           hide-details
@@ -649,7 +650,7 @@
                                 <v-icon size="18" color="primary" class="mr-2">
                                   mdi-format-color-fill
                                 </v-icon>
-                                <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text);">Cor de fundo</span>
+                                <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text);">{{ $t('config.background.color') }}</span>
                               </div>
                               <div class="d-flex flex-wrap align-center" style="gap: 10px;">
                                 <div
@@ -697,7 +698,7 @@
                                 <v-icon size="18" color="primary" class="mr-2">
                                   mdi-image-outline
                                 </v-icon>
-                                <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text);">Imagem de fundo</span>
+                                <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text);">{{ $t('config.background.image') }}</span>
                               </div>
                               
                               <div v-if="slide_bg_image" class="position-relative rounded-xl overflow-hidden mb-3" style="height: 140px; border: 1px solid var(--border-color);">
@@ -713,7 +714,7 @@
                                   >
                                     <v-icon>mdi-delete</v-icon>
                                     <v-tooltip activator="parent" location="top">
-                                      Remover imagem
+                                      {{ $t('common.remove_image') }}
                                     </v-tooltip>
                                   </v-btn>
                                   <v-btn
@@ -727,7 +728,7 @@
                                       mdi-pencil
                                     </v-icon>
                                     <v-tooltip activator="parent" location="top">
-                                      Trocar imagem
+                                      {{ $t('common.change_image') }}
                                     </v-tooltip>
                                   </v-btn>
                                 </div>
@@ -742,7 +743,7 @@
                                 <v-icon size="32" color="grey-lighten-1" class="mb-2">
                                   mdi-cloud-upload-outline
                                 </v-icon>
-                                <span class="text-caption font-weight-medium" style="color: var(--sidebar-text-secondary);">Clique para selecionar uma imagem</span>
+                                <span class="text-caption font-weight-medium" style="color: var(--sidebar-text-secondary);">{{ $t('config.background.click_to_select') }}</span>
                               </div>
 
                               <input
@@ -761,7 +762,7 @@
                                   <v-icon size="18" color="primary" class="mr-2">
                                     mdi-opacity
                                   </v-icon>
-                                  <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text);">Opacidade do fundo</span>
+                                  <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text);">{{ $t('config.background.opacity') }}</span>
                                 </div>
                                 <v-chip
                                   size="small"
@@ -799,7 +800,7 @@
                         <v-icon start>
                           mdi-restore
                         </v-icon>
-                        Restaurar Padrões de Projeção
+                        {{ $t('config.restore_projection_defaults') }}
                       </v-btn>
                     </div>
                   </v-card-text>
@@ -896,9 +897,11 @@ export default {
   },
   watch: {
     language(val) {
-      const map = { Português: "pt", English: "en", Español: "es" };
+      const map = { "Português": "pt", "English": "en", "Español": "es" };
       const locale = map[val] || "pt";
-      this.$i18n.locale = locale;
+      if (this.$i18n.locale !== locale) {
+        this.$i18n.locale = locale;
+      }
       this.$userdata.set("locale", locale);
     },
     show_home_history(val) {

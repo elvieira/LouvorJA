@@ -37,13 +37,13 @@
                       <img src="/ico/favicon.svg" alt="LouvorJA" style="width: 56px; height: 56px;" />
                     </div>
                     <h3 class="font-weight-bold mb-1" style="color: var(--sidebar-text); font-size: 1.5rem; letter-spacing: -0.02em;">
-                      Louvor JA
+                      {{ $t('app.name') }}
                     </h3>
                     <div class="text-body-2 font-weight-medium mb-6" style="color: var(--sidebar-text-secondary); background: var(--main-bg); padding: 4px 12px; border-radius: 20px; box-shadow: inset 0 0 0 1px var(--border-color);">
-                      Versão {{ appVersion }} (Beta)
+                      {{ $t('help.version_label', { version: appVersion }) }}
                     </div>
                     <p class="text-body-2 px-4" style="color: var(--sidebar-text-secondary); line-height: 1.6;">
-                      Aplicativo desktop para gerenciamento e apresentação de músicas, hinos, letras e recursos multimídia para igrejas. Feito com amor e tecnologia para tornar a adoração ainda mais fluida.
+                      {{ $t('help.app_description') }}
                     </p>
                   </v-card-text>
                 </v-card>
@@ -71,7 +71,7 @@
                         class="rounded-lg text-none font-weight-bold px-4"
                         height="40"
                       >
-                        Acessar
+                        {{ $t('help.manual.access') }}
                       </v-btn>
                     </div>
                 
@@ -97,7 +97,7 @@
                         class="rounded-lg text-none font-weight-bold px-4"
                         height="40"
                       >
-                        Contato
+                        {{ $t('help.support.contact') }}
                       </v-btn>
                     </div>
                   </v-card-text>
@@ -128,7 +128,7 @@
                         height="40"
                         @click="openUpdate"
                       >
-                        Verificar
+                        {{ $t('help.updates.check') }}
                       </v-btn>
                     </div>
                 
@@ -154,7 +154,7 @@
                         class="rounded-lg text-none font-weight-bold px-4"
                         height="40"
                       >
-                        Visualizar
+                        {{ $t('help.diagnostics.view') }}
                       </v-btn>
                     </div>
                   </v-card-text>
@@ -177,7 +177,7 @@
                       {{ $t('help.team.title') }}
                     </h3>
                     <p class="text-body-2 px-4" style="color: var(--sidebar-text-secondary); max-width: 350px; line-height: 1.5;">
-                      As informações sobre os desenvolvedores e contribuidores do projeto estarão disponíveis aqui em breve.
+                      {{ $t('help.team.description') }}
                     </p>
                   </v-card-text>
                 </v-card>

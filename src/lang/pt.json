@@ -28,7 +28,9 @@
     "project": "Projetar",
     "close_menu": "Fechar menu",
     "top": "Cima",
-    "bottom": "Baixo"
+    "bottom": "Baixo",
+    "apply": "Aplicar",
+    "restore_default": "Restaurar Padrão"
   },
   "player": {
     "play": "Reproduzir",
@@ -120,7 +122,7 @@
     "no_extended_monitor": "Nenhum monitor estendido (secundário) detectado no sistema.",
     "confirm_reset_history": "Tem certeza que deseja resetar o histórico de coletâneas e músicas mais tocadas?",
     "alert_reset_history_success": "Histórico resetado com sucesso! Atualize a página inicial para ver as mudanças.",
-    "confirm_clear_all_data": "ATENÇÃO: Você tem certeza que deseja apagar todos os bancos de dados, capas, músicas e mídias baixadas do aplicativo?\n\nIsso exigirá um novo download de todos os arquivos essenciais e irá reiniciar o programa.",
+    "confirm_clear_all_data": "ATENÇÃO: Você tem certeza que deseja apagar todos os bancos de dados, capas, músicas e mídias baixadas do aplicativo?\\n\\nIsso exigirá um novo download de todos os arquivos essenciais e irá reiniciar o programa.",
     "alert_clear_all_data_success": "Todos os arquivos locais foram removidos com sucesso. O aplicativo será recarregado agora.",
     "alert_clear_all_data_error": "Ocorreu um erro ao tentar limpar os dados.",
     "alert_desktop_only": "Apenas disponível na versão desktop.",
@@ -140,28 +142,36 @@
     "ref_example": "Ex: Números 28:3"
   },
   "help": {
+    "title": "Ajuda",
     "tab": {
       "about": "Sobre",
       "developers": "Desenvolvedores"
     },
+    "app_description": "Aplicativo desktop para gerenciamento e apresentação de músicas, hinos, letras e recursos multimídia para igrejas. Feito com amor e tecnologia para tornar a adoração ainda mais fluida.",
+    "version_label": "Versão {version} (Beta)",
     "manual": {
       "title": "Manual de Uso",
-      "description": "Aprenda a utilizar todos os recursos"
+      "description": "Aprenda a utilizar todos os recursos",
+      "access": "Acessar"
     },
     "support": {
       "title": "Suporte e Dúvidas",
-      "description": "Fale diretamente com os desenvolvedores"
+      "description": "Fale diretamente com os desenvolvedores",
+      "contact": "Contato"
     },
     "updates": {
       "title": "Atualizações",
-      "description": "Verificar por novas versões disponíveis"
+      "description": "Verificar por novas versões disponíveis",
+      "check": "Verificar"
     },
     "diagnostics": {
       "title": "Diagnóstico",
-      "description": "Visualizar logs e informações do sistema"
+      "description": "Visualizar logs e informações do sistema",
+      "view": "Visualizar"
     },
     "team": {
-      "title": "Equipe e Contribuidores"
+      "title": "Equipe e Contribuidores",
+      "description": "As informações sobre os desenvolvedores e contribuidores do projeto estarão disponíveis aqui em breve."
     }
   },
   "sync": {
@@ -201,6 +211,30 @@
   "modules": {
     "invalid": {
       "title": "#Erro#"
+    },
+    "media": {
+      "alerts": {
+        "not_loaded": "Ocorreu um erro ao carregar este áudio!",
+        "close": "Deseja fechar essa música?"
+      },
+      "general": {
+        "sung": "Cantado",
+        "instrumental": "Playback",
+        "no_audio": "Sem Áudio",
+        "lyric": "Letra da Música",
+        "track": "Faixa"
+      },
+      "inputs": {
+        "lazy_load": "Carregamento Dinâmico",
+        "lazy_load_tooltip": "Se desmarcado, o áudio só será executado depois de totalmente carregado na memória.",
+        "fade_audio": "Efeito de Fade no áudio",
+        "fade_audio_tooltip": "Se marcado, o áudio irá reduzir ou aumentar o volume suavemente ao pausar ou dar play."
+      }
+    },
+    "hymnal_1996": {
+      "inputs": {
+        "search": "Digite o número ou nome do hino..."
+      }
     }
   },
   "module_group": {
