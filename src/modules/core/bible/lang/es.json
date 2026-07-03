@@ -1,3 +1,18 @@
 {
-    "title": "Biblia"
+    "title": "Biblia",
+    "prev_verse": "Volver Versículo",
+    "next_verse": "Avanzar Versículo",
+    "clear": "Borrar",
+    "customize": "Personalizar",
+    "proj_customization": "Personalización de la Proyección",
+    "proj_background": "Fondo de Proyección",
+    "bg_color_desc": "Color base de fondo de la pantalla de visualización",
+    "main_text": "Texto Principal",
+    "main_text_desc": "Formato de los versículos proyectados",
+    "font_size": "Tamaño de la fuente",
+    "font_color": "Color de la fuente",
+    "text_align": "Alineación del Texto",
+    "bible_reference": "Referencia Bíblica",
+    "bg_image": "Imagen de fondo",
+    "remove_image": "Quitar"
 }

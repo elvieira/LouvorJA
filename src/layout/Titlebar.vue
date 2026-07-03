@@ -16,7 +16,7 @@
       </div>
       
       <div class="mac-title-center h-100 d-flex align-center justify-center">
-        <span class="text-caption font-weight-medium" style="opacity: 0.9; letter-spacing: 0.5px;">Louvor JA</span>
+        <span class="text-caption font-weight-medium" style="opacity: 0.9; letter-spacing: 0.5px;">{{ $t('app.name') }}</span>
       </div>
     </template>
 
@@ -24,7 +24,7 @@
     <template v-else>
       <div class="d-flex align-center titlebar-drag-area flex-grow-1 h-100 pl-3">
         <img src="/ico/favicon.svg" width="16" height="16" class="mr-2" style="opacity: 0.9;" alt="Icone" />
-        <span class="text-caption font-weight-medium" style="opacity: 0.9; letter-spacing: 0.5px;">Louvor JA</span>
+        <span class="text-caption font-weight-medium" style="opacity: 0.9; letter-spacing: 0.5px;">{{ $t('app.name') }}</span>
       </div>
       
       <div class="window-controls d-flex h-100 titlebar-no-drag">
@@ -83,9 +83,9 @@ export default {
 
         if (isMediaActive || hasProjector) {
           $alert.yesno({
-            title: "Encerrar Aplicativo?",
-            text: "Existe uma mídia ativa ou projeção em andamento. Deseja realmente sair?",
-            translate: false
+            title: "alert.close_app_title",
+            text: "alert.close_app_text",
+            translate: true
           }, (btn) => {
             if (btn === "yes") {
               this.executeClose();

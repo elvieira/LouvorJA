@@ -8,7 +8,7 @@ import manifest from "../manifest.json";
 import Screen from "../components/Screen.vue";
 
 export default {
-  name: "PopupBiblePage",
+  name: "PopupClockPage",
   components: {
     Screen,
   },

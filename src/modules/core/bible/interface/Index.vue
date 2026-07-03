@@ -156,7 +156,7 @@
                 @shortkey="prevVerse()"
               >
                 <v-icon>mdi-chevron-left</v-icon>
-                <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">Voltar Versículo</v-tooltip>
+                <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">{{ t('prev_verse') }}</v-tooltip>
               </v-btn>
               <v-btn
                 v-shortkey="['arrowright']"
@@ -168,7 +168,7 @@
                 @shortkey="nextVerse()"
               >
                 <v-icon>mdi-chevron-right</v-icon>
-                <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">Avançar Versículo</v-tooltip>
+                <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">{{ t('next_verse') }}</v-tooltip>
               </v-btn>
               <v-btn
                 v-shortkey="['del']"
@@ -181,7 +181,7 @@
                 @shortkey="clean()"
               >
                 <v-icon>mdi-eraser</v-icon>
-                <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">Apagar</v-tooltip>
+                <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">{{ t('clear') }}</v-tooltip>
               </v-btn>
               <v-btn
                 variant="tonal"
@@ -192,7 +192,7 @@
                 @click="showConfigModal = true"
               >
                 <v-icon>mdi-palette</v-icon>
-                <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">Personalizar</v-tooltip>
+                <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">{{ t('customize') }}</v-tooltip>
               </v-btn>
               <v-divider vertical class="mx-2" />
               <LScreenBtn module="bible" />
@@ -374,6 +374,7 @@ export default {
     await this.loadData();
   },
   methods: {
+
     /* METHODS OBRIGATÓRIOS - INÍCIO */
     /* NÃO MODIFICAR */
     t(text) {

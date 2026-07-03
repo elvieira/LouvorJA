@@ -9,16 +9,16 @@
             <v-icon :icon="manifest.icon || 'mdi-cog'" size="24" />
           </div>
           <h2 class="section-title mb-0" style="color: var(--sidebar-text); font-size: 24px; font-weight: 600; line-height: 1; white-space: nowrap;">
-            Configurações Gerais
+            {{ t('main_title') }}
           </h2>
         </div>
 
         <div class="d-flex align-center" style="max-width: 100%; overflow-x: auto;">
           <v-tabs v-model="tab" color="var(--accent-blue)">
-            <v-tab :value="1">Aparência</v-tab>
-            <v-tab :value="2">Geral</v-tab>
-            <v-tab :value="3">Mídia & Player</v-tab>
-            <v-tab :value="4">Projeção & Telas</v-tab>
+            <v-tab :value="1">{{ t('tab_appearance') }}</v-tab>
+            <v-tab :value="2">{{ t('tab_general') }}</v-tab>
+            <v-tab :value="3">{{ t('tab_media') }}</v-tab>
+            <v-tab :value="4">{{ t('tab_projection') }}</v-tab>
           </v-tabs>
         </div>
       </div>
@@ -34,8 +34,8 @@
                     <div class="d-flex align-center mb-6">
                       <v-icon color="primary" class="mr-3" size="28">mdi-palette</v-icon>
                       <div>
-                        <h3 class="font-weight-bold" style="color: var(--sidebar-text); font-size: 1.1rem; line-height: 1.2;">Tema do Sistema</h3>
-                        <div class="text-caption" style="color: var(--sidebar-text-secondary);">Escolha o modo de cores para o aplicativo</div>
+                        <h3 class="font-weight-bold" style="color: var(--sidebar-text); font-size: 1.1rem; line-height: 1.2;">{{ t('system_theme') }}</h3>
+                        <div class="text-caption" style="color: var(--sidebar-text-secondary);">{{ t('system_theme_desc') }}</div>
                       </div>
                     </div>
                     
@@ -48,10 +48,10 @@
                       style="height: 48px; background: var(--card-bg); box-shadow: inset 0 0 0 1px var(--border-color);"
                     >
                       <v-btn value="light" class="flex-grow-1 text-none font-weight-bold">
-                        <v-icon start size="20">mdi-white-balance-sunny</v-icon> Modo Claro
+                        <v-icon start size="20">mdi-white-balance-sunny</v-icon> {{ t('light_mode') }}
                       </v-btn>
                       <v-btn value="dark" class="flex-grow-1 text-none font-weight-bold">
-                        <v-icon start size="20">mdi-weather-night</v-icon> Modo Escuro
+                        <v-icon start size="20">mdi-weather-night</v-icon> {{ t('dark_mode') }}
                       </v-btn>
                     </v-btn-toggle>
                   </v-card-text>
@@ -73,8 +73,8 @@
                       <div class="d-flex align-center">
                         <v-icon color="primary" class="mr-3" size="24">mdi-translate</v-icon>
                         <div>
-                          <h3 class="font-weight-bold" style="color: var(--sidebar-text); font-size: 1.1rem; line-height: 1.2;">Idioma</h3>
-                          <div class="text-caption" style="color: var(--sidebar-text-secondary);">Idioma de interface do aplicativo</div>
+                          <h3 class="font-weight-bold" style="color: var(--sidebar-text); font-size: 1.1rem; line-height: 1.2;">{{ t('language') }}</h3>
+                          <div class="text-caption" style="color: var(--sidebar-text-secondary);">{{ t('language_desc') }}</div>
                         </div>
                       </div>
                       <v-menu :close-on-content-click="true" location="bottom end">
@@ -89,7 +89,7 @@
                           >
                             <div class="d-flex align-center justify-space-between w-100">
                               <span class="text-truncate font-weight-bold text-body-2 mr-2">
-                                {{ language }}
+                                {{ languageName }}
                               </span>
                               <v-icon size="small">mdi-menu-down</v-icon>
                             </div>
@@ -98,15 +98,15 @@
                         <v-card class="mt-1" rounded="lg" style="background: var(--card-bg); box-shadow: var(--shadow); border: 1px solid var(--border-color); min-width: 140px;">
                           <v-list class="py-1" bg-color="transparent">
                             <v-list-item
-                              v-for="item in ['Português', 'English', 'Español']"
-                              :key="item"
-                              :active="item === language"
+                              v-for="item in languagesList"
+                              :key="item.code"
+                              :active="item.code === language"
                               color="primary"
                               class="mx-1 rounded-lg mb-1"
                               style="min-height: 36px;"
-                              @click="language = item"
+                              @click="language = item.code"
                             >
-                              <span class="text-body-2 font-weight-bold">{{ item }}</span>
+                              <span class="text-body-2 font-weight-bold">{{ item.name }}</span>
                             </v-list-item>
                           </v-list>
                         </v-card>
@@ -120,7 +120,7 @@
                       <div class="d-flex align-center">
                         <v-icon color="primary" class="mr-3" size="24">mdi-view-dashboard</v-icon>
                         <div>
-                          <h3 class="font-weight-bold" style="color: var(--sidebar-text); font-size: 1.1rem; line-height: 1.2;">Layout da Tela Inicial</h3>
+                          <h3 class="font-weight-bold" style="color: var(--sidebar-text); font-size: 1.1rem; line-height: 1.2;">{{ t('home_layout') }}</h3>
                           <div class="text-caption" style="color: var(--sidebar-text-secondary);">Ativar modo histórico (exibe itens recentes)</div>
                         </div>
                       </div>
@@ -136,7 +136,7 @@
                       <div class="d-flex align-center mr-4">
                         <v-icon color="error" class="mr-3" size="24">mdi-database-refresh</v-icon>
                         <div>
-                          <h3 class="font-weight-bold mb-1" style="color: var(--sidebar-text); font-size: 1.1rem; line-height: 1.2;">Resetar Histórico</h3>
+                          <h3 class="font-weight-bold mb-1" style="color: var(--sidebar-text); font-size: 1.1rem; line-height: 1.2;">{{ t('reset_history') }}</h3>
                           <div class="text-caption" style="color: var(--sidebar-text-secondary); line-height: 1.3;">
                             Limpa as coletâneas recentes e as músicas mais tocadas.
                           </div>
@@ -159,7 +159,7 @@
                       <div class="d-flex align-center mr-4">
                         <v-icon color="error" class="mr-3" size="24">mdi-delete-alert</v-icon>
                         <div>
-                          <h3 class="font-weight-bold mb-1" style="color: var(--sidebar-text); font-size: 1.1rem; line-height: 1.2;">Apagar Dados</h3>
+                          <h3 class="font-weight-bold mb-1" style="color: var(--sidebar-text); font-size: 1.1rem; line-height: 1.2;">{{ t('clear_data') }}</h3>
                           <div class="text-caption" style="color: var(--sidebar-text-secondary); line-height: 1.3;">
                             Exclui banco de dados e arquivos baixados.
                           </div>
@@ -190,7 +190,7 @@
                   </div>
                   <v-icon size="36" color="primary" class="position-absolute" style="bottom: -5px; right: -5px; text-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); background: var(--main-bg); border-radius: 50%;">mdi-hammer-wrench</v-icon>
                 </div>
-                <h3 class="font-weight-bold mb-3" style="color: var(--sidebar-text); font-size: 1.5rem; letter-spacing: -0.02em;">Em Construção</h3>
+                <h3 class="font-weight-bold mb-3" style="color: var(--sidebar-text); font-size: 1.5rem; letter-spacing: -0.02em;">{{ t('under_construction') }}</h3>
                 <p class="text-body-1" style="color: var(--sidebar-text-secondary); line-height: 1.6;">
                   As configurações avançadas de <strong>Mídia & Player</strong> estão sendo desenhadas e estarão disponíveis em breve.
                 </p>
@@ -206,7 +206,7 @@
                     <div class="d-flex align-center mb-6">
                       <v-icon color="primary" class="mr-3" size="28">mdi-monitor-multiple</v-icon>
                       <div>
-                        <h3 class="font-weight-bold" style="color: var(--sidebar-text); font-size: 1.1rem; line-height: 1.2;">Monitores</h3>
+                        <h3 class="font-weight-bold" style="color: var(--sidebar-text); font-size: 1.1rem; line-height: 1.2;">{{ t('monitors') }}</h3>
                       </div>
                     </div>
                     
@@ -276,7 +276,7 @@
                     <div class="d-flex align-center mb-6">
                       <v-icon color="primary" class="mr-3" size="28">mdi-presentation-play</v-icon>
                       <div>
-                        <h3 class="font-weight-bold" style="color: var(--sidebar-text); font-size: 1.1rem; line-height: 1.2;">Slides de Músicas</h3>
+                        <h3 class="font-weight-bold" style="color: var(--sidebar-text); font-size: 1.1rem; line-height: 1.2;">{{ t('music_slides') }}</h3>
                       </div>
                     </div>
                     
@@ -284,7 +284,7 @@
                     <div class="mb-8">
                       <div class="d-flex align-center mb-4">
                         <v-icon size="20" color="primary" class="mr-2">mdi-monitor-multiple</v-icon>
-                        <span class="text-subtitle-1 font-weight-bold" style="color: var(--sidebar-text);">Múltiplas Telas</span>
+                        <span class="text-subtitle-1 font-weight-bold" style="color: var(--sidebar-text);">{{ t('multi_screens') }}</span>
                       </div>
                       
                       <div class="text-body-2 font-weight-medium mb-2" style="color: var(--sidebar-text-secondary);">Projetar nas seguintes telas:</div>
@@ -320,7 +320,7 @@
                     <div class="mb-8">
                       <div class="d-flex align-center mb-4">
                         <v-icon size="20" color="primary" class="mr-2">mdi-monitor</v-icon>
-                        <span class="text-subtitle-1 font-weight-bold" style="color: var(--sidebar-text);">Tela Principal</span>
+                        <span class="text-subtitle-1 font-weight-bold" style="color: var(--sidebar-text);">{{ t('main_screen') }}</span>
                       </div>
                       
                       <v-switch v-model="slide_fullscreen" label="Abrir música em tela cheia na tela principal" color="primary" inset hide-details class="mb-2 font-weight-medium" />
@@ -333,11 +333,11 @@
                     <div>
                       <div class="d-flex align-center mb-4">
                         <v-icon size="20" color="primary" class="mr-2">mdi-palette-outline</v-icon>
-                        <span class="text-subtitle-1 font-weight-bold" style="color: var(--sidebar-text);">Personalização da Letra</span>
+                        <span class="text-subtitle-1 font-weight-bold" style="color: var(--sidebar-text);">{{ t('font_customization') }}</span>
                       </div>
 
                       <div class="mb-6">
-                        <div class="text-body-2 font-weight-medium mb-2" style="color: var(--sidebar-text-secondary);">Alinhamento da letra</div>
+                        <div class="text-body-2 font-weight-medium mb-2" style="color: var(--sidebar-text-secondary);">{{ t('font_align') }}</div>
                         <v-btn-toggle
                           v-model="slide_align"
                           color="primary"
@@ -371,7 +371,7 @@
                               <div class="d-flex align-center justify-space-between mb-3">
                                 <div class="d-flex align-center">
                                   <v-icon size="18" color="primary" class="mr-2">mdi-format-size</v-icon>
-                                  <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text);">Tamanho da letra</span>
+                                  <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text);">{{ t('font_size') }}</span>
                                 </div>
                                 <v-chip size="small" variant="tonal" color="primary" class="font-weight-bold">{{ slide_font_size }}%</v-chip>
                               </div>
@@ -399,7 +399,7 @@
                             <div class="mb-6">
                               <div class="d-flex align-center mb-3">
                                 <v-icon size="18" color="primary" class="mr-2">mdi-palette</v-icon>
-                                <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text);">Cor da letra</span>
+                                <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text);">{{ t('font_color') }}</span>
                               </div>
                               <div class="d-flex flex-wrap align-center" style="gap: 10px;">
                                 <div
@@ -437,7 +437,7 @@
                             <div>
                               <div class="d-flex align-center mb-3">
                                 <v-icon size="18" color="primary" class="mr-2">mdi-format-bold</v-icon>
-                                <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text);">Peso da fonte</span>
+                                <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text);">{{ t('font_weight') }}</span>
                               </div>
                               <v-btn-toggle
                                 v-model="slide_font_weight"
@@ -447,10 +447,10 @@
                                 class="rounded-xl d-flex"
                                 style="height: 42px; background: var(--card-bg); box-shadow: inset 0 0 0 1px var(--border-color);"
                               >
-                                <v-btn value="400" class="flex-grow-1 text-none" style="font-weight: 400;">Normal</v-btn>
-                                <v-btn value="600" class="flex-grow-1 text-none" style="font-weight: 600;">Semi</v-btn>
-                                <v-btn value="700" class="flex-grow-1 text-none" style="font-weight: 700;">Negrito</v-btn>
-                                <v-btn value="900" class="flex-grow-1 text-none" style="font-weight: 900;">Extra</v-btn>
+                                <v-btn value="400" class="flex-grow-1 text-none" style="font-weight: 400;">{{ t('weight_normal') }}</v-btn>
+                                <v-btn value="600" class="flex-grow-1 text-none" style="font-weight: 600;">{{ t('weight_semi') }}</v-btn>
+                                <v-btn value="700" class="flex-grow-1 text-none" style="font-weight: 700;">{{ t('weight_bold') }}</v-btn>
+                                <v-btn value="900" class="flex-grow-1 text-none" style="font-weight: 900;">{{ t('weight_extra') }}</v-btn>
                               </v-btn-toggle>
                             </div>
 
@@ -468,7 +468,7 @@
                             <div class="mb-6">
                               <div class="d-flex align-center mb-3">
                                 <v-icon size="18" color="primary" class="mr-2">mdi-format-color-fill</v-icon>
-                                <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text);">Cor de fundo</span>
+                                <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text);">{{ t('bg_color') }}</span>
                               </div>
                               <div class="d-flex flex-wrap align-center" style="gap: 10px;">
                                 <div
@@ -506,7 +506,7 @@
                             <div class="mb-6">
                               <div class="d-flex align-center mb-3">
                                 <v-icon size="18" color="primary" class="mr-2">mdi-image-outline</v-icon>
-                                <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text);">Imagem de fundo</span>
+                                <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text);">{{ t('bg_image') }}</span>
                               </div>
                               
                               <div v-if="slide_bg_image" class="position-relative rounded-xl overflow-hidden mb-3" style="height: 140px; border: 1px solid var(--border-color);">
@@ -521,7 +521,7 @@
                                     @click="slide_bg_image = null"
                                   >
                                     <v-icon>mdi-delete</v-icon>
-                                    <v-tooltip activator="parent" location="top">Remover imagem</v-tooltip>
+                                    <v-tooltip activator="parent" location="top">{{ t('remove_image') }}</v-tooltip>
                                   </v-btn>
                                   <v-btn
                                     icon
@@ -531,7 +531,7 @@
                                     @click="$refs.bgImageInput.click()"
                                   >
                                     <v-icon color="black">mdi-pencil</v-icon>
-                                    <v-tooltip activator="parent" location="top">Trocar imagem</v-tooltip>
+                                    <v-tooltip activator="parent" location="top">{{ t('change_image') }}</v-tooltip>
                                   </v-btn>
                                 </div>
                               </div>
@@ -543,7 +543,7 @@
                                 @click="$refs.bgImageInput.click()"
                               >
                                 <v-icon size="32" color="grey-lighten-1" class="mb-2">mdi-cloud-upload-outline</v-icon>
-                                <span class="text-caption font-weight-medium" style="color: var(--sidebar-text-secondary);">Clique para selecionar uma imagem</span>
+                                <span class="text-caption font-weight-medium" style="color: var(--sidebar-text-secondary);">{{ t('select_image') }}</span>
                               </div>
 
                               <input
@@ -560,7 +560,7 @@
                               <div class="d-flex align-center justify-space-between mb-3">
                                 <div class="d-flex align-center">
                                   <v-icon size="18" color="primary" class="mr-2">mdi-opacity</v-icon>
-                                  <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text);">Opacidade do fundo</span>
+                                  <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text);">{{ t('bg_opacity') }}</span>
                                 </div>
                                 <v-chip size="small" variant="tonal" color="primary" class="font-weight-bold">{{ slide_bg_opacity }}%</v-chip>
                               </div>
@@ -585,7 +585,7 @@
                       <div class="d-flex justify-center mt-2">
                         <v-btn variant="tonal" color="primary" class="text-none font-weight-bold rounded-lg px-6" @click="resetSlideConfigs">
                           <v-icon start>mdi-restore</v-icon>
-                          Restaurar Padrões de Projeção
+                          {{ t('restore_defaults') }} de Projeção
                         </v-btn>
                       </div>
                     </v-card-text>
@@ -612,7 +612,7 @@ export default {
   },
   data: () => ({
     tab: 1,
-    language: "Português",
+    language: "pt",
     show_home_history: true,
     hardware_accel: true,
     fullscreen_mode: false,
@@ -679,9 +679,24 @@ export default {
     },
     slideMonitorList() {
       return this.monitorList.filter(m => !m.isPrimary);
+    },
+    languagesList() {
+      return [
+        { code: 'pt', name: 'Português' },
+        { code: 'en', name: 'English' },
+        { code: 'es', name: 'Español' }
+      ];
+    },
+    languageName() {
+      const found = this.languagesList.find(l => l.code === this.language);
+      return found ? found.name : 'Português';
     }
   },
   mounted() {
+    if(this.$userdata.get("language")){
+      this.language = this.$userdata.get("language");
+    }
+
     if(this.$userdata.get("theme")){
       this.$vuetify.theme.global.name = this.$userdata.get("theme");
     }
@@ -726,6 +741,12 @@ export default {
     });
   },
   watch: {
+    language(val) {
+      if (val) {
+        this.$userdata.set("language", val);
+        this.$i18n.locale = val;
+      }
+    },
     show_home_history(val) {
       this.$userdata.set("show_home_history", val);
     },
@@ -769,6 +790,9 @@ export default {
     }
   },
   methods: {
+    t(text) {
+      return this.$t(`modules.${this.module_id}.${text}`);
+    },
     identifyMonitors() {
       if (window.electronAPI && window.electronAPI.identifyDisplays) {
         window.electronAPI.identifyDisplays();

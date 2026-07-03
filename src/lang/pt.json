@@ -6,7 +6,10 @@
         "home": "Página Inicial",
         "favorites": "Favoritos",
         "help": "Ajuda e sobre",
-        "settings": "Configurações"
+        "settings": "Configurações",
+        "close_menu": "Fechar menu",
+        "local_library": "Biblioteca Local",
+        "update_available": "Atualização Disponível"
     },
     "modules": {
         "invalid": {
@@ -38,7 +41,9 @@
         "close": "Fechar",
         "yes": "Sim",
         "no": "Não",
-        "wait": "Aguarde..."
+        "wait": "Aguarde...",
+        "close_app_title": "Encerrar Aplicativo?",
+        "close_app_text": "Existe uma mídia ativa ou projeção em andamento. Deseja realmente sair?"
     },
     "messages": {
         "file_database_not_found": "Arquivo de dados não encontrado!",

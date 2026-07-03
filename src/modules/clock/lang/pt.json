@@ -1,3 +1,14 @@
 {
-    "title": "Relógio"
+  "title": "Relógio",
+  "config": "Personalizar",
+  "config_title": "Ajustes do Relógio",
+  "style": "Estilo de Exibição",
+  "digital": "Digital",
+  "analog": "Analógico",
+  "options": "Opções de Formato",
+  "show_seconds": "Mostrar Segundos",
+  "format_24h": "Formato 24h",
+  "colors": "Cores e Fundo",
+  "bg_color": "Cor de Fundo",
+  "text_color": "Cor do Texto / Ponteiros"
 }

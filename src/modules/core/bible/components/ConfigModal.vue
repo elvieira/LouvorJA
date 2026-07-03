@@ -8,7 +8,7 @@
           <div class="d-flex align-center justify-space-between mb-2">
             <div class="d-flex align-center">
               <v-icon color="primary" size="32" class="mr-3">mdi-palette-outline</v-icon>
-              <h2 class="text-h5 font-weight-bold mb-0" style="color: var(--sidebar-text);">Personalização da Projeção</h2>
+              <h2 class="text-h5 font-weight-bold mb-0" style="color: var(--sidebar-text);">{{ t('proj_customization') }}</h2>
             </div>
             <v-btn icon variant="text" @click="close">
               <v-icon>mdi-close</v-icon>
@@ -26,8 +26,8 @@
             <div class="d-flex align-center mb-6">
               <v-icon color="primary" class="mr-3" size="24">mdi-format-color-fill</v-icon>
               <div>
-                <h3 class="font-weight-bold" style="color: var(--sidebar-text); font-size: 1.1rem; line-height: 1.2;">Fundo da Projeção</h3>
-                <div class="text-caption" style="color: var(--sidebar-text-secondary);">Cor base de fundo da tela de exibição</div>
+                <h3 class="font-weight-bold" style="color: var(--sidebar-text); font-size: 1.1rem; line-height: 1.2;">{{ t('proj_background') }}</h3>
+                <div class="text-caption" style="color: var(--sidebar-text-secondary);">{{ t('bg_color_desc') }}</div>
               </div>
             </div>
             <div class="d-flex flex-wrap align-center" style="gap: 10px;">
@@ -70,8 +70,8 @@
               <div class="d-flex align-center">
                 <v-icon color="primary" class="mr-3" size="24">mdi-format-text</v-icon>
                 <div>
-                  <h3 class="font-weight-bold" style="color: var(--sidebar-text); font-size: 1.1rem; line-height: 1.2;">Texto Principal</h3>
-                  <div class="text-caption" style="color: var(--sidebar-text-secondary);">Formatação dos versículos projetados</div>
+                  <h3 class="font-weight-bold" style="color: var(--sidebar-text); font-size: 1.1rem; line-height: 1.2;">{{ t('main_text') }}</h3>
+                  <div class="text-caption" style="color: var(--sidebar-text-secondary);">{{ t('main_text_desc') }}</div>
                 </div>
               </div>
             </div>
@@ -79,7 +79,7 @@
             <div class="d-flex align-center justify-space-between mb-3">
               <div class="d-flex align-center">
                 <v-icon size="18" color="primary" class="mr-2">mdi-format-size</v-icon>
-                <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text);">Tamanho da letra</span>
+                <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text);">{{ t('font_size') }}</span>
               </div>
               <v-chip size="small" variant="tonal" color="primary" class="font-weight-bold">{{ localConfig.fontSizePc }}</v-chip>
             </div>
@@ -101,7 +101,7 @@
             
             <div class="d-flex align-center mb-3">
               <v-icon size="18" color="primary" class="mr-2">mdi-palette</v-icon>
-              <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text);">Cor da letra</span>
+              <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text);">{{ t('font_color') }}</span>
             </div>
             
             <div class="d-flex flex-wrap align-center mb-6" style="gap: 10px;">
@@ -138,7 +138,7 @@
             <v-divider class="mb-6" style="opacity: 0.1;"></v-divider>
             
             <div class="d-flex align-center justify-space-between">
-              <div class="text-body-2 font-weight-medium" style="color: var(--sidebar-text-secondary);">Alinhamento do Texto</div>
+              <div class="text-body-2 font-weight-medium" style="color: var(--sidebar-text-secondary);">{{ t('text_align') }}</div>
               <v-btn-toggle v-model="localConfig.align" color="primary" variant="tonal" divided mandatory rounded="lg" style="height: 40px;">
                 <v-btn value="text-left" class="px-4"><v-icon>mdi-format-align-left</v-icon></v-btn>
                 <v-btn value="text-center" class="px-4"><v-icon>mdi-format-align-center</v-icon></v-btn>
@@ -155,7 +155,7 @@
               <div class="d-flex align-center">
                 <v-icon color="primary" class="mr-3" size="24">mdi-book-open-page-variant</v-icon>
                 <div>
-                  <h3 class="font-weight-bold" style="color: var(--sidebar-text); font-size: 1.1rem; line-height: 1.2;">Referência Bíblica</h3>
+                  <h3 class="font-weight-bold" style="color: var(--sidebar-text); font-size: 1.1rem; line-height: 1.2;">{{ t('bible_reference') }}</h3>
                   <div class="text-caption" style="color: var(--sidebar-text-secondary);">Ex: Números 28:3</div>
                 </div>
               </div>
@@ -164,7 +164,7 @@
             <div class="d-flex align-center justify-space-between mb-3">
               <div class="d-flex align-center">
                 <v-icon size="18" color="primary" class="mr-2">mdi-format-size</v-icon>
-                <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text);">Tamanho da letra</span>
+                <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text);">{{ t('font_size') }}</span>
               </div>
               <v-chip size="small" variant="tonal" color="primary" class="font-weight-bold">{{ localConfig.refFontSizePc }}</v-chip>
             </div>
@@ -186,7 +186,7 @@
             
             <div class="d-flex align-center mb-3">
               <v-icon size="18" color="primary" class="mr-2">mdi-palette</v-icon>
-              <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text);">Cor da letra</span>
+              <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text);">{{ t('font_color') }}</span>
             </div>
             
             <div class="d-flex flex-wrap align-center" style="gap: 10px;">
@@ -289,7 +289,7 @@ export default {
     },
     localConfig: {
       handler(val) {
-        this.$appdata.set("modules.bible.config", val);
+        this.$appdata.set("modules.bible.config", JSON.parse(JSON.stringify(val)));
       },
       deep: true,
     },
@@ -298,6 +298,9 @@ export default {
     this.loadConfig();
   },
   methods: {
+    t(text) {
+      return this.$t(`modules.bible.${text}`);
+    },
     loadConfig() {
       const savedConfig = this.$appdata.get("modules.bible.config");
       if (savedConfig) {

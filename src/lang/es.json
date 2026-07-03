@@ -3,10 +3,13 @@
         "name": "Loor JA"
     },
     "sidebar": {
-        "home": "Página de inicio",
+        "home": "Página de Inicio",
         "favorites": "Favoritos",
-        "help": "Ayuda y acerca de",
-        "settings": "Configuraciones"
+        "help": "Ayuda y sobre",
+        "settings": "Configuraciones",
+        "close_menu": "Cerrar menú",
+        "local_library": "Biblioteca Local",
+        "update_available": "Actualización Disponible"
     },
     "modules": {
         "invalid": {
@@ -38,7 +41,9 @@
         "close": "Cerrar",
         "yes": "Sí",
         "no": "No",
-        "wait": "Aguardar..."
+        "wait": "Espere...",
+        "close_app_title": "¿Cerrar Aplicación?",
+        "close_app_text": "Hay un medio activo o proyección en curso. ¿Desea realmente salir?"
     },
     "messages": {
         "file_database_not_found": "Archivo de datos no encontrado!",

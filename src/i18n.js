@@ -13,10 +13,11 @@ const loadLocaleMessages = async () => {
 
 export const createI18nInstance = async () => {
   const messages = await loadLocaleMessages();
+  const savedLocale = window.app?.api?.userdata?.get("language") || "pt";
 
   return createI18n({
     legacy: false,
-    locale: "pt",
+    locale: savedLocale,
     fallbackLocale: "pt",
     messages,
   });
