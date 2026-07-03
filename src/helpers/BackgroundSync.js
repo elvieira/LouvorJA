@@ -30,7 +30,7 @@ class BackgroundSync {
         return;
       }
 
-      let allImages = new Set();
+      const allImages = new Set();
       for (const cat of categories) {
         if (cat.albums && Array.isArray(cat.albums)) {
           cat.albums.forEach(a => {
@@ -40,13 +40,13 @@ class BackgroundSync {
       }
 
       const imagesList = Array.from(allImages);
-      let missingImages = [];
+      const missingImages = [];
 
       // 3. Checar uma a uma para ver se já existe no HD
       console.log(`[BackgroundSync] Verificando ${imagesList.length} capas no disco...`);
       for (const urlImage of imagesList) {
-        const imgRelativePath = urlImage.replace(/^\/(musics|images|covers)\//, '');
-        const exists = await window.electronAPI.checkMedia('covers', imgRelativePath);
+        const imgRelativePath = urlImage.replace(/^\/(musics|images|covers)\//, "");
+        const exists = await window.electronAPI.checkMedia("covers", imgRelativePath);
         if (!exists) {
           missingImages.push(urlImage);
         }
@@ -71,9 +71,9 @@ class BackgroundSync {
 
         const batch = missingImages.slice(i, i + batchSize);
         await Promise.all(batch.map(async (urlImage) => {
-          const imgFilename = urlImage.split('/').pop();
+          const imgFilename = urlImage.split("/").pop();
           const fullUrl = `${$path.file(urlImage)}`;
-          await window.electronAPI.downloadMedia(fullUrl, 'covers', imgFilename);
+          await window.electronAPI.downloadMedia(fullUrl, "covers", imgFilename);
         }));
 
         // Pequeno atraso para alívio do servidor, mesmo se o Electron já tem Retry

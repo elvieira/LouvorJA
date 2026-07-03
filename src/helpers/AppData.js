@@ -18,7 +18,7 @@ export default {
       param != "is_popup" &&
       param != "is_fullscreen"
     ) {
-      let activePopups = [];
+      const activePopups = [];
       popups.forEach(popup => {
         if (!popup.closed) {
           activePopups.push(popup);

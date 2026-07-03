@@ -137,8 +137,8 @@ export default {
 
       // Interceptação Offline (Desktop)
       if (window.electronAPI && window.electronAPI.isElectron) {
-        const relativePath = urlPath.replace(/^\/(musics|images|covers)\//, '');
-        const localUrl = await window.electronAPI.checkMedia('music', relativePath);
+        const relativePath = urlPath.replace(/^\/(musics|images|covers)\//, "");
+        const localUrl = await window.electronAPI.checkMedia("music", relativePath);
         if (localUrl) {
           $dev.write("Mídia carregada do disco local", localUrl);
           targetAudioUrl = localUrl;
@@ -148,7 +148,7 @@ export default {
           $appdata.set("modules.media.loading", false);
           $alert.error({
             text: "Essa coletânea ainda não foi baixada. Acesse a Biblioteca Local para baixá-la.",
-            translate: false
+            translate: false,
           });
           return; // Interrompe a execução completamente
         }
@@ -195,7 +195,7 @@ export default {
 
         if (selectedMonitors.length > 0) {
           const { default: $popup } = await import("@/helpers/Popup");
-          await $popup.syncMonitors(selectedMonitors, 'media', true);
+          await $popup.syncMonitors(selectedMonitors, "media", true);
         }
       }
     }
@@ -216,7 +216,7 @@ export default {
         const isMediaActive = $appdata.get("modules.media.id_music") != null;
 
         const { default: $popup } = await import("@/helpers/Popup");
-        await $popup.syncMonitors(selectedMonitors, 'media', isMediaActive);
+        await $popup.syncMonitors(selectedMonitors, "media", isMediaActive);
       }
     }
   },
@@ -434,7 +434,7 @@ export default {
         url_image: data.url_image,
         image_position: data.image_position,
       },
-      ...lyricsSlides
+      ...lyricsSlides,
     ];
   },
 

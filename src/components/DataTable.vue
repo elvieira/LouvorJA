@@ -129,7 +129,7 @@ export default {
                 return Number(item[key]) === Number(value);
               }
               return false;
-            }) || (item.albums && item.albums.some(al => al.type === 'hymnal' && Number(al.pivot?.track) === Number(value)));
+            }) || (item.albums && item.albums.some(al => al.type === "hymnal" && Number(al.pivot?.track) === Number(value)));
           } else {
             searchableCondition = searchable.some((key) => {
               if (isNaN(item[key]) || item[key] === null) {
@@ -161,8 +161,8 @@ export default {
         const numValue = Number(value);
         this.filter_data.sort((a, b) => {
           const getScore = (item) => {
-            if (item.albums?.some(al => al.type === 'hymnal' && al.name === 'Hinário Adventista' && Number(al.pivot?.track) === numValue)) return 2;
-            if (item.albums?.some(al => al.type === 'hymnal' && al.name === 'Hinário Adventista 1996' && Number(al.pivot?.track) === numValue)) return 1;
+            if (item.albums?.some(al => al.type === "hymnal" && al.name === "Hinário Adventista" && Number(al.pivot?.track) === numValue)) return 2;
+            if (item.albums?.some(al => al.type === "hymnal" && al.name === "Hinário Adventista 1996" && Number(al.pivot?.track) === numValue)) return 1;
             return 0;
           };
           return getScore(b) - getScore(a);

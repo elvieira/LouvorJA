@@ -35,11 +35,15 @@
                 style="height: 44px; max-width: 220px; background: var(--card-bg); box-shadow: var(--shadow);"
               >
                 <div class="d-flex align-center text-truncate w-100" style="color: var(--sidebar-text);">
-                  <v-icon size="small" class="mr-3 opacity-70">mdi-filter-variant</v-icon>
+                  <v-icon size="small" class="mr-3 opacity-70">
+                    mdi-filter-variant
+                  </v-icon>
                   <span class="text-truncate font-weight-medium text-body-2">
-                    {{ categoryOptions.find(c => c.id_category === id_category)?.name || 'Todos' }}
+                    {{ categoryOptions.find(c => c.id_category === id_category)?.name || $t('collections.all') }}
                   </span>
-                  <v-icon size="small" class="ml-3 opacity-50">mdi-menu-down</v-icon>
+                  <v-icon size="small" class="ml-3 opacity-50">
+                    mdi-menu-down
+                  </v-icon>
                 </div>
               </v-btn>
             </template>
@@ -265,7 +269,7 @@ export default {
       if (this.filteredMusics && this.filteredMusics.length > 0) {
         const first = this.filteredMusics[0];
         if (first.id_music) {
-          this.$media.open({ id_music: first.id_music, mode: 'audio' });
+          this.$media.open({ id_music: first.id_music, mode: "audio" });
         }
       }
     },
@@ -290,8 +294,8 @@ export default {
               cat.albums = cat.albums.filter(a => ![712, 629].includes(a.id_album));
               for (const album of cat.albums) {
                 if (album.url_image) {
-                  const imgRelativePath = album.url_image.replace(/^\/(musics|images|covers)\//, '');
-                  const localCheck = await window.electronAPI.checkMedia('covers', imgRelativePath);
+                  const imgRelativePath = album.url_image.replace(/^\/(musics|images|covers)\//, "");
+                  const localCheck = await window.electronAPI.checkMedia("covers", imgRelativePath);
                   if (localCheck) {
                     album.local_url_image = localCheck;
                   }
@@ -304,11 +308,11 @@ export default {
         // Remove categorias que ficaram sem álbuns
         this.categories = this.categories.filter(cat => cat.albums && cat.albums.length > 0);
         
-        // Ordenação personalizada
+        // Ordenação personalizada - chaves devem ser os valores originais PT (dados vêm em PT)
         const orderMap = {
-          'CDs Oficiais/Ano': 2,
-          'Infantis': 98,
-          'Doxologia': 99
+          "CDs Oficiais/Ano": 2,
+          Infantil: 98,
+          Doxologia: 99,
         };
         
         this.categories.sort((a, b) => {

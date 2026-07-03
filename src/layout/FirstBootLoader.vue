@@ -3,38 +3,38 @@
     <div v-if="isOpen" class="first-boot-overlay d-flex flex-column align-center justify-center bg-main">
       <transition name="fade-transition">
         <div v-if="showContent" class="text-center" style="max-width: 500px; width: 100%;">
-        <img src="/ico/favicon.svg" width="80" class="mb-6 pulse-anim" />
-        <h2 class="text-h4 font-weight-bold mb-2" style="color: var(--sidebar-text);">
-          {{ isFirstBoot ? $t('boot.preparing') : $t('boot.starting') }}
-        </h2>
-        <p class="text-subtitle-1 mb-8" style="color: var(--sidebar-text-secondary);">
-          Aguarde instantes enquanto organizamos tudo para você.
-        </p>
+          <img src="/ico/favicon.svg" width="80" class="mb-6 pulse-anim" />
+          <h2 class="text-h4 font-weight-bold mb-2" style="color: var(--sidebar-text);">
+            {{ isFirstBoot ? $t('boot.preparing') : $t('boot.starting') }}
+          </h2>
+          <p class="text-subtitle-1 mb-8" style="color: var(--sidebar-text-secondary);">
+            Aguarde instantes enquanto organizamos tudo para você.
+          </p>
 
-        <div class="mb-2 d-flex justify-space-between align-center px-4">
-          <span class="text-caption font-weight-bold" style="color: var(--sidebar-text);">{{ statusText }}</span>
-          <span class="text-caption font-weight-bold" style="color: var(--accent-blue);">{{ progress }}%</span>
-        </div>
+          <div class="mb-2 d-flex justify-space-between align-center px-4">
+            <span class="text-caption font-weight-bold" style="color: var(--sidebar-text);">{{ statusText }}</span>
+            <span class="text-caption font-weight-bold" style="color: var(--accent-blue);">{{ progress }}%</span>
+          </div>
         
-        <div class="px-4">
-          <v-progress-linear
-            v-if="!hasError"
-            v-model="progress"
-            color="primary"
-            height="8"
-            rounded
-            striped
-          ></v-progress-linear>
+          <div class="px-4">
+            <v-progress-linear
+              v-if="!hasError"
+              v-model="progress"
+              color="primary"
+              height="8"
+              rounded
+              striped
+            />
           
-          <v-btn
-            v-else
-            color="primary"
-            class="mt-4"
-            @click="retrySync"
-          >
-            Tentar Novamente
-          </v-btn>
-        </div>
+            <v-btn
+              v-else
+              color="primary"
+              class="mt-4"
+              @click="retrySync"
+            >
+              Tentar Novamente
+            </v-btn>
+          </div>
         </div>
       </transition>
     </div>
@@ -57,12 +57,12 @@ export default {
     };
   },
   mounted() {
-    if (window.location.href.includes('popup')) {
+    if (window.location.href.includes("popup")) {
       this.isOpen = false;
       return;
     }
 
-    window.addEventListener('show-boot-screen', this.handleManualShow);
+    window.addEventListener("show-boot-screen", this.handleManualShow);
     
     setTimeout(async () => {
       this.showContent = true;
@@ -70,7 +70,7 @@ export default {
     }, 1000);
   },
   unmounted() {
-    window.removeEventListener('show-boot-screen', this.handleManualShow);
+    window.removeEventListener("show-boot-screen", this.handleManualShow);
   },
   methods: {
     handleManualShow() {
@@ -164,7 +164,7 @@ export default {
     async downloadCoverImage(urlPath, filename) {
       if (window.electronAPI && urlPath) {
         const fullUrl = `${$path.file(urlPath)}`;
-        await window.electronAPI.downloadMedia(fullUrl, 'covers', filename);
+        await window.electronAPI.downloadMedia(fullUrl, "covers", filename);
       }
     },
     async runFirstBootSync() {
@@ -201,7 +201,7 @@ export default {
             
             setTimeout(() => {
               this.isOpen = false;
-              this.$emit('boot-complete');
+              this.$emit("boot-complete");
               // Auto-reload the app so all pre-loaded modules (like sync) detect the new images
               window.location.reload();
             }, 1000);
@@ -215,8 +215,8 @@ export default {
         this.statusText = "Erro na extração. Tente novamente.";
         this.hasError = true;
       }
-    }
-  }
+    },
+  },
 };
 </script>
 

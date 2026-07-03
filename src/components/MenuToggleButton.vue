@@ -1,7 +1,14 @@
 <template>
   <button :aria-label="$t('menu_toggle.open_menu')" class="menu-toggle-btn" @click="$emit('toggle-sidebar')">
     <v-icon>mdi-menu</v-icon>
-    <v-tooltip activator="parent" location="bottom" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">{{ $t('common.menu') }}</v-tooltip>
+    <v-tooltip
+      activator="parent"
+      location="bottom"
+      open-delay="300"
+      content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+    >
+      {{ $t('common.menu') }}
+    </v-tooltip>
   </button>
 </template>
 

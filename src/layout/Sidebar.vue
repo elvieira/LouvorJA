@@ -192,7 +192,7 @@ export default {
       },
     },
     updateStatus() {
-      return this.$appdata.get("modules.update.status") || 'idle';
+      return this.$appdata.get("modules.update.status") || "idle";
     },
     isMobile() {
       return this.windowWidth <= 1024;
@@ -207,12 +207,12 @@ export default {
       const modules = this.$appdata.get("modules") || {};
       const overlays = ["album", "media", "lyric"];
       
-      if (modules['sync']?.show) {
-        return 'sync';
+      if (modules["sync"]?.show) {
+        return "sync";
       }
       
       for (const [key, module] of Object.entries(modules)) {
-        if (module.show && !overlays.includes(key) && key !== 'sync') {
+        if (module.show && !overlays.includes(key) && key !== "sync") {
           return key;
         }
       }
@@ -344,9 +344,7 @@ export default {
     },
     openUpdateModule() {
       this.$modules.open("update");
-    }
-  },
-  mounted() {
+    },
   },
 };
 </script>

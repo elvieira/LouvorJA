@@ -6,9 +6,11 @@
           <MenuToggleButton style="margin: 0;" @toggle-sidebar="toggleSidebar" />
         </div>
         
-        <div class="hero-content d-flex flex-column align-center w-100" v-if="!searchQuery && !shouldShowHistory" style="animation: fadeIn 0.5s ease;">
+        <div v-if="!searchQuery && !shouldShowHistory" class="hero-content d-flex flex-column align-center w-100" style="animation: fadeIn 0.5s ease;">
           <img src="/ico/favicon.svg" alt="LouvorJA" style="width: 80px; height: 80px; margin-bottom: 24px;" />
-          <h1 class="hero-title mb-8" style="font-size: 2.5rem; font-weight: 700; color: var(--sidebar-text);">O que vamos cantar?</h1>
+          <h1 class="hero-title mb-8" style="font-size: 2.5rem; font-weight: 700; color: var(--sidebar-text);">
+            O que vamos cantar?
+          </h1>
         </div>
         
         <div class="search-bar" :style="(searchQuery || shouldShowHistory) ? 'flex: 2; display: flex; justify-content: center; transition: all 0.5s ease;' : 'width: 100%; max-width: 650px; transition: all 0.5s ease;'">
@@ -21,16 +23,16 @@
             hide-details
             clearable
             rounded
-            @keydown.enter="playFirstResult"
             :style="(searchQuery || shouldShowHistory) ? 'width: 100%; max-width: 600px;' : 'width: 100%;'"
             class="search-input-hero"
+            @keydown.enter="playFirstResult"
           />
         </div>
 
-        <div v-if="(searchQuery || shouldShowHistory)" style="flex: 1;"></div>
+        <div v-if="(searchQuery || shouldShowHistory)" style="flex: 1;" />
       </div>
 
-      <div class="content-main" v-if="searchQuery || shouldShowHistory">
+      <div v-if="searchQuery || shouldShowHistory" class="content-main">
         <div v-if="searchQuery" class="dashboard-section music-section h-100 d-flex flex-column" style="min-height: 0;">
           <h2 class="section-title mb-4">
             Resultados da Pesquisa
@@ -125,7 +127,9 @@
               </div>
             </div>
             <div v-else class="empty-state collections-empty">
-              <v-icon size="48" color="grey-lighten-1">mdi-music-box-multiple-outline</v-icon>
+              <v-icon size="48" color="grey-lighten-1">
+                mdi-music-box-multiple-outline
+              </v-icon>
               <p>{{ t("no_collections_played") }}</p>
             </div>
           </div>
@@ -262,7 +266,7 @@ export default {
       deep: true,
       immediate: true,
     },
-    'module.show': {
+    "module.show": {
       handler(newVal) {
         if (newVal) {
           const setting = this.$userdata.get("show_home_history");
@@ -270,7 +274,7 @@ export default {
         }
       },
       immediate: true,
-    }
+    },
   },
   mounted() {
     this.fetchCollectionInfo();
@@ -321,7 +325,7 @@ export default {
               }
               if (allCategories) {
                 for (const cat of allCategories) {
-                  const albumObj = cat.albums?.find(a => a.id_album === col.id || a.id_album === col.module || a.id_album === col.id.replace('hymnal', 'hasd'));
+                  const albumObj = cat.albums?.find(a => a.id_album === col.id || a.id_album === col.module || a.id_album === col.id.replace("hymnal", "hasd"));
                   if (albumObj && albumObj.url_image) {
                     info.url_image = albumObj.url_image;
                     break;
@@ -331,8 +335,8 @@ export default {
             }
             
             if (info.url_image && window.electronAPI) {
-              const imgRelativePath = info.url_image.replace(/^\/(musics|images|covers)\//, '');
-              const localCheck = await window.electronAPI.checkMedia('covers', imgRelativePath);
+              const imgRelativePath = info.url_image.replace(/^\/(musics|images|covers)\//, "");
+              const localCheck = await window.electronAPI.checkMedia("covers", imgRelativePath);
               if (localCheck) {
                 info.local_url_image = localCheck;
               }
@@ -350,24 +354,24 @@ export default {
     },
     
     getCollectionImage(collection) {
-      const name = this.getCollectionName(collection) || '';
+      const name = this.getCollectionName(collection) || "";
       
       if (
-        collection.id === 'hymnal_1996' || 
-        collection.module === 'hymnal_1996' || 
-        collection.id === 'ha1996' ||
-        name.includes('1996') ||
-        (collection.url_image && collection.url_image.includes('1996'))
+        collection.id === "hymnal_1996" || 
+        collection.module === "hymnal_1996" || 
+        collection.id === "ha1996" ||
+        name.includes("1996") ||
+        (collection.url_image && collection.url_image.includes("1996"))
       ) {
         return this.hymnal1996Img;
       }
       
       if (
-        collection.id === 'hymnal' || 
-        collection.module === 'hymnal' || 
-        collection.id === 'hasd' ||
-        name.includes('Hinário') ||
-        collection.url_image === '/covers/hasd.bmp'
+        collection.id === "hymnal" || 
+        collection.module === "hymnal" || 
+        collection.id === "hasd" ||
+        name.includes("Hinário") ||
+        collection.url_image === "/covers/hasd.bmp"
       ) {
         return this.hymnalImg;
       }
@@ -426,14 +430,14 @@ export default {
       if (this.searchData && this.searchData.data && this.searchData.data.length > 0) {
         const first = this.searchData.data[0];
         if (first.id_music) {
-          this.$media.open({ id_music: first.id_music, mode: 'audio' });
+          this.$media.open({ id_music: first.id_music, mode: "audio" });
         }
       }
     },
     
     getHymnalTrack(item) {
       if (item && item.albums) {
-        const hymnalAlbum = item.albums.find(a => a.type === 'hymnal');
+        const hymnalAlbum = item.albums.find(a => a.type === "hymnal");
         if (hymnalAlbum && hymnalAlbum.pivot && hymnalAlbum.pivot.track) {
           return hymnalAlbum.pivot.track;
         }

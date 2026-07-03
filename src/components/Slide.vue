@@ -11,7 +11,7 @@
         class="position-absolute top-0 left-0 w-100 h-100"
         style="overflow: hidden; background-color: rgb(0,0,0);"
       >
-        <div class="position-absolute top-0 left-0 w-100 h-100" :style="style_bg(slide)"></div>
+        <div class="position-absolute top-0 left-0 w-100 h-100" :style="style_bg(slide)" />
         <div
           class="position-absolute top-0 left-0 w-100 h-100 d-flex justify-center"
           :class="slideAlignClass"
@@ -51,13 +51,13 @@ export default {
     repeat: false,
     width: 0,
     height: 0,
-    slideAlignClass: 'align-center',
+    slideAlignClass: "align-center",
     customTextFormat: false,
     customFontSize: 100,
-    customFontColor: '#FFFFFF',
-    customFontWeight: '700',
+    customFontColor: "#FFFFFF",
+    customFontWeight: "700",
     customBg: false,
-    customBgColor: '#000000',
+    customBgColor: "#000000",
     customBgImage: null,
     customBgOpacity: 100,
   }),
@@ -101,17 +101,17 @@ export default {
   methods: {
     updateSettings() {
       const align = this.$userdata.get("modules.config.slide_align") || "Centro";
-      if (align === 'Cima') this.slideAlignClass = 'align-start';
-      else if (align === 'Baixo') this.slideAlignClass = 'align-end';
-      else this.slideAlignClass = 'align-center';
+      if (align === "Cima") this.slideAlignClass = "align-start";
+      else if (align === "Baixo") this.slideAlignClass = "align-end";
+      else this.slideAlignClass = "align-center";
 
       this.customTextFormat = this.$userdata.get("modules.config.slide_custom_text_format") || false;
       this.customFontSize = this.$userdata.get("modules.config.slide_font_size") || 100;
-      this.customFontColor = this.$userdata.get("modules.config.slide_font_color") || '#FFFFFF';
-      this.customFontWeight = this.$userdata.get("modules.config.slide_font_weight") || '700';
+      this.customFontColor = this.$userdata.get("modules.config.slide_font_color") || "#FFFFFF";
+      this.customFontWeight = this.$userdata.get("modules.config.slide_font_weight") || "700";
 
       this.customBg = this.$userdata.get("modules.config.slide_custom_bg") || false;
-      this.customBgColor = this.$userdata.get("modules.config.slide_bg_color") || '#000000';
+      this.customBgColor = this.$userdata.get("modules.config.slide_bg_color") || "#000000";
       this.customBgImage = this.$userdata.get("modules.config.slide_bg_image") || null;
       this.customBgOpacity = this.$userdata.get("modules.config.slide_bg_opacity") ?? 100;
     },
@@ -144,7 +144,7 @@ export default {
       if (this.customBg) {
         return {
           backgroundColor: this.customBgColor,
-          backgroundImage: this.customBgImage ? `url(${this.customBgImage})` : 'none',
+          backgroundImage: this.customBgImage ? `url(${this.customBgImage})` : "none",
           backgroundRepeat: "no-repeat",
           backgroundPosition: "center center",
           backgroundSize: "cover",

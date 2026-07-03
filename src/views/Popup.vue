@@ -20,7 +20,7 @@ export default {
   mounted() {
     this.$appdata.set("is_popup", true);
     window.addEventListener("message", (event) => {
-      if (event.origin === window.location.origin || event.origin === 'file://' || event.origin === 'null') {
+      if (event.origin === window.location.origin || event.origin === "file://" || event.origin === "null") {
         this.message = event.data;
         if (event.data.param) {
           this.$appdata.set(event.data.param, event.data.value);

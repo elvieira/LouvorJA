@@ -1,7 +1,12 @@
 <template>
   <v-slide-y-reverse-transition>
     <div v-if="show" class="module-full-page d-flex align-center justify-center bg-transparent" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 100; background: rgba(0,0,0,0.6) !important; backdrop-filter: blur(2px);">
-      <v-card rounded="xl" width="100%" max-width="520" style="background: var(--card-bg); overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.5);">
+      <v-card
+        rounded="xl"
+        width="100%"
+        max-width="520"
+        style="background: var(--card-bg); overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.5);"
+      >
         <!-- Header -->
         <div style="background: linear-gradient(135deg, rgba(0,151,215,0.15) 0%, rgba(0,151,215,0.05) 100%); padding: 24px 24px 20px;">
           <div class="d-flex align-center justify-space-between">
@@ -17,21 +22,39 @@
             </div>
             <v-btn icon variant="text" @click="close">
               <v-icon>mdi-close</v-icon>
-              <v-tooltip activator="parent" location="bottom" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">Fechar</v-tooltip>
+              <v-tooltip
+                activator="parent"
+                location="bottom"
+                open-delay="300"
+                content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+              >
+                Fechar
+              </v-tooltip>
             </v-btn>
           </div>
         </div>
 
         <!-- Conteúdo Carregando -->
         <div v-if="updateStatus === 'checking' || (updateStatus === 'idle' && !updateVersion && updateStatus !== 'not-available')" style="padding: 40px 24px; text-align: center;">
-          <v-progress-circular indeterminate color="primary" size="32" class="mb-3"></v-progress-circular>
-          <div class="text-body-2" style="color: var(--sidebar-text-secondary);">Buscando detalhes da atualização...</div>
+          <v-progress-circular
+            indeterminate
+            color="primary"
+            size="32"
+            class="mb-3"
+          />
+          <div class="text-body-2" style="color: var(--sidebar-text-secondary);">
+            Buscando detalhes da atualização...
+          </div>
         </div>
         
         <!-- Não há atualizações -->
         <div v-else-if="updateStatus === 'not-available'" style="padding: 40px 24px; text-align: center;">
-          <v-icon color="success" size="64" class="mb-4">mdi-check-circle-outline</v-icon>
-          <div class="text-h6 font-weight-bold" style="color: var(--sidebar-text);">Aplicativo Atualizado</div>
+          <v-icon color="success" size="64" class="mb-4">
+            mdi-check-circle-outline
+          </v-icon>
+          <div class="text-h6 font-weight-bold" style="color: var(--sidebar-text);">
+            Aplicativo Atualizado
+          </div>
           <div class="text-body-2" style="color: var(--sidebar-text-secondary); max-width: 300px; margin: 0 auto;">
             O seu aplicativo já está utilizando a última versão estável.
           </div>
@@ -40,20 +63,26 @@
         <!-- Release Notes -->
         <div v-else-if="releaseNotes" style="padding: 20px 24px; max-height: 320px; overflow-y: auto;">
           <div class="text-subtitle-2 font-weight-bold mb-3" style="color: var(--sidebar-text);">
-            <v-icon size="18" class="mr-1" color="primary">mdi-text-box-outline</v-icon>
+            <v-icon size="18" class="mr-1" color="primary">
+              mdi-text-box-outline
+            </v-icon>
             O que há de novo?
           </div>
           <div 
             class="release-notes-content text-body-2"
             style="color: var(--sidebar-text-secondary); line-height: 1.7;"
             v-html="releaseNotes"
-          ></div>
+          />
         </div>
 
         <!-- Sem notas informadas -->
         <div v-else style="padding: 30px 24px; text-align: center; opacity: 0.7;">
-           <v-icon size="40" color="primary" class="mb-3">mdi-update</v-icon>
-           <div class="text-body-2" style="color: var(--sidebar-text-secondary);">Esta atualização não contém notas detalhadas de lançamento.</div>
+          <v-icon size="40" color="primary" class="mb-3">
+            mdi-update
+          </v-icon>
+          <div class="text-body-2" style="color: var(--sidebar-text-secondary);">
+            Esta atualização não contém notas detalhadas de lançamento.
+          </div>
         </div>
 
         <v-divider style="opacity: 0.1;" />
@@ -70,7 +99,7 @@
               <div 
                 style="height: 100%; background: linear-gradient(90deg, #0097d7, #00b4d8); border-radius: 6px; transition: width 0.3s ease;" 
                 :style="{ width: downloadPercent + '%' }"
-              ></div>
+              />
             </div>
           </div>
 
@@ -144,13 +173,13 @@
 export default {
   name: "UpdateModule",
   data: () => ({
-    updateVersion: '',
+    updateVersion: "",
     downloadPercent: 0,
-    releaseNotes: '',
+    releaseNotes: "",
   }),
   computed: {
     module_id() {
-      return 'update';
+      return "update";
     },
     module() {
       return this.$modules.get(this.module_id);
@@ -163,16 +192,16 @@ export default {
         if (!val) {
           this.close();
         }
-      }
+      },
     },
     updateStatus() {
-      return this.$appdata.get("modules.update.status") || 'idle';
-    }
+      return this.$appdata.get("modules.update.status") || "idle";
+    },
   },
   watch: {
     show(val) {
       if (val) {
-        if (this.updateStatus === 'idle' || this.updateStatus === 'not-available' || this.updateStatus === 'error') {
+        if (this.updateStatus === "idle" || this.updateStatus === "not-available" || this.updateStatus === "error") {
           this.$appdata.set("modules.update.status", "checking");
           if (window.electronAPI) {
             window.electronAPI.checkForUpdates().then(result => {
@@ -185,7 +214,7 @@ export default {
           }
         }
       }
-    }
+    },
   },
   mounted() {
     this.setupAutoUpdateListeners();
@@ -203,7 +232,7 @@ export default {
       window.electronAPI.onUpdateAvailable((info) => {
         this.$appdata.set("modules.update.status", "available");
         this.updateVersion = info.version;
-        this.releaseNotes = info.releaseNotes || '';
+        this.releaseNotes = info.releaseNotes || "";
       });
       
       window.electronAPI.onUpdateNotAvailable(() => {
@@ -247,7 +276,7 @@ export default {
         });
       }
     },
-  }
+  },
 };
 </script>
 

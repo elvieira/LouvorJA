@@ -11,7 +11,14 @@
           @click="$modules.close(module_id)"
         >
           <v-icon>mdi-arrow-left</v-icon>
-          <v-tooltip activator="parent" location="bottom" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">{{ $t('common.back') }}</v-tooltip>
+          <v-tooltip
+            activator="parent"
+            location="bottom"
+            open-delay="300"
+            content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+          >
+            {{ $t('common.back') }}
+          </v-tooltip>
         </v-btn>
         
         <div class="d-flex align-center mr-auto">

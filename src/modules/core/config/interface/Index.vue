@@ -15,27 +15,40 @@
 
         <div class="d-flex align-center" style="max-width: 100%; overflow-x: auto;">
           <v-tabs v-model="tab" color="var(--accent-blue)">
-            <v-tab :value="1">{{ $t('config.tabs.appearance') }}</v-tab>
-            <v-tab :value="2">{{ $t('config.tabs.general') }}</v-tab>
-            <v-tab :value="3">{{ $t('config.tabs.media_player') }}</v-tab>
-            <v-tab :value="4">{{ $t('config.tabs.projection_screens') }}</v-tab>
+            <v-tab :value="1">
+              {{ $t('config.tabs.appearance') }}
+            </v-tab>
+            <v-tab :value="2">
+              {{ $t('config.tabs.general') }}
+            </v-tab>
+            <v-tab :value="3">
+              {{ $t('config.tabs.media_player') }}
+            </v-tab>
+            <v-tab :value="4">
+              {{ $t('config.tabs.projection_screens') }}
+            </v-tab>
           </v-tabs>
         </div>
       </div>
 
       <div class="content-main flex-grow-1 w-100" style="overflow: hidden; padding-top: 24px; background: var(--main-bg);">
         <v-tabs-window v-model="tab" class="h-100 w-100">
-          
           <v-tabs-window-item :value="1" class="h-100">
             <div class="h-100 overflow-auto px-6 pb-6">
               <div class="settings-container mx-auto pb-4" style="max-width: 600px;">
                 <v-card class="settings-card rounded-xl pa-2 mb-6" flat style="background: var(--card-bg); box-shadow: var(--shadow);">
                   <v-card-text class="pa-6">
                     <div class="d-flex align-center mb-6">
-                      <v-icon color="primary" class="mr-3" size="28">mdi-palette</v-icon>
+                      <v-icon color="primary" class="mr-3" size="28">
+                        mdi-palette
+                      </v-icon>
                       <div>
-                        <h3 class="font-weight-bold" style="color: var(--sidebar-text); font-size: 1.1rem; line-height: 1.2;">{{ $t('config.theme.title') }}</h3>
-                        <div class="text-caption" style="color: var(--sidebar-text-secondary);">{{ $t('config.theme.description') }}</div>
+                        <h3 class="font-weight-bold" style="color: var(--sidebar-text); font-size: 1.1rem; line-height: 1.2;">
+                          {{ $t('config.theme.title') }}
+                        </h3>
+                        <div class="text-caption" style="color: var(--sidebar-text-secondary);">
+                          {{ $t('config.theme.description') }}
+                        </div>
                       </div>
                     </div>
                     
@@ -48,16 +61,18 @@
                       style="height: 48px; background: var(--card-bg); box-shadow: inset 0 0 0 1px var(--border-color);"
                     >
                       <v-btn value="light" class="flex-grow-1 text-none font-weight-bold">
-                        <v-icon start size="20">mdi-white-balance-sunny</v-icon> {{ $t('config.theme.light_mode') }}
+                        <v-icon start size="20">
+                          mdi-white-balance-sunny
+                        </v-icon> {{ $t('config.theme.light_mode') }}
                       </v-btn>
                       <v-btn value="dark" class="flex-grow-1 text-none font-weight-bold">
-                        <v-icon start size="20">mdi-weather-night</v-icon> {{ $t('config.theme.dark_mode') }}
+                        <v-icon start size="20">
+                          mdi-weather-night
+                        </v-icon> {{ $t('config.theme.dark_mode') }}
                       </v-btn>
                     </v-btn-toggle>
                   </v-card-text>
                 </v-card>
-
-
               </div>
             </div>
           </v-tabs-window-item>
@@ -65,16 +80,21 @@
           <v-tabs-window-item :value="2" class="h-100">
             <div class="h-100 overflow-auto px-6 pb-6">
               <div class="settings-container mx-auto d-flex flex-column" style="max-width: 600px; gap: 24px;">
-                
                 <v-card class="settings-card rounded-xl pa-2 mb-6" flat style="background: var(--card-bg); box-shadow: var(--shadow);">
                   <v-card-text class="pa-6">
                     <!-- IDIOMA -->
                     <div class="d-flex align-center justify-space-between mb-8">
                       <div class="d-flex align-center">
-                        <v-icon color="primary" class="mr-3" size="24">mdi-translate</v-icon>
+                        <v-icon color="primary" class="mr-3" size="24">
+                          mdi-translate
+                        </v-icon>
                         <div>
-                          <h3 class="font-weight-bold" style="color: var(--sidebar-text); font-size: 1.1rem; line-height: 1.2;">{{ $t('config.language.title') }}</h3>
-                          <div class="text-caption" style="color: var(--sidebar-text-secondary);">{{ $t('config.language.description') }}</div>
+                          <h3 class="font-weight-bold" style="color: var(--sidebar-text); font-size: 1.1rem; line-height: 1.2;">
+                            {{ $t('config.language.title') }}
+                          </h3>
+                          <div class="text-caption" style="color: var(--sidebar-text-secondary);">
+                            {{ $t('config.language.description') }}
+                          </div>
                         </div>
                       </div>
                       <v-menu :close-on-content-click="true" location="bottom end">
@@ -91,7 +111,9 @@
                               <span class="text-truncate font-weight-bold text-body-2 mr-2">
                                 {{ language }}
                               </span>
-                              <v-icon size="small">mdi-menu-down</v-icon>
+                              <v-icon size="small">
+                                mdi-menu-down
+                              </v-icon>
                             </div>
                           </v-btn>
                         </template>
@@ -113,18 +135,30 @@
                       </v-menu>
                     </div>
 
-                    <v-divider class="mb-8" style="opacity: 0.1;"></v-divider>
+                    <v-divider class="mb-8" style="opacity: 0.1;" />
 
                     <!-- LAYOUT DA TELA INICIAL -->
                     <div class="d-flex align-center justify-space-between">
                       <div class="d-flex align-center">
-                        <v-icon color="primary" class="mr-3" size="24">mdi-view-dashboard</v-icon>
+                        <v-icon color="primary" class="mr-3" size="24">
+                          mdi-view-dashboard
+                        </v-icon>
                         <div>
-                          <h3 class="font-weight-bold" style="color: var(--sidebar-text); font-size: 1.1rem; line-height: 1.2;">{{ $t('config.home_layout.title') }}</h3>
-                          <div class="text-caption" style="color: var(--sidebar-text-secondary);">{{ $t('config.home_layout.description') }}</div>
+                          <h3 class="font-weight-bold" style="color: var(--sidebar-text); font-size: 1.1rem; line-height: 1.2;">
+                            {{ $t('config.home_layout.title') }}
+                          </h3>
+                          <div class="text-caption" style="color: var(--sidebar-text-secondary);">
+                            {{ $t('config.home_layout.description') }}
+                          </div>
                         </div>
                       </div>
-                      <v-switch v-model="show_home_history" color="primary" inset hide-details class="font-weight-medium" />
+                      <v-switch
+                        v-model="show_home_history"
+                        color="primary"
+                        inset
+                        hide-details
+                        class="font-weight-medium"
+                      />
                     </div>
                   </v-card-text>
                 </v-card>
@@ -134,9 +168,13 @@
                     <!-- RESETAR HISTÓRICO -->
                     <div class="d-flex align-center justify-space-between mb-8">
                       <div class="d-flex align-center mr-4">
-                        <v-icon color="error" class="mr-3" size="24">mdi-database-refresh</v-icon>
+                        <v-icon color="error" class="mr-3" size="24">
+                          mdi-database-refresh
+                        </v-icon>
                         <div>
-                          <h3 class="font-weight-bold mb-1" style="color: var(--sidebar-text); font-size: 1.1rem; line-height: 1.2;">{{ $t('config.reset_history') }}</h3>
+                          <h3 class="font-weight-bold mb-1" style="color: var(--sidebar-text); font-size: 1.1rem; line-height: 1.2;">
+                            {{ $t('config.reset_history') }}
+                          </h3>
                           <div class="text-caption" style="color: var(--sidebar-text-secondary); line-height: 1.3;">
                             {{ $t('config.reset_history_description') }}
                           </div>
@@ -152,14 +190,18 @@
                       </v-btn>
                     </div>
 
-                    <v-divider class="mb-8" style="opacity: 0.1;"></v-divider>
+                    <v-divider class="mb-8" style="opacity: 0.1;" />
 
                     <!-- LIMPAR TODOS OS DADOS -->
                     <div class="d-flex align-center justify-space-between">
                       <div class="d-flex align-center mr-4">
-                        <v-icon color="error" class="mr-3" size="24">mdi-delete-alert</v-icon>
+                        <v-icon color="error" class="mr-3" size="24">
+                          mdi-delete-alert
+                        </v-icon>
                         <div>
-                          <h3 class="font-weight-bold mb-1" style="color: var(--sidebar-text); font-size: 1.1rem; line-height: 1.2;">{{ $t('config.clear_data') }}</h3>
+                          <h3 class="font-weight-bold mb-1" style="color: var(--sidebar-text); font-size: 1.1rem; line-height: 1.2;">
+                            {{ $t('config.clear_data') }}
+                          </h3>
                           <div class="text-caption" style="color: var(--sidebar-text-secondary); line-height: 1.3;">
                             {{ $t('config.clear_data_description') }}
                           </div>
@@ -171,12 +213,11 @@
                         class="rounded-lg text-none px-6 font-weight-bold flex-shrink-0"
                         @click="clearAllData"
                       >
-                        Apagar Tudo
+                        {{ $t('config.clear_data_button') }}
                       </v-btn>
                     </div>
                   </v-card-text>
                 </v-card>
-
               </div>
             </div>
           </v-tabs-window-item>
@@ -186,13 +227,24 @@
               <div class="text-center" style="max-width: 420px;">
                 <div class="mb-8 position-relative d-inline-block">
                   <div class="rounded-circle d-flex align-center justify-center" style="width: 120px; height: 120px; background: rgba(0, 151, 215, 0.05); border: 2px dashed rgba(0, 151, 215, 0.2);">
-                    <v-icon size="64" color="primary" style="opacity: 0.8">mdi-play-network-outline</v-icon>
+                    <v-icon size="64" color="primary" style="opacity: 0.8">
+                      mdi-play-network-outline
+                    </v-icon>
                   </div>
-                  <v-icon size="36" color="primary" class="position-absolute" style="bottom: -5px; right: -5px; text-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); background: var(--main-bg); border-radius: 50%;">mdi-hammer-wrench</v-icon>
+                  <v-icon
+                    size="36"
+                    color="primary"
+                    class="position-absolute"
+                    style="bottom: -5px; right: -5px; text-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); background: var(--main-bg); border-radius: 50%;"
+                  >
+                    mdi-hammer-wrench
+                  </v-icon>
                 </div>
-                <h3 class="font-weight-bold mb-3" style="color: var(--sidebar-text); font-size: 1.5rem; letter-spacing: -0.02em;">Em Construção</h3>
+                <h3 class="font-weight-bold mb-3" style="color: var(--sidebar-text); font-size: 1.5rem; letter-spacing: -0.02em;">
+                  {{ $t('config.under_construction') }}
+                </h3>
                 <p class="text-body-1" style="color: var(--sidebar-text-secondary); line-height: 1.6;">
-                  As configurações avançadas de <strong>Mídia & Player</strong> estão sendo desenhadas e estarão disponíveis em breve.
+                  <span v-html="$t('config.under_construction_description')" />
                 </p>
               </div>
             </div>
@@ -204,14 +256,23 @@
                 <v-card class="settings-card rounded-xl pa-2 mb-6" flat style="background: var(--card-bg); box-shadow: var(--shadow);">
                   <v-card-text class="pa-6">
                     <div class="d-flex align-center mb-6">
-                      <v-icon color="primary" class="mr-3" size="28">mdi-monitor-multiple</v-icon>
+                      <v-icon color="primary" class="mr-3" size="28">
+                        mdi-monitor-multiple
+                      </v-icon>
                       <div>
-                        <h3 class="font-weight-bold" style="color: var(--sidebar-text); font-size: 1.1rem; line-height: 1.2;">Monitores</h3>
+                        <h3 class="font-weight-bold" style="color: var(--sidebar-text); font-size: 1.1rem; line-height: 1.2;">
+                          {{ $t('config.monitors.title') }}
+                        </h3>
                       </div>
                     </div>
                     
                     <div class="d-flex flex-wrap mb-6 justify-center" style="gap: 32px; padding: 20px 0;">
-                      <div v-for="(display, index) in rawDisplays" :key="display.id" class="d-flex flex-column align-center" style="transition: transform 0.2s ease;">
+                      <div
+                        v-for="(display, index) in rawDisplays"
+                        :key="display.id"
+                        class="d-flex flex-column align-center"
+                        style="transition: transform 0.2s ease;"
+                      >
                         <!-- Tela do Monitor -->
                         <div 
                           class="d-flex flex-column align-center justify-center position-relative"
@@ -227,7 +288,14 @@
                           `"
                         >
                           <!-- Ícone de Estrela para o Primário -->
-                          <v-icon v-if="display.isPrimary" size="18" class="position-absolute" style="top: 10px; right: 10px; opacity: 0.9">mdi-star</v-icon>
+                          <v-icon
+                            v-if="display.isPrimary"
+                            size="18"
+                            class="position-absolute"
+                            style="top: 10px; right: 10px; opacity: 0.9"
+                          >
+                            mdi-star
+                          </v-icon>
                           
                           <span class="font-weight-bold" style="font-size: 32px; line-height: 1; letter-spacing: -1px;">{{ index + 1 }}</span>
                           <span class="text-caption font-weight-medium mt-1" :style="`opacity: ${display.isPrimary ? '0.9' : '0.5'}`">
@@ -235,7 +303,7 @@
                           </span>
                           
                           <div v-if="display.isPrimary" class="text-overline mt-1 font-weight-bold" style="line-height: 1; opacity: 0.9; font-size: 0.65rem; letter-spacing: 1px;">
-                            PRINCIPAL
+                            {{ $t('config.monitor_primary_label') }}
                           </div>
                         </div>
                         
@@ -247,7 +315,7 @@
                             background: ${display.isPrimary ? '#0077b6' : 'rgba(150,150,150,0.3)'}; 
                             opacity: ${display.isPrimary ? '0.9' : '0.6'};
                           `"
-                        ></div>
+                        />
                         
                         <!-- Base do Monitor -->
                         <div 
@@ -258,14 +326,22 @@
                             background: ${display.isPrimary ? '#0077b6' : 'rgba(150,150,150,0.3)'}; 
                             opacity: ${display.isPrimary ? '0.9' : '0.6'};
                           `"
-                        ></div>
+                        />
                       </div>
                     </div>
                     
                     <div class="d-flex justify-center mt-2">
-                      <v-btn variant="flat" color="primary" class="text-none font-weight-bold rounded-lg px-6" elevation="2" @click="identifyMonitors">
-                        <v-icon start>mdi-magnify-scan</v-icon>
-                        Identificar Monitores
+                      <v-btn
+                        variant="flat"
+                        color="primary"
+                        class="text-none font-weight-bold rounded-lg px-6"
+                        elevation="2"
+                        @click="identifyMonitors"
+                      >
+                        <v-icon start>
+                          mdi-magnify-scan
+                        </v-icon>
+                        {{ $t('config.identify_monitors') }}
                       </v-btn>
                     </div>
                   </v-card-text>
@@ -274,20 +350,28 @@
                 <v-card class="settings-card rounded-xl pa-2 mb-6" flat style="background: var(--card-bg); box-shadow: var(--shadow);">
                   <v-card-text class="pa-6">
                     <div class="d-flex align-center mb-6">
-                      <v-icon color="primary" class="mr-3" size="28">mdi-presentation-play</v-icon>
+                      <v-icon color="primary" class="mr-3" size="28">
+                        mdi-presentation-play
+                      </v-icon>
                       <div>
-                        <h3 class="font-weight-bold" style="color: var(--sidebar-text); font-size: 1.1rem; line-height: 1.2;">Slides de Músicas</h3>
+                        <h3 class="font-weight-bold" style="color: var(--sidebar-text); font-size: 1.1rem; line-height: 1.2;">
+                          {{ $t('config.music_slides.title') }}
+                        </h3>
                       </div>
                     </div>
                     
                     <!-- MÚLTIPLAS TELAS -->
                     <div class="mb-8">
                       <div class="d-flex align-center mb-4">
-                        <v-icon size="20" color="primary" class="mr-2">mdi-monitor-multiple</v-icon>
-                        <span class="text-subtitle-1 font-weight-bold" style="color: var(--sidebar-text);">Múltiplas Telas</span>
+                        <v-icon size="20" color="primary" class="mr-2">
+                          mdi-monitor-multiple
+                        </v-icon>
+                        <span class="text-subtitle-1 font-weight-bold" style="color: var(--sidebar-text);">{{ $t('config.multiple_screens') }}</span>
                       </div>
                       
-                      <div class="text-body-2 font-weight-medium mb-2" style="color: var(--sidebar-text-secondary);">Projetar nas seguintes telas:</div>
+                      <div class="text-body-2 font-weight-medium mb-2" style="color: var(--sidebar-text-secondary);">
+                        {{ $t('config.projection.project_on_screens') }}
+                      </div>
                       <div v-if="slideMonitorList.length > 0" class="d-flex flex-wrap mt-2" style="gap: 16px;">
                         <v-card
                           v-for="monitor in slideMonitorList"
@@ -309,35 +393,61 @@
                           </div>
                         </v-card>
                       </div>
-                      <v-alert v-else type="info" variant="tonal" density="compact" class="mt-2 text-caption rounded-lg">
-                        Nenhum monitor estendido (secundário) detectado no sistema.
+                      <v-alert
+                        v-else
+                        type="info"
+                        variant="tonal"
+                        density="compact"
+                        class="mt-2 text-caption rounded-lg"
+                      >
+                        {{ $t('config.no_extended_monitor') }}
                       </v-alert>
                     </div>
 
-                    <v-divider class="mb-8" style="opacity: 0.1;"></v-divider>
+                    <v-divider class="mb-8" style="opacity: 0.1;" />
 
                     <!-- TELA ÚNICA / PRINCIPAL -->
                     <div class="mb-8">
                       <div class="d-flex align-center mb-4">
-                        <v-icon size="20" color="primary" class="mr-2">mdi-monitor</v-icon>
-                        <span class="text-subtitle-1 font-weight-bold" style="color: var(--sidebar-text);">Tela Principal</span>
+                        <v-icon size="20" color="primary" class="mr-2">
+                          mdi-monitor
+                        </v-icon>
+                        <span class="text-subtitle-1 font-weight-bold" style="color: var(--sidebar-text);">{{ $t('config.main_screen') }}</span>
                       </div>
                       
-                      <v-switch v-model="slide_fullscreen" label="Abrir música em tela cheia na tela principal" color="primary" inset hide-details class="mb-2 font-weight-medium" />
-                      <v-switch v-model="slide_disable_main_if_extended" label="Desativar tela principal caso haja monitor estendido" color="primary" inset hide-details class="font-weight-medium" />
+                      <v-switch
+                        v-model="slide_fullscreen"
+                        :label="$t('config.slides.fullscreen_main')"
+                        color="primary"
+                        inset
+                        hide-details
+                        class="mb-2 font-weight-medium"
+                      />
+                      <v-switch
+                        v-model="slide_disable_main_if_extended"
+                        :label="$t('config.slides.disable_main_extended')"
+                        color="primary"
+                        inset
+                        hide-details
+                        class="font-weight-medium"
+                      />
                     </div>
 
-                    <v-divider class="mb-8" style="opacity: 0.1;"></v-divider>
+                    <v-divider class="mb-8" style="opacity: 0.1;" />
 
                     <!-- PERSONALIZAÇÃO -->
                     <div>
                       <div class="d-flex align-center mb-4">
-                        <v-icon size="20" color="primary" class="mr-2">mdi-palette-outline</v-icon>
+                        <v-icon size="20" color="primary" class="mr-2">
+                          mdi-palette-outline
+                        </v-icon>
                         <span class="text-subtitle-1 font-weight-bold" style="color: var(--sidebar-text);">Personalização da Letra</span>
                       </div>
 
                       <div class="mb-6">
-                        <div class="text-body-2 font-weight-medium mb-2" style="color: var(--sidebar-text-secondary);">Alinhamento da letra</div>
+                        <div class="text-body-2 font-weight-medium mb-2" style="color: var(--sidebar-text-secondary);">
+                          Alinhamento da letra
+                        </div>
                         <v-btn-toggle
                           v-model="slide_align"
                           color="primary"
@@ -347,37 +457,73 @@
                           style="height: 48px; background: var(--card-bg); box-shadow: inset 0 0 0 1px var(--border-color);"
                         >
                           <v-btn value="Cima" class="flex-grow-1 text-none font-weight-bold">
-                            <v-icon start size="20">mdi-align-vertical-top</v-icon> Cima
+                            <v-icon start size="20">
+                              mdi-align-vertical-top
+                            </v-icon> Cima
                           </v-btn>
                           <v-btn value="Centro" class="flex-grow-1 text-none font-weight-bold">
-                            <v-icon start size="20">mdi-align-vertical-center</v-icon> Centro
+                            <v-icon start size="20">
+                              mdi-align-vertical-center
+                            </v-icon> Centro
                           </v-btn>
                           <v-btn value="Baixo" class="flex-grow-1 text-none font-weight-bold">
-                            <v-icon start size="20">mdi-align-vertical-bottom</v-icon> Baixo
+                            <v-icon start size="20">
+                              mdi-align-vertical-bottom
+                            </v-icon> Baixo
                           </v-btn>
                         </v-btn-toggle>
                       </div>
                       
-                      <v-switch v-model="slide_show_title" label="Exibir título da música no primeiro slide" color="primary" inset hide-details class="mb-4 font-weight-medium" />
+                      <v-switch
+                        v-model="slide_show_title"
+                        label="Exibir título da música no primeiro slide"
+                        color="primary"
+                        inset
+                        hide-details
+                        class="mb-4 font-weight-medium"
+                      />
 
                       <!-- FORMATAÇÃO DE TEXTO PERSONALIZADA -->
                       <div class="mb-4">
-                        <v-switch v-model="slide_custom_text_format" label="Formatação de texto personalizada" color="primary" inset hide-details class="font-weight-medium" />
+                        <v-switch
+                          v-model="slide_custom_text_format"
+                          label="Formatação de texto personalizada"
+                          color="primary"
+                          inset
+                          hide-details
+                          class="font-weight-medium"
+                        />
                         <v-expand-transition>
                           <div v-if="slide_custom_text_format" class="mt-4 pa-5 rounded-xl" style="background: var(--main-bg); border: 1px solid var(--border-color);">
-                            
                             <!-- Tamanho do texto -->
                             <div class="mb-6">
                               <div class="d-flex align-center justify-space-between mb-3">
                                 <div class="d-flex align-center">
-                                  <v-icon size="18" color="primary" class="mr-2">mdi-format-size</v-icon>
+                                  <v-icon size="18" color="primary" class="mr-2">
+                                    mdi-format-size
+                                  </v-icon>
                                   <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text);">Tamanho da letra</span>
                                 </div>
-                                <v-chip size="small" variant="tonal" color="primary" class="font-weight-bold">{{ slide_font_size }}%</v-chip>
+                                <v-chip
+                                  size="small"
+                                  variant="tonal"
+                                  color="primary"
+                                  class="font-weight-bold"
+                                >
+                                  {{ slide_font_size }}%
+                                </v-chip>
                               </div>
                               <div class="d-flex align-center" style="gap: 12px;">
-                                <v-btn icon size="small" variant="tonal" color="primary" @click="slide_font_size = Math.max(50, slide_font_size - 5)">
-                                  <v-icon size="18">mdi-minus</v-icon>
+                                <v-btn
+                                  icon
+                                  size="small"
+                                  variant="tonal"
+                                  color="primary"
+                                  @click="slide_font_size = Math.max(50, slide_font_size - 5)"
+                                >
+                                  <v-icon size="18">
+                                    mdi-minus
+                                  </v-icon>
                                 </v-btn>
                                 <v-slider
                                   v-model="slide_font_size"
@@ -389,8 +535,16 @@
                                   hide-details
                                   class="flex-grow-1"
                                 />
-                                <v-btn icon size="small" variant="tonal" color="primary" @click="slide_font_size = Math.min(200, slide_font_size + 5)">
-                                  <v-icon size="18">mdi-plus</v-icon>
+                                <v-btn
+                                  icon
+                                  size="small"
+                                  variant="tonal"
+                                  color="primary"
+                                  @click="slide_font_size = Math.min(200, slide_font_size + 5)"
+                                >
+                                  <v-icon size="18">
+                                    mdi-plus
+                                  </v-icon>
                                 </v-btn>
                               </div>
                             </div>
@@ -398,7 +552,9 @@
                             <!-- Cor do texto -->
                             <div class="mb-6">
                               <div class="d-flex align-center mb-3">
-                                <v-icon size="18" color="primary" class="mr-2">mdi-palette</v-icon>
+                                <v-icon size="18" color="primary" class="mr-2">
+                                  mdi-palette
+                                </v-icon>
                                 <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text);">Cor da letra</span>
                               </div>
                               <div class="d-flex flex-wrap align-center" style="gap: 10px;">
@@ -423,11 +579,19 @@
                                       class="rounded-circle cursor-pointer elevation-1 d-flex align-center justify-center"
                                       style="width: 36px; height: 36px; border: 2px dashed var(--border-color); background: var(--card-bg);"
                                     >
-                                      <v-icon size="16" color="grey">mdi-eyedropper</v-icon>
+                                      <v-icon size="16" color="grey">
+                                        mdi-eyedropper
+                                      </v-icon>
                                     </div>
                                   </template>
                                   <v-card class="pa-3 rounded-xl" style="background: var(--card-bg);">
-                                    <v-color-picker v-model="slide_font_color" mode="hexa" hide-inputs :swatches="[]" elevation="0" />
+                                    <v-color-picker
+                                      v-model="slide_font_color"
+                                      mode="hexa"
+                                      hide-inputs
+                                      :swatches="[]"
+                                      elevation="0"
+                                    />
                                   </v-card>
                                 </v-menu>
                               </div>
@@ -436,7 +600,9 @@
                             <!-- Peso da fonte -->
                             <div>
                               <div class="d-flex align-center mb-3">
-                                <v-icon size="18" color="primary" class="mr-2">mdi-format-bold</v-icon>
+                                <v-icon size="18" color="primary" class="mr-2">
+                                  mdi-format-bold
+                                </v-icon>
                                 <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text);">Peso da fonte</span>
                               </div>
                               <v-btn-toggle
@@ -447,27 +613,42 @@
                                 class="rounded-xl d-flex"
                                 style="height: 42px; background: var(--card-bg); box-shadow: inset 0 0 0 1px var(--border-color);"
                               >
-                                <v-btn value="400" class="flex-grow-1 text-none" style="font-weight: 400;">Normal</v-btn>
-                                <v-btn value="600" class="flex-grow-1 text-none" style="font-weight: 600;">Semi</v-btn>
-                                <v-btn value="700" class="flex-grow-1 text-none" style="font-weight: 700;">Negrito</v-btn>
-                                <v-btn value="900" class="flex-grow-1 text-none" style="font-weight: 900;">Extra</v-btn>
+                                <v-btn value="400" class="flex-grow-1 text-none" style="font-weight: 400;">
+                                  Normal
+                                </v-btn>
+                                <v-btn value="600" class="flex-grow-1 text-none" style="font-weight: 600;">
+                                  Semi
+                                </v-btn>
+                                <v-btn value="700" class="flex-grow-1 text-none" style="font-weight: 700;">
+                                  Negrito
+                                </v-btn>
+                                <v-btn value="900" class="flex-grow-1 text-none" style="font-weight: 900;">
+                                  Extra
+                                </v-btn>
                               </v-btn-toggle>
                             </div>
-
                           </div>
                         </v-expand-transition>
                       </div>
 
                       <!-- FUNDO PERSONALIZADO -->
                       <div>
-                        <v-switch v-model="slide_custom_bg" label="Fundo personalizado" color="primary" inset hide-details class="font-weight-medium" />
+                        <v-switch
+                          v-model="slide_custom_bg"
+                          label="Fundo personalizado"
+                          color="primary"
+                          inset
+                          hide-details
+                          class="font-weight-medium"
+                        />
                         <v-expand-transition>
                           <div v-if="slide_custom_bg" class="mt-4 pa-5 rounded-xl" style="background: var(--main-bg); border: 1px solid var(--border-color);">
-                            
                             <!-- Cor de fundo -->
                             <div class="mb-6">
                               <div class="d-flex align-center mb-3">
-                                <v-icon size="18" color="primary" class="mr-2">mdi-format-color-fill</v-icon>
+                                <v-icon size="18" color="primary" class="mr-2">
+                                  mdi-format-color-fill
+                                </v-icon>
                                 <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text);">Cor de fundo</span>
                               </div>
                               <div class="d-flex flex-wrap align-center" style="gap: 10px;">
@@ -492,11 +673,19 @@
                                       class="rounded-circle cursor-pointer elevation-1 d-flex align-center justify-center"
                                       style="width: 36px; height: 36px; border: 2px dashed var(--border-color); background: var(--card-bg);"
                                     >
-                                      <v-icon size="16" color="grey">mdi-eyedropper</v-icon>
+                                      <v-icon size="16" color="grey">
+                                        mdi-eyedropper
+                                      </v-icon>
                                     </div>
                                   </template>
                                   <v-card class="pa-3 rounded-xl" style="background: var(--card-bg);">
-                                    <v-color-picker v-model="slide_bg_color" mode="hexa" hide-inputs :swatches="[]" elevation="0" />
+                                    <v-color-picker
+                                      v-model="slide_bg_color"
+                                      mode="hexa"
+                                      hide-inputs
+                                      :swatches="[]"
+                                      elevation="0"
+                                    />
                                   </v-card>
                                 </v-menu>
                               </div>
@@ -505,7 +694,9 @@
                             <!-- Imagem de fundo -->
                             <div class="mb-6">
                               <div class="d-flex align-center mb-3">
-                                <v-icon size="18" color="primary" class="mr-2">mdi-image-outline</v-icon>
+                                <v-icon size="18" color="primary" class="mr-2">
+                                  mdi-image-outline
+                                </v-icon>
                                 <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text);">Imagem de fundo</span>
                               </div>
                               
@@ -521,7 +712,9 @@
                                     @click="slide_bg_image = null"
                                   >
                                     <v-icon>mdi-delete</v-icon>
-                                    <v-tooltip activator="parent" location="top">Remover imagem</v-tooltip>
+                                    <v-tooltip activator="parent" location="top">
+                                      Remover imagem
+                                    </v-tooltip>
                                   </v-btn>
                                   <v-btn
                                     icon
@@ -530,8 +723,12 @@
                                     color="white"
                                     @click="$refs.bgImageInput.click()"
                                   >
-                                    <v-icon color="black">mdi-pencil</v-icon>
-                                    <v-tooltip activator="parent" location="top">Trocar imagem</v-tooltip>
+                                    <v-icon color="black">
+                                      mdi-pencil
+                                    </v-icon>
+                                    <v-tooltip activator="parent" location="top">
+                                      Trocar imagem
+                                    </v-tooltip>
                                   </v-btn>
                                 </div>
                               </div>
@@ -542,7 +739,9 @@
                                 style="height: 100px; border: 2px dashed var(--border-color); background: var(--card-bg); transition: all 0.2s;"
                                 @click="$refs.bgImageInput.click()"
                               >
-                                <v-icon size="32" color="grey-lighten-1" class="mb-2">mdi-cloud-upload-outline</v-icon>
+                                <v-icon size="32" color="grey-lighten-1" class="mb-2">
+                                  mdi-cloud-upload-outline
+                                </v-icon>
                                 <span class="text-caption font-weight-medium" style="color: var(--sidebar-text-secondary);">Clique para selecionar uma imagem</span>
                               </div>
 
@@ -559,10 +758,19 @@
                             <div>
                               <div class="d-flex align-center justify-space-between mb-3">
                                 <div class="d-flex align-center">
-                                  <v-icon size="18" color="primary" class="mr-2">mdi-opacity</v-icon>
+                                  <v-icon size="18" color="primary" class="mr-2">
+                                    mdi-opacity
+                                  </v-icon>
                                   <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text);">Opacidade do fundo</span>
                                 </div>
-                                <v-chip size="small" variant="tonal" color="primary" class="font-weight-bold">{{ slide_bg_opacity }}%</v-chip>
+                                <v-chip
+                                  size="small"
+                                  variant="tonal"
+                                  color="primary"
+                                  class="font-weight-bold"
+                                >
+                                  {{ slide_bg_opacity }}%
+                                </v-chip>
                               </div>
                               <v-slider
                                 v-model="slide_bg_opacity"
@@ -574,26 +782,31 @@
                                 hide-details
                               />
                             </div>
-
                           </div>
                         </v-expand-transition>
                       </div>
                     </div>
                     
-                      <v-divider class="mb-8 mt-8" style="opacity: 0.1;"></v-divider>
+                    <v-divider class="mb-8 mt-8" style="opacity: 0.1;" />
                       
-                      <div class="d-flex justify-center mt-2">
-                        <v-btn variant="tonal" color="primary" class="text-none font-weight-bold rounded-lg px-6" @click="resetSlideConfigs">
-                          <v-icon start>mdi-restore</v-icon>
-                          Restaurar Padrões de Projeção
-                        </v-btn>
-                      </div>
-                    </v-card-text>
-                  </v-card>
-                </div>
+                    <div class="d-flex justify-center mt-2">
+                      <v-btn
+                        variant="tonal"
+                        color="primary"
+                        class="text-none font-weight-bold rounded-lg px-6"
+                        @click="resetSlideConfigs"
+                      >
+                        <v-icon start>
+                          mdi-restore
+                        </v-icon>
+                        Restaurar Padrões de Projeção
+                      </v-btn>
+                    </div>
+                  </v-card-text>
+                </v-card>
               </div>
-            </v-tabs-window-item>
-
+            </div>
+          </v-tabs-window-item>
         </v-tabs-window>
       </div>
     </div>
@@ -618,29 +831,29 @@ export default {
     fullscreen_mode: false,
     
     fade_effect: false,
-    bg_color: '#000000',
+    bg_color: "#000000",
     bg_image: null,
-    bg_align: 'Centro',
+    bg_align: "Centro",
     
-    player_monitor: 'Monitor 1',
+    player_monitor: "Monitor 1",
     exec_audio_player: false,
     exec_video_player: false,
     player_fullscreen: true,
-    online_monitor: 'Monitor 1',
+    online_monitor: "Monitor 1",
     online_fullscreen: true,
-    youtube_mode: 'Vídeo',
+    youtube_mode: "Vídeo",
     
     slide_monitor: [],
-    slide_align: 'Centro',
+    slide_align: "Centro",
     slide_fullscreen: true,
     slide_disable_main_if_extended: true,
     slide_show_title: true,
     slide_custom_text_format: false,
     slide_custom_bg: false,
     slide_font_size: 100,
-    slide_font_color: '#FFFFFF',
-    slide_font_weight: '700',
-    slide_bg_color: '#000000',
+    slide_font_color: "#FFFFFF",
+    slide_font_weight: "700",
+    slide_bg_color: "#000000",
     slide_bg_image: null,
     slide_bg_opacity: 100,
     
@@ -667,74 +880,23 @@ export default {
     monitorList() {
       if (this.rawDisplays.length === 0) {
         return [
-          { title: 'Monitor 1 (Principal)', value: 'Monitor 1' },
-          { title: 'Monitor 2', value: 'Monitor 2' }
+          { title: "Monitor 1 (Principal)", value: "Monitor 1" },
+          { title: "Monitor 2", value: "Monitor 2" },
         ];
       }
       return this.rawDisplays.map((d, index) => ({
-        title: `Monitor ${index + 1} ${d.isPrimary ? '(Principal)' : '(Estendido)'}`,
+        title: `Monitor ${index + 1} ${d.isPrimary ? "(Principal)" : "(Estendido)"}`,
         value: d.id,
-        isPrimary: d.isPrimary
+        isPrimary: d.isPrimary,
       }));
     },
     slideMonitorList() {
       return this.monitorList.filter(m => !m.isPrimary);
-    }
-  },
-  mounted() {
-    if(this.$userdata.get("theme")){
-      this.$vuetify.theme.global.name = this.$userdata.get("theme");
-    }
-    
-    const saved_home_history = this.$userdata.get("show_home_history");
-    if (saved_home_history !== undefined && saved_home_history !== null) {
-      this.$data.show_home_history = saved_home_history;
-    }
-
-    const savedLocale = this.$userdata.get("locale");
-    if (savedLocale) {
-      const reverseMap = { pt: "Português", en: "English", es: "Español" };
-      this.language = reverseMap[savedLocale] || "Português";
-      this.$i18n.locale = savedLocale;
-    }
-
-    let savedSlideMonitor = this.$userdata.get("modules.config.slide_monitor");
-    if (savedSlideMonitor) {
-      if (!Array.isArray(savedSlideMonitor)) {
-        savedSlideMonitor = [savedSlideMonitor];
-      }
-      this.slide_monitor = savedSlideMonitor;
-    }
-    
-    let savedSlideAlign = this.$userdata.get("modules.config.slide_align");
-    if (savedSlideAlign) {
-      this.slide_align = savedSlideAlign;
-    }
-
-    if (this.$userdata.get("modules.config.slide_fullscreen") !== undefined) {
-      this.slide_fullscreen = this.$userdata.get("modules.config.slide_fullscreen");
-    }
-    if (this.$userdata.get("modules.config.slide_disable_main_if_extended") !== undefined) {
-      this.slide_disable_main_if_extended = this.$userdata.get("modules.config.slide_disable_main_if_extended");
-    }
-    if (this.$userdata.get("modules.config.slide_show_title") !== undefined) {
-      this.slide_show_title = this.$userdata.get("modules.config.slide_show_title");
-    }
-    
-    const fields = [
-      'slide_custom_text_format', 'slide_font_size', 'slide_font_color', 'slide_font_weight',
-      'slide_custom_bg', 'slide_bg_color', 'slide_bg_image', 'slide_bg_opacity'
-    ];
-    fields.forEach(field => {
-      const val = this.$userdata.get(`modules.config.${field}`);
-      if (val !== undefined && val !== null) {
-        this[field] = val;
-      }
-    });
+    },
   },
   watch: {
     language(val) {
-      const map = { "Português": "pt", "English": "en", "Español": "es" };
+      const map = { Português: "pt", English: "en", Español: "es" };
       const locale = map[val] || "pt";
       this.$i18n.locale = locale;
       this.$userdata.set("locale", locale);
@@ -778,8 +940,59 @@ export default {
           }
         }
       },
-      immediate: true
+      immediate: true,
+    },
+  },
+  mounted() {
+    if(this.$userdata.get("theme")){
+      this.$vuetify.theme.global.name = this.$userdata.get("theme");
     }
+    
+    const saved_home_history = this.$userdata.get("show_home_history");
+    if (saved_home_history !== undefined && saved_home_history !== null) {
+      this.$data.show_home_history = saved_home_history;
+    }
+
+    const savedLocale = this.$userdata.get("locale");
+    if (savedLocale) {
+      const reverseMap = { pt: "Português", en: "English", es: "Español" };
+      this.language = reverseMap[savedLocale] || "Português";
+      this.$i18n.locale = savedLocale;
+    }
+
+    let savedSlideMonitor = this.$userdata.get("modules.config.slide_monitor");
+    if (savedSlideMonitor) {
+      if (!Array.isArray(savedSlideMonitor)) {
+        savedSlideMonitor = [savedSlideMonitor];
+      }
+      this.slide_monitor = savedSlideMonitor;
+    }
+    
+    const savedSlideAlign = this.$userdata.get("modules.config.slide_align");
+    if (savedSlideAlign) {
+      this.slide_align = savedSlideAlign;
+    }
+
+    if (this.$userdata.get("modules.config.slide_fullscreen") !== undefined) {
+      this.slide_fullscreen = this.$userdata.get("modules.config.slide_fullscreen");
+    }
+    if (this.$userdata.get("modules.config.slide_disable_main_if_extended") !== undefined) {
+      this.slide_disable_main_if_extended = this.$userdata.get("modules.config.slide_disable_main_if_extended");
+    }
+    if (this.$userdata.get("modules.config.slide_show_title") !== undefined) {
+      this.slide_show_title = this.$userdata.get("modules.config.slide_show_title");
+    }
+    
+    const fields = [
+      "slide_custom_text_format", "slide_font_size", "slide_font_color", "slide_font_weight",
+      "slide_custom_bg", "slide_bg_color", "slide_bg_image", "slide_bg_opacity",
+    ];
+    fields.forEach(field => {
+      const val = this.$userdata.get(`modules.config.${field}`);
+      if (val !== undefined && val !== null) {
+        this[field] = val;
+      }
+    });
   },
   methods: {
     identifyMonitors() {
@@ -802,20 +1015,20 @@ export default {
         this.slide_bg_image = e.target.result;
       };
       reader.readAsDataURL(file);
-      event.target.value = '';
+      event.target.value = "";
     },
     resetSlideConfigs() {
       this.slide_monitor = [];
-      this.slide_align = 'Centro';
+      this.slide_align = "Centro";
       this.slide_fullscreen = true;
       this.slide_disable_main_if_extended = true;
       this.slide_show_title = true;
       this.slide_custom_text_format = false;
       this.slide_font_size = 100;
-      this.slide_font_color = '#FFFFFF';
-      this.slide_font_weight = '700';
+      this.slide_font_color = "#FFFFFF";
+      this.slide_font_weight = "700";
       this.slide_custom_bg = false;
-      this.slide_bg_color = '#000000';
+      this.slide_bg_color = "#000000";
       this.slide_bg_image = null;
       this.slide_bg_opacity = 100;
     },
@@ -850,7 +1063,7 @@ export default {
           alert("Apenas disponível na versão desktop.");
         }
       }
-    }
+    },
   },
 };
 </script>

@@ -44,11 +44,15 @@
                 style="height: 44px; max-width: 350px; background: var(--card-bg); box-shadow: var(--shadow);"
               >
                 <div class="d-flex align-center text-truncate w-100" style="color: var(--sidebar-text);">
-                  <v-icon size="small" class="mr-3 opacity-70">mdi-book-open-page-variant</v-icon>
+                  <v-icon size="small" class="mr-3 opacity-70">
+                    mdi-book-open-page-variant
+                  </v-icon>
                   <span class="text-truncate font-weight-medium text-body-2">
                     {{ versions_list.find(v => v.value === bible.id_bible_version)?.title || $t('bible.select_version') }}
                   </span>
-                  <v-icon size="small" class="ml-3 opacity-50">mdi-menu-down</v-icon>
+                  <v-icon size="small" class="ml-3 opacity-50">
+                    mdi-menu-down
+                  </v-icon>
                 </div>
               </v-btn>
             </template>
@@ -156,7 +160,14 @@
                 @shortkey="prevVerse()"
               >
                 <v-icon>mdi-chevron-left</v-icon>
-                <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">{{ $t('bible.prev_verse') }}</v-tooltip>
+                <v-tooltip
+                  activator="parent"
+                  location="top"
+                  open-delay="300"
+                  content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+                >
+                  {{ $t('bible.prev_verse') }}
+                </v-tooltip>
               </v-btn>
               <v-btn
                 v-shortkey="['arrowright']"
@@ -168,7 +179,14 @@
                 @shortkey="nextVerse()"
               >
                 <v-icon>mdi-chevron-right</v-icon>
-                <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">{{ $t('bible.next_verse') }}</v-tooltip>
+                <v-tooltip
+                  activator="parent"
+                  location="top"
+                  open-delay="300"
+                  content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+                >
+                  {{ $t('bible.next_verse') }}
+                </v-tooltip>
               </v-btn>
               <v-btn
                 v-shortkey="['del']"
@@ -181,7 +199,14 @@
                 @shortkey="clean()"
               >
                 <v-icon>mdi-eraser</v-icon>
-                <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">{{ $t('common.delete') }}</v-tooltip>
+                <v-tooltip
+                  activator="parent"
+                  location="top"
+                  open-delay="300"
+                  content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+                >
+                  {{ $t('common.delete') }}
+                </v-tooltip>
               </v-btn>
               <v-btn
                 variant="tonal"
@@ -192,7 +217,14 @@
                 @click="showConfigModal = true"
               >
                 <v-icon>mdi-palette</v-icon>
-                <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">{{ $t('common.customize') }}</v-tooltip>
+                <v-tooltip
+                  activator="parent"
+                  location="top"
+                  open-delay="300"
+                  content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+                >
+                  {{ $t('common.customize') }}
+                </v-tooltip>
               </v-btn>
               <v-divider vertical class="mx-2" />
               <LScreenBtn module="bible" />
