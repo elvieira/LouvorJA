@@ -21,7 +21,7 @@
           <v-icon class="nav-icon">
             mdi-arrow-left
           </v-icon>
-          <span class="nav-text">Fechar menu</span>
+          <span class="nav-text">{{ $t('common.close_menu') }}</span>
         </button>
       </div>
       
@@ -107,7 +107,7 @@
           >
             mdi-library
           </v-icon>
-          <span class="nav-text font-weight-bold" :style="{ color: currentModule === 'sync' ? '' : 'var(--accent-blue)' }">Biblioteca Local</span>
+          <span class="nav-text font-weight-bold" :style="{ color: currentModule === 'sync' ? '' : 'var(--accent-blue)' }">{{ $t('sidebar.local_library') }}</span>
           
           <div 
             v-if="isDownloading"
@@ -140,7 +140,7 @@
           @click.prevent="openUpdateModule"
         >
           <v-icon class="nav-icon" color="primary">mdi-cloud-download</v-icon>
-          <span class="nav-text font-weight-bold" style="color: var(--accent-blue);">Atualização Disponível</span>
+          <span class="nav-text font-weight-bold" style="color: var(--accent-blue);">{{ $t('sidebar.update_available') }}</span>
         </a>
       </div>
       

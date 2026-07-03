@@ -18,7 +18,7 @@
         @click="prev"
       >
         <v-icon>mdi-skip-previous</v-icon>
-        <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">Anterior</v-tooltip>
+        <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">{{ $t('common.previous') }}</v-tooltip>
       </v-btn>
       <v-btn
         icon
@@ -29,7 +29,7 @@
         @click="play"
       >
         <v-icon>{{ media.config.is_paused ? 'mdi-play-circle' : 'mdi-pause-circle' }}</v-icon>
-        <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">{{ media.config.is_paused ? 'Reproduzir' : 'Pausar' }}</v-tooltip>
+        <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">{{ media.config.is_paused ? $t('player.play') : $t('player.pause') }}</v-tooltip>
       </v-btn>
       <v-btn
         icon
@@ -40,7 +40,7 @@
         @click="next"
       >
         <v-icon>mdi-skip-next</v-icon>
-        <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">Próxima</v-tooltip>
+        <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">{{ $t('common.next') }}</v-tooltip>
       </v-btn>
     </div>
 
@@ -118,7 +118,7 @@
             class="mx-1"
           >
             <v-icon>{{ mode.tray_icon }}</v-icon>
-            <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">Tipo de Áudio</v-tooltip>
+            <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">{{ $t('player.audio_type') }}</v-tooltip>
           </v-btn>
         </template>
         <v-card
@@ -165,7 +165,7 @@
         @click="maximize()"
       >
         <v-icon>mdi-arrow-expand-all</v-icon>
-        <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">Maximizar</v-tooltip>
+        <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">{{ $t('common.maximize') }}</v-tooltip>
       </v-btn>
 
       <v-btn
@@ -178,7 +178,7 @@
         @click="close()"
       >
         <v-icon>mdi-close</v-icon>
-        <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">Fechar</v-tooltip>
+        <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">{{ $t('common.close') }}</v-tooltip>
       </v-btn>
 
       <v-btn
@@ -191,7 +191,7 @@
         @click="fullscreen(false)"
       >
         <v-icon>mdi-fullscreen-exit</v-icon>
-        <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">Sair da Tela Cheia</v-tooltip>
+        <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">{{ $t('common.exit_fullscreen') }}</v-tooltip>
       </v-btn>
       <v-btn
         v-else-if="location == 'window'"
@@ -203,7 +203,7 @@
         @click="fullscreen()"
       >
         <v-icon>mdi-fullscreen</v-icon>
-        <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">Tela Cheia</v-tooltip>
+        <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">{{ $t('common.fullscreen') }}</v-tooltip>
       </v-btn>
 
       <v-btn 
@@ -216,7 +216,7 @@
         @click="togglePlaylist" 
       >
         <v-icon>mdi-format-list-bulleted</v-icon>
-        <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">Lista de Slides</v-tooltip>
+        <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">{{ $t('player.slide_list') }}</v-tooltip>
       </v-btn>
     </div>
   </div>

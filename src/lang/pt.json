@@ -1,50 +1,240 @@
 {
-    "app": {
-        "name": "Louvor JA"
+  "app": {
+    "name": "Louvor JA"
+  },
+  "sidebar": {
+    "home": "Página Inicial",
+    "favorites": "Favoritos",
+    "help": "Ajuda e sobre",
+    "settings": "Configurações",
+    "update_available": "Atualização Disponível",
+    "local_library": "Biblioteca Local"
+  },
+  "common": {
+    "close": "Fechar",
+    "minimize": "Minimizar",
+    "maximize": "Maximizar",
+    "previous": "Anterior",
+    "next": "Próxima",
+    "back": "Voltar",
+    "cancel": "Cancelar",
+    "delete": "Apagar",
+    "customize": "Personalizar",
+    "menu": "Menu",
+    "fullscreen": "Tela Cheia",
+    "exit_fullscreen": "Sair da Tela Cheia",
+    "remove_image": "Remover imagem",
+    "change_image": "Trocar imagem",
+    "project": "Projetar",
+    "close_menu": "Fechar menu",
+    "top": "Cima",
+    "bottom": "Baixo"
+  },
+  "player": {
+    "play": "Reproduzir",
+    "pause": "Pausar",
+    "audio_type": "Tipo de Áudio",
+    "slide_list": "Lista de Slides"
+  },
+  "menu_toggle": {
+    "open_menu": "Abrir menu"
+  },
+  "boot": {
+    "preparing": "Preparando o Louvor JA",
+    "starting": "Iniciando o Louvor JA"
+  },
+  "config": {
+    "tabs": {
+      "appearance": "Aparência",
+      "general": "Geral",
+      "media_player": "Mídia & Player",
+      "projection_screens": "Projeção & Telas"
     },
-    "sidebar": {
-        "home": "Página Inicial",
-        "favorites": "Favoritos",
-        "help": "Ajuda e sobre",
-        "settings": "Configurações"
+    "theme": {
+      "title": "Tema do Sistema",
+      "description": "Escolha o modo de cores para o aplicativo",
+      "light_mode": "Modo Claro",
+      "dark_mode": "Modo Escuro"
     },
-    "modules": {
-        "invalid": {
-            "title": "#Erro#"
-        }
+    "language": {
+      "title": "Idioma",
+      "description": "Idioma de interface do aplicativo"
     },
-    "module_group": {
-        "musics": {
-            "title": "Álbuns e Coletâneas"
-        },
-        "bible": {
-            "title": "Bíblia"
-        },
-        "utilities": {
-            "title": "Utilitários"
-        }
+    "home_layout": {
+      "title": "Layout da Tela Inicial",
+      "description": "Ativar modo histórico (exibe itens recentes)"
     },
-    "components": {
-        "letterpagination": {
-            "all": "Todas"
-        },
-        "datatable": {
-            "alerts": {
-                "not_found": "Não foi possível localizar o arquivo para exibir essas informações!"
-            }
-        }
+    "reset_history": "Resetar Histórico",
+    "clear_data": "Apagar Dados",
+    "under_construction": "Em Construção",
+    "monitors": {
+      "title": "Monitores"
     },
-    "alert": {
-        "close": "Fechar",
-        "yes": "Sim",
-        "no": "Não",
-        "wait": "Aguarde..."
+    "music_slides": {
+      "title": "Slides de Músicas"
     },
-    "messages": {
-        "file_database_not_found": "Arquivo de dados não encontrado!",
-        "developer_mode_enabled": "Modo DESENVOLVEDOR ativado!",
-        "developer_mode_disabled": "Modo DESENVOLVEDOR desativado!",
-        "error_import_module": "Erro ao importar módulo",
-        "misconfigured_module": "Este módulo está mal configurado. O id informado no manifest.json deve ter o mesmo nome da pasta onde está localizado!"
+    "multiple_screens": "Múltiplas Telas",
+    "projection": {
+      "project_on_screens": "Projetar nas seguintes telas:"
+    },
+    "main_screen": "Tela Principal",
+    "lyric_customization": {
+      "title": "Personalização da Letra",
+      "alignment": "Alinhamento da letra",
+      "font_size": "Tamanho da letra",
+      "font_color": "Cor da letra",
+      "font_weight": "Peso da fonte"
+    },
+    "font_weight": {
+      "normal": "Normal",
+      "semi": "Semi",
+      "bold": "Negrito",
+      "extra": "Extra"
+    },
+    "custom_background": "Fundo personalizado",
+    "background": {
+      "color": "Cor de fundo",
+      "image": "Imagem de fundo",
+      "opacity": "Opacidade do fundo",
+      "click_to_select": "Clique para selecionar uma imagem"
+    },
+    "slides": {
+      "fullscreen_main": "Abrir música em tela cheia na tela principal",
+      "disable_main_extended": "Desativar tela principal caso haja monitor estendido",
+      "show_title": "Exibir título da música no primeiro slide",
+      "custom_format": "Formatação de texto personalizada"
+    },
+    "align_center": "Centro",
+    "monitor_1": "Monitor 1",
+    "monitor_1_main": "Monitor 1 (Principal)",
+    "monitor_2": "Monitor 2",
+    "youtube_mode": "Vídeo",
+    "general_title": "Configurações Gerais",
+    "reset_history_description": "Limpa as coletâneas recentes e as músicas mais tocadas.",
+    "reset_history_button": "Limpar",
+    "clear_data_description": "Exclui banco de dados e arquivos baixados.",
+    "clear_data_button": "Apagar Tudo",
+    "under_construction_description": "As configurações avançadas de <strong>Mídia & Player</strong> estão sendo desenhadas e estarão disponíveis em breve.",
+    "identify_monitors": "Identificar Monitores",
+    "restore_projection_defaults": "Restaurar Padrões de Projeção",
+    "no_extended_monitor": "Nenhum monitor estendido (secundário) detectado no sistema.",
+    "confirm_reset_history": "Tem certeza que deseja resetar o histórico de coletâneas e músicas mais tocadas?",
+    "alert_reset_history_success": "Histórico resetado com sucesso! Atualize a página inicial para ver as mudanças.",
+    "confirm_clear_all_data": "ATENÇÃO: Você tem certeza que deseja apagar todos os bancos de dados, capas, músicas e mídias baixadas do aplicativo?\n\nIsso exigirá um novo download de todos os arquivos essenciais e irá reiniciar o programa.",
+    "alert_clear_all_data_success": "Todos os arquivos locais foram removidos com sucesso. O aplicativo será recarregado agora.",
+    "alert_clear_all_data_error": "Ocorreu um erro ao tentar limpar os dados.",
+    "alert_desktop_only": "Apenas disponível na versão desktop.",
+    "monitor_primary_label": "PRINCIPAL"
+  },
+  "bible": {
+    "prev_verse": "Voltar Versículo",
+    "next_verse": "Avançar Versículo",
+    "select_version": "Selecionar Versão",
+    "projection_customization": "Personalização da Projeção",
+    "projection_background": "Fundo da Projeção",
+    "projection_bg_color_desc": "Cor base de fundo da tela de exibição",
+    "main_text": "Texto Principal",
+    "verse_formatting_desc": "Formatação dos versículos projetados",
+    "text_alignment": "Alinhamento do Texto",
+    "bible_reference": "Referência Bíblica",
+    "ref_example": "Ex: Números 28:3"
+  },
+  "help": {
+    "tab": {
+      "about": "Sobre",
+      "developers": "Desenvolvedores"
+    },
+    "manual": {
+      "title": "Manual de Uso",
+      "description": "Aprenda a utilizar todos os recursos"
+    },
+    "support": {
+      "title": "Suporte e Dúvidas",
+      "description": "Fale diretamente com os desenvolvedores"
+    },
+    "updates": {
+      "title": "Atualizações",
+      "description": "Verificar por novas versões disponíveis"
+    },
+    "diagnostics": {
+      "title": "Diagnóstico",
+      "description": "Visualizar logs e informações do sistema"
+    },
+    "team": {
+      "title": "Equipe e Contribuidores"
     }
+  },
+  "sync": {
+    "local_library": "Biblioteca Local",
+    "downloading": "Baixando...",
+    "delete_collection": "Excluir Coletânea",
+    "hymnal_adventist": "Hinário Adventista",
+    "hymnal_adventist_1996": "Hinário Adventista 1996",
+    "hymnal_adventist_1996_alt": "Hinário Adventista (1996)",
+    "hymnals": "Hinários",
+    "children": "Infantis",
+    "doxology": "Doxologia",
+    "preparing": "Preparando...",
+    "no_internet": "Sem internet",
+    "server_error": "Falha no servidor",
+    "cancelled": "Cancelado",
+    "download_error": "Erro ao baixar",
+    "hymnal_with": "Hinário oficial com {count} hinos",
+    "hymnal_1996_with": "Edição de 1996 com {count} hinos"
+  },
+  "update": {
+    "all_updated": "Tudo atualizado!",
+    "new_version_available": "Nova Versão Disponível",
+    "no_pending": "Nenhuma atualização pendente.",
+    "processing": "Processando informações...",
+    "fetching_details": "Buscando detalhes da atualização...",
+    "app_updated": "Aplicativo Atualizado",
+    "no_release_notes": "Esta atualização não contém notas detalhadas de lançamento.",
+    "downloading": "Baixando atualização..."
+  },
+  "collections": {
+    "all": "Todos"
+  },
+  "home": {
+    "hymnal": "Hinário"
+  },
+  "modules": {
+    "invalid": {
+      "title": "#Erro#"
+    }
+  },
+  "module_group": {
+    "musics": {
+      "title": "Álbuns e Coletâneas"
+    },
+    "bible": {
+      "title": "Bíblia"
+    },
+    "utilities": {
+      "title": "Utilitários"
+    }
+  },
+  "components": {
+    "letterpagination": {
+      "all": "Todas"
+    },
+    "datatable": {
+      "alerts": {
+        "not_found": "Não foi possível localizar o arquivo para exibir essas informações!"
+      }
+    }
+  },
+  "alert": {
+    "close": "Fechar",
+    "yes": "Sim",
+    "no": "Não",
+    "wait": "Aguarde..."
+  },
+  "messages": {
+    "file_database_not_found": "Arquivo de dados não encontrado!",
+    "developer_mode_enabled": "Modo DESENVOLVEDOR ativado!",
+    "developer_mode_disabled": "Modo DESENVOLVEDOR desativado!",
+    "error_import_module": "Erro ao importar módulo",
+    "misconfigured_module": "Este módulo está mal configurado. O id informado no manifest.json deve ter o mesmo nome da pasta onde está localizado!"
+  }
 }

@@ -1,34 +1,240 @@
 {
-    "app": { "name": "Louvor JA" },
-    "sidebar": {
-        "home": "Home",
-        "favorites": "Favorites",
-        "help": "Help & About",
-        "settings": "Settings"
+  "app": {
+    "name": "Louvor JA"
+  },
+  "sidebar": {
+    "home": "Home",
+    "favorites": "Favorites",
+    "help": "Help & About",
+    "settings": "Settings",
+    "update_available": "Update Available",
+    "local_library": "Local Library"
+  },
+  "common": {
+    "close": "Close",
+    "minimize": "Minimize",
+    "maximize": "Maximize",
+    "previous": "Previous",
+    "next": "Next",
+    "back": "Back",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "customize": "Customize",
+    "menu": "Menu",
+    "fullscreen": "Fullscreen",
+    "exit_fullscreen": "Exit Fullscreen",
+    "remove_image": "Remove image",
+    "change_image": "Change image",
+    "project": "Project",
+    "close_menu": "Close menu",
+    "top": "Top",
+    "bottom": "Bottom"
+  },
+  "player": {
+    "play": "Play",
+    "pause": "Pause",
+    "audio_type": "Audio Type",
+    "slide_list": "Slide List"
+  },
+  "menu_toggle": {
+    "open_menu": "Open menu"
+  },
+  "boot": {
+    "preparing": "Preparing Louvor JA",
+    "starting": "Starting Louvor JA"
+  },
+  "config": {
+    "tabs": {
+      "appearance": "Appearance",
+      "general": "General",
+      "media_player": "Media & Player",
+      "projection_screens": "Projection & Screens"
     },
-    "modules": { "invalid": { "title": "#Error#" } },
-    "module_group": {
-        "musics": { "title": "Albums & Collections" },
-        "bible": { "title": "Bible" },
-        "utilities": { "title": "Utilities" }
+    "theme": {
+      "title": "System Theme",
+      "description": "Choose the color mode for the app",
+      "light_mode": "Light Mode",
+      "dark_mode": "Dark Mode"
     },
-    "components": {
-        "letterpagination": { "all": "All" },
-        "datatable": {
-            "alerts": { "not_found": "Could not locate the file to display this information!" }
-        }
+    "language": {
+      "title": "Language",
+      "description": "App interface language"
     },
-    "alert": {
-        "close": "Close",
-        "yes": "Yes",
-        "no": "No",
-        "wait": "Please wait..."
+    "home_layout": {
+      "title": "Home Screen Layout",
+      "description": "Enable history mode (shows recent items)"
     },
-    "messages": {
-        "file_database_not_found": "Data file not found!",
-        "developer_mode_enabled": "DEVELOPER mode enabled!",
-        "developer_mode_disabled": "DEVELOPER mode disabled!",
-        "error_import_module": "Error importing module",
-        "misconfigured_module": "This module is misconfigured. The id specified in manifest.json must have the same name as the folder where it is located!"
+    "reset_history": "Reset History",
+    "clear_data": "Clear Data",
+    "under_construction": "Under Construction",
+    "monitors": {
+      "title": "Monitors"
+    },
+    "music_slides": {
+      "title": "Music Slides"
+    },
+    "multiple_screens": "Multiple Screens",
+    "projection": {
+      "project_on_screens": "Project on the following screens:"
+    },
+    "main_screen": "Main Screen",
+    "lyric_customization": {
+      "title": "Lyric Customization",
+      "alignment": "Text alignment",
+      "font_size": "Font size",
+      "font_color": "Font color",
+      "font_weight": "Font weight"
+    },
+    "font_weight": {
+      "normal": "Normal",
+      "semi": "Semi",
+      "bold": "Bold",
+      "extra": "Extra"
+    },
+    "custom_background": "Custom background",
+    "background": {
+      "color": "Background color",
+      "image": "Background image",
+      "opacity": "Background opacity",
+      "click_to_select": "Click to select an image"
+    },
+    "slides": {
+      "fullscreen_main": "Open music fullscreen on main screen",
+      "disable_main_extended": "Disable main screen when extended monitor is present",
+      "show_title": "Show song title on first slide",
+      "custom_format": "Custom text formatting"
+    },
+    "align_center": "Center",
+    "monitor_1": "Monitor 1",
+    "monitor_1_main": "Monitor 1 (Main)",
+    "monitor_2": "Monitor 2",
+    "youtube_mode": "Video",
+    "general_title": "General Settings",
+    "reset_history_description": "Clears recent collections and most played songs.",
+    "reset_history_button": "Clear",
+    "clear_data_description": "Deletes database and downloaded files.",
+    "clear_data_button": "Delete All",
+    "under_construction_description": "Advanced <strong>Media & Player</strong> settings are being designed and will be available soon.",
+    "identify_monitors": "Identify Monitors",
+    "restore_projection_defaults": "Restore Projection Defaults",
+    "no_extended_monitor": "No extended (secondary) monitor detected in the system.",
+    "confirm_reset_history": "Are you sure you want to reset the history of collections and most played songs?",
+    "alert_reset_history_success": "History reset successfully! Refresh the home page to see the changes.",
+    "confirm_clear_all_data": "WARNING: Are you sure you want to delete all databases, covers, songs and downloaded media from the app?\n\nThis will require a new download of all essential files and will restart the program.",
+    "alert_clear_all_data_success": "All local files have been successfully removed. The app will reload now.",
+    "alert_clear_all_data_error": "An error occurred while trying to clear the data.",
+    "alert_desktop_only": "Only available in the desktop version.",
+    "monitor_primary_label": "PRIMARY"
+  },
+  "bible": {
+    "prev_verse": "Previous Verse",
+    "next_verse": "Next Verse",
+    "select_version": "Select Version",
+    "projection_customization": "Projection Customization",
+    "projection_background": "Projection Background",
+    "projection_bg_color_desc": "Base background color for the projection screen",
+    "main_text": "Main Text",
+    "verse_formatting_desc": "Formatting of projected verses",
+    "text_alignment": "Text Alignment",
+    "bible_reference": "Bible Reference",
+    "ref_example": "Ex: Numbers 28:3"
+  },
+  "help": {
+    "tab": {
+      "about": "About",
+      "developers": "Developers"
+    },
+    "manual": {
+      "title": "User Manual",
+      "description": "Learn how to use all features"
+    },
+    "support": {
+      "title": "Support & Questions",
+      "description": "Contact the developers directly"
+    },
+    "updates": {
+      "title": "Updates",
+      "description": "Check for new available versions"
+    },
+    "diagnostics": {
+      "title": "Diagnostics",
+      "description": "View system logs and information"
+    },
+    "team": {
+      "title": "Team & Contributors"
     }
+  },
+  "sync": {
+    "local_library": "Local Library",
+    "downloading": "Downloading...",
+    "delete_collection": "Delete Collection",
+    "hymnal_adventist": "Adventist Hymnal",
+    "hymnal_adventist_1996": "Adventist Hymnal 1996",
+    "hymnal_adventist_1996_alt": "Adventist Hymnal (1996)",
+    "hymnals": "Hymnals",
+    "children": "Children's",
+    "doxology": "Doxology",
+    "preparing": "Preparing...",
+    "no_internet": "No internet",
+    "server_error": "Server error",
+    "cancelled": "Cancelled",
+    "download_error": "Download error",
+    "hymnal_with": "Official hymnal with {count} hymns",
+    "hymnal_1996_with": "1996 edition with {count} hymns"
+  },
+  "update": {
+    "all_updated": "All updated!",
+    "new_version_available": "New Version Available",
+    "no_pending": "No pending updates.",
+    "processing": "Processing information...",
+    "fetching_details": "Fetching update details...",
+    "app_updated": "App Updated",
+    "no_release_notes": "This update does not contain detailed release notes.",
+    "downloading": "Downloading update..."
+  },
+  "collections": {
+    "all": "All"
+  },
+  "home": {
+    "hymnal": "Hymnal"
+  },
+  "modules": {
+    "invalid": {
+      "title": "#Error#"
+    }
+  },
+  "module_group": {
+    "musics": {
+      "title": "Albums & Collections"
+    },
+    "bible": {
+      "title": "Bible"
+    },
+    "utilities": {
+      "title": "Utilities"
+    }
+  },
+  "components": {
+    "letterpagination": {
+      "all": "All"
+    },
+    "datatable": {
+      "alerts": {
+        "not_found": "Could not locate the file to display this information!"
+      }
+    }
+  },
+  "alert": {
+    "close": "Close",
+    "yes": "Yes",
+    "no": "No",
+    "wait": "Please wait..."
+  },
+  "messages": {
+    "file_database_not_found": "Data file not found!",
+    "developer_mode_enabled": "DEVELOPER mode enabled!",
+    "developer_mode_disabled": "DEVELOPER mode disabled!",
+    "error_import_module": "Error importing module",
+    "misconfigured_module": "This module is misconfigured. The id specified in manifest.json must have the same name as the folder where it is located!"
+  }
 }

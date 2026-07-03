@@ -9,16 +9,16 @@
             <v-icon :icon="manifest.icon || 'mdi-cog'" size="24" />
           </div>
           <h2 class="section-title mb-0" style="color: var(--sidebar-text); font-size: 24px; font-weight: 600; line-height: 1; white-space: nowrap;">
-            Configurações Gerais
+            {{ $t('config.general_title') }}
           </h2>
         </div>
 
         <div class="d-flex align-center" style="max-width: 100%; overflow-x: auto;">
           <v-tabs v-model="tab" color="var(--accent-blue)">
-            <v-tab :value="1">Aparência</v-tab>
-            <v-tab :value="2">Geral</v-tab>
-            <v-tab :value="3">Mídia & Player</v-tab>
-            <v-tab :value="4">Projeção & Telas</v-tab>
+            <v-tab :value="1">{{ $t('config.tabs.appearance') }}</v-tab>
+            <v-tab :value="2">{{ $t('config.tabs.general') }}</v-tab>
+            <v-tab :value="3">{{ $t('config.tabs.media_player') }}</v-tab>
+            <v-tab :value="4">{{ $t('config.tabs.projection_screens') }}</v-tab>
           </v-tabs>
         </div>
       </div>
@@ -34,8 +34,8 @@
                     <div class="d-flex align-center mb-6">
                       <v-icon color="primary" class="mr-3" size="28">mdi-palette</v-icon>
                       <div>
-                        <h3 class="font-weight-bold" style="color: var(--sidebar-text); font-size: 1.1rem; line-height: 1.2;">Tema do Sistema</h3>
-                        <div class="text-caption" style="color: var(--sidebar-text-secondary);">Escolha o modo de cores para o aplicativo</div>
+                        <h3 class="font-weight-bold" style="color: var(--sidebar-text); font-size: 1.1rem; line-height: 1.2;">{{ $t('config.theme.title') }}</h3>
+                        <div class="text-caption" style="color: var(--sidebar-text-secondary);">{{ $t('config.theme.description') }}</div>
                       </div>
                     </div>
                     
@@ -48,10 +48,10 @@
                       style="height: 48px; background: var(--card-bg); box-shadow: inset 0 0 0 1px var(--border-color);"
                     >
                       <v-btn value="light" class="flex-grow-1 text-none font-weight-bold">
-                        <v-icon start size="20">mdi-white-balance-sunny</v-icon> Modo Claro
+                        <v-icon start size="20">mdi-white-balance-sunny</v-icon> {{ $t('config.theme.light_mode') }}
                       </v-btn>
                       <v-btn value="dark" class="flex-grow-1 text-none font-weight-bold">
-                        <v-icon start size="20">mdi-weather-night</v-icon> Modo Escuro
+                        <v-icon start size="20">mdi-weather-night</v-icon> {{ $t('config.theme.dark_mode') }}
                       </v-btn>
                     </v-btn-toggle>
                   </v-card-text>
@@ -73,8 +73,8 @@
                       <div class="d-flex align-center">
                         <v-icon color="primary" class="mr-3" size="24">mdi-translate</v-icon>
                         <div>
-                          <h3 class="font-weight-bold" style="color: var(--sidebar-text); font-size: 1.1rem; line-height: 1.2;">Idioma</h3>
-                          <div class="text-caption" style="color: var(--sidebar-text-secondary);">Idioma de interface do aplicativo</div>
+                          <h3 class="font-weight-bold" style="color: var(--sidebar-text); font-size: 1.1rem; line-height: 1.2;">{{ $t('config.language.title') }}</h3>
+                          <div class="text-caption" style="color: var(--sidebar-text-secondary);">{{ $t('config.language.description') }}</div>
                         </div>
                       </div>
                       <v-menu :close-on-content-click="true" location="bottom end">
@@ -120,8 +120,8 @@
                       <div class="d-flex align-center">
                         <v-icon color="primary" class="mr-3" size="24">mdi-view-dashboard</v-icon>
                         <div>
-                          <h3 class="font-weight-bold" style="color: var(--sidebar-text); font-size: 1.1rem; line-height: 1.2;">Layout da Tela Inicial</h3>
-                          <div class="text-caption" style="color: var(--sidebar-text-secondary);">Ativar modo histórico (exibe itens recentes)</div>
+                          <h3 class="font-weight-bold" style="color: var(--sidebar-text); font-size: 1.1rem; line-height: 1.2;">{{ $t('config.home_layout.title') }}</h3>
+                          <div class="text-caption" style="color: var(--sidebar-text-secondary);">{{ $t('config.home_layout.description') }}</div>
                         </div>
                       </div>
                       <v-switch v-model="show_home_history" color="primary" inset hide-details class="font-weight-medium" />
@@ -136,9 +136,9 @@
                       <div class="d-flex align-center mr-4">
                         <v-icon color="error" class="mr-3" size="24">mdi-database-refresh</v-icon>
                         <div>
-                          <h3 class="font-weight-bold mb-1" style="color: var(--sidebar-text); font-size: 1.1rem; line-height: 1.2;">Resetar Histórico</h3>
+                          <h3 class="font-weight-bold mb-1" style="color: var(--sidebar-text); font-size: 1.1rem; line-height: 1.2;">{{ $t('config.reset_history') }}</h3>
                           <div class="text-caption" style="color: var(--sidebar-text-secondary); line-height: 1.3;">
-                            Limpa as coletâneas recentes e as músicas mais tocadas.
+                            {{ $t('config.reset_history_description') }}
                           </div>
                         </div>
                       </div>
@@ -148,7 +148,7 @@
                         class="rounded-lg text-none px-6 font-weight-bold flex-shrink-0"
                         @click="resetHistory"
                       >
-                        Limpar
+                        {{ $t('config.reset_history_button') }}
                       </v-btn>
                     </div>
 
@@ -159,9 +159,9 @@
                       <div class="d-flex align-center mr-4">
                         <v-icon color="error" class="mr-3" size="24">mdi-delete-alert</v-icon>
                         <div>
-                          <h3 class="font-weight-bold mb-1" style="color: var(--sidebar-text); font-size: 1.1rem; line-height: 1.2;">Apagar Dados</h3>
+                          <h3 class="font-weight-bold mb-1" style="color: var(--sidebar-text); font-size: 1.1rem; line-height: 1.2;">{{ $t('config.clear_data') }}</h3>
                           <div class="text-caption" style="color: var(--sidebar-text-secondary); line-height: 1.3;">
-                            Exclui banco de dados e arquivos baixados.
+                            {{ $t('config.clear_data_description') }}
                           </div>
                         </div>
                       </div>
@@ -695,7 +695,7 @@ export default {
     if (savedLocale) {
       const reverseMap = { pt: "Português", en: "English", es: "Español" };
       this.language = reverseMap[savedLocale] || "Português";
-      this.$i18n.locale.value = savedLocale;
+      this.$i18n.locale = savedLocale;
     }
 
     let savedSlideMonitor = this.$userdata.get("modules.config.slide_monitor");
@@ -736,7 +736,7 @@ export default {
     language(val) {
       const map = { "Português": "pt", "English": "en", "Español": "es" };
       const locale = map[val] || "pt";
-      this.$i18n.locale.value = locale;
+      this.$i18n.locale = locale;
       this.$userdata.set("locale", locale);
     },
     show_home_history(val) {

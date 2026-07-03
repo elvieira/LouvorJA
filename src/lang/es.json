@@ -1,50 +1,240 @@
 {
-    "app": {
-        "name": "Louvor JA"
+  "app": {
+    "name": "Louvor JA"
+  },
+  "sidebar": {
+    "home": "Inicio",
+    "favorites": "Favoritos",
+    "help": "Ayuda y acerca de",
+    "settings": "Configuraciones",
+    "update_available": "Actualización Disponible",
+    "local_library": "Biblioteca Local"
+  },
+  "common": {
+    "close": "Cerrar",
+    "minimize": "Minimizar",
+    "maximize": "Maximizar",
+    "previous": "Anterior",
+    "next": "Siguiente",
+    "back": "Volver",
+    "cancel": "Cancelar",
+    "delete": "Borrar",
+    "customize": "Personalizar",
+    "menu": "Menu",
+    "fullscreen": "Pantalla Completa",
+    "exit_fullscreen": "Salir de Pantalla Completa",
+    "remove_image": "Eliminar imagen",
+    "change_image": "Cambiar imagen",
+    "project": "Proyectar",
+    "close_menu": "Cerrar menu",
+    "top": "Arriba",
+    "bottom": "Abajo"
+  },
+  "player": {
+    "play": "Reproducir",
+    "pause": "Pausar",
+    "audio_type": "Tipo de Audio",
+    "slide_list": "Lista de Diapositivas"
+  },
+  "menu_toggle": {
+    "open_menu": "Abrir menu"
+  },
+  "boot": {
+    "preparing": "Preparando Louvor JA",
+    "starting": "Iniciando Louvor JA"
+  },
+  "config": {
+    "tabs": {
+      "appearance": "Apariencia",
+      "general": "General",
+      "media_player": "Media & Player",
+      "projection_screens": "Proyección y Pantallas"
     },
-    "sidebar": {
-        "home": "Inicio",
-        "favorites": "Favoritos",
-        "help": "Ayuda y acerca de",
-        "settings": "Configuraciones"
+    "theme": {
+      "title": "Tema del Sistema",
+      "description": "Elige el modo de color para la aplicación",
+      "light_mode": "Modo Claro",
+      "dark_mode": "Modo Oscuro"
     },
-    "modules": {
-        "invalid": {
-            "title": "#Error#"
-        }
+    "language": {
+      "title": "Idioma",
+      "description": "Idioma de la interfaz de la aplicación"
     },
-    "module_group": {
-        "musics": {
-            "title": "Álbumes y Colecciones"
-        },
-        "bible": {
-            "title": "Biblia"
-        },
-        "utilities": {
-            "title": "Utilidades"
-        }
+    "home_layout": {
+      "title": "Diseño de Pantalla de Inicio",
+      "description": "Activar modo historial (muestra elementos recientes)"
     },
-    "components": {
-        "letterpagination": {
-            "all": "Todas"
-        },
-        "datatable": {
-            "alerts": {
-                "not_found": "¡No se pudo encontrar el archivo para mostrar esta información!"
-            }
-        }
+    "reset_history": "Reiniciar Historial",
+    "clear_data": "Borrar Datos",
+    "under_construction": "En Construcción",
+    "monitors": {
+      "title": "Monitores"
     },
-    "alert": {
-        "close": "Cerrar",
-        "yes": "Sí",
-        "no": "No",
-        "wait": "Espere..."
+    "music_slides": {
+      "title": "Diapositivas de Músicas"
     },
-    "messages": {
-        "file_database_not_found": "Archivo de datos no encontrado!",
-        "developer_mode_enabled": "Modo DESARROLLADOR activado!",
-        "developer_mode_disabled": "Modo DESARROLLADOR desactivado!",
-        "error_import_module": "Error al importar el módulo",
-        "misconfigured_module": "Este módulo está mal configurado. ¡La identificación ingresada en manifest.json debe tener el mismo nombre que la carpeta donde se encuentra!"
+    "multiple_screens": "Múltiples Pantallas",
+    "projection": {
+      "project_on_screens": "Proyectar en las siguientes pantallas:"
+    },
+    "main_screen": "Pantalla Principal",
+    "lyric_customization": {
+      "title": "Personalización de la Letra",
+      "alignment": "Alineación de la letra",
+      "font_size": "Tamaño de la letra",
+      "font_color": "Color de la letra",
+      "font_weight": "Peso de la fuente"
+    },
+    "font_weight": {
+      "normal": "Normal",
+      "semi": "Semi",
+      "bold": "Negrita",
+      "extra": "Extra"
+    },
+    "custom_background": "Fondo personalizado",
+    "background": {
+      "color": "Color de fondo",
+      "image": "Imagen de fondo",
+      "opacity": "Opacidad del fondo",
+      "click_to_select": "Haz clic para seleccionar una imagen"
+    },
+    "slides": {
+      "fullscreen_main": "Abrir música en pantalla completa en la pantalla principal",
+      "disable_main_extended": "Desactivar pantalla principal si hay monitor extendido",
+      "show_title": "Mostrar título de la música en la primera diapositiva",
+      "custom_format": "Formato de texto personalizado"
+    },
+    "align_center": "Centro",
+    "monitor_1": "Monitor 1",
+    "monitor_1_main": "Monitor 1 (Principal)",
+    "monitor_2": "Monitor 2",
+    "youtube_mode": "Video",
+    "general_title": "Configuración General",
+    "reset_history_description": "Limpia las colecciones recientes y las canciones más reproducidas.",
+    "reset_history_button": "Limpiar",
+    "clear_data_description": "Elimina la base de datos y los archivos descargados.",
+    "clear_data_button": "Borrar Todo",
+    "under_construction_description": "Las configuraciones avanzadas de <strong>Mídia & Player</strong> están siendo diseñadas y estarán disponibles pronto.",
+    "identify_monitors": "Identificar Monitores",
+    "restore_projection_defaults": "Restaurar Valores Predeterminados de Proyección",
+    "no_extended_monitor": "Ningún monitor extendido (secundario) detectado en el sistema.",
+    "confirm_reset_history": "¿Está seguro de que desea restablecer el historial de colecciones y canciones más reproducidas?",
+    "alert_reset_history_success": "¡Historial restablecido con éxito! Actualice la página de inicio para ver los cambios.",
+    "confirm_clear_all_data": "ATENCIÓN: ¿Está seguro de que desea eliminar todas las bases de datos, carátulas, canciones y medios descargados de la aplicación?\n\nEsto requerirá una nueva descarga de todos los archivos esenciales y reiniciará el programa.",
+    "alert_clear_all_data_success": "Todos los archivos locales han sido eliminados con éxito. La aplicación se recargará ahora.",
+    "alert_clear_all_data_error": "Ocurrió un error al intentar limpiar los datos.",
+    "alert_desktop_only": "Solo disponible en la versión de escritorio.",
+    "monitor_primary_label": "PRINCIPAL"
+  },
+  "bible": {
+    "prev_verse": "Versículo Anterior",
+    "next_verse": "Versículo Siguiente",
+    "select_version": "Seleccionar Versión",
+    "projection_customization": "Personalización de la Proyección",
+    "projection_background": "Fondo de la Proyección",
+    "projection_bg_color_desc": "Color base de fondo de la pantalla de proyección",
+    "main_text": "Texto Principal",
+    "verse_formatting_desc": "Formato de los versículos proyectados",
+    "text_alignment": "Alineación del Texto",
+    "bible_reference": "Referencia Bíblica",
+    "ref_example": "Ej: Números 28:3"
+  },
+  "help": {
+    "tab": {
+      "about": "Acerca de",
+      "developers": "Desarrolladores"
+    },
+    "manual": {
+      "title": "Manual de Uso",
+      "description": "Aprende a utilizar todos los recursos"
+    },
+    "support": {
+      "title": "Soporte y Dudas",
+      "description": "Habla directamente con los desarrolladores"
+    },
+    "updates": {
+      "title": "Actualizaciones",
+      "description": "Verificar nuevas versiones disponibles"
+    },
+    "diagnostics": {
+      "title": "Diagnóstico",
+      "description": "Ver logs e información del sistema"
+    },
+    "team": {
+      "title": "Equipo y Contribuidores"
     }
+  },
+  "sync": {
+    "local_library": "Biblioteca Local",
+    "downloading": "Descargando...",
+    "delete_collection": "Eliminar Colección",
+    "hymnal_adventist": "Hinario Adventista",
+    "hymnal_adventist_1996": "Hinario Adventista 1996",
+    "hymnal_adventist_1996_alt": "Hinario Adventista (1996)",
+    "hymnals": "Hinarios",
+    "children": "Infantiles",
+    "doxology": "Doxología",
+    "preparing": "Preparando...",
+    "no_internet": "Sin internet",
+    "server_error": "Error en el servidor",
+    "cancelled": "Cancelado",
+    "download_error": "Error al descargar",
+    "hymnal_with": "Hinario oficial con {count} himnos",
+    "hymnal_1996_with": "Edición de 1996 con {count} himnos"
+  },
+  "update": {
+    "all_updated": "Todo actualizado!",
+    "new_version_available": "Nueva Versión Disponible",
+    "no_pending": "Ninguna actualización pendiente.",
+    "processing": "Procesando información...",
+    "fetching_details": "Buscando detalles de la actualización...",
+    "app_updated": "Aplicativo Actualizado",
+    "no_release_notes": "Esta actualización no contiene notas detalladas de lanzamiento.",
+    "downloading": "Descargando actualización..."
+  },
+  "collections": {
+    "all": "Todos"
+  },
+  "home": {
+    "hymnal": "Hinario"
+  },
+  "modules": {
+    "invalid": {
+      "title": "#Error#"
+    }
+  },
+  "module_group": {
+    "musics": {
+      "title": "Álbumes y Colecciones"
+    },
+    "bible": {
+      "title": "Biblia"
+    },
+    "utilities": {
+      "title": "Utilidades"
+    }
+  },
+  "components": {
+    "letterpagination": {
+      "all": "Todas"
+    },
+    "datatable": {
+      "alerts": {
+        "not_found": "No se pudo encontrar el archivo para mostrar esta información!"
+      }
+    }
+  },
+  "alert": {
+    "close": "Cerrar",
+    "yes": "Sí",
+    "no": "No",
+    "wait": "Espere..."
+  },
+  "messages": {
+    "file_database_not_found": "Archivo de datos no encontrado!",
+    "developer_mode_enabled": "Modo DESARROLLADOR activado!",
+    "developer_mode_disabled": "Modo DESARROLLADOR desactivado!",
+    "error_import_module": "Error al importar el módulo",
+    "misconfigured_module": "Este módulo está mal configurado. La identificación ingresada en manifest.json debe tener el mismo nombre que la carpeta donde se encuentra!"
+  }
 }
