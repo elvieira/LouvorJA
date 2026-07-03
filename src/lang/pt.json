@@ -43,7 +43,18 @@
   },
   "boot": {
     "preparing": "Preparando o Louvor JA",
-    "starting": "Iniciando o Louvor JA"
+    "starting": "Iniciando o Louvor JA",
+    "subtitle": "Aguarde um instante...",
+    "retry": "Tentar Novamente",
+    "preview_mode": "Modo de pré-visualização",
+    "preparing_install": "Preparando instalação...",
+    "retrying": "Tentando novamente...",
+    "loading_environment": "Carregando ambiente...",
+    "downloading_database": "Baixando banco de dados...",
+    "extracting_data": "Extraindo dados...",
+    "sync_complete": "Sincronização completa!",
+    "extract_error": "Falha ao extrair dados do banco",
+    "extract_error_retry": "Falha na sincronização. Tente novamente."
   },
   "config": {
     "tabs": {
@@ -176,8 +187,16 @@
   },
   "sync": {
     "local_library": "Biblioteca Local",
-    "downloading": "Baixando...",
+    "download_collections_hint": "Baixe as coletâneas para poder reproduzir as músicas.",
+    "download_all": "Baixar Todas",
+    "cancel_all": "Cancelar Todas",
+    "download": "Baixar",
+    "downloaded": "Baixado",
+    "retry": "Tentar Novamente",
     "delete_collection": "Excluir Coletânea",
+    "confirm_delete_collection": "Tem certeza que deseja excluir a coletânea \"{name}\"? Isso irá apagar os arquivos do seu computador.",
+    "no_collections_available": "Nenhuma coletânea disponível. Execute a inicialização primeiro.",
+    "downloading": "Baixando...",
     "hymnal_adventist": "Hinário Adventista",
     "hymnal_adventist_1996": "Hinário Adventista 1996",
     "hymnal_adventist_1996_alt": "Hinário Adventista (1996)",
@@ -190,7 +209,11 @@
     "cancelled": "Cancelado",
     "download_error": "Erro ao baixar",
     "hymnal_with": "Hinário oficial com {count} hinos",
-    "hymnal_1996_with": "Edição de 1996 com {count} hinos"
+    "hymnal_1996_with": "Edição de 1996 com {count} hinos",
+    "no_connection": "Sem conexão",
+    "batch_cancelled_no_internet": "O download em lote foi cancelado porque não há conexão com a internet.",
+    "error_no_internet_text": "Não foi possível baixar os arquivos. Verifique sua conexão com a internet.",
+    "error_server_text": "Não foi possível concluir o download pois o servidor está indisponível no momento. Tente novamente mais tarde."
   },
   "update": {
     "all_updated": "Tudo atualizado!",

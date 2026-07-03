@@ -43,7 +43,18 @@
   },
   "boot": {
     "preparing": "Preparing Louvor JA",
-    "starting": "Starting Louvor JA"
+    "starting": "Starting Louvor JA",
+    "subtitle": "Please wait a moment...",
+    "retry": "Try Again",
+    "preview_mode": "Preview mode",
+    "preparing_install": "Preparing installation...",
+    "retrying": "Retrying...",
+    "loading_environment": "Loading environment...",
+    "downloading_database": "Downloading database...",
+    "extracting_data": "Extracting data...",
+    "sync_complete": "Sync complete!",
+    "extract_error": "Failed to extract database data",
+    "extract_error_retry": "Sync failed. Please try again."
   },
   "config": {
     "tabs": {
@@ -176,8 +187,16 @@
   },
   "sync": {
     "local_library": "Local Library",
-    "downloading": "Downloading...",
+    "download_collections_hint": "Download collections to play songs offline.",
+    "download_all": "Download All",
+    "cancel_all": "Cancel All",
+    "download": "Download",
+    "downloaded": "Downloaded",
+    "retry": "Try Again",
     "delete_collection": "Delete Collection",
+    "confirm_delete_collection": "Are you sure you want to delete the collection \"{name}\"? This will delete the files from your computer.",
+    "no_collections_available": "No collections available. Run the initialization first.",
+    "downloading": "Downloading...",
     "hymnal_adventist": "Adventist Hymnal",
     "hymnal_adventist_1996": "Adventist Hymnal 1996",
     "hymnal_adventist_1996_alt": "Adventist Hymnal (1996)",
@@ -190,7 +209,11 @@
     "cancelled": "Cancelled",
     "download_error": "Download error",
     "hymnal_with": "Official hymnal with {count} hymns",
-    "hymnal_1996_with": "1996 edition with {count} hymns"
+    "hymnal_1996_with": "1996 edition with {count} hymns",
+    "no_connection": "No connection",
+    "batch_cancelled_no_internet": "The batch download was cancelled because there is no internet connection.",
+    "error_no_internet_text": "Could not download the files. Check your internet connection.",
+    "error_server_text": "Could not complete the download because the server is currently unavailable. Please try again later."
   },
   "update": {
     "all_updated": "All updated!",

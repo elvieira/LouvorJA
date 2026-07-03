@@ -15,7 +15,7 @@
                   mdi-library
                 </v-icon>
                 <h2 class="text-h5 font-weight-bold mb-0" style="color: var(--sidebar-text);">
-                  Biblioteca Local
+                  {{ $t('sync.local_library') }}
                 </h2>
               </div>
               <v-btn icon variant="text" @click="closeModule">
@@ -26,12 +26,12 @@
                   open-delay="300"
                   content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
                 >
-                  Fechar
+                  {{ $t('common.close') }}
                 </v-tooltip>
               </v-btn>
             </div>
             <p class="text-caption mb-0" style="color: var(--sidebar-text-secondary);">
-              Baixe as coletâneas para poder reproduzir as músicas.
+              {{ $t('sync.download_collections_hint') }}
             </p>
           </div>
           
@@ -48,7 +48,7 @@
             >
               <v-icon start>
                 mdi-download-multiple
-              </v-icon> Baixar Todas
+              </v-icon> {{ $t('sync.download_all') }}
             </v-btn>
             <v-btn 
               v-else
@@ -61,7 +61,7 @@
             >
               <v-icon start>
                 mdi-close-circle-multiple
-              </v-icon> Cancelar Todas
+              </v-icon> {{ $t('sync.cancel_all') }}
             </v-btn>
           </div>
 
@@ -70,7 +70,7 @@
           <div class="pa-6 pt-2 flex-grow-1" style="overflow-y: auto;">
             <div v-for="cat in categoriesWithAlbums" :key="cat.id_category" class="mb-4">
               <h3 class="text-subtitle-2 font-weight-bold text-uppercase mb-2 px-1" style="color: var(--sidebar-text-secondary); letter-spacing: 0.5px;">
-                {{ cat.name }}
+                {{ getDisplayCategoryName(cat) }}
               </h3>
             
               <v-list class="bg-transparent" lines="two">
@@ -96,13 +96,13 @@
                   </template>
                 
                   <v-list-item-title class="font-weight-bold text-body-2" style="color: var(--sidebar-text);">
-                    {{ album.name }}
+                    {{ getDisplayAlbumName(album) }}
                   </v-list-item-title>
                 
                   <v-list-item-subtitle v-if="album.status === 'downloading'" class="mt-1">
                     <div class="d-flex justify-space-between align-center mb-1">
                       <span class="text-caption font-weight-medium text-primary">
-                        {{ album.progressText || 'Baixando...' }}
+                        {{ album.progressText || $t('sync.downloading') }}
                       </span>
                       <span class="text-caption font-weight-bold text-primary">{{ album.progress }}%</span>
                     </div>
@@ -130,7 +130,7 @@
                     >
                       <v-icon start size="16">
                         mdi-download
-                      </v-icon> Baixar
+                      </v-icon> {{ $t('sync.download') }}
                     </v-btn>
                   
                     <v-btn
@@ -149,7 +149,7 @@
                         open-delay="300"
                         content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
                       >
-                        Cancelar
+                        {{ $t('common.cancel') }}
                       </v-tooltip>
                     </v-btn>
 
@@ -162,7 +162,7 @@
                       >
                         <v-icon start size="14">
                           mdi-check-circle
-                        </v-icon> Baixado
+                        </v-icon> {{ $t('sync.downloaded') }}
                       </v-chip>
                       <v-btn
                         color="error"
@@ -178,7 +178,7 @@
                           open-delay="300"
                           content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
                         >
-                          Excluir Coletânea
+                          {{ $t('sync.delete_collection') }}
                         </v-tooltip>
                       </v-btn>
                     </div>
@@ -193,7 +193,7 @@
                     >
                       <v-icon start size="16">
                         mdi-refresh
-                      </v-icon> Tentar Novamente
+                      </v-icon> {{ $t('sync.retry') }}
                     </v-btn>
                   </template>
                 </v-list-item>
@@ -208,7 +208,7 @@
                 size="32"
               />
               <p v-else class="text-caption" style="color: var(--sidebar-text-secondary);">
-                Nenhuma coletânea disponível. Execute a inicialização primeiro.
+                {{ $t('sync.no_collections_available') }}
               </p>
             </div>
           </div>
@@ -258,6 +258,21 @@ export default {
     await this.loadCollections();
   },
   methods: {
+    getDisplayCategoryName(cat) {
+      const map = {
+        hymnals: this.$t('sync.hymnals'),
+        Hinários: this.$t('sync.hymnals'),
+        "CDs Oficiais/Ano": "CDs Oficiais/Ano",
+      };
+      return map[cat.name] || cat.name;
+    },
+    getDisplayAlbumName(album) {
+      const map = {
+        "Hinário Adventista": this.$t('sync.hymnal_adventist'),
+        "Hinário Adventista (1996)": this.$t('sync.hymnal_adventist_1996_alt'),
+      };
+      return map[album.name] || album.name;
+    },
     async toggleSidebar() {
       const mainEl = document.querySelector(".main-container");
       if (mainEl) {
@@ -289,8 +304,8 @@ export default {
         if (hymnal && hymnal.length > 0) {
           hymnalsList.push({
             id_album: "hymnal",
-            name: "Hinário Adventista",
-            subtitle: `Hinário oficial com ${  hymnal.length  } hinos`,
+            name: this.$t('sync.hymnal_adventist'),
+            subtitle: this.$t('sync.hymnal_with', { count: hymnal.length }),
             coverUrl: this.hymnalImg,
             status: manifest.includes("hymnal") ? "downloaded" : "idle",
             progress: 0,
@@ -303,8 +318,8 @@ export default {
         if (hymnal1996 && hymnal1996.length > 0) {
           hymnalsList.push({
             id_album: "hymnal_1996",
-            name: "Hinário Adventista (1996)",
-            subtitle: `Edição de 1996 com ${  hymnal1996.length  } hinos`,
+            name: this.$t('sync.hymnal_adventist_1996_alt'),
+            subtitle: this.$t('sync.hymnal_1996_with', { count: hymnal1996.length }),
             coverUrl: this.hymnal1996Img,
             status: manifest.includes("hymnal_1996") ? "downloaded" : "idle",
             progress: 0,
@@ -396,7 +411,7 @@ export default {
       album.totalCount = 0;
       album.downloadedCount = 0;
       album.cancelToken = false;
-      album.progressText = "Preparando...";
+      album.progressText = this.$t('sync.preparing');
       
       try {
         let musicFiles = [];
@@ -479,7 +494,7 @@ export default {
         const batchSize = 5;
         let hasError = false;
         
-        album.progressText = "Baixando...";
+        album.progressText = this.$t('sync.downloading');
         
         for (let i = 0; i < allMediaFiles.length; i += batchSize) {
           if (this.cancelToken || album.cancelToken || hasError || !navigator.onLine) {
@@ -508,19 +523,19 @@ export default {
         
         if (hasError) {
           album.status = "error";
-          album.progressText = !navigator.onLine ? "Sem internet" : "Falha no servidor";
+          album.progressText = !navigator.onLine ? this.$t('sync.no_internet') : this.$t('sync.server_error');
           if (!this.isDownloadingAll) {
             this.$alert.error({
-              title: "Falha no download",
+              title: this.$t('sync.download_error'),
               text: !navigator.onLine 
-                ? "Não foi possível baixar os arquivos. Verifique sua conexão com a internet." 
-                : "Não foi possível concluir o download pois o servidor está indisponível no momento. Tente novamente mais tarde.",
+                ? this.$t('sync.error_no_internet_text') 
+                : this.$t('sync.error_server_text'),
               translate: false,
             });
           }
         } else if (this.cancelToken || album.cancelToken) {
           album.status = "idle";
-          album.progressText = "Cancelado";
+          album.progressText = this.$t('sync.cancelled');
         } else {
           album.status = "downloaded";
           await this.markAlbumDownloaded(album.id_album);
@@ -528,7 +543,7 @@ export default {
       } catch (error) {
         console.error("Erro ao baixar album:", error);
         album.status = "error";
-        album.progressText = "Erro ao baixar";
+        album.progressText = this.$t('sync.download_error');
       } finally {
         this.checkGlobalDownloadState();
       }
@@ -553,8 +568,8 @@ export default {
             if (album.status === "error" && !navigator.onLine) {
               this.cancelAll();
               this.$alert.error({
-                title: "Sem conexão",
-                text: "O download em lote foi cancelado porque não há conexão com a internet.",
+                title: this.$t('sync.no_connection'),
+                text: this.$t('sync.batch_cancelled_no_internet'),
                 translate: false,
               });
               break;
@@ -575,8 +590,8 @@ export default {
     },
     deleteAlbum(album) {
       this.$alert.yesno({
-        title: "Excluir Coletânea",
-        text: `Tem certeza que deseja excluir a coletânea "<b>${album.name}</b>"? Isso irá apagar os arquivos do seu computador.`,
+        title: this.$t('sync.delete_collection'),
+        text: this.$t('sync.confirm_delete_collection', { name: album.name }),
         translate: false,
       }, async (resp) => {
         if (resp === "yes") {

@@ -43,7 +43,18 @@
   },
   "boot": {
     "preparing": "Preparando Louvor JA",
-    "starting": "Iniciando Louvor JA"
+    "starting": "Iniciando Louvor JA",
+    "subtitle": "Espere un momento...",
+    "retry": "Intentar de Nuevo",
+    "preview_mode": "Modo de previsualización",
+    "preparing_install": "Preparando instalación...",
+    "retrying": "Intentando de nuevo...",
+    "loading_environment": "Cargando entorno...",
+    "downloading_database": "Descargando base de datos...",
+    "extracting_data": "Extrayendo datos...",
+    "sync_complete": "¡Sincronización completa!",
+    "extract_error": "Error al extraer los datos de la base",
+    "extract_error_retry": "Error en la sincronización. Intente de nuevo."
   },
   "config": {
     "tabs": {
@@ -116,7 +127,7 @@
     "reset_history_button": "Limpiar",
     "clear_data_description": "Elimina la base de datos y los archivos descargados.",
     "clear_data_button": "Borrar Todo",
-    "under_construction_description": "Las configuraciones avanzadas de <strong>Mídia & Player</strong> están siendo diseñadas y estarán disponibles pronto.",
+    "under_construction_description": "Las configuraciones avanzadas de <strong>Media & Player</strong> están siendo diseñadas y estarán disponibles pronto.",
     "identify_monitors": "Identificar Monitores",
     "restore_projection_defaults": "Restaurar Valores Predeterminados de Proyección",
     "no_extended_monitor": "Ningún monitor extendido (secundario) detectado en el sistema.",
@@ -176,8 +187,16 @@
   },
   "sync": {
     "local_library": "Biblioteca Local",
-    "downloading": "Descargando...",
+    "download_collections_hint": "Descarga las colecciones para reproducir las canciones sin conexión.",
+    "download_all": "Descargar Todas",
+    "cancel_all": "Cancelar Todas",
+    "download": "Descargar",
+    "downloaded": "Descargado",
+    "retry": "Intentar de Nuevo",
     "delete_collection": "Eliminar Colección",
+    "confirm_delete_collection": "¿Está seguro de que desea eliminar la colección \"{name}\"? Esto eliminará los archivos de su computadora.",
+    "no_collections_available": "Ninguna colección disponible. Ejecute la inicialización primero.",
+    "downloading": "Descargando...",
     "hymnal_adventist": "Hinario Adventista",
     "hymnal_adventist_1996": "Hinario Adventista 1996",
     "hymnal_adventist_1996_alt": "Hinario Adventista (1996)",
@@ -190,7 +209,11 @@
     "cancelled": "Cancelado",
     "download_error": "Error al descargar",
     "hymnal_with": "Hinario oficial con {count} himnos",
-    "hymnal_1996_with": "Edición de 1996 con {count} himnos"
+    "hymnal_1996_with": "Edición de 1996 con {count} himnos",
+    "no_connection": "Sin conexión",
+    "batch_cancelled_no_internet": "La descarga en lote fue cancelada porque no hay conexión a internet.",
+    "error_no_internet_text": "No se pudieron descargar los archivos. Verifique su conexión a internet.",
+    "error_server_text": "No se pudo completar la descarga porque el servidor no está disponible en este momento. Intente de nuevo más tarde."
   },
   "update": {
     "all_updated": "Todo actualizado!",

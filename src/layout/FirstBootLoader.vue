@@ -8,7 +8,7 @@
             {{ isFirstBoot ? $t('boot.preparing') : $t('boot.starting') }}
           </h2>
           <p class="text-subtitle-1 mb-8" style="color: var(--sidebar-text-secondary);">
-            Aguarde instantes enquanto organizamos tudo para você.
+            {{ $t('boot.subtitle') }}
           </p>
 
           <div class="mb-2 d-flex justify-space-between align-center px-4">
@@ -32,7 +32,7 @@
               class="mt-4"
               @click="retrySync"
             >
-              Tentar Novamente
+              {{ $t('boot.retry') }}
             </v-btn>
           </div>
         </div>
@@ -51,7 +51,7 @@ export default {
       isOpen: true,
       showContent: false,
       progress: 0,
-      statusText: "Iniciando...",
+      statusText: "",
       isFirstBoot: false,
       hasError: false,
     };
@@ -79,7 +79,7 @@ export default {
       setTimeout(() => {
         this.showContent = true;
         this.progress = 50;
-        this.statusText = "Modo de visualização (fechando em 5s)...";
+        this.statusText = this.$t('boot.preview_mode');
         setTimeout(() => {
           this.isOpen = false;
         }, 5000);
@@ -88,7 +88,7 @@ export default {
     async retrySync() {
       this.hasError = false;
       this.progress = 0;
-      this.statusText = "Tentando novamente...";
+      this.statusText = this.$t('boot.retrying');
       await this.runFirstBootSync();
     },
     async checkFirstBoot() {
@@ -100,7 +100,7 @@ export default {
       if (!isComplete || !isComplete.complete) {
         this.isFirstBoot = true;
         
-        this.statusText = "Preparando nova instalação...";
+        this.statusText = this.$t('boot.preparing_install');
         if (window.electronAPI.clearAllData) {
           await window.electronAPI.clearAllData();
         }
@@ -108,7 +108,7 @@ export default {
         await this.runFirstBootSync();
       } else {
         this.isFirstBoot = false;
-        this.statusText = "Carregando ambiente...";
+        this.statusText = this.$t('boot.loading_environment');
         this.progress = 0;
         
         let step = 0;
@@ -133,7 +133,7 @@ export default {
         });
         
         if (response.status === 429 && retries > 0) {
-          console.warn(`Rate limit 429 em ${file}. Tentando novamente em ${delayMs}ms...`);
+          console.warn(`Rate limit 429 on ${file}. Retrying in ${delayMs}ms...`);
           await new Promise(resolve => setTimeout(resolve, delayMs));
           return this.fetchFromApi(file, retries - 1, delayMs * 1.5);
         }
@@ -143,7 +143,7 @@ export default {
             await new Promise(resolve => setTimeout(resolve, delayMs));
             return this.fetchFromApi(file, retries - 1, delayMs * 1.5);
           }
-          throw new Error(`Servidor retornou erro ${response.status}`);
+          throw new Error(`Server returned error ${response.status}`);
         }
         return await response.json();
       } catch (error) {
@@ -171,7 +171,7 @@ export default {
       try {
         if (window.electronAPI) {
           this.progress = 0;
-          this.statusText = "Preparando...";
+          this.statusText = this.$t('sync.preparing');
           
           window.electronAPI.onExtractProgress((data) => {
             this.progress = data.progress;
@@ -185,11 +185,11 @@ export default {
           
           await this.fetchAndSave("config");
           
-          this.statusText = "Baixando banco de dados...";
+          this.statusText = this.$t('boot.downloading_database');
           this.progress = 0;
           await window.electronAPI.downloadDatabase();
           
-          this.statusText = "Extraindo dados locais...";
+          this.statusText = this.$t('boot.extracting_data');
           this.progress = 0;
           
           const success = await window.electronAPI.extractLocalDb();
@@ -197,22 +197,21 @@ export default {
             this.progress = 100;
             await window.electronAPI.saveLocalDb("system_first_boot_complete", { complete: true });
             this.progress = 100;
-            this.statusText = "Sincronização Concluída!";
+            this.statusText = this.$t('boot.sync_complete');
             
             setTimeout(() => {
               this.isOpen = false;
               this.$emit("boot-complete");
-              // Auto-reload the app so all pre-loaded modules (like sync) detect the new images
               window.location.reload();
             }, 1000);
             return;
           }
         }
         
-        throw new Error("Falha ao extrair banco de dados local.");
+        throw new Error(this.$t('boot.extract_error'));
       } catch (err) {
-        console.error("Erro na sincronização inicial:", err);
-        this.statusText = "Erro na extração. Tente novamente.";
+        console.error("First boot sync error:", err);
+        this.statusText = this.$t('boot.extract_error_retry');
         this.hasError = true;
       }
     },
