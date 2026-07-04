@@ -719,13 +719,13 @@ export default {
       this.slide_align = savedSlideAlign;
     }
 
-    if (this.$userdata.get("modules.config.slide_fullscreen") !== undefined) {
+    if (this.$userdata.get("modules.config.slide_fullscreen") != null) {
       this.slide_fullscreen = this.$userdata.get("modules.config.slide_fullscreen");
     }
-    if (this.$userdata.get("modules.config.slide_disable_main_if_extended") !== undefined) {
+    if (this.$userdata.get("modules.config.slide_disable_main_if_extended") != null) {
       this.slide_disable_main_if_extended = this.$userdata.get("modules.config.slide_disable_main_if_extended");
     }
-    if (this.$userdata.get("modules.config.slide_show_title") !== undefined) {
+    if (this.$userdata.get("modules.config.slide_show_title") != null) {
       this.slide_show_title = this.$userdata.get("modules.config.slide_show_title");
     }
     
@@ -781,8 +781,19 @@ export default {
     slideMonitorList: {
       handler(newList) {
         if (newList.length > 0 && this.rawDisplays.length > 0) {
-          if (this.slide_monitor === undefined || this.slide_monitor === null) {
-            this.slide_monitor = newList.map(m => m.value);
+          const unselected = this.$userdata.get("modules.config.unselected_slide_monitors") || [];
+          let changed = false;
+          let currentMonitors = [...this.slide_monitor];
+          
+          newList.forEach(m => {
+            if (!currentMonitors.includes(m.value) && !unselected.includes(m.value)) {
+              currentMonitors.push(m.value);
+              changed = true;
+            }
+          });
+          
+          if (changed) {
+            this.slide_monitor = currentMonitors;
           }
         }
       },
@@ -799,11 +810,15 @@ export default {
       }
     },
     toggleSlideMonitor(val) {
+      let unselected = this.$userdata.get("modules.config.unselected_slide_monitors") || [];
       if (this.slide_monitor.includes(val)) {
         this.slide_monitor = this.slide_monitor.filter(m => m !== val);
+        if (!unselected.includes(val)) unselected.push(val);
       } else {
         this.slide_monitor = [...this.slide_monitor, val];
+        unselected = unselected.filter(m => m !== val);
       }
+      this.$userdata.set("modules.config.unselected_slide_monitors", unselected);
     },
     onBgImageSelect(event) {
       const file = event.target.files?.[0];
