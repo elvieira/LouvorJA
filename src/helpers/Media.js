@@ -15,7 +15,15 @@ export default {
     }
     $dev.write("open media", params);
 
+    const mode = params.mode ? params.mode : "no_audio";
+    const currentMode = $appdata.get("modules.media.config.mode");
     const isSameSong = params.id_music === $appdata.get("modules.media.id_music");
+
+    if (isSameSong && mode === currentMode) {
+      this.maximize();
+      return;
+    }
+
     let savedTime = 0;
 
     let audio = this.getElement();
@@ -41,7 +49,7 @@ export default {
     const id_music = params.id_music;
     const minimized = params.minimized ? params.minimized : false;
     const id_album = params.id_album ? params.id_album : null;
-    const mode = params.mode ? params.mode : "no_audio";
+
 
     $appdata.set("modules.media.loading", true);
 
@@ -62,35 +70,7 @@ export default {
       this.setAlbumInfo(id_album);
     }
 
-    // Registrar reprodução no histórico
-    const albumInfo = data.albums && data.albums.length > 0
-      ? (id_album ? data.albums.find(a => a.id_album == id_album) : data.albums[0])
-      : null;
-    $history.addSongPlay({
-      id_music,
-      name: data.name,
-      album_name: albumInfo ? albumInfo.name : "",
-      duration: data.duration || "0:00",
-    });
 
-    if (albumInfo) {
-      let collectionId = albumInfo.id_album;
-      let collectionType = "album";
-
-      const hymnal = data.categories?.filter((item) => item.startsWith("hymnal."))[0];
-      if (hymnal) {
-        collectionId = hymnal.split(".")[1];
-        collectionType = "module";
-      }
-
-      $history.addRecentCollection({
-        id: collectionId,
-        type: collectionType,
-        name: collectionType === "module" ? (collectionId === "hymnal" ? "Hinário Adventista" : "Hinário Adventista 1996") : albumInfo.name,
-        icon: collectionType === "module" ? "mdi-music" : "mdi-music-box-multiple",
-        url_image: albumInfo.url_image,
-      });
-    }
 
     const disableIfExtended = $userdata.get("modules.config.slide_disable_main_if_extended") !== false;
     const slideMonitors = $userdata.get("modules.config.slide_monitor") || [];
@@ -178,6 +158,36 @@ export default {
     }
 
     $appdata.set("modules.media.config.mode", mode);
+
+    // Registrar reprodução no histórico
+    const albumInfo = data.albums && data.albums.length > 0
+      ? (id_album ? data.albums.find(a => a.id_album == id_album) : data.albums[0])
+      : null;
+    $history.addSongPlay({
+      id_music,
+      name: data.name,
+      album_name: albumInfo ? albumInfo.name : "",
+      duration: data.duration || "0:00",
+    });
+
+    if (albumInfo) {
+      let collectionId = albumInfo.id_album;
+      let collectionType = "album";
+
+      const hymnal = data.categories?.filter((item) => item.startsWith("hymnal."))[0];
+      if (hymnal) {
+        collectionId = hymnal.split(".")[1];
+        collectionType = "module";
+      }
+
+      $history.addRecentCollection({
+        id: collectionId,
+        type: collectionType,
+        name: collectionType === "module" ? (collectionId === "hymnal" ? "Hinário Adventista" : "Hinário Adventista 1996") : albumInfo.name,
+        icon: collectionType === "module" ? "mdi-music" : "mdi-music-box-multiple",
+        url_image: albumInfo.url_image,
+      });
+    }
 
     // Projeção Automática no Monitor Estendido
     if (window.electronAPI && window.electronAPI.getDisplays) {
