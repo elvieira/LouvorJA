@@ -11,7 +11,7 @@
   >
     <v-slide-y-transition mode="out-in">
       <div 
-        :key="data.currentDisplay" 
+        :key="data.isDrawing ? 'drawing' : data.currentDisplay" 
         class="d-flex align-center justify-center w-100 h-100 px-10 text-center font-weight-black" 
         :style="{
           fontSize: data.isDrawing ? (config.fontSizePc * 0.8) + 'vw' : config.fontSizePc + 'vw',

@@ -196,7 +196,7 @@ export default {
       return timeString;
     },
     formattedSeconds() {
-      return this.now.toLocaleTimeString("pt-BR", { second: '2-digit' });
+      return this.now.getSeconds().toString().padStart(2, '0');
     },
     ampm() {
       return this.now.getHours() >= 12 ? 'PM' : 'AM';
@@ -253,6 +253,7 @@ export default {
 <style scoped>
 .digital-clock {
   letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
 }
 .hand {
   transition: transform 0.05s cubic-bezier(0.4, 2.08, 0.55, 0.44);

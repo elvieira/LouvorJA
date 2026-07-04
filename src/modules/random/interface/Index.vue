@@ -206,7 +206,7 @@
           <!-- Name Display Area -->
           <div class="text-center px-8 flex-grow-1 d-flex flex-column align-center justify-center" :style="{ zIndex: 1, height: compact ? '100%' : 'auto' }">
             <v-slide-y-transition mode="out-in">
-              <div :key="currentDisplay" class="draw-text font-weight-black text-center" :style="{ fontSize: 'clamp(2rem, 3.5vw, 4.5rem)', color: isDrawing ? 'var(--sidebar-text-secondary)' : 'var(--accent-blue)', transition: 'color 0.3s', minHeight: '100px', display: 'flex', alignItems: 'center', justifyContent: 'center', textShadow: isDrawing ? 'none' : '0 4px 20px rgba(0,151,215,0.3)' }">
+              <div :key="isDrawing ? 'drawing' : currentDisplay" class="draw-text font-weight-black text-center" :style="{ fontSize: 'clamp(2rem, 3.5vw, 4.5rem)', color: isDrawing ? 'var(--sidebar-text-secondary)' : 'var(--accent-blue)', transition: 'color 0.3s', minHeight: '100px', display: 'flex', alignItems: 'center', justifyContent: 'center', textShadow: isDrawing ? 'none' : '0 4px 20px rgba(0,151,215,0.3)' }">
                 {{ currentDisplay || "- - - -" }}
               </div>
             </v-slide-y-transition>

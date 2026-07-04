@@ -213,14 +213,14 @@
                 @click="selVerse($event, num)"
               >
                 <div class="d-flex align-start py-2">
-                  <v-chip
-                    size="small"
-                    class="mr-4 mt-1 font-weight-bold"
-                    :color="bible.verses.includes(+num) ? 'primary' : 'default'"
+                  <v-avatar
+                    size="32"
+                    class="mr-4 mt-1 font-weight-bold flex-shrink-0"
+                    :color="bible.verses.includes(+num) ? 'primary' : 'surface-variant'"
                     :variant="bible.verses.includes(+num) ? 'flat' : 'tonal'"
                   >
-                    {{ num }}
-                  </v-chip>
+                    <span style="font-size: 0.85rem;">{{ num }}</span>
+                  </v-avatar>
                   <div class="verse-text" style="font-size: 1.15rem; line-height: 1.6; color: var(--sidebar-text);" v-html="verse" />
                 </div>
               </v-list-item>
