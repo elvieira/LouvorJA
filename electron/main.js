@@ -155,38 +155,49 @@ ipcMain.handle('extract-local-db', async (event) => {
   }
 });
 
+let globalFtpParams = null;
+
+async function getFtpParams() {
+  if (globalFtpParams) return globalFtpParams;
+
+  const response = await net.fetch('https://api.louvorja.com.br/params?type=env');
+  if (!response.ok) throw new Error('Falha ao buscar parâmetros');
+  const text = await response.text();
+  
+  const params = {};
+  text.split('\n').forEach(line => {
+    const idx = line.indexOf('=');
+    if (idx > 0) {
+      params[line.slice(0, idx).trim()] = line.slice(idx + 1).trim();
+    }
+  });
+  
+  const connFtp = params['conn_ftp'];
+  if (!connFtp) throw new Error('conn_ftp não encontrado');
+  
+  const payload = Buffer.from('pc_name=Electron&lang=PT').toString('base64');
+  const ftpUrl = connFtp + (connFtp.includes('?') ? '&' : '?') + 'data=' + payload + '&lang=PT';
+  
+  const ftpResponse = await net.fetch(ftpUrl);
+  if (!ftpResponse.ok) throw new Error('Falha ao autorizar FTP');
+  const encodedFtpParams = await ftpResponse.text();
+  
+  const decodedFtpText = Buffer.from(encodedFtpParams, 'base64').toString('utf8');
+  const ftpParams = {};
+  decodedFtpText.split('\n').forEach(line => {
+    const idx = line.indexOf('=');
+    if (idx > 0) {
+      ftpParams[line.slice(0, idx).trim()] = line.slice(idx + 1).trim();
+    }
+  });
+
+  globalFtpParams = ftpParams;
+  return ftpParams;
+}
+
 ipcMain.handle('download-database', async (event) => {
   try {
-    const response = await net.fetch('https://api.louvorja.com.br/params?type=env');
-    if (!response.ok) throw new Error('Falha ao buscar parâmetros');
-    const text = await response.text();
-    
-    const params = {};
-    text.split('\n').forEach(line => {
-      const idx = line.indexOf('=');
-      if (idx > 0) {
-        params[line.slice(0, idx).trim()] = line.slice(idx + 1).trim();
-      }
-    });
-    
-    const connFtp = params['conn_ftp'];
-    if (!connFtp) throw new Error('conn_ftp não encontrado');
-    
-    const payload = Buffer.from('pc_name=Electron&lang=PT').toString('base64');
-    const ftpUrl = connFtp + (connFtp.includes('?') ? '&' : '?') + 'data=' + payload + '&lang=PT';
-    
-    const ftpResponse = await net.fetch(ftpUrl);
-    if (!ftpResponse.ok) throw new Error('Falha ao autorizar FTP');
-    const encodedFtpParams = await ftpResponse.text();
-    
-    const decodedFtpText = Buffer.from(encodedFtpParams, 'base64').toString('utf8');
-    const ftpParams = {};
-    decodedFtpText.split('\n').forEach(line => {
-      const idx = line.indexOf('=');
-      if (idx > 0) {
-        ftpParams[line.slice(0, idx).trim()] = line.slice(idx + 1).trim();
-      }
-    });
+    const ftpParams = await getFtpParams();
     
     const client = new ftp.Client();
     
@@ -226,8 +237,48 @@ ipcMain.handle('download-database', async (event) => {
   }
 });
 
+async function downloadMediaViaFtp(destFolderType, filename, filePath) {
+  const ftpParams = await getFtpParams();
+  const client = new ftp.Client();
+  await client.access({
+    host: ftpParams['host'],
+    user: ftpParams['username'],
+    password: ftpParams['password'],
+    port: parseInt(ftpParams['port'] || '21'),
+    secure: false
+  });
+
+  let ftpFolder = 'config/capas';
+  if (destFolderType === 'music') ftpFolder = 'config/musicas';
+  else if (destFolderType === 'slides') ftpFolder = 'config/imagens';
+
+  let cleanFilename = filename;
+  // O servidor FTP não possui as subpastas pt/ ou es/ sob config/musicas
+  if (cleanFilename.startsWith('pt/') || cleanFilename.startsWith('es/')) {
+    cleanFilename = cleanFilename.substring(3);
+  }
+
+  const remotePath = (ftpParams['root'] || '/') + (ftpParams['root']?.endsWith('/') ? '' : '/') + `${ftpFolder}/${cleanFilename}`;
+  await client.downloadTo(filePath, remotePath);
+  client.close();
+}
+
+let useFtpFallback = false;
+let ftpFallbackTimer = null;
+
+function resetFtpFallbackTimer() {
+  if (ftpFallbackTimer) clearTimeout(ftpFallbackTimer);
+  // Se não houver requisições de mídia por 1 minuto, voltamos a tentar HTTP
+  ftpFallbackTimer = setTimeout(() => {
+    useFtpFallback = false;
+  }, 60000);
+}
+
 ipcMain.handle('download-media', async (event, url, destFolderType, filename) => {
   try {
+    // Busca credenciais preventivamente ANTES de qualquer risco de tomar 429 na mídia
+    await getFtpParams().catch(e => console.warn('Não foi possível fazer pre-fetch das credenciais FTP:', e.message));
+
     let destFolder = coversPath;
     if (destFolderType === 'music') destFolder = musicPath;
     else if (destFolderType === 'slides') destFolder = slidesPath;
@@ -240,17 +291,29 @@ ipcMain.handle('download-media', async (event, url, destFolderType, filename) =>
       fs.mkdirSync(fileDir, { recursive: true });
     }
 
-    let response;
-    let retries = 4;
-    let delay = 1000;
-    while (retries > 0) {
-      response = await net.fetch(url);
-      if (response.status === 429 || response.status >= 500) {
-        await new Promise(r => setTimeout(r, delay));
-        retries--;
-        delay *= 1.5;
-      } else {
-        break;
+    if (useFtpFallback) {
+      resetFtpFallbackTimer();
+      try {
+        await downloadMediaViaFtp(destFolderType, decodedFilename, filePath);
+        return true;
+      } catch (ftpError) {
+        console.error('Erro no fallback FTP (direto):', ftpError);
+        return false;
+      }
+    }
+
+    const response = await net.fetch(url);
+
+    if (response.status === 429) {
+      console.warn(`Rate limit 429 atingido em ${url}. Trocando para FTP...`);
+      useFtpFallback = true;
+      resetFtpFallbackTimer();
+      try {
+        await downloadMediaViaFtp(destFolderType, decodedFilename, filePath);
+        return true;
+      } catch (ftpError) {
+        console.error('Erro no fallback FTP:', ftpError);
+        return false;
       }
     }
 
