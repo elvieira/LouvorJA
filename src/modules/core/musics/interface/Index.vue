@@ -51,6 +51,7 @@
     </template>
 
     <LTable
+      v-if="!(search && data.filter_count <= 0)"
       v-model="data"
       :search="search"
       :letter="letter"
@@ -126,14 +127,14 @@
       </tbody>
     </LTable>
 
-    <v-alert
-      v-if="search && data.filter_count <= 0"
-      type="error"
-      :text="t('data.not_found')"
-      variant="tonal"
-      border="start"
-      class="ma-2"
-    />
+    <div v-if="search && data.filter_count <= 0" class="d-flex flex-column align-center justify-center flex-grow-1 w-100 mt-8 pb-8">
+      <v-icon size="48" color="var(--sidebar-text-secondary)" class="mb-3">
+        mdi-magnify
+      </v-icon>
+      <p style="color: var(--sidebar-text-secondary); font-weight: 500;">
+        Nenhuma música encontrada
+      </p>
+    </div>
 
     <template #footer>
       <div class="w-100">

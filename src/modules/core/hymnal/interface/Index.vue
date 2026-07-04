@@ -30,7 +30,7 @@
       </div>
 
       <div class="content-main d-flex flex-column flex-grow-1" style="overflow: hidden; padding-top: 16px;">
-        <div class="music-list flex-grow-1 d-flex flex-column" style="background: transparent; box-shadow: none; min-height: 0;">
+        <div v-if="!(search && data.filter_count <= 0)" class="music-list flex-grow-1 d-flex flex-column" style="background: transparent; box-shadow: none; min-height: 0;">
           <LTable
             v-model="data"
             :search="search"
@@ -78,14 +78,14 @@
           </LTable>
         </div>
 
-        <v-alert
-          v-if="search && data.filter_count <= 0"
-          type="error"
-          :text="t('data.not_found')"
-          variant="tonal"
-          border="start"
-          class="ma-2 mx-8"
-        />
+        <div v-if="search && data.filter_count <= 0" class="d-flex flex-column align-center justify-center flex-grow-1 w-100 mt-8">
+          <v-icon size="48" color="var(--sidebar-text-secondary)" class="mb-3">
+            mdi-magnify
+          </v-icon>
+          <p style="color: var(--sidebar-text-secondary); font-weight: 500;">
+            Nenhuma música encontrada
+          </p>
+        </div>
       </div>
     </div>
   </v-slide-y-reverse-transition>

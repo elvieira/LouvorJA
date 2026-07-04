@@ -36,7 +36,16 @@
             Resultados da Pesquisa
           </h2>
           <div class="music-list flex-grow-1 d-flex flex-column" style="min-height: 0; background: transparent; box-shadow: none;">
+            <div v-if="searchData.data && searchData.data.length === 0" class="d-flex flex-column align-center justify-center flex-grow-1 w-100">
+              <v-icon size="48" color="var(--sidebar-text-secondary)" class="mb-3">
+                mdi-magnify
+              </v-icon>
+              <p style="color: var(--sidebar-text-secondary); font-weight: 500;">
+                Nenhuma música encontrada
+              </p>
+            </div>
             <LTable
+              v-else
               v-model="searchData"
               :search="searchQuery"
               :searchable_fields="{
@@ -74,11 +83,6 @@
                         :has_instrumental_music="item.has_instrumental_music"
                       />
                     </div>
-                  </td>
-                </tr>
-                <tr v-if="searchData.data && searchData.data.length === 0">
-                  <td class="text-center pa-8 text-grey w-100 d-block" style="border-bottom: none;">
-                    Nenhuma música encontrada.
                   </td>
                 </tr>
               </tbody>
