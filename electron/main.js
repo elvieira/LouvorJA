@@ -237,6 +237,45 @@ ipcMain.handle('download-database', async (event) => {
   }
 });
 
+// ======================== SYNC: CHECK DB VERSION ========================
+
+ipcMain.handle('sync-check-version', async () => {
+  try {
+    // 1. Versão local (do db_version.json persistente)
+    const localVersion = DbExtractor.getLocalDbVersion();
+
+    // 2. Versão remota via API (/params?type=env -> db_version)
+    const response = await net.fetch('https://api.louvorja.com.br/params?type=env');
+    if (!response.ok) throw new Error('Falha ao buscar parâmetros da API');
+
+    const text = await response.text();
+    const params = {};
+    text.split('\n').forEach(line => {
+      const idx = line.indexOf('=');
+      if (idx > 0) {
+        params[line.slice(0, idx).trim()] = line.slice(idx + 1).trim();
+      }
+    });
+
+    const remoteVersion = Number(params['db_version'] || 0);
+    if (isNaN(remoteVersion)) throw new Error('db_version inválido na API');
+
+    return {
+      hasUpdate: remoteVersion > localVersion,
+      localVersion,
+      remoteVersion
+    };
+  } catch (error) {
+    console.error('Erro ao verificar versão do DB:', error.message);
+    return {
+      hasUpdate: false,
+      localVersion: 0,
+      remoteVersion: 0,
+      error: error.message
+    };
+  }
+});
+
 // ======================== SISTEMA DE DOWNLOAD FTP PERSISTENTE ========================
 
 let ftpClient = null;

@@ -13,6 +13,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   extractLocalDb: () => ipcRenderer.invoke('extract-local-db'),
   downloadDatabase: () => ipcRenderer.invoke('download-database'),
   
+  // Sync: DB version check
+  syncCheckVersion: () => ipcRenderer.invoke('sync-check-version'),
+  
   windowControl: (action) => ipcRenderer.invoke('window-control', action),
   onWindowMaximizedState: (callback) => {
     ipcRenderer.on('window-maximized-state', (_event, isMaximized) => callback(isMaximized));

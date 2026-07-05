@@ -6,6 +6,7 @@ const crypto = require('crypto');
 
 const ENCRYPTION_KEY = Buffer.from('v389s8dkj238910s8a7d3h2j1k9s8d7f', 'utf8');
 const IV_LENGTH = 16;
+const VERSION_FILE = path.join(app.getPath('userData'), '.sysdata', 'db_version.json');
 
 function encryptData(text) {
   try {
@@ -26,12 +27,70 @@ class DbExtractor {
     this.sysdataDir = path.join(app.getPath('userData'), '.sysdata');
   }
 
+  /**
+   * Lê VERSAO_BD da tabela VERSAO no SQLite e salva em arquivo persistente.
+   * Retorna a versão (number) ou 0 se não encontrada.
+   */
+  readDbVersion(dbPath) {
+    const dbFile = dbPath || this.dbPath;
+    if (!fs.existsSync(dbFile)) return 0;
+
+    const db = new Database(dbFile, { readonly: true });
+    try {
+      const row = db.prepare('SELECT VERSAO_BD FROM VERSAO LIMIT 1').get();
+      if (row && row.VERSAO_BD != null) {
+        const version = Number(row.VERSAO_BD);
+        if (!isNaN(version)) {
+          this.saveDbVersion(version);
+          return version;
+        }
+      }
+    } catch (e) {
+      console.error('Erro ao ler VERSAO_BD:', e.message);
+    } finally {
+      db.close();
+    }
+    return 0;
+  }
+
+  /**
+   * Salva versão do DB no arquivo persistente.
+   */
+  saveDbVersion(version) {
+    try {
+      fs.ensureDirSync(path.dirname(VERSION_FILE));
+      fs.writeJsonSync(VERSION_FILE, { version: Number(version) });
+    } catch (e) {
+      console.error('Erro ao salvar db_version.json:', e.message);
+    }
+  }
+
+  /**
+   * Lê versão do DB do arquivo persistente.
+   * Retorna 0 se não existir.
+   */
+  static getLocalDbVersion() {
+    try {
+      if (fs.existsSync(VERSION_FILE)) {
+        const data = fs.readJsonSync(VERSION_FILE);
+        return data.version || 0;
+      }
+    } catch (e) {
+      console.error('Erro ao ler db_version.json:', e.message);
+    }
+    return 0;
+  }
+
   async extract(progressCallback = () => {}) {
     if (!fs.existsSync(this.dbPath)) {
       throw new Error(`Database file not found at ${this.dbPath}`);
     }
 
     fs.ensureDirSync(this.sysdataDir);
+
+    // Lê e persiste VERSAO_BD antes da extração
+    this.readDbVersion();
+
     const db = new Database(this.dbPath, { readonly: true });
     
     try {
