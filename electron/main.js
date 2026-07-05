@@ -237,16 +237,93 @@ ipcMain.handle('download-database', async (event) => {
   }
 });
 
-async function downloadMediaViaFtp(destFolderType, filename, filePath) {
+// ======================== SISTEMA DE DOWNLOAD FTP PERSISTENTE ========================
+
+let ftpClient = null;
+let ftpCloseTimer = null;
+let useFtpFallback = false;
+let ftpFallbackTimer = null;
+
+function resetFtpFallbackTimer() {
+  if (ftpFallbackTimer) clearTimeout(ftpFallbackTimer);
+  // Se não houver requisições de mídia por 2 minutos, voltamos a tentar HTTP
+  ftpFallbackTimer = setTimeout(() => {
+    console.log('[FTP] Timeout de inatividade HTTP atingido. Voltando a tentar HTTP...');
+    useFtpFallback = false;
+  }, 120000);
+}
+
+function scheduleFtpClose() {
+  if (ftpCloseTimer) clearTimeout(ftpCloseTimer);
+  // Fecha a conexão FTP se ficar 30s sem uso
+  ftpCloseTimer = setTimeout(() => {
+    if (ftpClient) {
+      console.log('[FTP] Fechando conexão FTP por inatividade...');
+      try { ftpClient.close(); } catch (e) { /* ignore */ }
+      ftpClient = null;
+    }
+  }, 30000);
+}
+
+async function getOrCreateFtpClient() {
+  if (ftpClient && !ftpClient.closed) {
+    scheduleFtpClose();
+    return ftpClient;
+  }
+
   const ftpParams = await getFtpParams();
   const client = new ftp.Client();
-  await client.access({
-    host: ftpParams['host'],
-    user: ftpParams['username'],
-    password: ftpParams['password'],
-    port: parseInt(ftpParams['port'] || '21'),
-    secure: false
-  });
+  client.ftp.verbose = false;
+
+  const host = ftpParams['host'];
+  const user = ftpParams['username'];
+  const port = parseInt(ftpParams['port'] || '21');
+  
+  try {
+    await client.access({
+      host: host,
+      user: user,
+      password: ftpParams['password'],
+      port: port,
+      secure: false
+    });
+  } catch (err) {
+    throw err;
+  }
+
+  ftpClient = client;
+  scheduleFtpClose();
+  return client;
+}
+
+class Mutex {
+  constructor() {
+    this.queue = [];
+    this.locked = false;
+  }
+
+  async lock() {
+    if (!this.locked) {
+      this.locked = true;
+      return;
+    }
+    return new Promise(resolve => this.queue.push(resolve));
+  }
+
+  unlock() {
+    if (this.queue.length > 0) {
+      const resolve = this.queue.shift();
+      resolve();
+    } else {
+      this.locked = false;
+    }
+  }
+}
+
+const ftpMutex = new Mutex();
+
+async function downloadMediaViaFtp(destFolderType, filename, filePath, retries = 2) {
+  const ftpParams = await getFtpParams();
 
   let ftpFolder = 'config/capas';
   if (destFolderType === 'music') ftpFolder = 'config/musicas';
@@ -258,20 +335,49 @@ async function downloadMediaViaFtp(destFolderType, filename, filePath) {
     cleanFilename = cleanFilename.substring(3);
   }
 
-  const remotePath = (ftpParams['root'] || '/') + (ftpParams['root']?.endsWith('/') ? '' : '/') + `${ftpFolder}/${cleanFilename}`;
-  await client.downloadTo(filePath, remotePath);
-  client.close();
+  // Construir o caminho remoto exatamente como o Delphi faz:
+  // ftp_dir + arquivo_ftp (onde ftp_dir = root, e arquivo_ftp = config/musicas/...)
+  const root = ftpParams['root'] || '/';
+  const remotePath = root + (root.endsWith('/') ? '' : '/') + `${ftpFolder}/${cleanFilename}`;
+
+  await ftpMutex.lock();
+  try {
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      try {
+        const client = await getOrCreateFtpClient();
+        await client.downloadTo(filePath, remotePath);
+        return; // sucesso
+      } catch (err) {
+        console.error(`[FTP] ERRO ao baixar ${remotePath}: ${err.message}`);
+        // Se deu erro, fecha a conexão atual para forçar reconexão no próximo attempt
+        if (ftpClient) {
+          try { ftpClient.close(); } catch (e) { /* ignore */ }
+          ftpClient = null;
+        }
+
+        if (attempt < retries) {
+          const waitTime = 2000 * (attempt + 1); // 2s, 4s
+          console.warn(`[FTP] Tentativa ${attempt + 1} falhou para ${cleanFilename}, retentando em ${waitTime/1000}s...`);
+          await new Promise(r => setTimeout(r, waitTime));
+        } else {
+          throw err; // esgotou retries
+        }
+      }
+    }
+  } finally {
+    ftpMutex.unlock();
+  }
 }
 
-let useFtpFallback = false;
-let ftpFallbackTimer = null;
+function buildApiUrl(destFolderType, filename) {
+  // Constrói a URL real da API a partir do tipo e nome do arquivo
+  // Mapeamento: music -> /musics/, slides -> /images/, covers -> /covers/
+  let urlFolder = 'covers';
+  if (destFolderType === 'music') urlFolder = 'musics';
+  else if (destFolderType === 'slides') urlFolder = 'images';
 
-function resetFtpFallbackTimer() {
-  if (ftpFallbackTimer) clearTimeout(ftpFallbackTimer);
-  // Se não houver requisições de mídia por 1 minuto, voltamos a tentar HTTP
-  ftpFallbackTimer = setTimeout(() => {
-    useFtpFallback = false;
-  }, 60000);
+  const cleanFilename = filename.replace(/\\/g, '/');
+  return `https://api.louvorja.com.br/file/${urlFolder}/${encodeURIComponent(cleanFilename).replace(/%2F/g, '/')}`;
 }
 
 ipcMain.handle('download-media', async (event, url, destFolderType, filename) => {
@@ -291,28 +397,31 @@ ipcMain.handle('download-media', async (event, url, destFolderType, filename) =>
       fs.mkdirSync(fileDir, { recursive: true });
     }
 
+    // Se já estamos em modo FTP fallback, vai direto pro FTP
     if (useFtpFallback) {
       resetFtpFallbackTimer();
       try {
         await downloadMediaViaFtp(destFolderType, decodedFilename, filePath);
         return true;
       } catch (ftpError) {
-        console.error('Erro no fallback FTP (direto):', ftpError);
+        console.error('[FTP] Erro no fallback FTP (direto):', ftpError.message);
         return false;
       }
     }
 
-    const response = await net.fetch(url);
+    // Constrói URL real da API (NÃO usar local:// que passa pelo protocol handler)
+    const apiUrl = buildApiUrl(destFolderType, decodedFilename);
+    const response = await net.fetch(apiUrl);
 
     if (response.status === 429) {
-      console.warn(`Rate limit 429 atingido em ${url}. Trocando para FTP...`);
+      console.warn(`[HTTP] Rate limit 429 atingido. Trocando para FTP para todos os downloads...`);
       useFtpFallback = true;
       resetFtpFallbackTimer();
       try {
         await downloadMediaViaFtp(destFolderType, decodedFilename, filePath);
         return true;
       } catch (ftpError) {
-        console.error('Erro no fallback FTP:', ftpError);
+        console.error('[FTP] Erro no fallback FTP após 429:', ftpError.message);
         return false;
       }
     }
@@ -324,7 +433,7 @@ ipcMain.handle('download-media', async (event, url, destFolderType, filename) =>
     fs.writeFileSync(filePath, buffer);
     return true;
   } catch (error) {
-    console.error('Erro baixando mídia:', error);
+    console.error('[Download] Erro baixando mídia:', error.message);
     return false;
   }
 });
@@ -696,20 +805,10 @@ app.whenReady().then(() => {
     try {
       if (!fs.existsSync(filePath)) {
         if (isMediaFallback) {
+          // Proxy transparente: tenta buscar da API uma única vez
+          // (downloads em lote usam o handler download-media com fallback FTP)
           const apiUrl = `https://api.louvorja.com.br/file${fallbackPath.replace(/\\/g, '/')}`;
-          let response;
-          let retries = 4;
-          let delay = 1000;
-          while (retries > 0) {
-            response = await net.fetch(apiUrl);
-            if (response.status === 429 || response.status >= 500) {
-              await new Promise(r => setTimeout(r, delay));
-              retries--;
-              delay *= 1.5;
-            } else {
-              break;
-            }
-          }
+          const response = await net.fetch(apiUrl);
           return response;
         }
         return new Response("Not Found", { status: 404 });

@@ -418,28 +418,34 @@ export default {
         
         let downloaded = 0;
         const batchSize = 5;
-        let hasError = false;
+        let consecutiveErrors = 0;
+        let totalErrors = 0;
+        const MAX_CONSECUTIVE_ERRORS = 5; // Aborta se 5 falhas seguidas (servidor provavelmente caiu)
         
         album.progressText = 'Baixando...';
         
         for (let i = 0; i < allMediaFiles.length; i += batchSize) {
-          if (this.cancelToken || album.cancelToken || hasError || !navigator.onLine) {
-            if (!navigator.onLine) hasError = true;
+          if (this.cancelToken || album.cancelToken || !navigator.onLine) {
+            if (!navigator.onLine) totalErrors++;
             break;
           }
+          if (consecutiveErrors >= MAX_CONSECUTIVE_ERRORS) break;
           
           const batch = allMediaFiles.slice(i, i + batchSize);
           await Promise.all(batch.map(async (media) => {
-            if (hasError) return;
+            if (consecutiveErrors >= MAX_CONSECUTIVE_ERRORS) return;
             const fullUrl = $path.file(media.url);
             const relativePath = media.url.replace(/^\/(musics|images|covers)\//, '');
             const exists = await window.electronAPI.checkMedia(media.type, relativePath);
             if (!exists) {
               const success = await window.electronAPI.downloadMedia(fullUrl, media.type, relativePath);
               if (!success) {
-                hasError = true;
+                consecutiveErrors++;
+                totalErrors++;
+                console.warn(`[Sync] Falha ao baixar: ${relativePath} (${consecutiveErrors} consecutivas)`);
                 return;
               }
+              consecutiveErrors = 0; // Reset ao ter sucesso
             }
             downloaded++;
             album.downloadedCount = downloaded;
@@ -447,7 +453,9 @@ export default {
           }));
         }
         
-        if (hasError) {
+        const abortedByErrors = consecutiveErrors >= MAX_CONSECUTIVE_ERRORS;
+        
+        if (abortedByErrors || !navigator.onLine) {
           album.status = 'error';
           album.progressText = !navigator.onLine ? 'Sem internet' : 'Falha no servidor';
           if (!this.isDownloadingAll) {
@@ -455,7 +463,7 @@ export default {
               title: "Falha no download",
               text: !navigator.onLine 
                 ? "Não foi possível baixar os arquivos. Verifique sua conexão com a internet." 
-                : "Não foi possível concluir o download pois o servidor está indisponível no momento. Tente novamente mais tarde.",
+                : `Não foi possível concluir o download pois o servidor está indisponível no momento. ${totalErrors} arquivo(s) falharam. Tente novamente mais tarde.`,
               translate: false
             });
           }
@@ -463,6 +471,9 @@ export default {
           album.status = 'idle';
           album.progressText = 'Cancelado';
         } else {
+          if (totalErrors > 0) {
+            console.warn(`[Sync] Coletânea baixada com ${totalErrors} arquivo(s) faltando.`);
+          }
           album.status = 'downloaded';
           await this.markAlbumDownloaded(album.id_album);
         }
