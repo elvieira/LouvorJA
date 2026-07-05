@@ -13,6 +13,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
   extractLocalDb: () => ipcRenderer.invoke('extract-local-db'),
   downloadDatabase: () => ipcRenderer.invoke('download-database'),
   
+  // Legacy Import (Delphi Desktop → Electron)
+  scanLegacyDb: () => ipcRenderer.invoke('scan-legacy-db'),
+  importLegacyDb: () => ipcRenderer.invoke('import-legacy-db'),
+  
   windowControl: (action) => ipcRenderer.invoke('window-control', action),
   onWindowMaximizedState: (callback) => {
     ipcRenderer.on('window-maximized-state', (_event, isMaximized) => callback(isMaximized));

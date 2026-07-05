@@ -5,6 +5,7 @@ const fsExtra = require('fs-extra');
 const crypto = require('crypto');
 const { autoUpdater } = require('electron-updater');
 const DbExtractor = require('./DbExtractor');
+const LegacyImporter = require('./LegacyImporter');
 const ftp = require('basic-ftp');
 
 // Chave estática para ofuscação (não é segurança alta, apenas ofuscação)
@@ -152,6 +153,62 @@ ipcMain.handle('extract-local-db', async (event) => {
   } catch (error) {
     console.error('Erro na extração do banco:', error);
     return false;
+  }
+});
+
+// ── Legacy Import: Delphi Desktop → Electron ──────────────────────
+
+ipcMain.handle('scan-legacy-db', async () => {
+  try {
+    const importer = new LegacyImporter();
+    const dbPath = importer.scan();
+    if (!dbPath) {
+      return { found: false, message: 'Nenhum banco de dados do LouvorJA Desktop encontrado.' };
+    }
+    const version = LegacyImporter.readLegacyDbVersion(dbPath);
+    return { found: true, path: dbPath, version };
+  } catch (error) {
+    console.error('[LegacyImport] Erro no scan:', error);
+    return { found: false, message: error.message };
+  }
+});
+
+ipcMain.handle('import-legacy-db', async (event) => {
+  try {
+    const importer = new LegacyImporter();
+    const dbPath = importer.scan();
+
+    if (!dbPath) {
+      return { success: false, message: 'Nenhum banco de dados do Delphi encontrado.' };
+    }
+
+    // Copia database.db para temp (DbExtractor precisa de path limpo)
+    const tempDir = path.join(app.getPath('userData'), 'temp-legacy-import');
+    fsExtra.ensureDirSync(tempDir);
+    const tempDbPath = path.join(tempDir, 'database.db');
+    fsExtra.copySync(dbPath, tempDbPath);
+
+    // Extrai usando DbExtractor existente
+    const extractor = new DbExtractor(tempDbPath);
+    const extractedFiles = await extractor.extract((data) => {
+      event.sender.send('extract-progress', data);
+    });
+
+    // Limpa temp
+    try {
+      fsExtra.removeSync(tempDir);
+    } catch (e) {
+      console.error('[LegacyImport] Erro ao limpar temp:', e.message);
+    }
+
+    return {
+      success: true,
+      message: `Importação concluída. ${extractedFiles} tabelas extraídas.`,
+      version: LegacyImporter.readLegacyDbVersion(dbPath),
+    };
+  } catch (error) {
+    console.error('[LegacyImport] Erro na importação:', error);
+    return { success: false, message: error.message };
   }
 });
 

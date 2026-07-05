@@ -3,38 +3,77 @@
     <div v-if="isOpen" class="first-boot-overlay d-flex flex-column align-center justify-center bg-main">
       <transition name="fade-transition">
         <div v-if="showContent" class="text-center" style="max-width: 500px; width: 100%;">
-        <img src="/ico/favicon.svg" width="80" class="mb-6 pulse-anim" />
-        <h2 class="text-h4 font-weight-bold mb-2" style="color: var(--sidebar-text);">
-          {{ isFirstBoot ? 'Preparando o Louvor JA' : 'Iniciando o Louvor JA' }}
-        </h2>
-        <p class="text-subtitle-1 mb-8" style="color: var(--sidebar-text-secondary);">
-          Aguarde instantes enquanto organizamos tudo para você.
-        </p>
+          <img src="/ico/favicon.svg" width="80" class="mb-6 pulse-anim" />
+          <h2 class="text-h4 font-weight-bold mb-2" style="color: var(--sidebar-text);">
+            {{ isFirstBoot ? 'Preparando o Louvor JA' : 'Iniciando o Louvor JA' }}
+          </h2>
+          <p class="text-subtitle-1 mb-8" style="color: var(--sidebar-text-secondary);">
+            Aguarde instantes enquanto organizamos tudo para você.
+          </p>
 
-        <div class="mb-2 d-flex justify-space-between align-center px-4">
-          <span class="text-caption font-weight-bold" style="color: var(--sidebar-text);">{{ statusText }}</span>
-          <span class="text-caption font-weight-bold" style="color: var(--accent-blue);">{{ progress }}%</span>
-        </div>
+          <div class="mb-2 d-flex justify-space-between align-center px-4">
+            <span class="text-caption font-weight-bold" style="color: var(--sidebar-text);">{{ statusText }}</span>
+            <span class="text-caption font-weight-bold" style="color: var(--accent-blue);">{{ progress }}%</span>
+          </div>
         
-        <div class="px-4">
-          <v-progress-linear
-            v-if="!hasError"
-            v-model="progress"
-            color="primary"
-            height="8"
-            rounded
-            striped
-          ></v-progress-linear>
+          <div class="px-4">
+            <v-progress-linear
+              v-if="!hasError && !showLegacyOption"
+              v-model="progress"
+              color="primary"
+              height="8"
+              rounded
+              striped
+            />
           
-          <v-btn
-            v-else
-            color="primary"
-            class="mt-4"
-            @click="retrySync"
-          >
-            Tentar Novamente
-          </v-btn>
-        </div>
+            <!-- Legacy DB Import Option (Windows only, first boot) -->
+            <div v-if="showLegacyOption && !isImporting" class="mt-6">
+              <p class="text-caption mb-3" style="color: var(--sidebar-text-secondary);">
+                {{ legacyScanMessage }}
+              </p>
+              <div class="d-flex justify-center ga-2">
+                <v-btn
+                  v-if="legacyDbFound"
+                  color="primary"
+                  prepend-icon="mdi-database-import"
+                  @click="importLegacyDb"
+                >
+                  Importar do Desktop
+                </v-btn>
+                <v-btn
+                  color="secondary"
+                  variant="outlined"
+                  prepend-icon="mdi-cloud-download"
+                  @click="skipLegacyImport"
+                >
+                  Baixar da Internet
+                </v-btn>
+              </div>
+            </div>
+
+            <!-- Progresso da importação legada -->
+            <div v-if="isImporting">
+              <p class="text-caption mb-2" style="color: var(--sidebar-text-secondary);">
+                Importando dados do Desktop...
+              </p>
+              <v-progress-linear
+                v-model="progress"
+                color="primary"
+                height="8"
+                rounded
+                striped
+              />
+            </div>
+          
+            <v-btn
+              v-else-if="hasError"
+              color="primary"
+              class="mt-4"
+              @click="retrySync"
+            >
+              Tentar Novamente
+            </v-btn>
+          </div>
         </div>
       </transition>
     </div>
@@ -54,15 +93,21 @@ export default {
       statusText: "Iniciando...",
       isFirstBoot: false,
       hasError: false,
+      // Legacy import
+      showLegacyOption: false,
+      legacyDbFound: false,
+      legacyDbVersion: null,
+      legacyScanMessage: "Verificando dados do LouvorJA Desktop...",
+      isImporting: false,
     };
   },
   mounted() {
-    if (window.location.href.includes('popup')) {
+    if (window.location.href.includes("popup")) {
       this.isOpen = false;
       return;
     }
 
-    window.addEventListener('show-boot-screen', this.handleManualShow);
+    window.addEventListener("show-boot-screen", this.handleManualShow);
     
     setTimeout(async () => {
       this.showContent = true;
@@ -70,7 +115,7 @@ export default {
     }, 1000);
   },
   unmounted() {
-    window.removeEventListener('show-boot-screen', this.handleManualShow);
+    window.removeEventListener("show-boot-screen", this.handleManualShow);
   },
   methods: {
     handleManualShow() {
@@ -105,7 +150,8 @@ export default {
           await window.electronAPI.clearAllData();
         }
         
-        await this.runFirstBootSync();
+        // Verifica se há DB legado do Delphi (Windows only)
+        await this.scanForLegacyDb();
       } else {
         this.isFirstBoot = false;
         this.statusText = "Carregando ambiente...";
@@ -161,10 +207,82 @@ export default {
       }
       return data;
     },
+    async scanForLegacyDb() {
+      if (!window.electronAPI?.scanLegacyDb) {
+        // Scan não disponível (Linux/macOS ou versão antiga) — segue direto pro download
+        await this.runFirstBootSync();
+        return;
+      }
+
+      this.statusText = "Verificando dados locais...";
+      this.progress = 0;
+      
+      try {
+        const result = await window.electronAPI.scanLegacyDb();
+        
+        if (result.found) {
+          this.legacyDbFound = true;
+          this.legacyDbVersion = result.version;
+          this.legacyScanMessage = `Encontrado LouvorJA Desktop (versão ${result.version || "desconhecida"}). Deseja importar seus dados?`;
+          this.showLegacyOption = true;
+          this.statusText = "Dados do Desktop encontrados!";
+        } else {
+          this.legacyScanMessage = result.message || "Nenhum dado local encontrado.";
+          // Sem legacy — segue download normal após breve pausa
+          await new Promise(r => setTimeout(r, 800));
+          await this.runFirstBootSync();
+        }
+      } catch (err) {
+        console.warn("[LegacyScan] Erro:", err);
+        await this.runFirstBootSync();
+      }
+    },
+    async importLegacyDb() {
+      this.showLegacyOption = false;
+      this.isImporting = true;
+      this.progress = 0;
+      this.statusText = "Importando dados do Desktop...";
+      
+      if (window.electronAPI?.onExtractProgress) {
+        window.electronAPI.onExtractProgress((data) => {
+          this.progress = data.progress;
+          if (data.text) this.statusText = data.text;
+        });
+      }
+      
+      try {
+        const result = await window.electronAPI.importLegacyDb();
+        
+        if (result.success) {
+          this.isImporting = false;
+          this.progress = 100;
+          this.statusText = "Importação concluída! Finalizando...";
+          
+          await window.electronAPI.saveLocalDb("system_first_boot_complete", { complete: true });
+          
+          setTimeout(() => {
+            this.isOpen = false;
+            this.$emit("boot-complete");
+            window.location.reload();
+          }, 1500);
+        } else {
+          throw new Error(result.message || "Falha na importação");
+        }
+      } catch (err) {
+        console.error("[LegacyImport] Erro:", err);
+        this.isImporting = false;
+        this.statusText = `Erro: ${err.message}`;
+        this.hasError = true;
+      }
+    },
+    async skipLegacyImport() {
+      this.showLegacyOption = false;
+      await this.runFirstBootSync();
+    },
     async downloadCoverImage(urlPath, filename) {
       if (window.electronAPI && urlPath) {
         const fullUrl = `${$path.file(urlPath)}`;
-        await window.electronAPI.downloadMedia(fullUrl, 'covers', filename);
+        await window.electronAPI.downloadMedia(fullUrl, "covers", filename);
       }
     },
     async runFirstBootSync() {
@@ -201,7 +319,7 @@ export default {
             
             setTimeout(() => {
               this.isOpen = false;
-              this.$emit('boot-complete');
+              this.$emit("boot-complete");
               // Auto-reload the app so all pre-loaded modules (like sync) detect the new images
               window.location.reload();
             }, 1000);
@@ -215,8 +333,8 @@ export default {
         this.statusText = "Erro na extração. Tente novamente.";
         this.hasError = true;
       }
-    }
-  }
+    },
+  },
 };
 </script>
 
