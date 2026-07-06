@@ -1,4 +1,12 @@
 {
     "title": "Colecciones",
-    "all_collections": "Todas las Colecciones"
+    "all_collections": "Todas las Colecciones",
+    "inputs": {
+        "search": "Buscar canción..."
+    },
+    "status": {
+        "indexing": "Construyendo índice de búsqueda...",
+        "no_results": "Ninguna canción encontrada",
+        "no_albums": "Ninguna colección disponible"
+    }
 }

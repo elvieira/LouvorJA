@@ -2,7 +2,7 @@
   <v-slide-y-reverse-transition>
     <div v-if="module?.show" class="module-full-page dashboard-home d-flex flex-column" :style="`z-index: 100;`">
       <!-- Cabeçalho Integrado do Álbum -->
-      <div class="search-header pb-0 flex-shrink-0" style="padding-top: 24px; padding-left: 24px; padding-right: 24px; display: flex; align-items: center;">
+      <div class="search-header pb-0 flex-shrink-0" style="padding-top: 24px; padding-left: 24px; padding-right: 24px; display: flex; align-items: center; flex-wrap: wrap; gap: 8px;">
         <MenuToggleButton style="margin-right: 16px;" @toggle-sidebar="toggleSidebar" />
         <v-btn
           icon="mdi-arrow-left"
@@ -208,6 +208,57 @@ export default {
   
   .music-actions {
     min-width: 80px;
+  }
+}
+
+/* === MOBILE RESPONSIVENESS === */
+@media (max-width: 600px) {
+  .search-header {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+    padding-top: 16px !important;
+  }
+
+  .album-cover-box {
+    width: 40px !important;
+    height: 40px !important;
+  }
+
+  .section-title {
+    font-size: 18px !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: calc(100vw - 180px);
+  }
+
+  .modern-hymnal-table .music-item {
+    padding: 10px 12px;
+  }
+
+  .modern-hymnal-table .music-number {
+    font-size: 14px;
+    min-width: 32px;
+  }
+
+  .modern-hymnal-table .music-info .music-title {
+    font-size: 14px;
+  }
+
+  .modern-hymnal-table .music-duration {
+    font-size: 12px;
+    min-width: 45px;
+    padding-right: 8px !important;
+  }
+
+  .modern-hymnal-table .music-actions {
+    min-width: 44px;
+  }
+}
+
+@media (max-width: 360px) {
+  .modern-hymnal-table .music-duration {
+    display: none;
   }
 }
 </style>

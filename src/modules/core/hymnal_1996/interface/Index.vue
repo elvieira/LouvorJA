@@ -2,7 +2,7 @@
   <v-slide-y-reverse-transition>
     <div v-if="module?.show" class="module-full-page dashboard-home d-flex flex-column">
       <!-- Cabeçalho Integrado do Módulo -->
-      <div class="search-header pb-0 flex-shrink-0" style="padding-top: 24px; padding-left: 24px; padding-right: 24px; display: flex; align-items: center;">
+      <div class="search-header pb-0 flex-shrink-0" style="padding-top: 24px; padding-left: 24px; padding-right: 24px; display: flex; align-items: center; flex-wrap: wrap; gap: 12px;">
         <MenuToggleButton style="margin-right: 16px;" @toggle-sidebar="toggleSidebar" />
         
         <div class="d-flex align-center mr-auto">
@@ -14,7 +14,7 @@
           </h2>
         </div>
 
-        <div class="search-bar ml-4" style="max-width: 400px; flex: 1;">
+        <div class="search-bar ml-4" style="max-width: 400px; flex: 1; min-width: 200px;">
           <v-text-field
             v-model="search"
             :placeholder="t('inputs.search')"
@@ -268,6 +268,54 @@ export default {
   
   .music-actions {
     min-width: 80px;
+  }
+}
+
+/* === MOBILE RESPONSIVENESS === */
+@media (max-width: 600px) {
+  .search-header {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+    padding-top: 16px !important;
+  }
+
+  .module-icon-box {
+    width: 40px;
+    height: 40px;
+  }
+
+  .section-title {
+    font-size: 20px !important;
+  }
+
+  .modern-hymnal-table .music-item {
+    padding: 10px 12px;
+  }
+
+  .modern-hymnal-table .music-number {
+    font-size: 14px;
+    min-width: 32px;
+    margin-right: 10px;
+  }
+
+  .modern-hymnal-table .music-info .music-title {
+    font-size: 14px;
+  }
+
+  .modern-hymnal-table .music-duration {
+    font-size: 12px;
+    min-width: 45px;
+    padding-right: 8px !important;
+  }
+
+  .modern-hymnal-table .music-actions {
+    min-width: 44px;
+  }
+}
+
+@media (max-width: 360px) {
+  .modern-hymnal-table .music-duration {
+    display: none;
   }
 }
 </style>

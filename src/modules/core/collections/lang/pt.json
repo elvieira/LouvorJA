@@ -1,4 +1,12 @@
 {
     "title": "Coletâneas",
-    "all_collections": "Todas as Coletâneas"
+    "all_collections": "Todas as Coletâneas",
+    "inputs": {
+        "search": "Buscar música..."
+    },
+    "status": {
+        "indexing": "Construindo índice de busca...",
+        "no_results": "Nenhuma música encontrada",
+        "no_albums": "Nenhuma coletânea disponível"
+    }
 }

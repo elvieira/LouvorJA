@@ -3,7 +3,7 @@
     <div v-if="module?.show" class="module-full-page dashboard-home d-flex flex-column">
       
       <!-- Cabeçalho Integrado -->
-      <div class="search-header pb-0 flex-shrink-0" style="padding-top: 24px; padding-left: 24px; padding-right: 24px; display: flex; align-items: center;">
+      <div class="search-header pb-0 flex-shrink-0" style="padding-top: 24px; padding-left: 24px; padding-right: 24px; display: flex; align-items: center; flex-wrap: wrap; gap: 12px;">
         <MenuToggleButton style="margin-right: 16px;" @toggle-sidebar="toggleSidebar" />
 
         <div class="d-flex align-center mr-auto">
@@ -642,3 +642,43 @@ export default {
   },
 };
 </script>
+
+<style lang="scss">
+/* === MOBILE RESPONSIVENESS === */
+@media (max-width: 600px) {
+  .search-header {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+    padding-top: 16px !important;
+  }
+
+  .module-icon-box {
+    width: 40px;
+    height: 40px;
+  }
+
+  .section-title {
+    font-size: 20px !important;
+  }
+
+  /* Reduz max-width dos selects no mobile */
+  .search-bar .v-autocomplete {
+    max-width: 120px !important;
+  }
+
+  .search-bar .v-autocomplete[style*="max-width: 350px"] {
+    max-width: 200px !important;
+  }
+}
+
+@media (max-width: 360px) {
+  .search-header {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+
+  .section-title {
+    font-size: 18px !important;
+  }
+}
+</style>

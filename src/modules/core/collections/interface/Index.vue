@@ -14,10 +14,10 @@
           </h2>
         </div>
 
-        <div class="search-bar ml-4 d-flex align-center" style="max-width: 500px; flex: 1; gap: 16px;">
+        <div class="search-bar ml-4 d-flex align-center flex-wrap" style="max-width: 500px; flex: 1; gap: 16px;">
           <v-text-field
             v-model="search"
-            :placeholder="$t('modules.hymnal_1996.inputs.search') || 'Buscar música...'"
+            :placeholder="t('inputs.search')"
             prepend-inner-icon="mdi-magnify"
             variant="solo"
             density="comfortable"
@@ -25,6 +25,7 @@
             clearable
             rounded
             @update:modelValue="onSearchInput"
+            style="flex: 1; min-width: 200px;"
           />
           <v-select
             v-model="id_category"
@@ -36,7 +37,7 @@
             hide-details
             rounded
             prepend-inner-icon="mdi-filter-variant"
-            style="max-width: 220px;"
+            style="flex: 1; min-width: 160px; max-width: 100%;"
           />
         </div>
       </div>
@@ -61,11 +62,11 @@
         <div v-if="search && search.length > 1" class="flex-grow-1 d-flex flex-column" style="min-height: 0;">
           <div v-if="indexing" class="d-flex flex-column align-center justify-center flex-grow-1 w-100">
             <v-progress-circular indeterminate color="var(--accent-blue)" size="48" class="mb-4" />
-            <p style="color: var(--sidebar-text-secondary); font-weight: 500;">Construindo índice de busca...</p>
+            <p style="color: var(--sidebar-text-secondary); font-weight: 500;">{{ t('status.indexing') }}</p>
           </div>
           <div v-else-if="filteredMusics.length === 0" class="d-flex flex-column align-center justify-center flex-grow-1 w-100">
             <v-icon size="48" color="var(--sidebar-text-secondary)" class="mb-3">mdi-magnify</v-icon>
-            <p style="color: var(--sidebar-text-secondary); font-weight: 500;">Nenhuma música encontrada</p>
+            <p style="color: var(--sidebar-text-secondary); font-weight: 500;">{{ t('status.no_results') }}</p>
           </div>
           <div v-else class="music-list flex-grow-1 d-flex flex-column" style="background: transparent; box-shadow: none; min-height: 0;">
             <v-table class="modern-hymnal-table flex-grow-1 d-flex flex-column" style="min-height: 0; background: transparent;">
@@ -95,7 +96,12 @@
         </div>
 
         <div v-else class="collections-page-scroll flex-grow-1" style="overflow-y: auto; overflow-x: hidden; padding: 16px 8px;">
-          <div class="collections-grid-wrap">
+          <!-- Empty state: nenhum album cadastrado -->
+          <div v-if="!loading && albums.length === 0" class="d-flex flex-column align-center justify-center" style="min-height: 300px;">
+            <v-icon size="56" color="var(--sidebar-text-secondary)" class="mb-4">mdi-playlist-music</v-icon>
+            <p style="color: var(--sidebar-text-secondary); font-weight: 500; font-size: 16px;">{{ t('status.no_albums') }}</p>
+          </div>
+          <div v-else class="collections-grid-wrap">
             <div 
               v-for="album in albums" 
               :key="album.id_album"
@@ -343,6 +349,49 @@ export default {
     min-width: 0;
     flex-shrink: 1;
     margin: 0;
+    cursor: pointer;
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    background: var(--card-bg);
+    box-shadow: var(--shadow);
+    transition: var(--transition);
+
+    &:hover {
+      box-shadow: var(--shadow-hover);
+      transform: translateY(-2px);
+    }
+  }
+
+  .card-image {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    background: var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .card-content {
+    padding: 12px 14px;
+  }
+
+  .card-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--sidebar-text);
+    margin: 0 0 4px 0;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .card-stats {
+    font-size: 13px;
+    color: var(--sidebar-text-secondary);
+    margin: 0;
   }
 }
 
@@ -376,7 +425,61 @@ export default {
     background: transparent !important;
     border-spacing: 0;
   }
+}
 
+/* === MOBILE RESPONSIVENESS - Search Header === */
+@media (max-width: 600px) {
+  .search-header {
+    flex-wrap: wrap;
+    gap: 12px;
+    padding-top: 16px !important;
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+  
+  .search-header .d-flex.align-center.mr-auto {
+    width: 100%;
+    justify-content: space-between;
+    margin-right: 0;
+  }
+  
+  .search-header .search-bar {
+    width: 100%;
+    max-width: 100% !important;
+    flex: 1 1 100%;
+    order: 2;
+  }
+  
+  .search-header .search-bar .v-field {
+    width: 100%;
+  }
+  
+  .search-header .v-select {
+    width: 100%;
+    max-width: 100% !important;
+  }
+  
+  .module-icon-box {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .section-title {
+    font-size: 20px !important;
+  }
+}
+
+/* === MOBILE RESPONSIVENESS - Collections grid extra small === */
+@media (max-width: 360px) {
+  .collections-grid-wrap {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)) !important;
+    gap: 8px !important;
+    padding: 0 4px 8px 4px !important;
+  }
+}
+
+/* === Continuacao do .modern-hymnal-table (regras internas) === */
+.modern-hymnal-table {
   tr:hover td {
     background: transparent !important;
   }
