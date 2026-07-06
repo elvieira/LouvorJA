@@ -1,0 +1,12 @@
+{
+  "id": "random",
+  "name": "Sorteio",
+  "version": "1.0.0",
+  "description": "Sorteio animado de nomes e números com suporte a projeção em segunda tela.",
+  "author": "elvieira",
+  "category": "utilities",
+  "icon": "mdi-ticket-confirmation",
+  "minAppVersion": "1.0.0",
+  "dependencies": [],
+  "permissions": []
+}
