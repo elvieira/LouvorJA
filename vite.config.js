@@ -67,6 +67,23 @@ export default defineConfig(({ mode }) => {
       "process.env": {},
       __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: "true",
     },
+    server: {
+      proxy: {
+        "/database": {
+          target: "https://api.louvorja.com.br/json_db",
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/database/, ""),
+          headers: {
+            "Api-Token": env.VITE_API_TOKEN,
+          },
+        },
+        "/file-proxy": {
+          target: "https://api.louvorja.com.br/file",
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/file-proxy/, ""),
+        },
+      },
+    },
     resolve: {
       alias: {
         "@": fileURLToPath(new URL("./src", import.meta.url)),
