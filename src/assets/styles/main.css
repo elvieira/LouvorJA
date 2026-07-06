@@ -145,3 +145,80 @@ body {
         display: none !important;
     }
 }
+
+/* MOBILE RESPONSIVE BREAKPOINTS */
+@media (max-width: 600px) {
+    /* Cards de módulos no grid de apps */
+    .apps-grid {
+        display: grid !important;
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 4px !important;
+    }
+
+    /* Esconder toolbar vertical de módulos em fullscreen mobile */
+    .v-dialog--fullscreen .v-toolbar {
+        padding: 0 8px !important;
+    }
+
+    /* Reduzir padding em dialogs fullscreen */
+    .v-dialog--fullscreen .v-card-text {
+        padding: 8px !important;
+    }
+
+    /* Tabelas compactas em mobile */
+    .v-table .v-table__wrapper table {
+        font-size: 0.85rem !important;
+    }
+
+    /* Scroll horizontal nativo em tabelas que não cabem */
+    .v-table .v-table__wrapper {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+
+    /* Esconder colunas de ação em mobile */
+    th:last-child,
+    td:last-child {
+        min-width: 40px !important;
+    }
+
+    /* Textos truncados em mobile */
+    .text-truncate-mobile {
+        max-width: 120px;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+    }
+
+    /* Sidebar ocupa largura total em mobile */
+    .main-container {
+        margin-left: 0 !important;
+        transition: none !important;
+    }
+
+    /* Mini player responsivo */
+    .mini-player-popup {
+        left: 8px !important;
+        right: 8px !important;
+        bottom: 8px !important;
+    }
+
+    .mini-player-popup .v-card {
+        width: 100% !important;
+    }
+
+    /* Search header empilhado em mobile */
+    .search-header {
+        padding-left: 12px !important;
+        padding-right: 12px !important;
+    }
+
+    /* Module full page sem padding excessivo */
+    .module-full-page {
+        padding: 8px !important;
+    }
+
+    .module-full-page .music-list {
+        border-radius: 8px !important;
+    }
+}

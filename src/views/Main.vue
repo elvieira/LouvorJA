@@ -13,7 +13,7 @@
       <AppModules />
       
       <!-- TrayArea mantido (área de minimizados) -->
-      <AppTrayArea />
+      <AppTrayArea v-if="!is_mobile" />
 
       <!-- MINI PLAYER POPUP -->
       <transition name="fade-slide">
@@ -87,6 +87,9 @@ export default {
     };
   },
   computed: {
+    is_mobile() {
+      return this.$vuetify.display.width < 600;
+    },
     showMiniPlayer: {
       get() {
         return this.$appdata.get("modules.media.show_mini_player") !== false;

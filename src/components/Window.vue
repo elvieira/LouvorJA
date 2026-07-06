@@ -22,7 +22,7 @@
             <v-icon :icon="icon" />
           </div>
           <v-avatar
-            v-if="image && $vuetify.display.width > 500"
+            v-if="image && $vuetify.display.width > 600"
             class="ma-1"
             :size="imageSize ? imageSize : 65"
             rounded="0"

@@ -11,5 +11,6 @@
     "media",
     "lyric"
   ],
-  "permissions": []
+  "permissions": [],
+  "mobile": true
 }

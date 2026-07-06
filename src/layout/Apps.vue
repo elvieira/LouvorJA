@@ -34,15 +34,15 @@
                   "
                   @click="$modules.open(module_key)"
                   class="ma-2"
-                  :width="130"
+                  :width="is_mobile ? 'calc(33% - 12px)' : 130"
                 >
                   <div
                     class="d-flex flex-column align-center justify-center h-100"
                   >
                     <v-avatar class="ma-3" rounded="0" size="40">
-                      <v-icon :icon="module.icon" color="#FFFFFF" :size="40" />
+                      <v-icon :icon="module.icon" color="#FFFFFF" :size="is_mobile ? 28 : 40" />
                     </v-avatar>
-                    <div class="w-100">
+                    <div class="w-100" v-if="!is_mobile">
                       <v-card-title
                         class="text-caption text-center"
                         style="text-wrap: initial"
@@ -76,6 +76,9 @@ export default {
     },
   },
   computed: {
+    is_mobile() {
+      return this.$vuetify.display.width < 600;
+    },
     module_group() {
       return Object.entries(this.$modules.getGroups())
         .filter(([, value]) => Object.keys(value.modules).length > 0)

@@ -13,5 +13,6 @@
     "lyric",
     "album"
   ],
-  "permissions": []
+  "permissions": [],
+  "mobile": true
 }

@@ -17,7 +17,7 @@
   >
     <template v-slot:header>
       <div :class="classform.group">
-        <div :class="classform.group_item" style="flex-basis: 600px">
+        <div :class="classform.group_item" :style="{ 'flex-basis': $vuetify.display.width < 600 ? '100%' : '600px' }">
           <l-search
             v-model="search"
             :label="t('inputs.search')"
@@ -26,7 +26,7 @@
             :disabled-hint="t('inputs.search_disabled')"
           />
         </div>
-        <div :class="classform.group_item" style="flex-basis: 250px">
+        <div :class="classform.group_item" :style="{ 'flex-basis': $vuetify.display.width < 600 ? '100%' : '250px' }">
           <l-checkbox v-model="search_name" :label="t('inputs.filter_name')" />
           <l-checkbox
             v-model="search_lyric"
@@ -37,8 +37,8 @@
             :label="t('inputs.filter_album')"
           />
         </div>
-        <v-divider vertical />
-        <div :class="classform.group_item" style="flex-basis: 200px">
+        <v-divider v-if="$vuetify.display.width >= 600" vertical />
+        <div v-if="$vuetify.display.width >= 600" :class="classform.group_item" style="flex-basis: 200px">
           <div>
             <l-checkbox
               switch

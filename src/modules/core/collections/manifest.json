@@ -10,5 +10,6 @@
   "dependencies": [
     "album"
   ],
-  "permissions": []
+  "permissions": [],
+  "mobile": true
 }

@@ -8,5 +8,6 @@
   "icon": "mdi-book-cross",
   "minAppVersion": "2.0.0",
   "dependencies": [],
-  "permissions": []
+  "permissions": [],
+  "mobile": true
 }
