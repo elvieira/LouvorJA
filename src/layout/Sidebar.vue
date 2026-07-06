@@ -158,6 +158,10 @@ export default {
     isMobile() {
       return this.windowWidth <= 1024;
     },
+    isMobileViewport() {
+      // Breakpoint 768px conforme issue #57
+      return this.windowWidth <= 768;
+    },
     currentRoute() {
       return this.$route.name?.toLowerCase() || "";
     },
@@ -176,7 +180,7 @@ export default {
     moduleGroups() {
       const groups = this.$appdata.get("module_group") || {};
       const result = {};
-      
+
       // Adicionar ícones aos grupos
       const groupIcons = {
         musics: "mdi-play",
@@ -186,6 +190,10 @@ export default {
 
       for (const [key, group] of Object.entries(groups)) {
         if (group.modules && group.modules.length > 0) {
+          // Em mobile, ocultar grupo utilities inteiro (issue #57)
+          if (key === "utilities" && this.isMobileViewport) {
+            continue;
+          }
           result[key] = {
             ...group,
             icon: groupIcons[key] || "mdi-folder",
@@ -283,17 +291,22 @@ export default {
     shouldShowModule(moduleId) {
       const module = this.$appdata.get(`modules.${moduleId}`);
       if (!module) return false;
-      
+
       // Verifica idioma
       if (module.language && module.language !== this.language) {
         return false;
       }
-      
+
       // Verifica modo desenvolvimento
       if (module.development && !this.isDev) {
         return false;
       }
-      
+
+      // Bloqueia utilitarios em viewport mobile (issue #57)
+      if (this.isMobileViewport && module.category === "utilities") {
+        return false;
+      }
+
       return true;
     },
     getModuleTitle(moduleId) {

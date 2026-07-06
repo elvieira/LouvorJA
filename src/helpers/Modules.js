@@ -9,6 +9,12 @@ export default {
       return;
     }
 
+    // Bloqueia utilitarios em viewport mobile (issue #57)
+    if (this.isMobileBlocked(id)) {
+      console.warn(`Módulo ${id} bloqueado em viewport mobile`);
+      return;
+    }
+
     // Se o player de música está aberto e não minimizado, minimiza automaticamente
     const mediaShow = $appdata.get("modules.media.show");
     const mediaMinimized = $appdata.get("modules.media.minimized", false);
@@ -141,6 +147,17 @@ export default {
 
   check(id) {
     return $appdata.exists(`modules.${id}`);
+  },
+
+  isMobileBlocked(id) {
+    // Issue #57: utilitarios bloqueados em viewport <= 768px
+    if (typeof window === "undefined") return false;
+    if (window.innerWidth > 768) return false;
+
+    const module = $appdata.get(`modules.${id}`);
+    if (!module) return false;
+
+    return module.category === "utilities";
   },
 
   sort(modules, $t) {

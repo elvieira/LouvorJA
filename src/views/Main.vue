@@ -9,6 +9,19 @@
   <!-- Container principal com margem para sidebar -->
   <div class="main-container" :class="{ 'sidebar-open': sidebarOpen }" @toggle-sidebar="toggleSidebar">
     <v-main class="bg-main">
+      <!-- Banner informativo: utilitarios bloqueados em mobile (issue #57) -->
+      <v-banner
+        v-if="isMobileViewport"
+        lines="one"
+        color="info"
+        icon="mdi-monitor"
+        class="mobile-banner"
+      >
+        <v-banner-text>
+          {{ $t("messages.mobile_utilities_blocked") }}
+        </v-banner-text>
+      </v-banner>
+
       <!-- Módulos aparecem dentro do v-main (incluindo a Home) -->
       <AppModules />
       
@@ -89,6 +102,10 @@ export default {
   computed: {
     is_mobile() {
       return this.$vuetify.display.width < 600;
+    },
+    isMobileViewport() {
+      // Breakpoint 768px para bloquear utilitarios (issue #57)
+      return this.$vuetify.display.width <= 768;
     },
     showMiniPlayer: {
       get() {
@@ -285,5 +302,14 @@ main {
 .fade-slide-leave-to {
   opacity: 0;
   transform: translateY(20px) scale(0.95);
+}
+
+/* Banner mobile: utilitarios bloqueados (issue #57) */
+.mobile-banner {
+  flex-shrink: 0;
+}
+
+.mobile-banner :deep(.v-banner__content) {
+  font-size: 13px;
 }
 </style>
