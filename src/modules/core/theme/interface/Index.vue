@@ -2,14 +2,14 @@
   <v-slide-y-reverse-transition>
     <div v-if="module?.show" class="module-full-page dashboard-home d-flex flex-column bg-main">
       <!-- Cabeçalho -->
-      <div class="search-header pb-0 flex-shrink-0" style="padding-top: 24px; padding-left: 24px; padding-right: 24px; display: flex; align-items: center;">
-        <MenuToggleButton style="margin-right: 16px;" @toggle-sidebar="toggleSidebar" />
+      <div class="search-header pb-0 flex-shrink-0" style="padding-top: 24px; padding-left: 24px; padding-right: 24px; display: flex; align-items: center; flex-wrap: wrap; gap: 12px;">
+        <MenuToggleButton style="margin-right: 16px; flex-shrink: 0;" @toggle-sidebar="toggleSidebar" />
         
-        <div class="d-flex align-center mr-auto">
-          <div class="module-icon-box d-flex align-center justify-center mr-4" style="background: var(--accent-blue); color: white; width: 48px; height: 48px; border-radius: 12px;">
+        <div class="d-flex align-center mr-auto" style="min-width: 0;">
+          <div class="module-icon-box d-flex align-center justify-center mr-4" style="background: var(--accent-blue); color: white; width: 48px; height: 48px; border-radius: 12px; flex-shrink: 0;">
              <v-icon :icon="manifest.icon || 'mdi-cog'" size="24" />
           </div>
-          <h2 class="section-title mb-0" style="color: var(--sidebar-text); font-size: 24px; font-weight: 600; line-height: 1;">
+          <h2 class="section-title mb-0" style="color: var(--sidebar-text); font-size: 24px; font-weight: 600; line-height: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
             Configurações Gerais
           </h2>
         </div>
@@ -25,7 +25,7 @@
             <v-icon color="primary" class="mr-3" size="22">mdi-palette-outline</v-icon> Aparência
           </h3>
           <v-card class="settings-card rounded-xl" flat style="background: var(--card-bg); box-shadow: var(--shadow);">
-            <v-card-text class="pa-6 d-flex flex-column" style="gap: 28px;">
+            <v-card-text class="pa-4 pa-md-6 d-flex flex-column" style="gap: 28px;">
             
             <!-- Modo Claro / Escuro -->
             <div>
@@ -35,13 +35,13 @@
                 color="primary"
                 variant="tonal"
                 mandatory
-                class="rounded-lg"
+                class="rounded-lg settings-theme-toggle"
                 style="height: 44px;"
               >
-                <v-btn value="light" class="px-6">
+                <v-btn value="light" class="px-4 px-md-6">
                   <v-icon start>mdi-white-balance-sunny</v-icon> Modo Claro
                 </v-btn>
-                <v-btn value="dark" class="px-6">
+                <v-btn value="dark" class="px-4 px-md-6">
                   <v-icon start>mdi-moon-waning-crescent</v-icon> Modo Escuro
                 </v-btn>
               </v-btn-toggle>
@@ -56,7 +56,7 @@
             <v-icon color="primary" class="mr-3" size="22">mdi-earth</v-icon> Geral
           </h3>
           <v-card class="settings-card rounded-xl" flat style="background: var(--card-bg); box-shadow: var(--shadow);">
-            <v-card-text class="pa-6">
+            <v-card-text class="pa-4 pa-md-6">
             <v-row>
               <v-col cols="12" md="6">
                 <div class="text-subtitle-2 font-weight-bold mb-2" style="color: var(--sidebar-text-secondary);">Idioma</div>
@@ -80,7 +80,7 @@
             <v-icon color="primary" class="mr-3" size="22">mdi-monitor-dashboard</v-icon> Projeção & Sistema
           </h3>
           <v-card class="settings-card rounded-xl" flat style="background: var(--card-bg); box-shadow: var(--shadow);">
-            <v-card-text class="pa-6">
+            <v-card-text class="pa-4 pa-md-6">
              <v-switch
                 v-model="hardware_accel"
                 color="primary"
@@ -168,5 +168,21 @@ export default {
 }
 .settings-section h3 {
   opacity: 0.9;
+}
+</style>
+
+<style>
+.settings-theme-toggle .v-btn {
+  font-size: 0.85rem;
+}
+@media (max-width: 600px) {
+  .settings-theme-toggle .v-btn {
+    font-size: 0.75rem;
+    padding: 0 8px !important;
+  }
+  .settings-container {
+    padding: 16px 16px !important;
+    gap: 24px !important;
+  }
 }
 </style>
