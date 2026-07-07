@@ -162,17 +162,15 @@ export default {
 
     window.addEventListener("message", (event) => {
       if (event.origin === window.location.origin) {
+        if (event.data?.action === "popup-bounds") {
+          this.$popup.saveSlotBounds(event.data.slot, event.data.bounds);
+          return;
+        }
         if (event.data === "mounted") {
-          const popupSource = event.source;
-          if (popupSource) {
-            const data = this.$appdata.getFlatten();
-            Object.keys(data).map((item) => {
-              popupSource.postMessage(
-                { param: item, value: data[item] },
-                window.location.origin,
-              );
-            });
+          if (event.source) {
+            this.$popup.syncStateTo(event.source);
           }
+          this.$popup.scheduleSync();
         }
       }
     });

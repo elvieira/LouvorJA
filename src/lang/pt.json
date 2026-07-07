@@ -32,6 +32,12 @@
             "alerts": {
                 "not_found": "Não foi possível localizar o arquivo para exibir essas informações!"
             }
+        },
+        "popup_count_selector": {
+            "tooltip": "Número de telas de projeção"
+        },
+        "popup_controls": {
+            "close_all": "Fechar todas as telas"
         }
     },
     "alert": {

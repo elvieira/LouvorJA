@@ -10,5 +10,8 @@
     "system_theme": "Tema del Sistema",
     "light_mode": "Modo Claro",
     "dark_mode": "Modo Oscuro",
-    "under_construction": "En Construcción"
+    "under_construction": "En Construcción",
+    "popup_screens": "Pantallas de Proyección",
+    "popup_screens_desc": "Cantidad de ventanas popup al proyectar",
+    "popup_count_label": "Número de pantallas"
 }

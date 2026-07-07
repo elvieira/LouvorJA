@@ -1,10 +1,11 @@
 import store from "@/store";
+import { getPopupRefs, setPopupRefs } from "@/helpers/PopupRegistry";
 
 export default {
   set(param, value) {
     store.commit("setData", [param, value]);
 
-    const popups = this.get("popups") || [];
+    const popups = getPopupRefs();
     const singlePopup = this.get("popup");
     if (singlePopup && !popups.includes(singlePopup)) {
       popups.push(singlePopup);
@@ -30,7 +31,8 @@ export default {
       });
 
       if (activePopups.length !== popups.length) {
-        this.set("popups", activePopups);
+        setPopupRefs(activePopups);
+        this.set("popups", activePopups.length ? activePopups : null);
         this.set("popup", activePopups.length > 0 ? activePopups[0] : null);
       }
     }

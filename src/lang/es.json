@@ -32,6 +32,12 @@
             "alerts": {
                 "not_found": "¡No se pudo encontrar el archivo para mostrar esta información!"
             }
+        },
+        "popup_count_selector": {
+            "tooltip": "Número de pantallas de proyección"
+        },
+        "popup_controls": {
+            "close_all": "Cerrar todas las pantallas"
         }
     },
     "alert": {

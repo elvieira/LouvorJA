@@ -99,8 +99,43 @@
           <!-- Projeção & Telas -->
           <v-tabs-window-item value="projection" class="h-100">
             <div class="h-100 overflow-auto px-6 pb-6">
-              <div class="settings-container mx-auto pb-4" style="max-width: 600px;">
-                <v-card class="settings-card rounded-xl pa-2 mb-6" flat style="background: var(--card-bg); box-shadow: var(--shadow);">
+              <div class="settings-container mx-auto pb-4 d-flex flex-column" style="max-width: 600px; gap: 24px;">
+                <v-card class="settings-card rounded-xl pa-2" flat style="background: var(--card-bg); box-shadow: var(--shadow);">
+                  <v-card-text class="pa-6">
+                    <div class="d-flex align-center mb-6">
+                      <v-icon color="primary" class="mr-3" size="28">mdi-monitor-multiple</v-icon>
+                      <div>
+                        <h3 class="font-weight-bold" style="color: var(--sidebar-text); font-size: 1.1rem; line-height: 1.2;">{{ t('popup_screens') }}</h3>
+                        <div class="text-caption" style="color: var(--sidebar-text-secondary);">{{ t('popup_screens_desc') }}</div>
+                      </div>
+                    </div>
+
+                    <div class="d-flex align-center justify-space-between mb-3">
+                      <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text);">{{ t('popup_count_label') }}</span>
+                      <v-chip size="small" variant="tonal" color="primary" class="font-weight-bold">{{ popup_count }}</v-chip>
+                    </div>
+                    <div class="d-flex align-center" style="gap: 12px;">
+                      <v-btn icon size="small" variant="tonal" color="primary" :disabled="popup_count <= 1" @click="popup_count = Math.max(1, popup_count - 1)">
+                        <v-icon size="18">mdi-minus</v-icon>
+                      </v-btn>
+                      <v-slider
+                        v-model="popup_count"
+                        :min="1"
+                        :max="6"
+                        :step="1"
+                        color="primary"
+                        track-color="grey-lighten-3"
+                        hide-details
+                        class="flex-grow-1"
+                      />
+                      <v-btn icon size="small" variant="tonal" color="primary" :disabled="popup_count >= 6" @click="popup_count = Math.min(6, popup_count + 1)">
+                        <v-icon size="18">mdi-plus</v-icon>
+                      </v-btn>
+                    </div>
+                  </v-card-text>
+                </v-card>
+
+                <v-card class="settings-card rounded-xl pa-2" flat style="background: var(--card-bg); box-shadow: var(--shadow);">
                   <v-card-text class="pa-6 d-flex flex-column" style="gap: 16px;">
                     <v-switch
                       v-model="hardware_accel"
@@ -156,6 +191,23 @@ export default {
       },
       set(mode) {
         this.setTheme(mode);
+      },
+    },
+    popup_count: {
+      get() {
+        const value = this.$userdata.get("modules.config.popup_count");
+        return value ?? 2;
+      },
+      set(value) {
+        const count = Math.min(6, Math.max(1, parseInt(value, 10) || 2));
+        this.$userdata.set("modules.config.popup_count", count);
+
+        const hasPopups = (this.$appdata.get("popups") || []).some(
+          (p) => p && !p.closed,
+        );
+        if (hasPopups) {
+          this.$popup.syncWindows();
+        }
       },
     },
   },

@@ -64,6 +64,10 @@ export default {
         lazy_load: true,
         fade_audio: true,
       },
+      config: {
+        popup_count: 2,
+        popup_layout: {},
+      },
     },
   },
 };
