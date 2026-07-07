@@ -32,7 +32,8 @@ export default {
       return this.$appdata.get("is_mobile");
     },
     is_popup_opened: function () {
-      return !!this.$appdata.get("popup");
+      const popups = this.$appdata.get("popups") || [];
+      return popups.some((p) => p && !p.closed);
     },
     popup_module: function () {
       return this.$appdata.get("popup_module");
