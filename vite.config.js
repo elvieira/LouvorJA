@@ -68,6 +68,7 @@ export default defineConfig(({ mode }) => {
       __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: "true",
     },
     server: {
+      cors: true,
       proxy: {
         "/database": {
           target: "https://api.louvorja.com.br/json_db",
