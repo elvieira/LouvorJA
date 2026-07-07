@@ -15,8 +15,8 @@
           </h2>
         </div>
 
-        <div class="search-bar ml-4 d-flex align-center" style="flex: 1; justify-content: flex-end; gap: 16px;">
-          <!-- Na direita do cabeçalho, os selects de versão e navegação para mobile -->
+        <div class="search-bar ml-4 d-flex align-center flex-wrap" style="flex: 1; justify-content: flex-end; gap: 12px;">
+          <!-- Na direita do cabecalho, os selects de versao e navegacao para mobile -->
           <v-autocomplete
             v-if="compact"
             v-model="bible.id_bible_book"
@@ -25,7 +25,7 @@
             density="comfortable"
             variant="solo"
             rounded
-            style="max-width: 150px;"
+            style="max-width: 150px; flex: 1; min-width: 100px;"
           />
           <v-autocomplete
             v-if="compact"
@@ -35,7 +35,7 @@
             density="comfortable"
             variant="solo"
             rounded
-            style="max-width: 100px;"
+            style="max-width: 100px; flex: 1; min-width: 80px;"
           />
           <v-autocomplete
             v-model="bible.id_bible_version"
@@ -44,14 +44,14 @@
             density="comfortable"
             variant="solo"
             rounded
-            style="max-width: 350px;"
+            style="max-width: 350px; flex: 1; min-width: 150px;"
             prepend-inner-icon="mdi-book-open-page-variant"
           />
         </div>
       </div>
 
-      <!-- Área de Conteúdo -->
-      <div class="content-main d-flex flex-row flex-grow-1" style="overflow: hidden; padding: 24px; min-height: 0; gap: 24px;">
+      <!-- Area de Conteudo -->
+      <div class="content-main bible-layout d-flex flex-row flex-grow-1" style="overflow: hidden; padding: 24px; min-height: 0; gap: 24px;">
         
         <!-- Coluna da Esquerda (Livros e Capítulos) -->
         <div v-if="!compact" class="bible-navigation d-flex flex-row flex-shrink-0" style="width: 40%; min-width: 350px; max-width: 400px; background: var(--card-bg, #fff); border-radius: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid var(--border-color, rgba(0,0,0,0.05)); min-height: 0;">
@@ -659,15 +659,63 @@ export default {
 
   .section-title {
     font-size: 20px !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: calc(100vw - 160px);
+  }
+
+  /* Search bar ocupa largura total em mobile */
+  .search-bar {
+    width: 100% !important;
+    margin-left: 0 !important;
   }
 
   /* Reduz max-width dos selects no mobile */
   .search-bar .v-autocomplete {
-    max-width: 120px !important;
+    max-width: 100% !important;
   }
 
-  .search-bar .v-autocomplete[style*="max-width: 350px"] {
-    max-width: 200px !important;
+  /* Bible navigation em compact: layout horizontal empilhavel */
+  .bible-navigation {
+    border-radius: 16px !important;
+  }
+
+  .bible-navigation .books-col {
+    width: 50% !important;
+  }
+
+  .bible-navigation .chapters-col {
+    width: 50% !important;
+  }
+
+  /* Verses col: reduz padding */
+  .bible-verses-col {
+    border-radius: 16px !important;
+  }
+
+  .bible-verses-col .verse-item {
+    padding: 4px 8px !important;
+  }
+
+  .bible-verses-col .verse-text {
+    font-size: 1rem !important;
+  }
+
+  /* Verse header: empilha titulo e botoes */
+  .bible-verses-col > div:first-child {
+    padding: 12px !important;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .bible-verses-col > div:first-child h3 {
+    width: 100%;
+    margin-bottom: 4px;
+  }
+
+  .bible-verses-col > div:first-child .v-divider--vertical {
+    display: none;
   }
 }
 

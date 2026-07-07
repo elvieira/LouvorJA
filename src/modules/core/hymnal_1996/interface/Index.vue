@@ -3,18 +3,18 @@
     <div v-if="module?.show" class="module-full-page dashboard-home d-flex flex-column">
       <!-- Cabeçalho Integrado do Módulo -->
       <div class="search-header pb-0 flex-shrink-0" style="padding-top: 24px; padding-left: 24px; padding-right: 24px; display: flex; align-items: center; flex-wrap: wrap; gap: 12px;">
-        <MenuToggleButton style="margin-right: 16px;" @toggle-sidebar="toggleSidebar" />
+        <MenuToggleButton style="margin-right: 16px; flex-shrink: 0;" @toggle-sidebar="toggleSidebar" />
         
-        <div class="d-flex align-center mr-auto">
+        <div class="d-flex align-center mr-auto" style="min-width: 0;">
           <div class="module-icon-box d-flex align-center justify-center mr-4">
              <v-icon :icon="module.icon" size="24" />
           </div>
-          <h2 class="section-title mb-0" style="color: var(--sidebar-text); font-size: 24px; font-weight: 600; line-height: 1;">
+          <h2 class="section-title mb-0" style="color: var(--sidebar-text); font-size: 24px; font-weight: 600; line-height: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
             {{ t('title') }}
           </h2>
         </div>
 
-        <div class="search-bar ml-4" style="max-width: 400px; flex: 1; min-width: 200px;">
+        <div class="search-bar" style="max-width: 400px; flex: 1; min-width: 200px;">
           <v-text-field
             v-model="search"
             :placeholder="t('inputs.search')"

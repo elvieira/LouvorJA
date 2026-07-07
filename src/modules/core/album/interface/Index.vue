@@ -12,12 +12,12 @@
           @click="$modules.close(module_id)"
         ></v-btn>
         
-        <div class="d-flex align-center mr-auto">
+        <div class="d-flex align-center mr-auto" style="min-width: 0;">
           <div class="album-cover-box d-flex align-center justify-center mr-4" :style="module?.data?.color ? `background: ${module.data.color}` : ''" style="width: 48px; height: 48px; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);">
              <v-img v-if="module?.data?.url_image" :src="$path.file(module.data.url_image)" cover style="width: 100%; height: 100%;" />
              <v-icon v-else size="24" color="white">mdi-album</v-icon>
           </div>
-          <h2 class="section-title mb-0" style="color: var(--sidebar-text); font-size: 24px; font-weight: 600; line-height: 1;">
+          <h2 class="section-title mb-0" style="color: var(--sidebar-text); font-size: 24px; font-weight: 600; line-height: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
             {{ module?.data?.name }}
           </h2>
         </div>

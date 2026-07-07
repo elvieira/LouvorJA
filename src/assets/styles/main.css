@@ -72,6 +72,8 @@ body {
     overflow: hidden !important;
     margin: 0 !important;
     padding: 0 !important;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 }
 
 /* SCROLL */
@@ -176,10 +178,45 @@ body {
         -webkit-overflow-scrolling: touch !important;
     }
 
-    /* Esconder colunas de ação em mobile */
-    th:last-child,
-    td:last-child {
+    /* Esconder colunas de acao em mobile - escopo mais especifico */
+    .modern-hymnal-table th:last-child,
+    .modern-hymnal-table td:last-child {
         min-width: 40px !important;
+    }
+
+    /* Bible module: empilha colunas em mobile */
+    .content-main.bible-layout {
+        flex-direction: column !important;
+        padding: 12px !important;
+        gap: 12px !important;
+    }
+
+    .content-main.bible-layout .bible-navigation {
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+        max-height: 45vh;
+        flex-shrink: 1 !important;
+    }
+
+    .content-main.bible-layout .bible-verses-col {
+        min-height: 300px;
+    }
+
+    /* Bible verses header: empilha botoes em mobile */
+    .content-main.bible-layout .bible-verses-col > div:first-child {
+        flex-wrap: wrap;
+        gap: 8px !important;
+    }
+
+    .content-main.bible-layout .bible-verses-col > div:first-child .d-flex.align-center {
+        width: 100%;
+        justify-content: flex-end;
+    }
+
+    /* Bible: reduz tamanho do preview de projecao em mobile */
+    .content-main.bible-layout .bible-verses-col > div:last-child {
+        height: 150px !important;
     }
 
     /* Textos truncados em mobile */
