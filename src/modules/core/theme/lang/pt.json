@@ -1,5 +1,14 @@
 {
     "title": "Aparência",
     "light-themes": "Temas Claros",
-    "dark-themes": "Temas Escuros"
+    "dark-themes": "Temas Escuros",
+    "main_title": "Configurações Gerais",
+    "tab_appearance": "Aparência",
+    "tab_general": "Geral",
+    "tab_media": "Mídia & Player",
+    "tab_projection": "Projeção & Telas",
+    "system_theme": "Tema do Sistema",
+    "light_mode": "Modo Claro",
+    "dark_mode": "Modo Escuro",
+    "under_construction": "Em Construção"
 }
