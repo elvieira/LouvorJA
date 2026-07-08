@@ -141,11 +141,38 @@
 
         <div class="bible-verses-col d-flex flex-column flex-grow-1" style="background: var(--card-bg, #fff); border-radius: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid var(--border-color, rgba(0,0,0,0.05)); min-height: 0;">
           <div class="pa-4 d-flex justify-space-between align-center" style="border-bottom: 1px solid var(--border-color, rgba(0,0,0,0.05));">
-            <h3 class="scriptural-reference-title" style="font-size: 1.3rem; color: var(--sidebar-text); font-weight: 600; line-height: 1;">
+            <h3 v-if="!showVerseSearch" class="scriptural-reference-title" style="font-size: 1.3rem; color: var(--sidebar-text); font-weight: 600; line-height: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
               {{ scripturalReference(bible) }}
             </h3>
+            <div v-else class="flex-grow-1 mr-4" style="min-width: 0;">
+              <v-text-field
+                v-model="verseSearchQuery"
+                placeholder="Pesquisar versículo"
+                variant="solo"
+                flat
+                bg-color="rgba(150, 150, 150, 0.1)"
+                style="border: 1px solid var(--border-color, rgba(0,0,0,0.05)); border-radius: 24px;"
+                density="compact"
+                hide-details
+                autofocus
+                clearable
+                rounded
+                @keydown.enter="applyVerseSearch"
+                @keydown.esc="showVerseSearch = false"
+              />
+            </div>
             
-            <div class="d-flex align-center ml-auto" style="gap: 8px;">
+            <div class="d-flex align-center ml-auto flex-shrink-0" style="gap: 8px;">
+              <v-btn
+                variant="tonal"
+                size="small"
+                icon
+                :color="showVerseSearch ? 'primary' : 'default'"
+                @click="showVerseSearch = !showVerseSearch"
+              >
+                <v-icon>{{ showVerseSearch ? 'mdi-close' : 'mdi-magnify' }}</v-icon>
+                <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">{{ showVerseSearch ? 'Fechar pesquisa' : 'Pesquisar versículo' }}</v-tooltip>
+              </v-btn>
               <v-btn
                 v-shortkey="['arrowleft']"
                 :disabled="!(select_bible?.verses && select_bible.verses.length > 0)"
@@ -183,19 +210,6 @@
                 <v-icon>mdi-eraser</v-icon>
                 <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">{{ t('clear') }}</v-tooltip>
               </v-btn>
-              <v-btn
-                variant="tonal"
-                color="primary"
-                size="small"
-                icon
-                class="mx-1 config-palette-btn"
-                @click="showConfigModal = true"
-              >
-                <v-icon>mdi-palette</v-icon>
-                <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">{{ t('customize') }}</v-tooltip>
-              </v-btn>
-              <v-divider vertical class="mx-2" />
-              <LScreenBtn module="bible" />
             </div>
           </div>
 
@@ -203,7 +217,7 @@
             <v-skeleton-loader v-if="loading_book || loading_verses" type="list-item-two-line@5" />
             <v-list v-else class="pa-0 bg-transparent">
               <v-list-item
-                v-for="(verse, num) in verses"
+                v-for="(verse, num) in filteredVerses"
                 :id="`listVerse_${num}`"
                 :key="num"
                 :active="bible.verses.includes(+num)"
@@ -227,7 +241,21 @@
             </v-list>
           </div>
 
-          <div style="height: 220px; flex-shrink: 0; background: #000;">
+          <div style="height: 220px; flex-shrink: 0; background: #000; position: relative;">
+            <div style="position: absolute; top: 12px; right: 12px; z-index: 10; display: flex; gap: 8px;">
+              <v-btn
+                variant="tonal"
+                color="primary"
+                size="small"
+                icon
+                class="config-palette-btn"
+                @click="showConfigModal = true"
+              >
+                <v-icon>mdi-palette</v-icon>
+                <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">{{ t('customize') }}</v-tooltip>
+              </v-btn>
+              <LScreenBtn module="bible" variant="tonal" color="white" class="text-white" />
+            </div>
             <Screen />
           </div>
         </div>
@@ -287,6 +315,8 @@ export default {
     last_verse: 1,
     last_bible_file: null,
     showConfigModal: false,
+    showVerseSearch: false,
+    verseSearchQuery: "",
   }),
   computed: {
     /* COMPUTEDS OBRIGATÓRIAS - INÍCIO */
@@ -336,6 +366,37 @@ export default {
     },
     super_compact() {
       return this.$vuetify.display.width <= 400;
+    },
+    filteredVerses() {
+      if (!this.showVerseSearch || !this.verseSearchQuery) return this.verses;
+      
+      const input = this.verseSearchQuery;
+      const selected = new Set();
+      const parts = input.split(',');
+      
+      for (const part of parts) {
+        if (part.includes('-')) {
+          const [startStr, endStr] = part.split('-');
+          const start = Number(startStr.trim());
+          const end = Number(endStr.trim());
+          if (!isNaN(start) && !isNaN(end)) {
+            const s = Math.min(start, end);
+            const e = Math.max(start, end);
+            for (let i = s; i <= e; i++) {
+              if (this.verses[i]) selected.add(i);
+            }
+          }
+        } else {
+          const num = Number(part.trim());
+          if (!isNaN(num) && this.verses[num]) selected.add(num);
+        }
+      }
+      
+      const filtered = {};
+      for (const num of Array.from(selected).sort((a, b) => a - b)) {
+        filtered[num] = this.verses[num];
+      }
+      return Object.keys(filtered).length > 0 ? filtered : this.verses;
     },
   },
   watch: {
@@ -429,7 +490,17 @@ export default {
           `${this.$i18n.locale}_bible_version`,
         );
         if (!this.bible.id_bible_version) {
-          await this.selVersion(this.versions[0].id_bible_version);
+          const savedVersion = this.$userdata.get(`modules.${this.module_id}.selected_version`);
+          let targetVersion = null;
+          
+          if (savedVersion && this.versions.find(v => v.id_bible_version === savedVersion)) {
+            targetVersion = savedVersion;
+          } else {
+            const ara = this.versions.find(v => v.abbreviation === 'ARA' || v.name === 'ARA');
+            targetVersion = ara ? ara.id_bible_version : this.versions[0].id_bible_version;
+          }
+          
+          await this.selVersion(targetVersion);
         }
       }
 
@@ -461,6 +532,7 @@ export default {
     async selVersion(id_bible_version) {
       if (id_bible_version) {
         this.bible.id_bible_version = id_bible_version;
+        this.$userdata.set(`modules.${this.module_id}.selected_version`, id_bible_version);
       }
       this.bible.version = this.version?.abbreviation;
       this.bible.verses = [];
@@ -499,6 +571,51 @@ export default {
       if (element) {
         element.scrollIntoView({ behavior: "smooth", block: "center" });
       }
+    },
+    applyVerseSearch() {
+      if (!this.verseSearchQuery) return;
+      
+      const input = this.verseSearchQuery;
+      const selected = new Set();
+      const parts = input.split(',');
+      
+      for (const part of parts) {
+        if (part.includes('-')) {
+          const [startStr, endStr] = part.split('-');
+          const start = Number(startStr.trim());
+          const end = Number(endStr.trim());
+          if (!isNaN(start) && !isNaN(end)) {
+            const s = Math.min(start, end);
+            const e = Math.max(start, end);
+            for (let i = s; i <= e; i++) {
+              if (this.verses[i]) selected.add(i);
+            }
+          }
+        } else {
+          const num = Number(part.trim());
+          if (!isNaN(num) && this.verses[num]) selected.add(num);
+        }
+      }
+      
+      const newVerses = Array.from(selected).sort((a, b) => a - b);
+      if (newVerses.length > 0) {
+        this.bible.verses = newVerses;
+        this.last_verse = newVerses[newVerses.length - 1];
+        
+        this.select_bible = Object.assign({}, this.bible);
+        this.select_bible.scriptural_reference = this.scripturalReference(this.select_bible);
+        this.select_bible.text = this.getSelectedVerses(this.select_bible.verses);
+        
+        this.$nextTick(() => {
+          const element = document.getElementById(`listVerse_${newVerses[0]}`);
+          if (element) {
+            element.scrollIntoView({ behavior: "smooth", block: "center" });
+          }
+        });
+      }
+      
+      this.verseSearchQuery = "";
+      this.showVerseSearch = false;
     },
     async selVerse(event, num) {
       if (event) {
