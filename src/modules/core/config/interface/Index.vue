@@ -857,25 +857,36 @@ export default {
       this.$appdata.set("is_dark", this.$vuetify.theme.global.current.dark);
     },
     resetHistory() {
-      if (confirm("Tem certeza que deseja resetar o histórico de coletâneas e músicas mais tocadas?")) {
-        this.$history.clearAll();
-        alert("Histórico resetado com sucesso! Atualize a página inicial para ver as mudanças.");
-      }
+      this.$alert.yesno(
+        { text: "Tem certeza que deseja resetar o histórico de coletâneas e músicas mais tocadas?", translate: false },
+        (resp) => {
+          if (resp === "yes") {
+            this.$history.clearAll();
+            this.$alert.info({ text: "Histórico resetado com sucesso! Atualize a página inicial para ver as mudanças.", translate: false });
+          }
+        }
+      );
     },
     async clearAllData() {
-      if (confirm("ATENÇÃO: Você tem certeza que deseja apagar todos os bancos de dados, capas, músicas e mídias baixadas do aplicativo?\n\nIsso exigirá um novo download de todos os arquivos essenciais e irá reiniciar o programa.")) {
-        if (window.electronAPI) {
-          const success = await window.electronAPI.clearAllData();
-          if (success) {
-            alert("Todos os arquivos locais foram removidos com sucesso. O aplicativo será recarregado agora.");
-            window.location.reload();
-          } else {
-            alert("Ocorreu um erro ao tentar limpar os dados.");
+      this.$alert.yesno(
+        { text: "ATENÇÃO: Você tem certeza que deseja apagar todos os bancos de dados, capas, músicas e mídias baixadas do aplicativo?<br><br>Isso exigirá um novo download de todos os arquivos essenciais e irá reiniciar o programa.", translate: false },
+        async (resp) => {
+          if (resp === "yes") {
+            if (window.electronAPI) {
+              const success = await window.electronAPI.clearAllData();
+              if (success) {
+                this.$alert.info({ text: "Todos os arquivos locais foram removidos com sucesso. O aplicativo será recarregado agora.", translate: false }, () => {
+                  window.location.reload();
+                });
+              } else {
+                this.$alert.error({ text: "Ocorreu um erro ao tentar limpar os dados.", translate: false });
+              }
+            } else {
+              this.$alert.error({ text: "Apenas disponível na versão desktop.", translate: false });
+            }
           }
-        } else {
-          alert("Apenas disponível na versão desktop.");
         }
-      }
+      );
     }
   },
 };
