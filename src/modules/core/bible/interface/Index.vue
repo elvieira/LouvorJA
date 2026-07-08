@@ -340,20 +340,40 @@ export default {
   },
   watch: {
     async show() {
-      if (this.show && this.lang != this.$i18n.locale) {
-        this.versions = [];
-        this.books = [];
-        this.verses = [];
-        this.bible = {
-          id_bible_version: null,
-          id_bible_book: null,
-          version: null,
-          book: null,
-          chapter: null,
-          verses: [],
-        };
-        this.select_bible = Object.assign({}, this.bible);
-        await this.loadData();
+      if (this.show) {
+        if (this.lang != this.$i18n.locale) {
+          this.versions = [];
+          this.books = [];
+          this.verses = [];
+          this.bible = {
+            id_bible_version: null,
+            id_bible_book: null,
+            version: null,
+            book: null,
+            chapter: null,
+            verses: [],
+          };
+          this.select_bible = Object.assign({}, this.bible);
+          await this.loadData();
+        }
+
+        // Recupera o scroll após o componente ser montado novamente no DOM
+        this.$nextTick(() => {
+          setTimeout(() => {
+            if (this.bible.id_bible_book) {
+              const el = document.getElementById(`listBook_${this.bible.id_bible_book}`);
+              if (el) el.scrollIntoView({ behavior: "auto", block: "center" });
+            }
+            if (this.bible.chapter) {
+              const el = document.getElementById(`listChapter_${this.bible.chapter}`);
+              if (el) el.scrollIntoView({ behavior: "auto", block: "center" });
+            }
+            if (this.last_verse) {
+              const el = document.getElementById(`listVerse_${this.last_verse}`);
+              if (el) el.scrollIntoView({ behavior: "auto", block: "center" });
+            }
+          }, 100);
+        });
       }
     },
     async "bible.id_bible_book"() {
