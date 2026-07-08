@@ -1014,7 +1014,7 @@ ipcMain.handle('download-update', async () => {
 
 ipcMain.handle('quit-and-install', () => {
   global.isQuitting = true;
-  autoUpdater.quitAndInstall(false, true);
+  autoUpdater.quitAndInstall(true, true);
 });
 
 // Configura o auto-updater quando o app estiver pronto
