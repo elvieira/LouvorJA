@@ -36,16 +36,7 @@
             Resultados da Pesquisa
           </h2>
           <div class="music-list flex-grow-1 d-flex flex-column" style="min-height: 0; background: transparent; box-shadow: none;">
-            <div v-if="searchData.data && searchData.data.length === 0" class="d-flex flex-column align-center justify-center flex-grow-1 w-100">
-              <v-icon size="48" color="var(--sidebar-text-secondary)" class="mb-3">
-                mdi-magnify
-              </v-icon>
-              <p style="color: var(--sidebar-text-secondary); font-weight: 500;">
-                Nenhuma música encontrada
-              </p>
-            </div>
             <LTable
-              v-else
               v-model="searchData"
               :search="searchQuery"
               :searchable_fields="{
@@ -56,7 +47,15 @@
               class="flex-grow-1 d-flex flex-column"
               style="background: transparent; min-height: 0;"
             >
-              <tbody class="music-list-container">
+              <div v-if="searchData.data && searchData.data.length === 0" class="d-flex flex-column align-center justify-center flex-grow-1 w-100" style="padding-top: 48px;">
+                <v-icon size="48" color="var(--sidebar-text-secondary)" class="mb-3">
+                  mdi-magnify
+                </v-icon>
+                <p style="color: var(--sidebar-text-secondary); font-weight: 500;">
+                  Nenhuma música encontrada
+                </p>
+              </div>
+              <tbody v-else class="music-list-container">
                 <tr 
                   v-for="item in searchData.data" 
                   :key="item.id_music"

@@ -30,7 +30,7 @@
       </div>
 
       <div class="content-main d-flex flex-column flex-grow-1" style="overflow: hidden; padding-top: 16px;">
-        <div v-if="!(search && data.filter_count <= 0)" class="music-list flex-grow-1 d-flex flex-column" style="background: transparent; box-shadow: none; min-height: 0;">
+        <div class="music-list flex-grow-1 d-flex flex-column" style="background: transparent; box-shadow: none; min-height: 0;">
           <LTable
             v-model="data"
             :search="search"
@@ -46,7 +46,15 @@
             class="modern-hymnal-table flex-grow-1 d-flex flex-column"
             style="min-height: 0;"
           >
-            <tbody class="music-list-container">
+            <div v-if="search && data.filter_count <= 0" class="d-flex flex-column align-center justify-center flex-grow-1 w-100 mt-8">
+              <v-icon size="48" color="var(--sidebar-text-secondary)" class="mb-3">
+                mdi-magnify
+              </v-icon>
+              <p style="color: var(--sidebar-text-secondary); font-weight: 500;">
+                Nenhuma música encontrada
+              </p>
+            </div>
+            <tbody v-else class="music-list-container">
               <tr
                 v-for="item in data.data"
                 :key="item.id_music"
@@ -76,15 +84,6 @@
               </tr>
             </tbody>
           </LTable>
-        </div>
-
-        <div v-if="search && data.filter_count <= 0" class="d-flex flex-column align-center justify-center flex-grow-1 w-100 mt-8">
-          <v-icon size="48" color="var(--sidebar-text-secondary)" class="mb-3">
-            mdi-magnify
-          </v-icon>
-          <p style="color: var(--sidebar-text-secondary); font-weight: 500;">
-            Nenhuma música encontrada
-          </p>
         </div>
       </div>
     </div>
