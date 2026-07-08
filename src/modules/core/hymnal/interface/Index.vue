@@ -46,7 +46,7 @@
             class="modern-hymnal-table flex-grow-1 d-flex flex-column"
             style="min-height: 0;"
           >
-            <div v-if="search && data.filter_count <= 0" class="d-flex flex-column align-center justify-center flex-grow-1 w-100 mt-8">
+            <div v-if="search && data.filter_count <= 0" class="d-flex flex-column align-center justify-center w-100" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none;">
               <v-icon size="48" color="var(--sidebar-text-secondary)" class="mb-3">
                 mdi-magnify
               </v-icon>
