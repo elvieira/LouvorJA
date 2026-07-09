@@ -5,7 +5,7 @@
       'item-completed': item.checked,
       'item-category': item.type === 'category',
     }"
-    :style="item.type !== 'category' ? { borderLeftColor: item.color || '#999' } : {}"
+      :style="item.type !== 'category' ? { borderLeftColor: item.color || 'var(--border-color)' } : {}"
 :draggable="!locked"
     @dragstart="$emit('drag-start', $event, item)"
     @dragend="$emit('drag-end', $event)"
@@ -66,7 +66,7 @@
     <div
       v-if="isYouTube"
       class="item-badge"
-      style="color: #FF0000; background: rgba(255, 0, 0, 0.08);"
+      style="color: #ff0000; background: rgba(255, 0, 0, 0.08);"
     >
       <v-icon size="x-small" icon="mdi-youtube" />
       YouTube
@@ -96,7 +96,7 @@
       :class="scheduledStatus.found ? 'badge-success' : 'badge-warning'"
     >
       <v-icon size="x-small" :icon="scheduledStatus.found ? 'mdi-file-check' : 'mdi-alert'" />
-      {{ scheduledStatus.found ? scheduledStatus.name : 'Sem arquivo' }}
+      {{ scheduledStatus.found ? scheduledStatus.name : $t('modules.liturgy.no_file') }}
     </div>
 
     <!-- Actions -->
@@ -178,7 +178,7 @@ export default {
     },
     subtitle() {
       if (this.item.type === "music" && this.item.choice) {
-        return "Escolher em tempo real";
+        return this.$t("modules.liturgy.choose_realtime");
       }
       if (this.item.type === "file" && this.item.filePath) {
         return this.item.filePath;
@@ -190,7 +190,7 @@ export default {
         if (this.scheduledStatus.found) {
           return `${this.scheduledStatus.categoryName}: ${this.scheduledStatus.name}`;
         }
-        return `${this.scheduledStatus.categoryName}: sem arquivo para esta data`;
+        return `${this.scheduledStatus.categoryName}: ${this.$t("modules.liturgy.no_file_for_date")}`;
       }
       return null;
     },

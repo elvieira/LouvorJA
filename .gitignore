@@ -29,3 +29,9 @@ pnpm-debug.log*
 *.sln
 *.sw?
 .hermes/
+
+# Local dev notes and storybook
+.dev-notes/
+storybook-static/
+.storybook/
+debug-storybook.log

@@ -42,6 +42,7 @@
           <div class="liturgy-main-col">
             <!-- Toolbar -->
             <div class="liturgy-toolbar">
+              <!-- Primary action -->
               <v-btn
                 color="primary"
                 variant="flat"
@@ -52,8 +53,9 @@
                 {{ t('add_item') }}
               </v-btn>
 
-              <div class="toolbar-spacer" />
+              <v-divider vertical class="mx-1" />
 
+              <!-- Edit mode toggle -->
               <v-btn
                 variant="text"
                 size="small"
@@ -64,45 +66,43 @@
                 {{ lockItems ? t('unlock_items') : t('lock_items') }}
               </v-btn>
 
+              <div class="toolbar-spacer" />
+
+              <!-- Item manipulation group -->
               <v-btn
                 variant="text"
                 size="small"
-                prepend-icon="mdi-content-copy"
+                icon="mdi-content-copy"
                 :disabled="currentDayItems.length === 0"
                 @click="copyItems"
-              >
-                {{ t('copy_items') }}
-              </v-btn>
+              />
 
               <v-btn
                 variant="text"
                 size="small"
-                prepend-icon="mdi-content-paste"
+                icon="mdi-content-paste"
                 :disabled="!clipboard || clipboard.length === 0"
                 @click="pasteItems"
-              >
-                {{ t('paste_items') }}
-              </v-btn>
+              />
 
               <v-btn
                 variant="text"
                 size="small"
-                prepend-icon="mdi-broom"
+                icon="mdi-broom"
                 color="error"
                 :disabled="currentDayItems.length === 0 || lockItems"
                 @click="clearDay"
-              >
-                {{ t('clear_day') }}
-              </v-btn>
+              />
 
+              <v-divider vertical class="mx-1" />
+
+              <!-- Scheduled items -->
               <v-btn
                 variant="text"
                 size="small"
-                prepend-icon="mdi-calendar-clock"
+                icon="mdi-calendar-clock"
                 @click="scheduledModalShow = true"
-              >
-                Agendados
-              </v-btn>
+              />
             </div>
 
             <!-- Items List -->
@@ -174,14 +174,14 @@
         <v-card rounded="lg">
           <v-card-title class="text-h6 d-flex align-center">
             <v-icon icon="mdi-calendar-clock" class="mr-2" />
-            Itens Agendados
+            {{ t('scheduled_items_title') }}
           </v-card-title>
           <v-card-text>
             <!-- Categories -->
             <div class="d-flex align-center mb-3">
               <v-text-field
                 v-model="newCategoryName"
-                label="Nova categoria (ex: Sermão, Escola Sabatina)"
+                :label="t('new_category')"
                 variant="outlined"
                 density="compact"
                 hide-details
@@ -203,14 +203,14 @@
             <v-divider class="mb-3" />
 
             <!-- Scheduled items by date -->
-            <div class="text-body-2 mb-2 mt-3">Agendar arquivo por data:</div>
+            <div class="text-body-2 mb-2 mt-3">{{ t('schedule_by_date') }}</div>
             <div class="d-flex align-center mb-2" style="flex-wrap: wrap; gap: 8px;">
               <v-select
                 v-model="newScheduledItem.categoryId"
                 :items="liturgyData.scheduledCategories"
                 item-title="name"
                 item-value="id"
-                label="Categoria"
+                :label="t('category_label')"
                 variant="outlined"
                 density="compact"
                 hide-details
@@ -222,14 +222,14 @@
                 variant="outlined"
                 density="compact"
                 hide-details
-                label="Data"
+                :label="t('date_label')"
                 style="max-width: 160px;"
               />
             </div>
             <div class="d-flex align-center mb-2" style="gap: 8px;">
               <v-text-field
                 v-model="newScheduledItem.name"
-                label="Nome do arquivo (ex: Sermão Pr. Silva)"
+                :label="t('file_name_placeholder')"
                 variant="outlined"
                 density="compact"
                 hide-details
@@ -242,11 +242,11 @@
                 style="height: 40px;"
                 @click="pickScheduledFile"
               >
-                Escolher
+                {{ t('choose') }}
               </v-btn>
               <v-btn color="primary" variant="flat" style="height: 40px;" @click="addScheduledItem" :disabled="!newScheduledItem.categoryId || !newScheduledItem.date">
                 <v-icon>mdi-plus</v-icon>
-                Agendar
+                {{ t('schedule') }}
               </v-btn>
             </div>
             <div v-if="newScheduledItem.filePath" class="text-caption mb-2 pa-2 rounded" style="background: rgba(0,0,0,0.05);">
@@ -266,7 +266,7 @@
           </v-card-text>
           <v-card-actions>
             <v-spacer />
-            <v-btn variant="text" @click="scheduledModalShow = false">Fechar</v-btn>
+            <v-btn variant="text" @click="scheduledModalShow = false">{{ t('close') }}</v-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
@@ -342,13 +342,13 @@ export default {
 
     days() {
       return [
-        { value: 1, label: this.t("sunday"),    icon: "mdi-calendar-today" },
-        { value: 2, label: this.t("monday"),    icon: "mdi-calendar-today" },
-        { value: 3, label: this.t("tuesday"),   icon: "mdi-calendar-today" },
-        { value: 4, label: this.t("wednesday"), icon: "mdi-calendar-today" },
-        { value: 5, label: this.t("thursday"),  icon: "mdi-calendar-today" },
-        { value: 6, label: this.t("friday"),    icon: "mdi-calendar-today" },
-        { value: 7, label: this.t("saturday"),  icon: "mdi-calendar-today" },
+        { value: 1, label: this.t("sunday"),    icon: "mdi-white-balance-sunny" },
+        { value: 2, label: this.t("monday"),    icon: "mdi-coffee-outline" },
+        { value: 3, label: this.t("tuesday"),   icon: "mdi-book-open-variant" },
+        { value: 4, label: this.t("wednesday"), icon: "mdi-calendar-star" },
+        { value: 5, label: this.t("thursday"),  icon: "mdi-bookmark-outline" },
+        { value: 6, label: this.t("friday"),    icon: "mdi-weather-sunset" },
+        { value: 7, label: this.t("saturday"),  icon: "mdi-church" },
       ];
     },
   },
@@ -460,7 +460,7 @@ export default {
         id: `sched_${Date.now()}`,
         categoryId: this.newScheduledItem.categoryId,
         date: this.newScheduledItem.date,
-        name: this.newScheduledItem.name || "Sem nome",
+        name: this.newScheduledItem.name || this.t("unnamed"),
         filePath: this.newScheduledItem.filePath || null,
       };
       this.liturgyData.scheduledItems.push(item);
@@ -482,7 +482,7 @@ export default {
 
     getCategoryName(catId) {
       const cat = this.liturgyData.scheduledCategories.find(c => c.id === catId);
-      return cat ? cat.name : "Desconhecida";
+      return cat ? cat.name : this.t("unknown_category");
     },
 
     getCategoryIcon(catId) {
@@ -498,13 +498,9 @@ export default {
       cultDate.setDate(today.getDate() + diff);
       const cultDateStr = cultDate.toISOString().slice(0, 10);
 
-      console.log("[Liturgia] resolveScheduledItem:", { categoryId, selectedDay: this.selectedDay, todayDay, cultDateStr });
-      console.log("[Liturgia] All scheduled items:", JSON.stringify(this.liturgyData.scheduledItems));
-
       const items = this.liturgyData.scheduledItems
         .filter(i => i.categoryId === categoryId && i.date <= cultDateStr)
         .sort((a, b) => b.date.localeCompare(a.date));
-      console.log("[Liturgia] Filtered items:", items);
       return items[0] || null;
     },
 
@@ -653,19 +649,11 @@ export default {
           window.electronAPI.openPath(item.filePath);
         }
       } else if (item.type === "scheduled") {
-        // Resolve the scheduled item by category + cult date
-        console.log("[Liturgia] Scheduled item clicked:", item);
         const resolved = this.resolveScheduledItem(item.scheduledCategoryId);
-        console.log("[Liturgia] Resolved:", resolved);
         if (resolved && resolved.filePath) {
-          console.log("[Liturgia] Opening file:", resolved.filePath);
           if (window.electronAPI && window.electronAPI.openPath) {
             window.electronAPI.openPath(resolved.filePath);
-          } else {
-            console.error("[Liturgia] electronAPI.openPath not available");
           }
-        } else {
-          console.warn("[Liturgia] No scheduled file resolved for category:", item.scheduledCategoryId);
         }
       }
     },
