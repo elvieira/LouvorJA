@@ -211,10 +211,22 @@
                   <div class="liturgy-item-number">
                     {{ getItemNumber(index) }}
                   </div>
-                  <v-icon :color="getTypeColor(element.type)" size="20" class="mr-3">
+                  <v-btn
+                    icon
+                    size="x-small"
+                    variant="text"
+                    :color="element.done ? 'success' : 'grey'"
+                    class="mr-2"
+                    @click.stop="toggleItemDone(index)"
+                  >
+                    <v-icon size="22">
+                      {{ element.done ? 'mdi-check-circle' : 'mdi-checkbox-blank-circle-outline' }}
+                    </v-icon>
+                  </v-btn>
+                  <v-icon :color="getTypeColor(element.type)" size="20" class="mr-3" :style="element.done ? 'opacity: 0.5;' : ''">
                     {{ getTypeIcon(element.type) }}
                   </v-icon>
-                  <div class="flex-grow-1 d-flex flex-column" style="min-width: 0;">
+                  <div class="flex-grow-1 d-flex flex-column" style="min-width: 0;" :style="element.done ? 'opacity: 0.5; text-decoration: line-through;' : ''">
                     <div class="font-weight-bold" style="font-size: 0.95rem; color: var(--sidebar-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                       {{ element.name ? element.name.replace(/^undefined\s*-\s*/, '') : '' }}
                     </div>
@@ -1047,6 +1059,11 @@ export default {
       this.addStep = 2;
       this.showAddMenu = true;
     },
+    toggleItemDone(index) {
+      const item = this.currentItems[index];
+      item.done = !item.done;
+      this.saveLiturgy();
+    },
     getItemNumber(index) {
       if (this.currentItems[index].type === 'category') return null;
       let count = 0;
@@ -1074,6 +1091,21 @@ export default {
     },
     selectItem(index) {
       this.selectedItemIndex = index;
+      const item = this.currentItems[index];
+
+      let changed = false;
+      if (!item.done) {
+        item.done = true;
+        changed = true;
+      }
+
+      if (this.isExecutable(item)) {
+        this.executeItem(item);
+      }
+
+      if (changed) {
+        this.saveLiturgy();
+      }
     },
 
     // ====== MUSIC SELECTOR ======
@@ -1218,17 +1250,42 @@ export default {
       this.$userdata.set(`modules.${this.module_id}.customLiturgies`, JSON.parse(JSON.stringify(this.customLiturgies)));
     },
     loadSavedLiturgies() {
+      let shouldClearChecks = !this.$appdata.get(`liturgy_checks_cleared`);
+
       const saved = this.$userdata.get(`modules.${this.module_id}.liturgies`);
       if (saved) {
+        if (shouldClearChecks) {
+          for (const day in saved) {
+            saved[day].forEach(item => {
+              if (item.done) item.done = false;
+            });
+          }
+        }
         this.liturgies = { ...this.liturgies, ...saved };
       }
+
       const savedNotes = this.$userdata.get(`modules.${this.module_id}.dayNotes`);
       if (savedNotes) {
         this.dayNotes = { ...this.dayNotes, ...savedNotes };
       }
+
       const savedCustom = this.$userdata.get(`modules.${this.module_id}.customLiturgies`);
       if (savedCustom && Array.isArray(savedCustom)) {
+        if (shouldClearChecks) {
+          savedCustom.forEach(custom => {
+            if (custom.items) {
+              custom.items.forEach(item => {
+                if (item.done) item.done = false;
+              });
+            }
+          });
+        }
         this.customLiturgies = savedCustom;
+      }
+
+      if (shouldClearChecks) {
+        this.saveLiturgy();
+        this.$appdata.set(`liturgy_checks_cleared`, true);
       }
     },
 

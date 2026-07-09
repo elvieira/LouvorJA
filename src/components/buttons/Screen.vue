@@ -8,7 +8,7 @@
     :class="{ 'rotate-icon': is_selected }"
     @click="popup()"
   >
-    <v-icon>mdi-open-in-new</v-icon>
+    <v-icon>mdi-presentation-play</v-icon>
     <v-tooltip
       activator="parent"
       location="top"
