@@ -61,7 +61,7 @@
             transform: 'translate(-50%, -50%)',
             zIndex: 10
           }"
-        ></div>
+        />
 
         <!-- Hour Hand -->
         <div 
@@ -77,7 +77,7 @@
             borderRadius: '4px',
             zIndex: 7
           }"
-        ></div>
+        />
 
         <!-- Minute Hand -->
         <div 
@@ -94,7 +94,7 @@
             borderRadius: '4px',
             zIndex: 8
           }"
-        ></div>
+        />
 
         <!-- Second Hand -->
         <div 
@@ -112,7 +112,7 @@
           }"
         >
           <!-- Tail of second hand -->
-          <div :style="{ width: '100%', height: '20%', background: '#ff3b30', position: 'absolute', top: '100%' }"></div>
+          <div :style="{ width: '100%', height: '20%', background: '#ff3b30', position: 'absolute', top: '100%' }" />
         </div>
 
         <!-- Clock Markers -->
@@ -138,11 +138,10 @@
               opacity: i % 3 === 0 ? 1 : 0.5,
               borderRadius: '2px'
             }"
-          ></div>
+          />
         </div>
       </div>
     </v-fade-transition>
-
   </div>
 </template>
 
@@ -153,8 +152,8 @@ export default {
     height: Number,
     preview: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
   },
   data: () => ({
     s_width: 0,
@@ -162,17 +161,17 @@ export default {
     timer: null,
     now: new Date(),
     defaultConfig: {
-      style: 'digital',
+      style: "digital",
       showSeconds: true,
       format24h: true,
-      bgColor: '#000000',
-      textColor: '#FFFFFF'
-    }
+      bgColor: "#000000",
+      textColor: "#FFFFFF",
+    },
   }),
   computed: {
     config() {
       // Allow receiving config from appdata directly
-      const appConfig = this.$appdata ? this.$appdata.get('clock_config') : null;
+      const appConfig = this.$appdata ? this.$appdata.get("clock_config") : null;
       return appConfig || this.defaultConfig;
     },
     digitalFontSize() {
@@ -186,20 +185,20 @@ export default {
     },
     formattedTime() {
       const opts = {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: !this.config.format24h
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: !this.config.format24h,
       };
       let timeString = this.now.toLocaleTimeString("pt-BR", opts);
       // Remove AM/PM from string if present (we show it manually)
-      timeString = timeString.replace(/[a-zA-Z\s]/g, '');
+      timeString = timeString.replace(/[a-zA-Z\s]/g, "");
       return timeString;
     },
     formattedSeconds() {
-      return this.now.getSeconds().toString().padStart(2, '0');
+      return this.now.getSeconds().toString().padStart(2, "0");
     },
     ampm() {
-      return this.now.getHours() >= 12 ? 'PM' : 'AM';
+      return this.now.getHours() >= 12 ? "PM" : "AM";
     },
     hourAngle() {
       const h = this.now.getHours() % 12;
@@ -215,7 +214,7 @@ export default {
       const s = this.now.getSeconds();
       const ms = this.now.getMilliseconds();
       return (s * 6) + (ms * 0.006);
-    }
+    },
   },
   mounted() {
     this.windowResize();

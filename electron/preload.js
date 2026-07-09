@@ -9,6 +9,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   checkMedia: (destFolderType, filename) => ipcRenderer.invoke('check-media', destFolderType, filename),
   deleteMedia: (destFolderType, filename) => ipcRenderer.invoke('delete-media', destFolderType, filename),
   
+  openFileDialog: (options) => ipcRenderer.invoke('open-file-dialog', options),
+  openExternal: (url) => ipcRenderer.invoke('open-external', url),
+  openPath: (filePath) => ipcRenderer.invoke('open-path', filePath),
   clearAllData: () => ipcRenderer.invoke('clear-all-data'),
   extractLocalDb: () => ipcRenderer.invoke('extract-local-db'),
   downloadDatabase: () => ipcRenderer.invoke('download-database'),

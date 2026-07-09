@@ -38,8 +38,8 @@ export default {
       color: "#0097d7",
       fontSizePc: 15,
       textTransform: "none",
-      animationSpeed: "normal"
-    }
+      animationSpeed: "normal",
+    },
   }),
   computed: {
     module_id() {
@@ -53,7 +53,7 @@ export default {
         currentDisplay: "",
         isDrawing: false,
       };
-    }
-  }
+    },
+  },
 };
 </script>

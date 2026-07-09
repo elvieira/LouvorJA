@@ -192,7 +192,7 @@ export default {
       },
     },
     updateStatus() {
-      return this.$appdata.get("modules.update.status") || 'idle';
+      return this.$appdata.get("modules.update.status") || "idle";
     },
     isMobile() {
       return this.windowWidth <= 1024;
@@ -207,12 +207,12 @@ export default {
       const modules = this.$appdata.get("modules") || {};
       const overlays = ["album", "media", "lyric"];
       
-      if (modules['sync']?.show) {
-        return 'sync';
+      if (modules["sync"]?.show) {
+        return "sync";
       }
       
       for (const [key, module] of Object.entries(modules)) {
-        if (module.show && !overlays.includes(key) && key !== 'sync') {
+        if (module.show && !overlays.includes(key) && key !== "sync") {
           return key;
         }
       }
@@ -250,11 +250,20 @@ export default {
         }
       });
       
+      const entries = Object.entries(allModules)
+        .filter(([key, module]) => !groupedModuleIds.has(key) && module.showInMainMenu)
+        .sort(([k1, v1], [k2, v2]) => {
+          if (k1 === 'dev' && k2 !== 'dev') return 1;
+          if (k2 === 'dev' && k1 !== 'dev') return -1;
+          
+          const t1 = v1?.title ? this.$t(v1.title).toLowerCase() : "";
+          const t2 = v2?.title ? this.$t(v2.title).toLowerCase() : "";
+          return t1.localeCompare(t2);
+        });
+        
       const result = {};
-      for (const [key, module] of Object.entries(allModules)) {
-        if (!groupedModuleIds.has(key) && module.showInMainMenu) {
-          result[key] = module;
-        }
+      for (const [key, module] of entries) {
+        result[key] = module;
       }
       
       return result;
@@ -274,6 +283,8 @@ export default {
   },
   beforeUnmount() {
     window.removeEventListener("resize", this.handleResize);
+  },
+  mounted() {
   },
   methods: {
     handleResize() {
@@ -344,9 +355,7 @@ export default {
     },
     openUpdateModule() {
       this.$modules.open("update");
-    }
-  },
-  mounted() {
+    },
   },
 };
 </script>

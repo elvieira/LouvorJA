@@ -1,0 +1,12 @@
+{
+  "id": "liturgy",
+  "name": "Liturgia",
+  "version": "1.0.0",
+  "description": "Organização do culto. Monte a programação da igreja com músicas, versículos, anotações e mídias na sequência desejada.",
+  "author": "elvieira",
+  "showInMainMenu": true,
+  "icon": "mdi-hands-pray",
+  "minAppVersion": "1.0.0",
+  "dependencies": [],
+  "permissions": []
+}

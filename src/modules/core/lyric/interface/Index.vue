@@ -1,17 +1,33 @@
 <template>
   <v-slide-y-reverse-transition>
     <div v-if="module?.show" class="module-full-page d-flex align-center justify-center bg-transparent" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 100; background: rgba(0,0,0,0.4) !important; backdrop-filter: blur(2px);">
-      <v-card class="rounded-xl overflow-hidden elevation-24" width="100%" max-width="450" style="background: var(--card-bg); max-height: 75vh; display: flex; flex-direction: column;">
+      <v-card
+        class="rounded-xl overflow-hidden elevation-24"
+        width="100%"
+        max-width="450"
+        style="background: var(--card-bg); max-height: 75vh; display: flex; flex-direction: column;"
+      >
         <v-card-text class="pa-0 d-flex flex-column" style="height: 100%; min-height: 0; overflow: hidden;">
           <div class="pa-6 pb-4 flex-shrink-0" style="background: rgba(0,0,0,0.02);">
             <div class="d-flex align-center justify-space-between mb-2">
               <div class="d-flex align-center">
-                <v-icon color="primary" size="32" class="mr-3">mdi-music-note-outline</v-icon>
-                <h2 class="text-h5 font-weight-bold mb-0" style="color: var(--sidebar-text);">{{ config?.title }}</h2>
+                <v-icon color="primary" size="32" class="mr-3">
+                  mdi-music-note-outline
+                </v-icon>
+                <h2 class="text-h5 font-weight-bold mb-0" style="color: var(--sidebar-text);">
+                  {{ config?.title }}
+                </h2>
               </div>
               <v-btn icon variant="text" @click="$media.closeLyric()">
                 <v-icon>mdi-close</v-icon>
-                <v-tooltip activator="parent" location="bottom" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">Fechar</v-tooltip>
+                <v-tooltip
+                  activator="parent"
+                  location="bottom"
+                  open-delay="300"
+                  content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+                >
+                  Fechar
+                </v-tooltip>
               </v-btn>
             </div>
             <p v-if="config?.subtitle || config?.track > 0" class="text-caption mb-0" style="color: var(--sidebar-text-secondary);">

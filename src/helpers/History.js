@@ -23,7 +23,7 @@ export default {
   addRecentCollection(data) {
     if (!data || !data.id) return;
 
-    let collections = $storage.get(RECENT_COLLECTIONS_KEY, []);
+    const collections = $storage.get(RECENT_COLLECTIONS_KEY, []);
 
     const filtered = collections.filter(
       (item) => !(item.id === data.id && item.type === data.type),

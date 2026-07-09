@@ -1,0 +1,72 @@
+{
+  "title": "Liturgia",
+  "subtitle": "Organização do Culto",
+  "add_item": "Adicionar Item",
+  "edit_item": "Editar Item",
+  "empty_list": "Nenhum item na liturgia",
+  "empty_list_hint": "Clique em \"Adicionar Item\" para começar a montar a programação do culto.",
+  "no_preview": "Selecione um item para visualizar",
+  "no_preview_hint": "Clique em um item da lista para ver a pré-visualização aqui.",
+  "notes": "Anotações",
+  "days": {
+    "sunday": "Domingo",
+    "monday": "Segunda",
+    "tuesday": "Terça",
+    "wednesday": "Quarta",
+    "thursday": "Quinta",
+    "friday": "Sexta",
+    "saturday": "Sábado",
+    "custom": "Avulsa"
+  },
+  "types": {
+    "annotation": "Anotação",
+    "category": "Categoria",
+    "music": "Música",
+    "verse": "Versículo",
+    "media": "Mídia",
+    "link": "Link"
+  },
+  "type_descriptions": {
+    "annotation": "Texto livre sem ação (ex: Oração, Doxologia)",
+    "category": "Separador visual de seção",
+    "music": "Selecione uma música do Hinário ou Coletânea",
+    "verse": "Selecione um versículo bíblico",
+    "media": "Selecione um arquivo de vídeo",
+    "link": "Adicione uma URL para abrir no navegador"
+  },
+  "fields": {
+    "name": "Nome",
+    "description": "Descrição",
+    "url": "URL",
+    "select_music": "Selecionar Música",
+    "select_verse": "Selecionar Versículo",
+    "select_file": "Selecionar Arquivo",
+    "book": "Livro",
+    "chapter": "Capítulo",
+    "verses": "Versículos",
+    "search_music": "Buscar música..."
+  },
+  "actions": {
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "edit": "Editar",
+    "delete": "Remover",
+    "duplicate": "Duplicar",
+    "clear_all": "Limpar Tudo",
+    "project": "Projetar",
+    "play": "Reproduzir",
+    "open": "Abrir",
+    "new_liturgy": "Nova Liturgia"
+  },
+  "messages": {
+    "confirm_delete": "Deseja remover este item da liturgia?",
+    "confirm_clear": "Deseja limpar todos os itens desta liturgia?",
+    "item_added": "Item adicionado com sucesso!",
+    "liturgy_saved": "Liturgia salva com sucesso!"
+  },
+  "custom_liturgy": {
+    "title": "Liturgias Avulsas",
+    "new": "Nova Liturgia Avulsa",
+    "name_placeholder": "Nome da liturgia (ex: Culto Jovem 12/07)"
+  }
+}

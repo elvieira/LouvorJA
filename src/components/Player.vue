@@ -18,7 +18,14 @@
         @click="prev"
       >
         <v-icon>mdi-skip-previous</v-icon>
-        <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">Anterior</v-tooltip>
+        <v-tooltip
+          activator="parent"
+          location="top"
+          open-delay="300"
+          content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+        >
+          Anterior
+        </v-tooltip>
       </v-btn>
       <v-btn
         icon
@@ -29,7 +36,14 @@
         @click="play"
       >
         <v-icon>{{ media.config.is_paused ? 'mdi-play-circle' : 'mdi-pause-circle' }}</v-icon>
-        <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">{{ media.config.is_paused ? 'Reproduzir' : 'Pausar' }}</v-tooltip>
+        <v-tooltip
+          activator="parent"
+          location="top"
+          open-delay="300"
+          content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+        >
+          {{ media.config.is_paused ? 'Reproduzir' : 'Pausar' }}
+        </v-tooltip>
       </v-btn>
       <v-btn
         icon
@@ -40,7 +54,14 @@
         @click="next"
       >
         <v-icon>mdi-skip-next</v-icon>
-        <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">Próxima</v-tooltip>
+        <v-tooltip
+          activator="parent"
+          location="top"
+          open-delay="300"
+          content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+        >
+          Próxima
+        </v-tooltip>
       </v-btn>
     </div>
 
@@ -118,7 +139,14 @@
             class="mx-1"
           >
             <v-icon>{{ mode.tray_icon }}</v-icon>
-            <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">Tipo de Áudio</v-tooltip>
+            <v-tooltip
+              activator="parent"
+              location="top"
+              open-delay="300"
+              content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+            >
+              Tipo de Áudio
+            </v-tooltip>
           </v-btn>
         </template>
         <v-card
@@ -165,7 +193,14 @@
         @click="maximize()"
       >
         <v-icon>mdi-arrow-expand-all</v-icon>
-        <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">Maximizar</v-tooltip>
+        <v-tooltip
+          activator="parent"
+          location="top"
+          open-delay="300"
+          content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+        >
+          Maximizar
+        </v-tooltip>
       </v-btn>
 
       <v-btn
@@ -178,7 +213,14 @@
         @click="close()"
       >
         <v-icon>mdi-close</v-icon>
-        <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">Fechar</v-tooltip>
+        <v-tooltip
+          activator="parent"
+          location="top"
+          open-delay="300"
+          content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+        >
+          Fechar
+        </v-tooltip>
       </v-btn>
 
       <v-btn
@@ -191,7 +233,14 @@
         @click="fullscreen(false)"
       >
         <v-icon>mdi-fullscreen-exit</v-icon>
-        <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">Sair da Tela Cheia</v-tooltip>
+        <v-tooltip
+          activator="parent"
+          location="top"
+          open-delay="300"
+          content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+        >
+          Sair da Tela Cheia
+        </v-tooltip>
       </v-btn>
       <v-btn
         v-else-if="location == 'window'"
@@ -203,7 +252,14 @@
         @click="fullscreen()"
       >
         <v-icon>mdi-fullscreen</v-icon>
-        <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">Tela Cheia</v-tooltip>
+        <v-tooltip
+          activator="parent"
+          location="top"
+          open-delay="300"
+          content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+        >
+          Tela Cheia
+        </v-tooltip>
       </v-btn>
 
       <v-btn 
@@ -216,7 +272,14 @@
         @click="togglePlaylist" 
       >
         <v-icon>mdi-format-list-bulleted</v-icon>
-        <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">Lista de Slides</v-tooltip>
+        <v-tooltip
+          activator="parent"
+          location="top"
+          open-delay="300"
+          content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+        >
+          Lista de Slides
+        </v-tooltip>
       </v-btn>
     </div>
   </div>
@@ -241,23 +304,23 @@ export default {
   },
   computed: {
     isDark() {
-      return this.$vuetify.theme.name === 'dark';
+      return this.$vuetify.theme.name === "dark";
     },
     defaultTextColor() {
-      if (this.location !== 'footer') return 'white';
-      return this.isDark ? 'white' : 'black';
+      if (this.location !== "footer") return "white";
+      return this.isDark ? "white" : "black";
     },
     defaultTextClass() {
-      if (this.location !== 'footer') return 'text-white';
-      return this.isDark ? 'text-white' : 'text-black';
+      if (this.location !== "footer") return "text-white";
+      return this.isDark ? "text-white" : "text-black";
     },
     secondaryTextClass() {
-      if (this.location !== 'footer') return 'text-grey';
-      return this.isDark ? 'text-grey' : 'text-grey-darken-1';
+      if (this.location !== "footer") return "text-grey";
+      return this.isDark ? "text-grey" : "text-grey-darken-1";
     },
     timelineBgColor() {
-      if (this.location !== 'footer') return 'rgba(255,255,255,0.4)';
-      return this.isDark ? 'rgba(255,255,255,0.2)' : '#b0b0b0';
+      if (this.location !== "footer") return "rgba(255,255,255,0.4)";
+      return this.isDark ? "rgba(255,255,255,0.2)" : "#b0b0b0";
     },
     media() {
       return this.$modules.get("media");

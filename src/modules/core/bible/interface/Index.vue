@@ -44,11 +44,15 @@
                 style="height: 44px; max-width: 350px; background: var(--card-bg); box-shadow: var(--shadow);"
               >
                 <div class="d-flex align-center text-truncate w-100" style="color: var(--sidebar-text);">
-                  <v-icon size="small" class="mr-3 opacity-70">mdi-book-open-page-variant</v-icon>
+                  <v-icon size="small" class="mr-3 opacity-70">
+                    mdi-book-open-page-variant
+                  </v-icon>
                   <span class="text-truncate font-weight-medium text-body-2">
                     {{ versions_list.find(v => v.value === bible.id_bible_version)?.title || 'Selecionar Versão' }}
                   </span>
-                  <v-icon size="small" class="ml-3 opacity-50">mdi-menu-down</v-icon>
+                  <v-icon size="small" class="ml-3 opacity-50">
+                    mdi-menu-down
+                  </v-icon>
                 </div>
               </v-btn>
             </template>
@@ -171,7 +175,14 @@
                 @click="showVerseSearch = !showVerseSearch"
               >
                 <v-icon>{{ showVerseSearch ? 'mdi-close' : 'mdi-magnify' }}</v-icon>
-                <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">{{ showVerseSearch ? 'Fechar pesquisa' : 'Pesquisar versículo' }}</v-tooltip>
+                <v-tooltip
+                  activator="parent"
+                  location="top"
+                  open-delay="300"
+                  content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+                >
+                  {{ showVerseSearch ? 'Fechar pesquisa' : 'Pesquisar versículo' }}
+                </v-tooltip>
               </v-btn>
               <v-btn
                 v-shortkey="['arrowleft']"
@@ -183,7 +194,14 @@
                 @shortkey="prevVerse()"
               >
                 <v-icon>mdi-chevron-left</v-icon>
-                <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">{{ t('prev_verse') }}</v-tooltip>
+                <v-tooltip
+                  activator="parent"
+                  location="top"
+                  open-delay="300"
+                  content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+                >
+                  {{ t('prev_verse') }}
+                </v-tooltip>
               </v-btn>
               <v-btn
                 v-shortkey="['arrowright']"
@@ -195,7 +213,14 @@
                 @shortkey="nextVerse()"
               >
                 <v-icon>mdi-chevron-right</v-icon>
-                <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">{{ t('next_verse') }}</v-tooltip>
+                <v-tooltip
+                  activator="parent"
+                  location="top"
+                  open-delay="300"
+                  content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+                >
+                  {{ t('next_verse') }}
+                </v-tooltip>
               </v-btn>
               <v-btn
                 v-shortkey="['del']"
@@ -208,7 +233,14 @@
                 @shortkey="clean()"
               >
                 <v-icon>mdi-eraser</v-icon>
-                <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">{{ t('clear') }}</v-tooltip>
+                <v-tooltip
+                  activator="parent"
+                  location="top"
+                  open-delay="300"
+                  content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+                >
+                  {{ t('clear') }}
+                </v-tooltip>
               </v-btn>
             </div>
           </div>
@@ -252,9 +284,21 @@
                 @click="showConfigModal = true"
               >
                 <v-icon>mdi-palette</v-icon>
-                <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">{{ t('customize') }}</v-tooltip>
+                <v-tooltip
+                  activator="parent"
+                  location="top"
+                  open-delay="300"
+                  content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+                >
+                  {{ t('customize') }}
+                </v-tooltip>
               </v-btn>
-              <LScreenBtn module="bible" variant="tonal" color="white" class="text-white" />
+              <LScreenBtn
+                module="bible"
+                variant="tonal"
+                color="white"
+                class="text-white"
+              />
             </div>
             <Screen />
           </div>
@@ -324,6 +368,9 @@ export default {
     module_id() {
       return manifest.id;
     },
+    navigateData() {
+      return this.$appdata.get("modules.bible.data.navigate");
+    },
     module() {
       return this.$modules.get(this.module_id);
     },
@@ -372,11 +419,11 @@ export default {
       
       const input = this.verseSearchQuery;
       const selected = new Set();
-      const parts = input.split(',');
+      const parts = input.split(",");
       
       for (const part of parts) {
-        if (part.includes('-')) {
-          const [startStr, endStr] = part.split('-');
+        if (part.includes("-")) {
+          const [startStr, endStr] = part.split("-");
           const start = Number(startStr.trim());
           const end = Number(endStr.trim());
           if (!isNaN(start) && !isNaN(end)) {
@@ -400,6 +447,20 @@ export default {
     },
   },
   watch: {
+    navigateData: {
+      deep: true,
+      async handler(val) {
+        if (val && val.bookId && val.chapter) {
+          this.bible.id_bible_book = val.bookId;
+          this.bible.chapter = val.chapter;
+          await this.loadData();
+          if (val.verses) {
+            this.verseSearchQuery = val.verses;
+            this.applyVerseSearch();
+          }
+        }
+      }
+    },
     async show() {
       if (this.show) {
         if (this.lang != this.$i18n.locale) {
@@ -496,7 +557,7 @@ export default {
           if (savedVersion && this.versions.find(v => v.id_bible_version === savedVersion)) {
             targetVersion = savedVersion;
           } else {
-            const ara = this.versions.find(v => v.abbreviation === 'ARA' || v.name === 'ARA');
+            const ara = this.versions.find(v => v.abbreviation === "ARA" || v.name === "ARA");
             targetVersion = ara ? ara.id_bible_version : this.versions[0].id_bible_version;
           }
           
@@ -577,11 +638,11 @@ export default {
       
       const input = this.verseSearchQuery;
       const selected = new Set();
-      const parts = input.split(',');
+      const parts = input.split(",");
       
       for (const part of parts) {
-        if (part.includes('-')) {
-          const [startStr, endStr] = part.split('-');
+        if (part.includes("-")) {
+          const [startStr, endStr] = part.split("-");
           const start = Number(startStr.trim());
           const end = Number(endStr.trim());
           if (!isNaN(start) && !isNaN(end)) {

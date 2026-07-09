@@ -4,17 +4,27 @@
       <!-- Modal Card -->
 
       <!-- Modal Card -->
-      <v-card class="elevation-24 rounded-xl d-flex flex-column" width="100%" max-width="520" style="background: var(--card-bg, #ffffff); box-shadow: 0 10px 40px rgba(0,0,0,0.5); border: 1px solid var(--border-color, rgba(0,0,0,0.05)); overflow: hidden;">
-        
+      <v-card
+        class="elevation-24 rounded-xl d-flex flex-column"
+        width="100%"
+        max-width="520"
+        style="background: var(--card-bg, #ffffff); box-shadow: 0 10px 40px rgba(0,0,0,0.5); border: 1px solid var(--border-color, rgba(0,0,0,0.05)); overflow: hidden;"
+      >
         <!-- Header -->
         <div class="pa-6 pb-4 d-flex align-center justify-space-between flex-shrink-0" style="background: rgba(0,0,0,0.02);">
           <div class="d-flex align-center">
             <div class="rounded-circle d-flex align-center justify-center mr-3" style="width: 40px; height: 40px; background: rgba(var(--v-theme-primary), 0.1);">
-              <v-icon color="primary" size="22">mdi-palette-outline</v-icon>
+              <v-icon color="primary" size="22">
+                mdi-palette-outline
+              </v-icon>
             </div>
             <div>
-              <h2 class="text-h5 font-weight-bold mb-0" style="color: var(--sidebar-text);">Personalização da Projeção</h2>
-              <p class="text-caption mb-0" style="color: var(--sidebar-text-secondary);">Ajuste o visual do relógio na tela</p>
+              <h2 class="text-h5 font-weight-bold mb-0" style="color: var(--sidebar-text);">
+                Personalização da Projeção
+              </h2>
+              <p class="text-caption mb-0" style="color: var(--sidebar-text-secondary);">
+                Ajuste o visual do relógio na tela
+              </p>
             </div>
           </div>
           <v-btn icon variant="text" @click="close">
@@ -24,16 +34,21 @@
 
         <!-- Scrollable Content -->
         <div style="background: var(--main-bg, #f5f5f5); padding: 24px; max-height: 60vh; overflow-y: auto;" class="custom-scrollbar">
-          
           <!-- Fundo da Projeção -->
           <v-card class="settings-card rounded-xl pa-2 mb-4" flat style="background: var(--card-bg, #ffffff); box-shadow: var(--shadow);">
             <v-card-text class="pa-4">
               <div class="d-flex align-center justify-space-between mb-4">
                 <div class="d-flex align-center">
-                  <v-icon color="primary" class="mr-3" size="24">mdi-format-color-fill</v-icon>
+                  <v-icon color="primary" class="mr-3" size="24">
+                    mdi-format-color-fill
+                  </v-icon>
                   <div>
-                    <h3 class="font-weight-bold" style="color: var(--sidebar-text); font-size: 1.1rem; line-height: 1.2;">{{ t('bg_color') }}</h3>
-                    <div class="text-caption" style="color: var(--sidebar-text-secondary);">Cor base de fundo da tela de exibição</div>
+                    <h3 class="font-weight-bold" style="color: var(--sidebar-text); font-size: 1.1rem; line-height: 1.2;">
+                      {{ t('bg_color') }}
+                    </h3>
+                    <div class="text-caption" style="color: var(--sidebar-text-secondary);">
+                      Cor base de fundo da tela de exibição
+                    </div>
                   </div>
                 </div>
               </div>
@@ -52,20 +67,19 @@
                   }"
                   @click="localConfig.bgColor = color"
                 />
-                <v-menu :close-on-content-click="false" location="bottom">
+                <ModernColorPicker v-model="localConfig.bgColor">
                   <template #activator="{ props }">
                     <div
                       v-bind="props"
                       class="rounded-circle cursor-pointer elevation-1 d-flex align-center justify-center"
                       style="width: 36px; height: 36px; border: 2px dashed var(--border-color); background: var(--card-bg);"
                     >
-                      <v-icon size="16" color="grey">mdi-eyedropper</v-icon>
+                      <v-icon size="16" color="grey">
+                        mdi-eyedropper
+                      </v-icon>
                     </div>
                   </template>
-                  <v-card class="pa-3 rounded-xl" style="background: var(--card-bg);">
-                    <v-color-picker v-model="localConfig.bgColor" mode="hexa" hide-inputs :swatches="[]" elevation="0" />
-                  </v-card>
-                </v-menu>
+                </ModernColorPicker>
               </div>
             </v-card-text>
           </v-card>
@@ -75,10 +89,16 @@
             <v-card-text class="pa-4">
               <div class="d-flex align-center justify-space-between mb-4">
                 <div class="d-flex align-center">
-                  <v-icon color="primary" class="mr-3" size="24">mdi-format-color-text</v-icon>
+                  <v-icon color="primary" class="mr-3" size="24">
+                    mdi-format-color-text
+                  </v-icon>
                   <div>
-                    <h3 class="font-weight-bold" style="color: var(--sidebar-text); font-size: 1.1rem; line-height: 1.2;">{{ t('text_color') }}</h3>
-                    <div class="text-caption" style="color: var(--sidebar-text-secondary);">Cor da fonte ou ponteiros do relógio</div>
+                    <h3 class="font-weight-bold" style="color: var(--sidebar-text); font-size: 1.1rem; line-height: 1.2;">
+                      {{ t('text_color') }}
+                    </h3>
+                    <div class="text-caption" style="color: var(--sidebar-text-secondary);">
+                      Cor da fonte ou ponteiros do relógio
+                    </div>
                   </div>
                 </div>
               </div>
@@ -99,39 +119,50 @@
                   }"
                   @click="localConfig.textColor = color"
                 />
-                <v-menu :close-on-content-click="false" location="bottom">
+                <ModernColorPicker v-model="localConfig.textColor">
                   <template #activator="{ props }">
                     <div
                       v-bind="props"
                       class="rounded-circle cursor-pointer elevation-1 d-flex align-center justify-center"
                       style="width: 36px; height: 36px; border: 2px dashed var(--border-color); background: var(--card-bg);"
                     >
-                      <v-icon size="16" color="grey">mdi-eyedropper</v-icon>
+                      <v-icon size="16" color="grey">
+                        mdi-eyedropper
+                      </v-icon>
                     </div>
                   </template>
-                  <v-card class="pa-3 rounded-xl" style="background: var(--card-bg);">
-                    <v-color-picker v-model="localConfig.textColor" mode="hexa" hide-inputs :swatches="[]" elevation="0" />
-                  </v-card>
-                </v-menu>
+                </ModernColorPicker>
               </div>
 
-              <v-divider class="mb-5" style="opacity: 0.1;"></v-divider>
+              <v-divider class="mb-5" style="opacity: 0.1;" />
 
               <div class="d-flex align-center justify-space-between mb-3">
                 <div class="d-flex align-center">
-                  <v-icon size="18" color="primary" class="mr-2">mdi-clock-outline</v-icon>
+                  <v-icon size="18" color="primary" class="mr-2">
+                    mdi-clock-outline
+                  </v-icon>
                   <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text);">{{ t('style') }}</span>
                 </div>
               </div>
-              <v-btn-toggle v-model="localConfig.style" mandatory divided variant="outlined" color="primary" class="w-100 mb-2 d-flex">
+              <v-btn-toggle
+                v-model="localConfig.style"
+                mandatory
+                divided
+                variant="outlined"
+                color="primary"
+                class="w-100 mb-2 d-flex"
+              >
                 <v-btn value="digital" class="flex-grow-1 text-none font-weight-bold">
-                  <v-icon start size="18">mdi-format-text-variant</v-icon> {{ t('digital') }}
+                  <v-icon start size="18">
+                    mdi-format-text-variant
+                  </v-icon> {{ t('digital') }}
                 </v-btn>
                 <v-btn value="analog" class="flex-grow-1 text-none font-weight-bold">
-                  <v-icon start size="18">mdi-clock-outline</v-icon> {{ t('analog') }}
+                  <v-icon start size="18">
+                    mdi-clock-outline
+                  </v-icon> {{ t('analog') }}
                 </v-btn>
               </v-btn-toggle>
-
             </v-card-text>
           </v-card>
 
@@ -139,38 +170,64 @@
           <v-card class="settings-card rounded-xl pa-2" flat style="background: var(--card-bg, #ffffff); box-shadow: var(--shadow);">
             <v-card-text class="pa-4">
               <div class="d-flex align-center mb-6">
-                <v-icon color="primary" class="mr-3" size="24">mdi-tune</v-icon>
+                <v-icon color="primary" class="mr-3" size="24">
+                  mdi-tune
+                </v-icon>
                 <div>
-                  <h3 class="font-weight-bold" style="color: var(--sidebar-text); font-size: 1.1rem; line-height: 1.2;">{{ t('options') }}</h3>
-                  <div class="text-caption" style="color: var(--sidebar-text-secondary);">Configurações de exibição do tempo</div>
+                  <h3 class="font-weight-bold" style="color: var(--sidebar-text); font-size: 1.1rem; line-height: 1.2;">
+                    {{ t('options') }}
+                  </h3>
+                  <div class="text-caption" style="color: var(--sidebar-text-secondary);">
+                    Configurações de exibição do tempo
+                  </div>
                 </div>
               </div>
 
               <v-list class="bg-transparent pa-0">
                 <v-list-item class="px-0 py-1">
-                  <v-list-item-title class="font-weight-medium text-body-2">{{ t('show_seconds') }}</v-list-item-title>
+                  <v-list-item-title class="font-weight-medium text-body-2">
+                    {{ t('show_seconds') }}
+                  </v-list-item-title>
                   <template #append>
-                    <v-switch v-model="localConfig.showSeconds" color="primary" hide-details inset density="compact" />
+                    <v-switch
+                      v-model="localConfig.showSeconds"
+                      color="primary"
+                      hide-details
+                      inset
+                      density="compact"
+                    />
                   </template>
                 </v-list-item>
                 
                 <v-list-item class="px-0 py-1" :disabled="localConfig.style === 'analog'" :style="{ opacity: localConfig.style === 'analog' ? '0.5' : '1' }">
-                  <v-list-item-title class="font-weight-medium text-body-2">{{ t('format_24h') }}</v-list-item-title>
+                  <v-list-item-title class="font-weight-medium text-body-2">
+                    {{ t('format_24h') }}
+                  </v-list-item-title>
                   <template #append>
-                    <v-switch v-model="localConfig.format24h" color="primary" hide-details inset density="compact" :disabled="localConfig.style === 'analog'" />
+                    <v-switch
+                      v-model="localConfig.format24h"
+                      color="primary"
+                      hide-details
+                      inset
+                      density="compact"
+                      :disabled="localConfig.style === 'analog'"
+                    />
                   </template>
                 </v-list-item>
               </v-list>
-              
             </v-card-text>
           </v-card>
-
         </div>
 
         <v-divider style="opacity: 0.1;" />
 
         <v-card-actions class="pa-4 d-flex justify-space-between" style="padding: 16px 24px 20px !important; background: var(--card-bg, #fff);">
-          <v-btn variant="tonal" color="error" class="rounded-lg text-none px-6 font-weight-bold flex-shrink-0" @click="resetToDefault">
+          <v-btn
+            variant="tonal"
+            color="error"
+            class="rounded-lg text-none px-6 font-weight-bold flex-shrink-0"
+            @click="resetToDefault"
+          >
             Restaurar Padrão
           </v-btn>
           <v-btn
@@ -188,24 +245,29 @@
 </template>
 
 <script>
+import ModernColorPicker from "@/components/inputs/ModernColorPicker.vue";
+
 export default {
   name: "ClockConfigModal",
+  components: {
+    ModernColorPicker,
+  },
   data: () => ({
     visible: false,
     localConfig: {
-      style: 'digital',
+      style: "digital",
       showSeconds: true,
       format24h: true,
-      bgColor: '#000000',
-      textColor: '#FFFFFF'
+      bgColor: "#000000",
+      textColor: "#FFFFFF",
     },
     defaultConfig: {
-      style: 'digital',
+      style: "digital",
       showSeconds: true,
       format24h: true,
-      bgColor: '#000000',
-      textColor: '#FFFFFF'
-    }
+      bgColor: "#000000",
+      textColor: "#FFFFFF",
+    },
   }),
   watch: {
     visible(val) {
@@ -214,15 +276,15 @@ export default {
     localConfig: {
       handler(val) {
         const cloned = JSON.parse(JSON.stringify(val));
-        this.$userdata.set('clock_config', cloned);
-        this.$appdata.set('clock_config', cloned);
+        this.$userdata.set("clock_config", cloned);
+        this.$appdata.set("clock_config", cloned);
       },
       deep: true,
-    }
+    },
   },
   methods: {
     loadConfig() {
-      const saved = this.$userdata.get('clock_config');
+      const saved = this.$userdata.get("clock_config");
       if (saved) {
         this.localConfig = { ...this.defaultConfig, ...saved };
       } else {
@@ -240,8 +302,8 @@ export default {
     },
     close() {
       this.visible = false;
-    }
-  }
+    },
+  },
 };
 </script>
 

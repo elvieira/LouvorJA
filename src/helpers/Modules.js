@@ -145,7 +145,10 @@ export default {
 
   sort(modules, $t) {
     return Object.entries(modules)
-      .sort(([, v1], [, v2]) => {
+      .sort(([k1, v1], [k2, v2]) => {
+        if (k1 === 'dev' && k2 !== 'dev') return 1;
+        if (k2 === 'dev' && k1 !== 'dev') return -1;
+
         const t1 = v1?.title ? $t(v1.title).toLowerCase() : "";
         const t2 = v2?.title ? $t(v2.title).toLowerCase() : "";
         return t1.localeCompare(t2);

@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Menu, ipcMain, protocol, net } = require('electron');
+const { app, BrowserWindow, Menu, ipcMain, protocol, net, dialog, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const fsExtra = require('fs-extra');
@@ -59,6 +59,27 @@ if (fs.existsSync(oldDbPath)) {
 
 [sysDbPath, mediaPath, coversPath, musicPath, slidesPath].forEach(dir => {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+});
+
+ipcMain.handle('open-file-dialog', async (event, options) => {
+  const win = BrowserWindow.fromWebContents(event.sender);
+  const result = await dialog.showOpenDialog(win, {
+    title: options?.title || 'Selecionar Arquivo',
+    filters: options?.filters || [
+      { name: 'Vídeos', extensions: ['mp4', 'mkv', 'avi', 'mov', 'wmv', 'webm'] },
+    ],
+    properties: ['openFile'],
+  });
+  if (result.canceled) return null;
+  return result.filePaths[0];
+});
+
+ipcMain.handle('open-external', async (event, url) => {
+  if (url) await shell.openExternal(url);
+});
+
+ipcMain.handle('open-path', async (event, filePath) => {
+  if (filePath) await shell.openPath(filePath);
 });
 
 ipcMain.handle('clear-all-data', async () => {
@@ -559,16 +580,29 @@ function createWindow() {
     ...(process.platform === 'darwin' ? [{
       label: 'Louvor JA',
       submenu: [
-        { role: 'about', label: 'Sobre o Louvor JA' },
+        { role: 'about' },
         { type: 'separator' },
-        { role: 'services', label: 'Serviços' },
+        { role: 'services' },
         { type: 'separator' },
-        { role: 'hide', label: 'Ocultar Louvor JA' },
-        { role: 'hideOthers', label: 'Ocultar Outros' },
-        { role: 'unhide', label: 'Mostrar Tudo' },
+        { role: 'hide' },
+        { role: 'hideOthers' },
+        { role: 'unhide' },
         { type: 'separator' },
-        { role: 'quit', label: 'Sair do Louvor JA' },
-      ],
+        { role: 'quit' }
+      ]
+    }, {
+      label: 'Edit',
+      submenu: [
+        { role: 'undo' },
+        { role: 'redo' },
+        { type: 'separator' },
+        { role: 'cut' },
+        { role: 'copy' },
+        { role: 'paste' },
+        { role: 'pasteAndMatchStyle' },
+        { role: 'delete' },
+        { role: 'selectAll' }
+      ]
     }] : []),
     {
       label: 'Página Inicial',

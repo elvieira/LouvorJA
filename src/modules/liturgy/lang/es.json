@@ -1,0 +1,72 @@
+{
+  "title": "Liturgia",
+  "subtitle": "Organización del Culto",
+  "add_item": "Agregar Elemento",
+  "edit_item": "Editar Elemento",
+  "empty_list": "No hay elementos en la liturgia",
+  "empty_list_hint": "Haga clic en \"Agregar Elemento\" para comenzar a armar la programación del culto.",
+  "no_preview": "Seleccione un elemento para visualizar",
+  "no_preview_hint": "Haga clic en un elemento de la lista para ver la vista previa aquí.",
+  "notes": "Notas",
+  "days": {
+    "sunday": "Domingo",
+    "monday": "Lunes",
+    "tuesday": "Martes",
+    "wednesday": "Miércoles",
+    "thursday": "Jueves",
+    "friday": "Viernes",
+    "saturday": "Sábado",
+    "custom": "Personalizada"
+  },
+  "types": {
+    "annotation": "Anotación",
+    "category": "Categoría",
+    "music": "Música",
+    "verse": "Versículo",
+    "media": "Medio",
+    "link": "Enlace"
+  },
+  "type_descriptions": {
+    "annotation": "Texto libre sin acción (ej: Oración, Doxología)",
+    "category": "Separador visual de sección",
+    "music": "Seleccione una música del Himnario o Colección",
+    "verse": "Seleccione un versículo bíblico",
+    "media": "Seleccione un archivo de video",
+    "link": "Agregue una URL para abrir en el navegador"
+  },
+  "fields": {
+    "name": "Nombre",
+    "description": "Descripción",
+    "url": "URL",
+    "select_music": "Seleccionar Música",
+    "select_verse": "Seleccionar Versículo",
+    "select_file": "Seleccionar Archivo",
+    "book": "Libro",
+    "chapter": "Capítulo",
+    "verses": "Versículos",
+    "search_music": "Buscar música..."
+  },
+  "actions": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "duplicate": "Duplicar",
+    "clear_all": "Limpiar todo",
+    "project": "Proyectar",
+    "play": "Reproducir",
+    "open": "Abrir",
+    "new_liturgy": "Nueva Liturgia"
+  },
+  "messages": {
+    "confirm_delete": "¿Desea eliminar este elemento de la liturgia?",
+    "confirm_clear": "¿Desea limpiar todos los elementos de esta liturgia?",
+    "item_added": "¡Elemento agregado con éxito!",
+    "liturgy_saved": "¡Liturgia guardada con éxito!"
+  },
+  "custom_liturgy": {
+    "title": "Liturgias Personalizadas",
+    "new": "Nueva Liturgia Personalizada",
+    "name_placeholder": "Nombre de la liturgia (ej: Culto Joven 12/07)"
+  }
+}

@@ -25,46 +25,6 @@ export default {
     FirstBootLoader,
     AppTitlebar,
   },
-  methods: {
-    handleKeydown() {
-      console.log("click ");
-      this.$dev.toogle();
-    },
-    handleGlobalKeydown(e) {
-      if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName) || document.activeElement.isContentEditable) {
-        return;
-      }
-
-      const isFullscreen = this.$appdata.get("modules.media.config.fullscreen");
-      const isMediaModuleOpen = this.$appdata.get("modules.media.show");
-      const isMinimized = this.$appdata.get("modules.media.minimized");
-
-      const isActive = isFullscreen || (isMediaModuleOpen && !isMinimized);
-
-      if (!isActive) return;
-
-      if (e.code === 'Space') {
-        e.preventDefault();
-        const isPaused = this.$appdata.get("modules.media.config.is_paused");
-        this.$media.pause(!isPaused);
-      } else if (e.code === 'ArrowRight') {
-        e.preventDefault();
-        this.$media.nextSlide();
-      } else if (e.code === 'ArrowLeft') {
-        e.preventDefault();
-        this.$media.prevSlide();
-      } else if (e.code === 'Escape') {
-        e.preventDefault();
-        this.$media.close();
-      } else if (e.code === 'KeyF') {
-        e.preventDefault();
-        this.$media.fullscreen(!isFullscreen);
-      } else if (e.code === 'KeyM') {
-        e.preventDefault();
-        this.$media.minimize();
-      }
-    }
-  },
   created() {
     this.$userdata.load();
     const theme = this.$userdata.get("theme");
@@ -100,7 +60,47 @@ export default {
   },
   unmounted() {
     window.removeEventListener("keydown", this.handleGlobalKeydown);
-  }
+  },
+  methods: {
+    handleKeydown() {
+      console.log("click ");
+      this.$dev.toogle();
+    },
+    handleGlobalKeydown(e) {
+      if (["INPUT", "TEXTAREA"].includes(document.activeElement.tagName) || document.activeElement.isContentEditable) {
+        return;
+      }
+
+      const isFullscreen = this.$appdata.get("modules.media.config.fullscreen");
+      const isMediaModuleOpen = this.$appdata.get("modules.media.show");
+      const isMinimized = this.$appdata.get("modules.media.minimized");
+
+      const isActive = isFullscreen || (isMediaModuleOpen && !isMinimized);
+
+      if (!isActive) return;
+
+      if (e.code === "Space") {
+        e.preventDefault();
+        const isPaused = this.$appdata.get("modules.media.config.is_paused");
+        this.$media.pause(!isPaused);
+      } else if (e.code === "ArrowRight") {
+        e.preventDefault();
+        this.$media.nextSlide();
+      } else if (e.code === "ArrowLeft") {
+        e.preventDefault();
+        this.$media.prevSlide();
+      } else if (e.code === "Escape") {
+        e.preventDefault();
+        this.$media.close();
+      } else if (e.code === "KeyF") {
+        e.preventDefault();
+        this.$media.fullscreen(!isFullscreen);
+      } else if (e.code === "KeyM") {
+        e.preventDefault();
+        this.$media.minimize();
+      }
+    },
+  },
 };
 </script>
 
