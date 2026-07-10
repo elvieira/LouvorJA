@@ -1,0 +1,14 @@
+{
+  "title": "Mídia Externa",
+  "alerts": {
+    "close": "Deseja fechar esta mídia?"
+  },
+  "controls": {
+    "play": "Reproduzir",
+    "pause": "Pausar",
+    "minimize": "Minimizar",
+    "maximize": "Maximizar",
+    "close": "Fechar",
+    "projecting": "Projetando na tela externa..."
+  }
+}

@@ -223,29 +223,33 @@
           </v-tabs-window-item>
 
           <v-tabs-window-item :value="3" class="h-100">
-            <div class="h-100 d-flex flex-column align-center justify-center px-6" style="padding-bottom: 10vh;">
-              <div class="text-center" style="max-width: 420px;">
-                <div class="mb-8 position-relative d-inline-block">
-                  <div class="rounded-circle d-flex align-center justify-center" style="width: 120px; height: 120px; background: rgba(0, 151, 215, 0.05); border: 2px dashed rgba(0, 151, 215, 0.2);">
-                    <v-icon size="64" color="primary" style="opacity: 0.8">
-                      mdi-play-network-outline
-                    </v-icon>
-                  </div>
-                  <v-icon
-                    size="36"
-                    color="primary"
-                    class="position-absolute"
-                    style="bottom: -5px; right: -5px; text-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); background: var(--main-bg); border-radius: 50%;"
-                  >
-                    mdi-hammer-wrench
-                  </v-icon>
-                </div>
-                <h3 class="font-weight-bold mb-3" style="color: var(--sidebar-text); font-size: 1.5rem; letter-spacing: -0.02em;">
-                  {{ t('under_construction') }}
-                </h3>
-                <p class="text-body-1" style="color: var(--sidebar-text-secondary); line-height: 1.6;">
-                  As configurações avançadas de <strong>Mídia & Player</strong> estão sendo desenhadas e estarão disponíveis em breve.
-                </p>
+            <div class="h-100 overflow-auto px-6 pb-6">
+              <div class="settings-container mx-auto pb-4" style="max-width: 600px;">
+                <v-card class="settings-card rounded-xl pa-2 mb-6 mt-6" flat style="background: var(--card-bg); box-shadow: var(--shadow);">
+                  <v-card-text class="pa-6">
+                    <div class="d-flex align-center mb-4">
+                      <v-icon color="primary" class="mr-3" size="28">
+                        mdi-play-network-outline
+                      </v-icon>
+                      <div>
+                        <h3 class="font-weight-bold" style="color: var(--sidebar-text); font-size: 1.1rem; line-height: 1.2;">
+                          Reprodução
+                        </h3>
+                      </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                      <v-switch
+                        v-model="media_use_internal_player"
+                        label="Reproduzir mídias internamente (em teste)"
+                        color="primary"
+                        hide-details
+                        inset
+                        class="font-weight-medium mb-2"
+                      ></v-switch>
+                    </div>
+                  </v-card-text>
+                </v-card>
               </div>
             </div>
           </v-tabs-window-item>
@@ -827,6 +831,8 @@ export default {
     online_fullscreen: true,
     youtube_mode: "Vídeo",
     
+    media_use_internal_player: false,
+    
     slide_monitor: [],
     slide_align: "Centro",
     slide_fullscreen: true,
@@ -898,6 +904,9 @@ export default {
     },
     show_home_history(val) {
       this.$userdata.set("show_home_history", val);
+    },
+    media_use_internal_player(val) {
+      this.$userdata.set("modules.config.media_use_internal_player", val);
     },
     slide_monitor(val) {
       if (val !== undefined && val !== null) {
@@ -987,6 +996,7 @@ export default {
     }
     
     const fields = [
+      "media_use_internal_player",
       "slide_custom_text_format", "slide_font_size", "slide_font_color", "slide_font_weight",
       "slide_custom_bg", "slide_bg_color", "slide_bg_image", "slide_bg_opacity",
     ];

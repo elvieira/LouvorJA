@@ -1,14 +1,22 @@
 <template>
-  <div v-if="!$media.isMinimized()" id="footer-version">
+  <div v-if="!isMediaMinimized && !isExternalMediaMinimized" id="footer-version">
     <span class="version-text">v{{ version }}</span>
   </div>
   <v-footer
-    v-else
+    v-else-if="isMediaMinimized"
     id="footer-bar"
     class="pa-0"
     color="primary"
   >
     <LPlayer location="footer" />
+  </v-footer>
+  <v-footer
+    v-else-if="isExternalMediaMinimized"
+    id="footer-bar"
+    class="pa-0"
+    color="primary"
+  >
+    <ExternalMediaFooterPlayer />
   </v-footer>
 </template>
 
@@ -16,11 +24,13 @@
 import packageJson from "../../package.json";
 
 import LPlayer from "@/components/Player.vue";
+import ExternalMediaFooterPlayer from "@/components/ExternalMediaFooterPlayer.vue";
 
 export default {
   name: "FooterLayout",
   components: {
     LPlayer,
+    ExternalMediaFooterPlayer,
   },
   data: () => ({
     db_version: 0,
@@ -28,6 +38,12 @@ export default {
   computed: {
     version() {
       return `${packageJson.version}.${this.db_version}`;
+    },
+    isMediaMinimized() {
+      return this.$media.isMinimized();
+    },
+    isExternalMediaMinimized() {
+      return this.$appdata.get("modules.external_media.minimized") === true && this.$appdata.get("modules.external_media.filePath");
     },
   },
   async mounted() {
@@ -68,3 +84,4 @@ export default {
   transition: all 0.3s ease;
 }
 </style>
+

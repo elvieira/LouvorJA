@@ -1131,8 +1131,12 @@ export default {
     async selectMediaFile() {
       if (window.electronAPI?.openFileDialog) {
         const filePath = await window.electronAPI.openFileDialog({
-          title: "Selecionar Vídeo",
-          filters: [{ name: "Vídeos", extensions: ["mp4", "mkv", "avi", "mov", "wmv", "webm"] }],
+          title: "Selecionar Mídia",
+          filters: [
+            { name: "Vídeos", extensions: ["mp4", "mkv", "avi", "mov", "wmv", "webm"] },
+            { name: "Áudios", extensions: ["mp3", "wav", "flac", "aac", "ogg", "wma", "m4a"] },
+            { name: "Todos", extensions: ["*"] },
+          ],
         });
         if (filePath) {
           this.addForm.filePath = filePath;
@@ -1171,8 +1175,37 @@ export default {
           break;
         case "media":
           if (item.filePath) {
-            if (window.electronAPI && window.electronAPI.openPath) {
-              window.electronAPI.openPath(item.filePath);
+            const useInternal = this.$userdata.get("modules.config.media_use_internal_player");
+            
+            if (useInternal) {
+              // Reproduz no reprodutor interno (external_media)
+              this.$appdata.set("modules.external_media.filePath", item.filePath);
+              this.$appdata.set("modules.external_media.title", item.name || item.subtitle || "");
+              this.$appdata.set("modules.external_media.minimized", false);
+              this.$appdata.set("modules.external_media.config", {
+                is_paused: true,
+                current_time: 0,
+                progress: 0,
+                duration: 0,
+                volume: 100,
+              });
+
+              // Check if it's audio-only
+              const ext = item.filePath.split(".").pop().toLowerCase();
+              const isAudio = ["mp3", "wav", "flac", "aac", "ogg", "wma", "m4a"].includes(ext);
+
+              if (isAudio) {
+                // Audio goes straight to footer bar (minimized)
+                this.$appdata.set("modules.external_media.minimized", true);
+              } else {
+                // Video opens the full module
+                this.$appdata.set("modules.external_media.show", true);
+              }
+            } else {
+              // Reproduz no reprodutor padrão do sistema operacional
+              if (window.electronAPI && window.electronAPI.openPath) {
+                window.electronAPI.openPath(item.filePath);
+              }
             }
           }
           break;

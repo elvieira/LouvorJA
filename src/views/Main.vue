@@ -73,6 +73,70 @@
           </v-card>
         </div>
       </transition>
+
+      <!-- External Media MiniPlayer -->
+      <transition name="fade-slide">
+        <div v-if="isExternalMediaMinimized && showExternalMiniPlayer && isExternalVideo" class="mini-player-popup elevation-12">
+          <v-card
+            theme="dark"
+            rounded="lg"
+            class="overflow-hidden bg-black"
+            width="320"
+          >
+            <div class="mini-player-toolbar d-flex justify-end pa-1 position-absolute w-100" style="z-index: 10;">
+              <v-btn 
+                icon
+                size="x-small" 
+                variant="flat" 
+                color="rgba(0,0,0,0.6)" 
+                class="mx-1 hover-btn"
+                @click="maximizeExternalPlayer" 
+              >
+                <v-icon>mdi-arrow-expand-all</v-icon>
+                <v-tooltip
+                  activator="parent"
+                  location="top"
+                  open-delay="300"
+                  content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+                >
+                  Maximizar
+                </v-tooltip>
+              </v-btn>
+              <v-btn 
+                icon
+                size="x-small" 
+                variant="flat" 
+                color="rgba(0,0,0,0.6)" 
+                class="hover-btn"
+                @click="showExternalMiniPlayer = false" 
+              >
+                <v-icon>mdi-minus</v-icon>
+                <v-tooltip
+                  activator="parent"
+                  location="top"
+                  open-delay="300"
+                  content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+                >
+                  Minimizar
+                </v-tooltip>
+              </v-btn>
+            </div>
+            <div class="position-relative w-100 bg-black" style="height: 180px;">
+              <video
+                v-if="externalFilePath"
+                ref="externalMiniPlayerVideo"
+                :src="externalFilePath"
+                class="w-100 h-100"
+                style="object-fit: contain;"
+                muted
+              />
+              <div v-else class="w-100 h-100 d-flex align-center justify-center text-grey">
+                Sem mídia
+              </div>
+            </div>
+          </v-card>
+        </div>
+      </transition>
     </v-main>
 
     <AppFooter />
@@ -111,8 +175,36 @@ export default {
         this.$appdata.set("modules.media.show_mini_player", val);
       },
     },
+    showExternalMiniPlayer: {
+      get() {
+        return this.$appdata.get("modules.external_media.show_mini_player") !== false;
+      },
+      set(val) {
+        this.$appdata.set("modules.external_media.show_mini_player", val);
+      },
+    },
     isMinimized() {
       return this.$media.isMinimized();
+    },
+    isExternalMediaMinimized() {
+      return this.$appdata.get("modules.external_media.minimized") === true && this.$appdata.get("modules.external_media.filePath");
+    },
+    externalFilePath() {
+      const raw = this.$appdata.get("modules.external_media.filePath");
+      if (!raw) return "";
+      return window.electronAPI ? `local://${raw}` : raw;
+    },
+    isExternalVideo() {
+      const raw = this.$appdata.get("modules.external_media.filePath");
+      if (!raw) return false;
+      const ext = raw.split(".").pop().toLowerCase();
+      return ["mp4", "mkv", "avi", "mov", "wmv", "webm"].includes(ext);
+    },
+    externalMediaCurrentTime() {
+      return this.$appdata.get("modules.external_media.config.current_time");
+    },
+    externalMediaIsPaused() {
+      return this.$appdata.get("modules.external_media.config.is_paused");
     },
     config() {
       return this.$media.config();
@@ -122,9 +214,42 @@ export default {
     },
   },
   watch: {
+    externalMediaCurrentTime(val) {
+      if (this.showExternalMiniPlayer && this.$refs.externalMiniPlayerVideo) {
+        const video = this.$refs.externalMiniPlayerVideo;
+        if (!video.seeking && Math.abs(video.currentTime - val) > 0.5) {
+          video.currentTime = val;
+        }
+      }
+    },
+    externalMediaIsPaused(val) {
+      if (this.showExternalMiniPlayer && this.$refs.externalMiniPlayerVideo) {
+        if (val) this.$refs.externalMiniPlayerVideo.pause();
+        else this.$refs.externalMiniPlayerVideo.play().catch((err) => {
+          console.error("[MiniPlayer] play() failed:", err.message);
+        });
+      }
+    },
+    showExternalMiniPlayer(newVal) {
+      if (newVal) {
+        this.$nextTick(() => {
+          if (!this.externalMediaIsPaused && this.$refs.externalMiniPlayerVideo) {
+            this.$refs.externalMiniPlayerVideo.currentTime = this.externalMediaCurrentTime || 0;
+            this.$refs.externalMiniPlayerVideo.play().catch((err) => {
+              console.error("[MiniPlayer] play() failed:", err.message);
+            });
+          }
+        });
+      }
+    },
     isMinimized(val) {
       if (val) {
         this.showMiniPlayer = true;
+      }
+    },
+    isExternalMediaMinimized(val) {
+      if (val && this.isExternalVideo) {
+        this.showExternalMiniPlayer = true;
       }
     },
   },
@@ -223,6 +348,11 @@ export default {
     maximizePlayer() {
       this.$media.maximize();
       this.showMiniPlayer = false;
+    },
+    maximizeExternalPlayer() {
+      this.$appdata.set("modules.external_media.show", true);
+      this.$appdata.set("modules.external_media.minimized", false);
+      this.showExternalMiniPlayer = false;
     },
   },
 };

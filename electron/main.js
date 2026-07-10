@@ -773,7 +773,7 @@ function createWindow() {
   if (isDev) {
     // Em desenvolvimento, carrega o servidor Vite
     mainWindow.loadURL('http://localhost:5173');
-    // mainWindow.webContents.openDevTools();
+    mainWindow.webContents.openDevTools();
   } else {
     // Em produção, carrega o build estático
     mainWindow.loadFile(path.join(__dirname, '..', 'dist', 'index.html'));
@@ -790,9 +790,9 @@ function createWindow() {
 
 
 
-// Registra o protocolo customizado como privilegiado ANTES do app estar pronto (Ignora CORS e permite Fetch)
+// Registra o protocolo customizado como privilegiado ANTES do app estar pronto
 protocol.registerSchemesAsPrivileged([
-  { scheme: 'local', privileges: { bypassCSP: true, supportFetchAPI: true, secure: true, corsEnabled: true, stream: true } }
+  { scheme: 'local', privileges: { standard: true, bypassCSP: true, supportFetchAPI: true, secure: true, corsEnabled: true, stream: true } }
 ]);
 
 app.whenReady().then(() => {
@@ -812,104 +812,63 @@ app.whenReady().then(() => {
     });
   }
 
-  // Protocolo customizado para carregar mídia local offline com suporte robusto a Range
-  protocol.handle('local', async (request) => {
-    let filePath = decodeURIComponent(request.url.slice('local://'.length));
+  // Protocolo customizado para carregar mídia local offline via API nativa do Chromium
+  // Garante suporte perfeito a Range requests e MP4 metadata buffering
+  protocol.registerFileProtocol('local', (request, callback) => {
+    let url;
+    try {
+      url = new URL(request.url);
+    } catch(e) {
+      return callback({ error: -2 }); // net::ERR_FAILED
+    }
+    
+    let filePath = decodeURIComponent(url.pathname);
+    const host = url.host;
 
-    // O Chromium as vezes insere uma barra extra logo após o protocolo, tornando /media/
-    if (filePath.startsWith('/media/')) {
-      filePath = filePath.slice(1);
+    if (host === 'app') {
+      // Arquivo externo absoluto (ex: local://app/Users/...)
+      if (process.platform === 'win32' && filePath.match(/^\/[a-zA-Z]:\//)) {
+        filePath = filePath.slice(1);
+      }
+      return callback({ path: filePath });
     }
 
-    let isMediaFallback = false;
+    // Caminho relativo da biblioteca (ex: local:///musics/... ou local://media/covers/...)
     let fallbackPath = '';
-
-    if (filePath.startsWith('media/')) {
-      fallbackPath = filePath.slice('media'.length); // ex: /covers/1995.bmp
-      const userDataPath = app.getPath('userData');
-      const mediaPath = path.join(userDataPath, 'Media'); // A pasta no disco tem M maiúsculo
-      filePath = path.join(mediaPath, fallbackPath);
-      isMediaFallback = true;
-    } else if (process.platform === 'win32' && filePath.match(/^\/[a-zA-Z]:\//)) {
-      filePath = filePath.slice(1); // Remove a barra inicial extra no Windows
+    if (host === 'media') {
+      fallbackPath = filePath;
+    } else if (host) {
+      fallbackPath = '/' + host + filePath;
+    } else {
+      fallbackPath = filePath;
     }
+
+    const userDataPath = app.getPath('userData');
+    const mediaPath = path.join(userDataPath, 'Media');
+    filePath = path.join(mediaPath, fallbackPath);
 
     const fs = require('fs');
 
-    try {
-      if (!fs.existsSync(filePath)) {
-        if (isMediaFallback) {
-          // Proxy transparente: tenta buscar da API uma única vez
-          // (downloads em lote usam o handler download-media com fallback FTP)
-          const apiUrl = `https://api.louvorja.com.br/file${fallbackPath.replace(/\\/g, '/')}`;
-          const response = await net.fetch(apiUrl);
-          return response;
+    if (!fs.existsSync(filePath)) {
+      // Proxy transparente: baixa da API e salva localmente antes de servir
+      const apiUrl = `https://api.louvorja.com.br/file${fallbackPath.replace(/\\/g, '/')}`;
+      net.fetch(apiUrl).then(res => {
+        if (res.ok) {
+          return res.arrayBuffer();
         }
-        return new Response("Not Found", { status: 404 });
-      }
-
-      const stat = fs.statSync(filePath);
-      const total = stat.size;
-      const range = request.headers.get('range');
-
-      let mimeType = 'application/octet-stream';
-      const lowerPath = filePath.toLowerCase();
-      if (lowerPath.endsWith('.mp3')) mimeType = 'audio/mpeg';
-      else if (lowerPath.endsWith('.mp4')) mimeType = 'video/mp4';
-      else if (lowerPath.endsWith('.jpg') || lowerPath.endsWith('.jpeg')) mimeType = 'image/jpeg';
-      else if (lowerPath.endsWith('.png')) mimeType = 'image/png';
-      else if (lowerPath.endsWith('.bmp')) mimeType = 'image/bmp';
-      else if (lowerPath.endsWith('.webp')) mimeType = 'image/webp';
-      else if (lowerPath.endsWith('.gif')) mimeType = 'image/gif';
-      else if (lowerPath.endsWith('.svg')) mimeType = 'image/svg+xml';
-
-      if (range) {
-        const parts = range.replace(/bytes=/, "").split("-");
-        const partialstart = parts[0];
-        const partialend = parts[1];
-
-        const start = parseInt(partialstart, 10);
-        let end = partialend ? parseInt(partialend, 10) : total - 1;
-
-        // Limita o chunk para evitar estouro de memória (Max 10MB por requisição)
-        const MAX_CHUNK = 10 * 1024 * 1024;
-        if ((end - start) + 1 > MAX_CHUNK) {
-          end = start + MAX_CHUNK - 1;
-        }
-
-        const chunksize = (end - start) + 1;
-
-        // Lê exatamente o bloco necessário direto para a RAM e fecha o arquivo IMEDIATAMENTE
-        const buffer = Buffer.alloc(chunksize);
-        const fd = fs.openSync(filePath, 'r');
-        fs.readSync(fd, buffer, 0, chunksize, start);
-        fs.closeSync(fd);
-
-        return new Response(buffer, {
-          status: 206,
-          headers: {
-            'Content-Range': `bytes ${start}-${end}/${total}`,
-            'Accept-Ranges': 'bytes',
-            'Content-Length': chunksize,
-            'Content-Type': mimeType
-          }
-        });
-      } else {
-        // Sem range, lemos de uma vez
-        const buffer = fs.readFileSync(filePath);
-        return new Response(buffer, {
-          status: 200,
-          headers: {
-            'Content-Length': total,
-            'Content-Type': mimeType,
-            'Accept-Ranges': 'bytes'
-          }
-        });
-      }
-    } catch (e) {
-      console.error("Local protocol error:", e);
-      return new Response("Internal Server Error", { status: 500 });
+        throw new Error('API request failed');
+      }).then(buffer => {
+        fs.mkdirSync(path.dirname(filePath), { recursive: true });
+        fs.writeFileSync(filePath, Buffer.from(buffer));
+        callback({ path: filePath });
+      }).catch(err => {
+        console.error("Fallback download error:", err);
+        callback({ error: -6 }); // net::ERR_FILE_NOT_FOUND
+      });
+      return;
     }
+
+    callback({ path: filePath });
   });
 
   createWindow();
