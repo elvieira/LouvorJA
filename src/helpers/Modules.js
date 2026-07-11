@@ -16,6 +16,12 @@ export default {
       $media.minimize();
     }
 
+    const extMediaShow = $appdata.get("modules.external_media.show");
+    const extMediaMinimized = $appdata.get("modules.external_media.minimized", false);
+    if (extMediaShow && !extMediaMinimized) {
+      $appdata.set("modules.external_media.config.request_action", { action: "minimize", time: Date.now() });
+    }
+
     const modules = $appdata.get("modules") || {};
     const moduleToOpen = modules[id];
     const isOverlay = moduleToOpen?.manifest?.overlay === true;

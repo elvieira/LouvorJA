@@ -85,7 +85,14 @@ export default {
           } else {
             fullscreen = $userdata.get("modules.config.slide_fullscreen") !== false;
           }
-          this.$popup.open({ module: this.module, fullscreen });
+
+          if (this.module === 'external_media') {
+            if (fullscreen) {
+              this.$emit('fullscreen');
+            }
+          } else {
+            this.$popup.open({ module: this.module, fullscreen });
+          }
         }
       }
     },

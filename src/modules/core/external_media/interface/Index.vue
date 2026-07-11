@@ -18,8 +18,8 @@
 
     <Window
       v-model="module.show"
-      title=""
-      subtitle=""
+      :title="mediaTitle"
+      :subtitle="mediaSubtitle"
       compact
       compact_footer
       size="large"
@@ -79,6 +79,7 @@
             color="white" 
             variant="flat" 
             size="small" 
+            @fullscreen="isFullscreen = true"
           />
         </div>
       </template>
@@ -157,6 +158,12 @@
                           <v-slider v-model="volume" color="white" track-color="grey" hide-details thumb-size="12" step="1" min="0" max="100" class="ma-0 pa-0 w-100" @update:model-value="onVolumeChange" />
                         </v-card>
                       </v-menu>
+                      <v-btn variant="text" size="small" icon color="white" class="mx-1" @click="isFullscreen = false">
+                        <v-icon>mdi-fullscreen-exit</v-icon>
+                        <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">
+                          Sair da Tela Cheia
+                        </v-tooltip>
+                      </v-btn>
                     </div>
                   </div>
                 </transition>
@@ -171,7 +178,7 @@
             <div class="modern-pill-player d-flex align-center px-6 py-2 mx-auto">
               <div v-if="pillWidth >= 600" class="player-info d-flex flex-column mr-6" style="max-width: 220px; min-width: 150px;">
                 <span class="text-subtitle-2 font-weight-bold text-truncate text-white" style="line-height: 1.2;">{{ mediaTitle }}</span>
-                <span class="text-caption text-truncate text-grey" style="line-height: 1.2;">{{ isVideo ? 'Vídeo' : 'Áudio' }}</span>
+                <span class="text-caption text-truncate text-grey" style="line-height: 1.2;">{{ mediaSubtitle || (isVideo ? 'Vídeo' : 'Áudio') }}</span>
               </div>
               <div class="d-flex align-center mr-6">
                 <v-btn icon variant="text" color="white" size="large" class="mx-1 play-btn" @click="togglePlay">
@@ -185,7 +192,7 @@
                   clickable
                   :height="4"
                   color="white"
-                  :bg-opacity="0"
+                  :bg-opacity="0.3"
                   rounded
                   class="flex-grow-1 timeline-slider"
                   @click="seekFromProgress"
@@ -242,6 +249,7 @@ export default {
       fullscreenTimer: null,
       fullscreenTimerActive: true,
       mediaReady: false,
+      userPaused: false,
     };
   },
   computed: {
@@ -272,6 +280,9 @@ export default {
     mediaTitle() {
       return this.$appdata.get("modules.external_media.title") || "Mídia Externa";
     },
+    mediaSubtitle() {
+      return this.$appdata.get("modules.external_media.subtitle") || "";
+    },
     isVideo() {
       if (!this.rawFilePath) return false;
       const ext = this.rawFilePath.split(".").pop().toLowerCase();
@@ -298,6 +309,8 @@ export default {
         const el = this.getMediaEl();
         if (el) el.volume = req.value / 100;
         this.volume = req.value;
+      } else if (req.action === "minimize") {
+        this.minimizeMedia();
       } else if (req.action === "close") {
         this.closeMedia(true);
       }
@@ -307,10 +320,37 @@ export default {
         this.$nextTick(() => {
           this.setupPillObserver();
         });
+
+        const syncSettings = this.$userdata.get("modules.config.media_sync_projection_settings") !== false;
+        
+        const slideFullscreen = syncSettings 
+          ? this.$userdata.get("modules.config.slide_fullscreen") !== false
+          : this.$userdata.get("modules.config.media_slide_fullscreen") !== false;
+          
+        const disableIfExtended = syncSettings 
+          ? this.$userdata.get("modules.config.slide_disable_main_if_extended") !== false
+          : this.$userdata.get("modules.config.media_slide_disable_main_if_extended") !== false;
+          
+        let slideMonitors = syncSettings
+          ? this.$userdata.get("modules.config.slide_monitor") || []
+          : this.$userdata.get("modules.config.media_slide_monitor") || [];
+          
+        if (!Array.isArray(slideMonitors)) {
+          slideMonitors = slideMonitors ? [slideMonitors] : [];
+        }
+
+        if (slideFullscreen && !(disableIfExtended && slideMonitors.length > 0)) {
+          this.$nextTick(() => {
+            setTimeout(() => {
+              this.isFullscreen = true;
+            }, 200);
+          });
+        }
       }
     },
     filePath(newVal, oldVal) {
       this.mediaReady = false;
+      this.userPaused = false;
       if (newVal) {
         this.$nextTick(() => {
           this.initPlayback();
@@ -372,9 +412,59 @@ export default {
       }
       el.volume = this.volume / 100;
       
-      if (this.autoProject && this.$refs.btnScreen && !this.$refs.btnScreen.is_selected) {
-        this.$refs.btnScreen.popup();
+      if (this.autoProject && this.$refs.btnScreen) {
+        if (this.isVideo && !this.$refs.btnScreen.is_selected) {
+          this.$refs.btnScreen.popup();
+        } else if (!this.isVideo && this.$refs.btnScreen.is_selected) {
+          this.$refs.btnScreen.popup();
+        }
       }
+      
+      const syncSettings = this.$userdata.get("modules.config.media_sync_projection_settings") !== false;
+      const minimizePlayer = syncSettings 
+        ? this.$userdata.get("modules.config.slide_minimize_player") === true
+        : this.$userdata.get("modules.config.media_slide_minimize_player") === true;
+        
+      const slideFullscreen = syncSettings 
+        ? this.$userdata.get("modules.config.slide_fullscreen") !== false
+        : this.$userdata.get("modules.config.media_slide_fullscreen") !== false;
+        
+      const disableIfExtended = syncSettings 
+        ? this.$userdata.get("modules.config.slide_disable_main_if_extended") !== false
+        : this.$userdata.get("modules.config.media_slide_disable_main_if_extended") !== false;
+        
+      let slideMonitors = syncSettings
+        ? this.$userdata.get("modules.config.slide_monitor") || []
+        : this.$userdata.get("modules.config.media_slide_monitor") || [];
+        
+      if (!Array.isArray(slideMonitors)) {
+        slideMonitors = slideMonitors ? [slideMonitors] : [];
+      }
+      
+      let hasExtended = false;
+      if (window.electronAPI && window.electronAPI.getDisplays) {
+        window.electronAPI.getDisplays().then(displays => {
+          if (displays && displays.length > 1) {
+            const primary = displays.find(d => d.isPrimary) || displays[0];
+            const extendedSelected = slideMonitors.filter(m => m !== primary.id);
+            hasExtended = extendedSelected.length > 0;
+          }
+          
+          const willGoFullscreen = slideFullscreen && !(disableIfExtended && hasExtended);
+          
+          if (minimizePlayer && !willGoFullscreen) {
+            this.$appdata.set("modules.external_media.show", false);
+            this.$appdata.set("modules.external_media.minimized", true);
+          }
+        });
+      } else {
+        const willGoFullscreen = slideFullscreen && !(disableIfExtended && slideMonitors.length > 0);
+        if (minimizePlayer && !willGoFullscreen) {
+          this.$appdata.set("modules.external_media.show", false);
+          this.$appdata.set("modules.external_media.minimized", true);
+        }
+      }
+      
       // Don't call play() here - wait for onCanPlay event
     },
 
@@ -392,10 +482,12 @@ export default {
         return;
       }
       if (el.paused) {
+        this.userPaused = false;
         el.play().then(() => {
         }).catch((err) => {
         });
       } else {
+        this.userPaused = true;
         el.pause();
       }
     },
@@ -408,9 +500,11 @@ export default {
         const el = this.getMediaEl();
         if (el) {
           el.volume = this.volume / 100;
-          el.play().then(() => {
-          }).catch((err) => {
-          });
+          if (!this.userPaused) {
+            el.play().then(() => {
+            }).catch((err) => {
+            });
+          }
         }
       }
     },
@@ -494,8 +588,9 @@ export default {
     },
 
     minimizeMedia() {
-      const pauseOnMinimize = this.$userdata.get("modules.config.media_pause_on_minimize") !== false; // true by default
+      const pauseOnMinimize = this.$userdata.get("modules.config.media_pause_on_minimize") === true;
       if (pauseOnMinimize) {
+        this.userPaused = true;
         this.getMediaEl()?.pause();
       }
       

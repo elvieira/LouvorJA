@@ -255,14 +255,36 @@ export default {
       if (newVal) {
         const slideFullscreen = this.$userdata.get("modules.config.slide_fullscreen") !== false;
         const disableIfExtended = this.$userdata.get("modules.config.slide_disable_main_if_extended") !== false;
-        const slideMonitors = this.$userdata.get("modules.config.slide_monitor") || [];
+        let slideMonitors = this.$userdata.get("modules.config.slide_monitor") || [];
         
-        if (slideFullscreen && !(disableIfExtended && slideMonitors.length > 0)) {
-          this.$nextTick(() => {
-            setTimeout(() => {
-              this.fullscreen = true;
-            }, 200);
+        if (!Array.isArray(slideMonitors)) {
+          slideMonitors = slideMonitors ? [slideMonitors] : [];
+        }
+
+        if (window.electronAPI && window.electronAPI.getDisplays) {
+          window.electronAPI.getDisplays().then(displays => {
+            let hasExtended = false;
+            if (displays && displays.length > 1) {
+              const primary = displays.find(d => d.isPrimary) || displays[0];
+              const extendedSelected = slideMonitors.filter(m => m !== primary.id);
+              hasExtended = extendedSelected.length > 0;
+            }
+            if (slideFullscreen && !(disableIfExtended && hasExtended)) {
+              this.$nextTick(() => {
+                setTimeout(() => {
+                  this.fullscreen = true;
+                }, 200);
+              });
+            }
           });
+        } else {
+          if (slideFullscreen && !(disableIfExtended && slideMonitors.length > 0)) {
+            this.$nextTick(() => {
+              setTimeout(() => {
+                this.fullscreen = true;
+              }, 200);
+            });
+          }
         }
       }
     },

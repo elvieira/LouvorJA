@@ -342,20 +342,45 @@
                                   density="compact"
                                   class="mb-2 font-weight-medium"
                                 />
-                                <v-switch
-                                  v-model="media_slide_disable_main_if_extended"
-                                  label="Desativar tela principal caso haja monitor estendido"
-                                  color="primary"
-                                  inset
-                                  hide-details
-                                  density="compact"
-                                  class="font-weight-medium"
-                                />
-                              </div>
+                                  <v-switch
+                                    v-model="media_slide_disable_main_if_extended"
+                                    label="Desativar tela principal caso haja monitor estendido"
+                                    color="primary"
+                                    inset
+                                    hide-details
+                                    density="compact"
+                                    class="mb-2 font-weight-medium"
+                                  />
+                                  <v-switch
+                                    v-model="media_slide_minimize_player"
+                                    label="Minimizar o player automaticamente"
+                                    color="primary"
+                                    inset
+                                    hide-details
+                                    density="compact"
+                                    class="font-weight-medium"
+                                  />
+                                </div>
                             </div>
                           </v-expand-transition>
                         </div>
                       </v-expand-transition>
+                    </div>
+                    
+                    <v-divider class="mb-8 mt-8" style="opacity: 0.1;" />
+                      
+                    <div class="d-flex justify-center mt-2">
+                      <v-btn
+                        variant="tonal"
+                        color="primary"
+                        class="text-none font-weight-bold rounded-lg px-6"
+                        @click="resetMediaConfigs"
+                      >
+                        <v-icon start>
+                          mdi-restore
+                        </v-icon>
+                        {{ t('restore_defaults') }}
+                      </v-btn>
                     </div>
                   </v-card-text>
                 </v-card>
@@ -539,6 +564,14 @@
                       <v-switch
                         v-model="slide_disable_main_if_extended"
                         label="Desativar tela principal caso haja monitor estendido"
+                        color="primary"
+                        inset
+                        hide-details
+                        class="mb-2 font-weight-medium"
+                      />
+                      <v-switch
+                        v-model="slide_minimize_player"
+                        label="Minimizar o player automaticamente"
                         color="primary"
                         inset
                         hide-details
@@ -894,7 +927,7 @@
                         <v-icon start>
                           mdi-restore
                         </v-icon>
-                        {{ t('restore_defaults') }} de Projeção
+                        {{ t('restore_defaults') }}
                       </v-btn>
                     </div>
                   </v-card-text>
@@ -943,15 +976,17 @@ export default {
     media_use_internal_player: false,
     media_sync_projection_settings: true,
     media_auto_project_video: true,
-    media_pause_on_minimize: true,
+    media_pause_on_minimize: false,
     media_slide_monitor: [],
     media_slide_fullscreen: true,
     media_slide_disable_main_if_extended: true,
+    media_slide_minimize_player: false,
     
     slide_monitor: [],
     slide_align: "Centro",
     slide_fullscreen: true,
     slide_disable_main_if_extended: true,
+    slide_minimize_player: false,
     slide_show_title: true,
     slide_custom_text_format: false,
     slide_custom_bg: false,
@@ -1025,6 +1060,7 @@ export default {
     },
     media_sync_projection_settings(val) {
       this.$userdata.set("modules.config.media_sync_projection_settings", val);
+      this.syncExternalMediaMonitors();
     },
     media_auto_project_video(val) {
       this.$userdata.set("modules.config.media_auto_project_video", val);
@@ -1035,6 +1071,7 @@ export default {
     media_slide_monitor(val) {
       if (val !== undefined && val !== null) {
         this.$userdata.set("modules.config.media_slide_monitor", val);
+        this.syncExternalMediaMonitors();
       }
     },
     media_slide_fullscreen(val) {
@@ -1043,10 +1080,14 @@ export default {
     media_slide_disable_main_if_extended(val) {
       this.$userdata.set("modules.config.media_slide_disable_main_if_extended", val);
     },
+    media_slide_minimize_player(val) {
+      this.$userdata.set("modules.config.media_slide_minimize_player", val);
+    },
     slide_monitor(val) {
       if (val !== undefined && val !== null) {
         this.$userdata.set("modules.config.slide_monitor", val);
         $media.syncMonitors();
+        this.syncExternalMediaMonitors();
       }
     },
     slide_align(val) {
@@ -1059,6 +1100,9 @@ export default {
     },
     slide_disable_main_if_extended(val) {
       this.$userdata.set("modules.config.slide_disable_main_if_extended", val);
+    },
+    slide_minimize_player(val) {
+      this.$userdata.set("modules.config.slide_minimize_player", val);
     },
     slide_show_title(val) {
       this.$userdata.set("modules.config.slide_show_title", val);
@@ -1126,13 +1170,16 @@ export default {
     if (this.$userdata.get("modules.config.slide_disable_main_if_extended") != null) {
       this.slide_disable_main_if_extended = this.$userdata.get("modules.config.slide_disable_main_if_extended");
     }
+    if (this.$userdata.get("modules.config.slide_minimize_player") != null) {
+      this.slide_minimize_player = this.$userdata.get("modules.config.slide_minimize_player");
+    }
     if (this.$userdata.get("modules.config.slide_show_title") != null) {
       this.slide_show_title = this.$userdata.get("modules.config.slide_show_title");
     }
     
     const fields = [
       "media_use_internal_player", "media_sync_projection_settings", "media_auto_project_video", "media_pause_on_minimize",
-      "media_slide_monitor", "media_slide_fullscreen", "media_slide_disable_main_if_extended",
+      "media_slide_monitor", "media_slide_fullscreen", "media_slide_disable_main_if_extended", "media_slide_minimize_player",
       "slide_custom_text_format", "slide_font_size", "slide_font_color", "slide_font_weight",
       "slide_custom_bg", "slide_bg_color", "slide_bg_image", "slide_bg_opacity",
     ];
@@ -1146,6 +1193,30 @@ export default {
   methods: {
     t(text) {
       return this.$t(`modules.${this.module_id}.${text}`);
+    },
+    async syncExternalMediaMonitors() {
+      const isExternalMediaActive = this.$appdata.get("modules.external_media.filePath") != null;
+      if (!isExternalMediaActive) return;
+
+      const syncSettings = this.$userdata.get("modules.config.media_sync_projection_settings") !== false;
+      let selectedMonitors = syncSettings
+        ? this.$userdata.get("modules.config.slide_monitor") || []
+        : this.$userdata.get("modules.config.media_slide_monitor") || [];
+        
+      if (!Array.isArray(selectedMonitors)) {
+        selectedMonitors = selectedMonitors ? [selectedMonitors] : [];
+      }
+      
+      if (window.electronAPI && window.electronAPI.getDisplays) {
+        const displays = await window.electronAPI.getDisplays();
+        if (displays && displays.length > 1) {
+          const primary = displays.find(d => d.isPrimary) || displays[0];
+          selectedMonitors = selectedMonitors.filter(m => m !== primary.id);
+          
+          const { default: $popup } = await import("@/helpers/Popup");
+          await $popup.syncMonitors(selectedMonitors, "external_media", isExternalMediaActive);
+        }
+      }
     },
     identifyMonitors() {
       if (window.electronAPI && window.electronAPI.identifyDisplays) {
@@ -1185,6 +1256,7 @@ export default {
       this.slide_align = "Centro";
       this.slide_fullscreen = true;
       this.slide_disable_main_if_extended = true;
+      this.slide_minimize_player = false;
       this.slide_show_title = true;
       this.slide_custom_text_format = false;
       this.slide_font_size = 100;
@@ -1194,6 +1266,16 @@ export default {
       this.slide_bg_color = "#000000";
       this.slide_bg_image = null;
       this.slide_bg_opacity = 100;
+    },
+    resetMediaConfigs() {
+      this.media_use_internal_player = false;
+      this.media_sync_projection_settings = true;
+      this.media_auto_project_video = true;
+      this.media_pause_on_minimize = false;
+      this.media_slide_monitor = [];
+      this.media_slide_fullscreen = true;
+      this.media_slide_disable_main_if_extended = true;
+      this.media_slide_minimize_player = false;
     },
     toggleSidebar() {
       const mainEl = document.querySelector(".main-container");

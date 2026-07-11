@@ -10,12 +10,7 @@
       @canplay="onCanPlay"
       @error="onError"
     />
-    <div v-else class="d-flex flex-column align-center justify-center text-white" style="gap: 16px;">
-      <v-icon size="120" color="white" style="opacity: 0.4;">mdi-music-circle</v-icon>
-      <div class="text-h4 font-weight-medium text-center px-6" style="opacity: 0.7;">
-        {{ mediaTitle }}
-      </div>
-    </div>
+    <div v-else></div>
   </div>
 </template>
 

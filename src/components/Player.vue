@@ -75,7 +75,7 @@
         :stream="!media.loading"
         :buffer-value="media.config.buffered"
         :color="location === 'footer' ? 'var(--accent-blue)' : 'white'"
-        :bg-opacity="0"
+        :bg-opacity="0.3"
         rounded
         class="flex-grow-1 timeline-slider"
         @click="changeProgress"

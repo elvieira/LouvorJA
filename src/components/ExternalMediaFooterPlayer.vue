@@ -5,7 +5,7 @@
   >
     <div v-if="playerWidth >= 600" class="player-info d-flex flex-column mr-6" style="max-width: 300px; min-width: 200px;">
       <span class="text-subtitle-2 font-weight-bold text-truncate" :class="isDark ? 'text-white' : 'text-black'" style="line-height: 1.2;">{{ mediaTitle }}</span>
-      <span class="text-caption text-truncate" :class="isDark ? 'text-grey' : 'text-grey-darken-1'" style="line-height: 1.2;">{{ isVideo ? 'Vídeo' : 'Áudio' }}</span>
+      <span class="text-caption text-truncate" :class="isDark ? 'text-grey' : 'text-grey-darken-1'" style="line-height: 1.2;">{{ mediaSubtitle || (isVideo ? 'Vídeo' : 'Áudio') }}</span>
     </div>
 
     <div class="d-flex align-center mr-6">
@@ -24,7 +24,7 @@
         clickable
         :height="4"
         :color="isDark ? 'white' : 'var(--accent-blue)'"
-        :bg-opacity="0"
+        :bg-opacity="0.3"
         rounded
         class="flex-grow-1 timeline-slider"
         @click="seekFromProgress"
@@ -63,7 +63,7 @@
 
     <div class="d-flex align-center">
       <v-btn
-        v-if="isVideo && playerWidth >= 600"
+        v-if="isVideo && playerWidth >= 600 && !showExternalMiniPlayer"
         variant="text"
         size="small"
         icon
@@ -124,6 +124,9 @@ export default {
     mediaTitle() {
       return this.$appdata.get("modules.external_media.title") || "Mídia Externa";
     },
+    mediaSubtitle() {
+      return this.$appdata.get("modules.external_media.subtitle") || "";
+    },
     isVideo() {
       if (!this.rawFilePath) return false;
       const ext = this.rawFilePath.split(".").pop().toLowerCase();
@@ -134,6 +137,12 @@ export default {
     },
     currentTime() {
       return this.$appdata.get("modules.external_media.config.current_time") || 0;
+    },
+    isMinimized() {
+      return this.$appdata.get("modules.external_media.minimized") === true;
+    },
+    showExternalMiniPlayer() {
+      return this.$appdata.get("modules.external_media.show_mini_player") !== false;
     },
     duration() {
       return this.$appdata.get("modules.external_media.config.duration") || 0;

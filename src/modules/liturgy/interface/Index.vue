@@ -906,6 +906,11 @@ export default {
     },
 
     getExecuteIcon(type) {
+      if (type === "media") {
+        const useInternal = this.$userdata.get("modules.config.media_use_internal_player");
+        if (useInternal) return "mdi-play";
+      }
+      
       const map = {
         music: "mdi-play",
         verse: "mdi-presentation-play",
@@ -915,6 +920,11 @@ export default {
       return map[type] || "mdi-play";
     },
     getExecuteTooltip(type) {
+      if (type === "media") {
+        const useInternal = this.$userdata.get("modules.config.media_use_internal_player");
+        if (useInternal) return this.t("actions.play");
+      }
+      
       const map = {
         music: "actions.play",
         verse: "actions.project",
@@ -1179,9 +1189,21 @@ export default {
             const useInternal = this.$userdata.get("modules.config.media_use_internal_player");
             
             if (useInternal) {
+              if (this.$appdata.get("modules.media.id_music")) {
+                const confirmed = await new Promise((resolve) => {
+                  this.$alert.yesno({
+                    text: "Uma música está em reprodução no momento. Deseja encerrá-la e reproduzir esta mídia?",
+                    translate: false
+                  }, (res) => resolve(res === "yes"));
+                });
+                if (!confirmed) return;
+                this.$media.close(true);
+              }
+
               // Reproduz no reprodutor interno (external_media)
               this.$appdata.set("modules.external_media.filePath", item.filePath);
-              this.$appdata.set("modules.external_media.title", item.name || item.subtitle || "");
+              this.$appdata.set("modules.external_media.title", item.name || "");
+              this.$appdata.set("modules.external_media.subtitle", item.subtitle || "");
               this.$appdata.set("modules.external_media.minimized", false);
               this.$appdata.set("modules.external_media.config", {
                 is_paused: true,

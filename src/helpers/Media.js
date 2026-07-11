@@ -15,6 +15,19 @@ export default {
     }
     $dev.write("open media", params);
 
+    if ($appdata.get("modules.external_media.filePath")) {
+      const confirmed = await new Promise((resolve) => {
+        $alert.yesno({
+          text: "Uma mídia está em reprodução. Deseja encerrá-la e reproduzir esta música?",
+          translate: false
+        }, (res) => resolve(res === "yes"));
+      });
+      if (!confirmed) return;
+      
+      $appdata.set("modules.external_media.filePath", "");
+      $appdata.set("modules.external_media.show", false);
+    }
+
     const mode = params.mode ? params.mode : "no_audio";
     const currentMode = $appdata.get("modules.media.config.mode");
     const isSameSong = params.id_music === $appdata.get("modules.media.id_music");
@@ -72,17 +85,29 @@ export default {
 
 
 
-    const disableIfExtended = $userdata.get("modules.config.slide_disable_main_if_extended") !== false;
+    const minimizePlayer = $userdata.get("modules.config.slide_minimize_player") === true;
+    const slideFullscreen = $userdata.get("modules.config.slide_fullscreen") !== false;
     const slideMonitors = $userdata.get("modules.config.slide_monitor") || [];
+    const disableIfExtended = $userdata.get("modules.config.slide_disable_main_if_extended") !== false;
+
+    let hasExtended = false;
+    if (window.electronAPI && window.electronAPI.getDisplays) {
+      const displays = await window.electronAPI.getDisplays();
+      if (displays && displays.length > 1) {
+        const primary = displays.find(d => d.isPrimary) || displays[0];
+        const extendedSelected = slideMonitors.filter(m => m !== primary.id);
+        hasExtended = extendedSelected.length > 0;
+      }
+    }
+    
+    const willGoFullscreen = slideFullscreen && !(disableIfExtended && hasExtended);
     
     let shouldMaximize = true;
     
     if (minimized) {
       shouldMaximize = false;
-    } else {
-      if (disableIfExtended && slideMonitors.length > 0) {
-        shouldMaximize = false;
-      }
+    } else if (minimizePlayer && !willGoFullscreen) {
+      shouldMaximize = false;
     }
 
     if (shouldMaximize) {
