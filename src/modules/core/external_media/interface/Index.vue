@@ -23,6 +23,7 @@
       compact
       compact_footer
       size="large"
+      eager
       class="modern-media-window external-media-window"
       @close="closeMedia()"
       @minimize="minimizeMedia()"
@@ -65,6 +66,20 @@
               {{ t('controls.close') }}
             </v-tooltip>
           </v-btn>
+        </div>
+
+        <div 
+          class="modern-media-toolbar-right align-center" 
+          :class="(isVideo && !autoProject) ? 'd-flex' : 'd-none'"
+        >
+          <ButtonScreen 
+            ref="btnScreen"
+            module="external_media" 
+            class="custom-system-btn" 
+            color="white" 
+            variant="flat" 
+            size="small" 
+          />
         </div>
       </template>
 
@@ -192,7 +207,6 @@
                     Tela Cheia
                   </v-tooltip>
                 </v-btn>
-                <ButtonScreen v-if="isVideo" module="external_media" />
               </div>
             </div>
           </div>
@@ -233,6 +247,9 @@ export default {
   computed: {
     requestAction() {
       return this.$appdata.get("modules.external_media.config.request_action");
+    },
+    autoProject() {
+      return this.$userdata.get("modules.config.media_auto_project_video") !== false;
     },
     module_id() {
       return manifest.id;
@@ -354,6 +371,10 @@ export default {
         return;
       }
       el.volume = this.volume / 100;
+      
+      if (this.autoProject && this.$refs.btnScreen && !this.$refs.btnScreen.is_selected) {
+        this.$refs.btnScreen.popup();
+      }
       // Don't call play() here - wait for onCanPlay event
     },
 
@@ -473,6 +494,11 @@ export default {
     },
 
     minimizeMedia() {
+      const pauseOnMinimize = this.$userdata.get("modules.config.media_pause_on_minimize") !== false; // true by default
+      if (pauseOnMinimize) {
+        this.getMediaEl()?.pause();
+      }
+      
       this.$appdata.set("modules.external_media.show", false);
       this.$appdata.set("modules.external_media.minimized", true);
     },
@@ -557,6 +583,19 @@ export default {
     backdrop-filter: blur(10px);
     border-radius: 30px;
     padding: 6px 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3) !important;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .modern-media-toolbar-right {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 50;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(10px);
+    border-radius: 30px;
+    padding: 4px 0px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3) !important;
     border: 1px solid rgba(255, 255, 255, 0.05);
   }

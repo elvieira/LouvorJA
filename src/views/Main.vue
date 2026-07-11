@@ -129,6 +129,7 @@
                 class="w-100 h-100"
                 style="object-fit: contain;"
                 muted
+                @loadedmetadata="syncMiniPlayer"
               />
               <div v-else class="w-100 h-100 d-flex align-center justify-center text-grey">
                 Sem mídia
@@ -192,7 +193,11 @@ export default {
     externalFilePath() {
       const raw = this.$appdata.get("modules.external_media.filePath");
       if (!raw) return "";
-      return window.electronAPI ? `local://${raw}` : raw;
+      if (window.electronAPI) {
+        const prefix = raw.startsWith('/') ? 'local://app' : 'local://app/';
+        return `${prefix}${raw}`;
+      }
+      return raw;
     },
     isExternalVideo() {
       const raw = this.$appdata.get("modules.external_media.filePath");
@@ -335,6 +340,18 @@ export default {
   methods: {
     toggleSidebar() {
       this.sidebarOpen = !this.sidebarOpen;
+    },
+    syncMiniPlayer() {
+      const video = this.$refs.externalMiniPlayerVideo;
+      if (video) {
+        const currentTime = this.$appdata.get("modules.external_media.config.current_time") || 0;
+        video.currentTime = currentTime;
+        
+        const isPaused = this.$appdata.get("modules.external_media.config.is_paused");
+        if (!isPaused) {
+          video.play().catch(e => console.log("MiniPlayer play error:", e));
+        }
+      }
     },
     closeAllModules() {
       const modules = this.$appdata.get("modules") || {};

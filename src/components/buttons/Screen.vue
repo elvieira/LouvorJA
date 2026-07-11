@@ -62,7 +62,12 @@ export default {
         if (window.electronAPI && window.electronAPI.getDisplays) {
           const displays = await window.electronAPI.getDisplays();
           if (displays && displays.length > 1) {
-            let configMonitors = $userdata.get("modules.config.slide_monitor");
+            let configMonitors = [];
+            if (this.module === 'external_media' && $userdata.get("modules.config.media_sync_projection_settings") === false) {
+              configMonitors = $userdata.get("modules.config.media_slide_monitor");
+            } else {
+              configMonitors = $userdata.get("modules.config.slide_monitor");
+            }
             if (!Array.isArray(configMonitors)) {
               configMonitors = configMonitors ? [configMonitors] : [];
             }
@@ -74,7 +79,13 @@ export default {
         if (selectedMonitors.length > 0) {
           await this.$popup.syncMonitors(selectedMonitors, this.module, true);
         } else {
-          this.$popup.open({ module: this.module, fullscreen: true });
+          let fullscreen = true;
+          if (this.module === 'external_media' && $userdata.get("modules.config.media_sync_projection_settings") === false) {
+            fullscreen = $userdata.get("modules.config.media_slide_fullscreen") !== false;
+          } else {
+            fullscreen = $userdata.get("modules.config.slide_fullscreen") !== false;
+          }
+          this.$popup.open({ module: this.module, fullscreen });
         }
       }
     },

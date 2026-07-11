@@ -1133,6 +1133,7 @@ export default {
         const filePath = await window.electronAPI.openFileDialog({
           title: "Selecionar Mídia",
           filters: [
+            { name: "Mídia", extensions: ["mp4", "mkv", "avi", "mov", "wmv", "webm", "mp3", "wav", "flac", "aac", "ogg", "wma", "m4a"] },
             { name: "Vídeos", extensions: ["mp4", "mkv", "avi", "mov", "wmv", "webm"] },
             { name: "Áudios", extensions: ["mp3", "wav", "flac", "aac", "ogg", "wma", "m4a"] },
             { name: "Todos", extensions: ["*"] },

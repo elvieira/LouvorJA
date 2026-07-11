@@ -8,6 +8,7 @@
     :theme="dark ? 'dark' : ''"
     attach=".v-main"
     contained
+    :eager="eager"
   >
     <v-card :color="color ? color : ''">
       <slot name="toolbar">
@@ -149,10 +150,10 @@ export default {
     size: String,
     imageSize: Number,
     color: String,
-    slotLeftClass: String,
     slotRightClass: String,
     slotLeftStyle: [String, Object],
     slotRightStyle: [String, Object],
+    eager: Boolean,
   },
 
   data: () => ({

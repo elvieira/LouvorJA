@@ -247,6 +247,115 @@
                         inset
                         class="font-weight-medium mb-2"
                       ></v-switch>
+
+                      <v-expand-transition>
+                        <div v-show="media_use_internal_player" class="pl-4 mt-4" style="border-left: 2px solid var(--border-color);">
+                          <v-switch
+                            v-model="media_sync_projection_settings"
+                            label="Replicar configurações de Projeção & Telas"
+                            color="primary"
+                            hide-details
+                            inset
+                            density="compact"
+                            class="mb-2"
+                          ></v-switch>
+                          
+                          <v-switch
+                            v-model="media_auto_project_video"
+                            label="Projetar vídeos automaticamente ao abrir"
+                            color="primary"
+                            hide-details
+                            inset
+                            density="compact"
+                            class="mb-2"
+                          ></v-switch>
+                          
+                          <v-switch
+                            v-model="media_pause_on_minimize"
+                            label="Pausar vídeo ao minimizar"
+                            color="primary"
+                            hide-details
+                            inset
+                            density="compact"
+                          ></v-switch>
+                          <v-expand-transition>
+                            <div v-show="!media_sync_projection_settings" class="mt-4 pa-4 rounded-xl" style="background: rgba(0,0,0,0.15); border: 1px solid var(--border-color);">
+                              <!-- MÚLTIPLAS TELAS (MÍDIA) -->
+                              <div class="mb-6">
+                                <div class="d-flex align-center mb-4">
+                                  <v-icon size="20" color="primary" class="mr-2">
+                                    mdi-monitor-multiple
+                                  </v-icon>
+                                  <span class="text-subtitle-1 font-weight-bold" style="color: var(--sidebar-text);">{{ t('multi_screens') }}</span>
+                                </div>
+                                
+                                <div class="text-body-2 font-weight-medium mb-2" style="color: var(--sidebar-text-secondary);">
+                                  Projetar nas seguintes telas:
+                                </div>
+                                <div v-if="slideMonitorList.length > 0" class="d-flex flex-wrap mt-2" style="gap: 16px;">
+                                  <v-card
+                                    v-for="monitor in slideMonitorList"
+                                    :key="monitor.value"
+                                    flat
+                                    class="rounded-xl border cursor-pointer"
+                                    :class="media_slide_monitor.includes(monitor.value) ? 'elevation-2' : ''"
+                                    :style="media_slide_monitor.includes(monitor.value) ? 'background: rgba(0,151,215,0.08); border: 2px solid var(--accent-blue) !important; transition: all 0.2s;' : 'background: var(--main-bg); border: 2px solid transparent !important; transition: all 0.2s; box-shadow: inset 0 0 0 1px var(--border-color);'"
+                                    width="160"
+                                    @click="toggleMediaSlideMonitor(monitor.value)"
+                                  >
+                                    <div class="pa-4 d-flex flex-column align-center">
+                                      <v-icon :color="media_slide_monitor.includes(monitor.value) ? 'primary' : 'grey'" size="32" class="mb-2 transition-all">
+                                        {{ media_slide_monitor.includes(monitor.value) ? 'mdi-monitor-share' : 'mdi-monitor-off' }}
+                                      </v-icon>
+                                      <span class="text-body-2 font-weight-bold text-center transition-all" :style="media_slide_monitor.includes(monitor.value) ? 'color: var(--accent-blue)' : 'color: var(--sidebar-text-secondary)'">
+                                        {{ monitor.title }}
+                                      </span>
+                                    </div>
+                                  </v-card>
+                                </div>
+                                <v-alert
+                                  v-else
+                                  type="info"
+                                  variant="tonal"
+                                  density="compact"
+                                  class="mt-2 text-caption rounded-lg"
+                                >
+                                  Nenhum monitor estendido (secundário) detectado no sistema.
+                                </v-alert>
+                              </div>
+
+                              <!-- TELA ÚNICA / PRINCIPAL (MÍDIA) -->
+                              <div>
+                                <div class="d-flex align-center mb-4">
+                                  <v-icon size="20" color="primary" class="mr-2">
+                                    mdi-monitor
+                                  </v-icon>
+                                  <span class="text-subtitle-1 font-weight-bold" style="color: var(--sidebar-text);">{{ t('main_screen') }}</span>
+                                </div>
+                                
+                                <v-switch
+                                  v-model="media_slide_fullscreen"
+                                  label="Abrir mídia em tela cheia na tela principal"
+                                  color="primary"
+                                  inset
+                                  hide-details
+                                  density="compact"
+                                  class="mb-2 font-weight-medium"
+                                />
+                                <v-switch
+                                  v-model="media_slide_disable_main_if_extended"
+                                  label="Desativar tela principal caso haja monitor estendido"
+                                  color="primary"
+                                  inset
+                                  hide-details
+                                  density="compact"
+                                  class="font-weight-medium"
+                                />
+                              </div>
+                            </div>
+                          </v-expand-transition>
+                        </div>
+                      </v-expand-transition>
                     </div>
                   </v-card-text>
                 </v-card>
@@ -832,6 +941,12 @@ export default {
     youtube_mode: "Vídeo",
     
     media_use_internal_player: false,
+    media_sync_projection_settings: true,
+    media_auto_project_video: true,
+    media_pause_on_minimize: true,
+    media_slide_monitor: [],
+    media_slide_fullscreen: true,
+    media_slide_disable_main_if_extended: true,
     
     slide_monitor: [],
     slide_align: "Centro",
@@ -907,6 +1022,26 @@ export default {
     },
     media_use_internal_player(val) {
       this.$userdata.set("modules.config.media_use_internal_player", val);
+    },
+    media_sync_projection_settings(val) {
+      this.$userdata.set("modules.config.media_sync_projection_settings", val);
+    },
+    media_auto_project_video(val) {
+      this.$userdata.set("modules.config.media_auto_project_video", val);
+    },
+    media_pause_on_minimize(val) {
+      this.$userdata.set("modules.config.media_pause_on_minimize", val);
+    },
+    media_slide_monitor(val) {
+      if (val !== undefined && val !== null) {
+        this.$userdata.set("modules.config.media_slide_monitor", val);
+      }
+    },
+    media_slide_fullscreen(val) {
+      this.$userdata.set("modules.config.media_slide_fullscreen", val);
+    },
+    media_slide_disable_main_if_extended(val) {
+      this.$userdata.set("modules.config.media_slide_disable_main_if_extended", val);
     },
     slide_monitor(val) {
       if (val !== undefined && val !== null) {
@@ -996,7 +1131,8 @@ export default {
     }
     
     const fields = [
-      "media_use_internal_player",
+      "media_use_internal_player", "media_sync_projection_settings", "media_auto_project_video", "media_pause_on_minimize",
+      "media_slide_monitor", "media_slide_fullscreen", "media_slide_disable_main_if_extended",
       "slide_custom_text_format", "slide_font_size", "slide_font_color", "slide_font_weight",
       "slide_custom_bg", "slide_bg_color", "slide_bg_image", "slide_bg_opacity",
     ];
@@ -1026,6 +1162,13 @@ export default {
         unselected = unselected.filter(m => m !== val);
       }
       this.$userdata.set("modules.config.unselected_slide_monitors", unselected);
+    },
+    toggleMediaSlideMonitor(val) {
+      if (this.media_slide_monitor.includes(val)) {
+        this.media_slide_monitor = this.media_slide_monitor.filter(m => m !== val);
+      } else {
+        this.media_slide_monitor = [...this.media_slide_monitor, val];
+      }
     },
     onBgImageSelect(event) {
       const file = event.target.files?.[0];
