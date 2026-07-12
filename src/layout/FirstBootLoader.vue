@@ -183,16 +183,36 @@ export default {
             });
           }
           
-          await this.fetchAndSave("config");
+          try {
+            await this.fetchAndSave("config");
+          } catch (e) {
+            if (e.message && (e.message.includes("Failed to fetch") || e.message.includes("NetworkError"))) {
+              throw new Error("Sem conexão com a internet. Verifique sua rede e tente novamente.");
+            } else if (e.message && e.message.includes("429")) {
+              throw new Error("Muitos acessos ao servidor (Rate Limit). Tente novamente mais tarde.");
+            } else {
+              throw new Error("Falha ao conectar com o servidor: " + e.message);
+            }
+          }
           
           this.statusText = "Baixando banco de dados...";
           this.progress = 0;
-          await window.electronAPI.downloadDatabase();
+          try {
+            await window.electronAPI.downloadDatabase();
+          } catch (e) {
+            throw new Error("Erro no download do banco de dados. Verifique a internet e tente novamente.");
+          }
           
           this.statusText = "Extraindo dados locais...";
           this.progress = 0;
           
-          const success = await window.electronAPI.extractLocalDb();
+          let success = false;
+          try {
+            success = await window.electronAPI.extractLocalDb();
+          } catch (e) {
+            throw new Error("Erro na extração dos dados locais.");
+          }
+
           if (success) {
             this.progress = 100;
             await window.electronAPI.saveLocalDb("system_first_boot_complete", { complete: true });
@@ -207,12 +227,13 @@ export default {
             }, 1000);
             return;
           }
+          
+          throw new Error("Falha desconhecida ao extrair banco de dados local.");
         }
-        
-        throw new Error("Falha ao extrair banco de dados local.");
+        throw new Error("Ambiente Electron não disponível.");
       } catch (err) {
         console.error("Erro na sincronização inicial:", err);
-        this.statusText = "Erro na extração. Tente novamente.";
+        this.statusText = err.message || "Erro na sincronização. Tente novamente.";
         this.hasError = true;
       }
     },

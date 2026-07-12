@@ -165,6 +165,8 @@ ipcMain.handle('extract-local-db', async (event) => {
     // Excluir após extração para economizar espaço
     try {
       fs.unlinkSync(finalDbPath);
+      const flagPath = path.join(app.getPath('userData'), 'db_download_complete.flag');
+      if (fs.existsSync(flagPath)) fs.unlinkSync(flagPath);
     } catch(e) {
       console.error('Erro ao excluir database.db após extração:', e);
     }
@@ -172,7 +174,7 @@ ipcMain.handle('extract-local-db', async (event) => {
     return true;
   } catch (error) {
     console.error('Erro na extração do banco:', error);
-    return false;
+    throw error;
   }
 });
 
@@ -218,6 +220,14 @@ async function getFtpParams() {
 
 ipcMain.handle('download-database', async (event) => {
   try {
+    const finalDbPath = path.join(app.getPath('userData'), 'database.db');
+    const flagPath = path.join(app.getPath('userData'), 'db_download_complete.flag');
+    
+    if (fs.existsSync(flagPath) && fs.existsSync(finalDbPath)) {
+      console.log('Banco de dados já foi baixado completamente. Pulando FTP.');
+      return true;
+    }
+
     const ftpParams = await getFtpParams();
     
     const client = new ftp.Client();
@@ -230,15 +240,25 @@ ipcMain.handle('download-database', async (event) => {
       secure: false
     });
     
-    const finalDbPath = path.join(app.getPath('userData'), 'database.db');
     const langPrefix = (ftpParams['lang'] || 'pt').toLowerCase();
     const remotePath = (ftpParams['root'] || '/') + (ftpParams['root']?.endsWith('/') ? '' : '/') + `config/${langPrefix}_database.db`;
     
+    // O check de tamanho agora é secundário, usado apenas para garantir retomada/overwrite caso a flag não exista
     let size = 0;
     try {
       size = await client.size(remotePath);
     } catch (e) {
       console.warn('Não foi possível obter o tamanho do arquivo via FTP:', e.message);
+    }
+    
+    if (size > 0 && fs.existsSync(finalDbPath)) {
+      const localStat = fs.statSync(finalDbPath);
+      if (localStat.size === size) {
+        console.log('Banco de dados local já existe e está completo. Pulando download e definindo flag.');
+        fs.writeFileSync(flagPath, '1');
+        client.close();
+        return true;
+      }
     }
     
     client.trackProgress(info => {
@@ -251,10 +271,11 @@ ipcMain.handle('download-database', async (event) => {
     await client.downloadTo(finalDbPath, remotePath);
     client.close();
     
+    fs.writeFileSync(flagPath, '1');
     return true;
   } catch (error) {
     console.error('Erro no download do banco:', error);
-    return false;
+    throw error;
   }
 });
 
