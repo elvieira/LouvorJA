@@ -3,8 +3,9 @@
     v-model="alert.show"
     max-width="450"
     persistent
+    :z-index="11000"
     :theme="$theme.primary()"
-    content-class="modern-alert-dialog-wrapper"
+    :content-class="alert.center ? 'modern-alert-dialog-wrapper center-alert' : 'modern-alert-dialog-wrapper'"
   >
     <v-card :color="alert.color" class="modern-alert-card rounded-xl">
       <v-card-title v-if="alert.title" class="pt-6 px-6">
@@ -55,6 +56,10 @@ export default {
 .modern-alert-dialog-wrapper {
   backdrop-filter: blur(5px);
   transform: translateX(calc(var(--sidebar-width, 280px) / 2));
+}
+
+.modern-alert-dialog-wrapper.center-alert {
+  transform: translateX(0) !important;
 }
 
 @media (max-width: 1024px) {

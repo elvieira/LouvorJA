@@ -2,6 +2,7 @@ import $alert from "@/helpers/Alert";
 import $path from "@/helpers/Path";
 import $dev from "@/helpers/Dev";
 import $storage from "@/helpers/Storage";
+import $appdata from "@/helpers/AppData";
 
 const isDesktop = !!(window.electronAPI && window.electronAPI.isElectron);
 
@@ -85,6 +86,9 @@ export default {
 
       return data;
     } catch (error) {
+      if ($appdata.get("system_first_boot_loading") === true) {
+        return null;
+      }
       $alert.error({ text: "messages.file_database_not_found", error });
       return null;
     }

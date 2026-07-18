@@ -1,14 +1,17 @@
 <template>
   <v-app id="app-container">
     <AppTitlebar />
-    <FirstBootLoader />
-    <AppLoading />
-    <v-btn
-      v-show="false"
-      v-shortkey="['ctrl', 'alt', 'd']"
-      @shortkey="handleKeydown()"
-    />
-    <router-view />
+    <AppAlert />
+    <FirstBootLoader @boot-complete="isAppReady = true" />
+    <template v-if="isAppReady">
+      <AppLoading />
+      <v-btn
+        v-show="false"
+        v-shortkey="['ctrl', 'alt', 'd']"
+        @shortkey="handleKeydown()"
+      />
+      <router-view />
+    </template>
   </v-app>
 </template>
 
@@ -16,6 +19,7 @@
 import AppLoading from "@/layout/Loading.vue";
 import FirstBootLoader from "@/layout/FirstBootLoader.vue";
 import AppTitlebar from "@/layout/Titlebar.vue";
+import AppAlert from "@/layout/Alert.vue";
 import BackgroundSync from "@/helpers/BackgroundSync";
 
 export default {
@@ -24,6 +28,12 @@ export default {
     AppLoading,
     FirstBootLoader,
     AppTitlebar,
+    AppAlert,
+  },
+  data() {
+    return {
+      isAppReady: false,
+    };
   },
   created() {
     this.$userdata.load();
@@ -32,36 +42,59 @@ export default {
       this.$vuetify.theme.global.name = theme;
     }
   },
-  mounted() {
+  async mounted() {
     window.addEventListener("keydown", this.handleGlobalKeydown);
     
-    if (window.electronAPI && window.electronAPI.getDisplays) {
-      window.electronAPI.getDisplays().then(displays => {
-        this.$appdata.set("system_displays", displays);
-      });
-      
-      if (window.electronAPI.onDisplaysChanged) {
-        window.electronAPI.onDisplaysChanged(async () => {
-          const displays = await window.electronAPI.getDisplays();
-          this.$appdata.set("system_displays", displays);
-          
-          if (displays.length === 1) {
-            const { default: $popup } = await import("@/helpers/Popup");
-            $popup.exit();
-          }
-        });
-      }
-    }
+    const isPopup = window.location.href.includes("popup");
     
-    // Inicia a sincronização silenciosa em background (se necessária)
-    setTimeout(() => {
-      BackgroundSync.start();
-    }, 5000);
+    if (!isPopup && window.electronAPI && window.electronAPI.isElectron) {
+      const isComplete = await window.electronAPI.getLocalDb("system_first_boot_complete");
+      if (isComplete && isComplete.complete) {
+        this.isAppReady = true;
+      }
+    } else {
+      this.isAppReady = true;
+    }
+
+    if (this.isAppReady) {
+      this.initBackgroundTasks();
+    }
   },
   unmounted() {
     window.removeEventListener("keydown", this.handleGlobalKeydown);
   },
+  watch: {
+    isAppReady(newVal) {
+      if (newVal) {
+        this.initBackgroundTasks();
+      }
+    }
+  },
   methods: {
+    initBackgroundTasks() {
+      if (window.electronAPI && window.electronAPI.getDisplays) {
+        window.electronAPI.getDisplays().then(displays => {
+          this.$appdata.set("system_displays", displays);
+        });
+        
+        if (window.electronAPI.onDisplaysChanged) {
+          window.electronAPI.onDisplaysChanged(async () => {
+            const displays = await window.electronAPI.getDisplays();
+            this.$appdata.set("system_displays", displays);
+            
+            if (displays.length === 1) {
+              const { default: $popup } = await import("@/helpers/Popup");
+              $popup.exit();
+            }
+          });
+        }
+      }
+      
+      // Inicia a sincronização silenciosa em background (se necessária)
+      setTimeout(() => {
+        BackgroundSync.start();
+      }, 5000);
+    },
     handleKeydown() {
       console.log("click ");
       this.$dev.toogle();

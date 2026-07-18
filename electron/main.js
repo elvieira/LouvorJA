@@ -97,6 +97,18 @@ ipcMain.handle('clear-all-data', async () => {
   }
 });
 
+ipcMain.handle('clear-sys-data', async () => {
+  try {
+    const fsExtra = require('fs-extra');
+    if (fsExtra.existsSync(sysDbPath)) fsExtra.emptyDirSync(sysDbPath);
+    if (!fs.existsSync(sysDbPath)) fs.mkdirSync(sysDbPath, { recursive: true });
+    return true;
+  } catch (error) {
+    console.error('Erro ao limpar sysdata:', error);
+    return false;
+  }
+});
+
 ipcMain.handle('get-local-db', async (event, filename) => {
   try {
     const filePath = path.join(sysDbPath, `${filename}.bin`);
@@ -276,6 +288,27 @@ ipcMain.handle('download-database', async (event) => {
   } catch (error) {
     console.error('Erro no download do banco:', error);
     throw error;
+  }
+});
+
+ipcMain.handle('check-old-installation', async (event) => {
+  if (process.platform !== 'win32') return false;
+  const oldPath = 'C:\\Program Files (x86)\\Louvor JA\\config\\database.db';
+  return fs.existsSync(oldPath);
+});
+
+ipcMain.handle('import-old-installation', async (event) => {
+  try {
+    const oldPath = 'C:\\Program Files (x86)\\Louvor JA\\config\\database.db';
+    const finalDbPath = path.join(app.getPath('userData'), 'database.db');
+    const flagPath = path.join(app.getPath('userData'), 'db_download_complete.flag');
+    
+    fs.copyFileSync(oldPath, finalDbPath);
+    fs.writeFileSync(flagPath, '1');
+    return true;
+  } catch (error) {
+    console.error('Erro ao importar versão antiga:', error);
+    return false;
   }
 });
 
@@ -794,7 +827,7 @@ function createWindow() {
   if (isDev) {
     // Em desenvolvimento, carrega o servidor Vite
     mainWindow.loadURL('http://localhost:5173');
-    // mainWindow.webContents.openDevTools();
+    mainWindow.webContents.openDevTools();
   } else {
     // Em produção, carrega o build estático
     mainWindow.loadFile(path.join(__dirname, '..', 'dist', 'index.html'));

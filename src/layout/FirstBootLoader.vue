@@ -43,6 +43,7 @@
 
 <script>
 import $path from "@/helpers/Path";
+import $alert from "@/helpers/Alert";
 
 export default {
   name: "FirstBootLoader",
@@ -57,8 +58,11 @@ export default {
     };
   },
   mounted() {
+    this.$appdata.set("system_first_boot_loading", true);
+
     if (window.location.href.includes("popup")) {
       this.isOpen = false;
+      this.$appdata.set("system_first_boot_loading", false);
       return;
     }
 
@@ -100,9 +104,9 @@ export default {
       if (!isComplete || !isComplete.complete) {
         this.isFirstBoot = true;
         
-        this.statusText = "Preparando nova instalação...";
-        if (window.electronAPI.clearAllData) {
-          await window.electronAPI.clearAllData();
+        // Limpa os arquivos essenciais do sistema antes de baixar o novo
+        if (window.electronAPI.clearSysData) {
+          await window.electronAPI.clearSysData();
         }
         
         await this.runFirstBootSync();
@@ -120,6 +124,7 @@ export default {
             this.progress = 100;
             setTimeout(() => {
               this.isOpen = false;
+              this.$appdata.set("system_first_boot_loading", false);
             }, 300);
           }
         }, 100);
@@ -197,10 +202,40 @@ export default {
           
           this.statusText = "Baixando banco de dados...";
           this.progress = 0;
-          try {
-            await window.electronAPI.downloadDatabase();
-          } catch (e) {
-            throw new Error("Erro no download do banco de dados. Verifique a internet e tente novamente.");
+          
+          let shouldDownloadDb = true;
+          if (window.electronAPI.checkOldInstallation) {
+            const hasOldVersion = await window.electronAPI.checkOldInstallation();
+            if (hasOldVersion) {
+              const wantsToImport = await new Promise((resolve) => {
+                $alert.yesno({
+                  title: "Versão antiga detectada",
+                  text: "Detectamos que você possui a versão antiga do Louvor JA instalada neste computador.<br><br>Gostaria de importar o banco de dados da versão antiga para a nova versão?<br><br>Isso agilizará o processo de inicialização. Fique tranquilo, isso não irá alterar, remover ou interferir no funcionamento da versão antiga instalada.",
+                  translate: false,
+                  center: true
+                }, (resp) => {
+                  resolve(resp === "yes");
+                });
+              });
+              
+              if (wantsToImport) {
+                this.statusText = "Importando dados da versão antiga...";
+                const imported = await window.electronAPI.importOldInstallation();
+                if (imported) {
+                  shouldDownloadDb = false;
+                } else {
+                  this.statusText = "Falha ao importar. Baixando do servidor...";
+                }
+              }
+            }
+          }
+          
+          if (shouldDownloadDb) {
+            try {
+              await window.electronAPI.downloadDatabase();
+            } catch (e) {
+              throw new Error("Erro no download do banco de dados. Verifique a internet e tente novamente.");
+            }
           }
           
           this.statusText = "Extraindo dados locais...";
@@ -221,6 +256,7 @@ export default {
             
             setTimeout(() => {
               this.isOpen = false;
+              this.$appdata.set("system_first_boot_loading", false);
               this.$emit("boot-complete");
               // Auto-reload the app so all pre-loaded modules (like sync) detect the new images
               window.location.reload();

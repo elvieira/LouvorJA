@@ -13,6 +13,7 @@ export default {
     $appdata.set("alert.text", data.text || null);
     $appdata.set("alert.error", data.error || null);
     $appdata.set("alert.color", data.color || "");
+    $appdata.set("alert.center", data.center || false);
     $appdata.set(
       "alert.translate",
       data.translate == null || data.translate == undefined

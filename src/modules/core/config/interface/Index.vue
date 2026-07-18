@@ -1307,7 +1307,9 @@ export default {
             if (window.electronAPI) {
               const success = await window.electronAPI.clearAllData();
               if (success) {
-                this.$alert.info({ text: "Todos os arquivos locais foram removidos com sucesso. O aplicativo será recarregado agora.", translate: false }, () => {
+                window.localStorage.clear();
+                window.sessionStorage.clear();
+                this.$alert.info({ text: "Todos os arquivos e configurações locais foram removidos com sucesso. O aplicativo será recarregado agora.", translate: false }, () => {
                   window.location.reload();
                 });
               } else {

@@ -1,8 +1,6 @@
 <template>
   <AppSidebar v-model="sidebarOpen" />
 
-  <AppAlert />
-
   <div class="main-container" :class="{ 'sidebar-open': sidebarOpen }" @toggle-sidebar="toggleSidebar">
     <v-main class="bg-main">
       <AppModules />
@@ -148,7 +146,6 @@
 import AppFooter from "@/layout/Footer.vue";
 import AppSidebar from "@/layout/Sidebar.vue";
 import AppModules from "@/layout/Modules.vue";
-import AppAlert from "@/layout/Alert.vue";
 import AppTrayArea from "@/layout/TrayArea.vue";
 import LSlide from "@/components/Slide.vue";
 
@@ -158,7 +155,6 @@ export default {
     AppFooter,
     AppSidebar,
     AppModules,
-    AppAlert,
     AppTrayArea,
     LSlide,
   },

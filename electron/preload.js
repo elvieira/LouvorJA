@@ -13,8 +13,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
   openExternal: (url) => ipcRenderer.invoke('open-external', url),
   openPath: (filePath) => ipcRenderer.invoke('open-path', filePath),
   clearAllData: () => ipcRenderer.invoke('clear-all-data'),
+  clearSysData: () => ipcRenderer.invoke('clear-sys-data'),
   extractLocalDb: () => ipcRenderer.invoke('extract-local-db'),
   downloadDatabase: () => ipcRenderer.invoke('download-database'),
+  checkOldInstallation: () => ipcRenderer.invoke('check-old-installation'),
+  importOldInstallation: () => ipcRenderer.invoke('import-old-installation'),
   
   windowControl: (action) => ipcRenderer.invoke('window-control', action),
   onWindowMaximizedState: (callback) => {
