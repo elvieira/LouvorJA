@@ -78,7 +78,7 @@
                   v-for="album in cat.albums" 
                   :key="album.id_album" 
                   class="mb-2 rounded-xl pa-3" 
-                  style="background: var(--main-bg); box-shadow: inset 0 0 0 1px var(--border-color); transition: all 0.2s;"
+                  style="background: transparent; box-shadow: inset 0 0 0 1px var(--border-color); transition: all 0.2s;"
                 >
                   <template #prepend>
                     <v-avatar

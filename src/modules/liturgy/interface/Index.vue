@@ -323,7 +323,7 @@
       <!-- ====== ADD ITEM DIALOG (Multi-step) ====== -->
       <v-dialog
         v-model="showAddMenu"
-        max-width="520"
+        max-width="600"
         :theme="$theme.primary()"
         content-class="modern-alert-dialog-wrapper"
         @update:model-value="val => { if (!val) addStep = 1; }"
@@ -344,32 +344,35 @@
                 </v-btn>
               </v-card-title>
               <v-card-text class="px-6 pb-6 pt-2">
-                <div
-                  v-for="type in itemTypes"
-                  :key="type.value"
-                  class="d-flex align-center rounded-xl pa-4 mb-3"
-                  style="cursor: pointer; transition: all 0.2s ease; border: 1px solid var(--border-color, rgba(255,255,255,0.05)); background: rgba(var(--v-theme-surface), 0.1);"
-                  onmouseover="this.style.background='rgba(var(--v-theme-surface), 0.25)'"
-                  onmouseout="this.style.background='rgba(var(--v-theme-surface), 0.1)'"
-                  @click="openAddForm(type.value)"
-                >
-                  <div class="d-flex align-center justify-center mr-4" style="width: 32px;">
-                    <v-icon :color="type.color" size="28">
-                      {{ type.icon }}
-                    </v-icon>
-                  </div>
-                  <div class="flex-grow-1">
-                    <div class="font-weight-bold mb-1" style="font-size: 1.05rem; color: var(--sidebar-text);">
-                      {{ type.label }}
-                    </div>
-                    <div style="font-size: 0.85rem; color: var(--sidebar-text-secondary); line-height: 1.2;">
-                      {{ type.description }}
-                    </div>
-                  </div>
-                  <v-icon color="grey" size="24" class="opacity-50">
-                    mdi-chevron-right
-                  </v-icon>
-                </div>
+                <v-row class="mt-1">
+                  <v-col
+                    v-for="type in itemTypes"
+                    :key="type.value"
+                    cols="6"
+                    sm="4"
+                  >
+                    <v-hover v-slot="{ isHovering, props }">
+                      <v-card
+                        v-bind="props"
+                        class="d-flex flex-column align-center justify-center rounded-xl pa-3 w-100 cursor-pointer text-center"
+                        :elevation="0"
+                        style="transition: all 0.3s ease; border: 1px solid var(--border-color, rgba(128,128,128,0.15)); aspect-ratio: 1;"
+                        :style="{ background: isHovering ? 'rgba(128,128,128,0.04)' : 'transparent' }"
+                        @click="openAddForm(type.value)"
+                      >
+                        <v-icon :color="type.color" size="42" class="mb-3" :style="{ transform: isHovering ? 'scale(1.05)' : 'scale(1)', transition: 'transform 0.3s ease' }">
+                          {{ type.icon }}
+                        </v-icon>
+                        <div class="font-weight-bold mb-1" style="font-size: 0.95rem; color: var(--sidebar-text); line-height: 1.2;">
+                          {{ type.label }}
+                        </div>
+                        <div style="font-size: 0.75rem; color: var(--sidebar-text-secondary); line-height: 1.2; padding: 0 4px;">
+                          {{ type.description }}
+                        </div>
+                      </v-card>
+                    </v-hover>
+                  </v-col>
+                </v-row>
               </v-card-text>
             </v-window-item>
 
@@ -397,8 +400,10 @@
                 <v-text-field
                   v-model="addForm.name"
                   :label="t('fields.name')"
-                  variant="outlined"
-                  rounded="lg"
+                  variant="solo-filled"
+                  flat
+                  bg-color="rgba(128,128,128,0.05)"
+                  rounded="xl"
                   density="comfortable"
                   hide-details
                   class="modern-input-no-thick mb-4"
@@ -411,8 +416,10 @@
                   v-if="addForm.type === 'annotation'"
                   v-model="addForm.subtitle"
                   :label="t('fields.description')"
-                  variant="outlined"
-                  rounded="lg"
+                  variant="solo-filled"
+                  flat
+                  bg-color="rgba(128,128,128,0.05)"
+                  rounded="xl"
                   density="comfortable"
                   hide-details
                   rows="2"
@@ -422,7 +429,7 @@
 
                 <!-- Music selector -->
                 <div v-if="addForm.type === 'music'" class="mb-4">
-                  <v-autocomplete v-model="addForm.musicId" v-model:search="musicSearchQuery" :items="filteredMusicList" :custom-filter="() => true" item-title="name" item-value="id_music" :label="t('fields.search_music')" variant="outlined" rounded="lg" density="comfortable" class="modern-input-no-thick" hide-details clearable :menu-props="{ transition: 'fade-transition' }" :list-props="{ style: 'background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border-color, rgba(150, 150, 150, 0.2)); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); padding: 8px 0;' }" @update:model-value="onMusicSelect">
+                  <v-autocomplete v-model="addForm.musicId" v-model:search="musicSearchQuery" :items="filteredMusicList" :custom-filter="() => true" item-title="name" item-value="id_music" :label="t('fields.search_music')" variant="solo-filled" flat bg-color="rgba(128,128,128,0.05)" rounded="xl" density="comfortable" class="modern-input-no-thick" hide-details clearable :menu-props="{ transition: 'fade-transition' }" :list-props="{ style: 'background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border-color, rgba(150, 150, 150, 0.2)); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); padding: 8px 0;' }" @update:model-value="onMusicSelect">
                     <template #item="{ item, props }">
                       <v-list-item v-bind="props" :title="null" class="mx-2 rounded-lg mb-1" color="primary" style="min-height: 40px;">
                         <template #prepend v-if="item.raw.hymnal_track">
@@ -450,7 +457,7 @@
 
                 <!-- Verse selector -->
                 <div v-if="addForm.type === 'verse'">
-                  <v-autocomplete v-model="addForm.verseBookId" :items="bibleBooks" item-title="name" item-value="id_bible_book" :label="t('fields.book')" variant="outlined" rounded="lg" density="comfortable" class="modern-input-no-thick mb-3" hide-details :menu-props="{ transition: 'fade-transition' }" :list-props="{ style: 'background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border-color, rgba(150, 150, 150, 0.2)); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); padding: 8px 0;' }" @update:model-value="onBookSelect">
+                  <v-autocomplete v-model="addForm.verseBookId" :items="bibleBooks" item-title="name" item-value="id_bible_book" :label="t('fields.book')" variant="solo-filled" flat bg-color="rgba(128,128,128,0.05)" rounded="xl" density="comfortable" class="modern-input-no-thick mb-3" hide-details :menu-props="{ transition: 'fade-transition' }" :list-props="{ style: 'background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border-color, rgba(150, 150, 150, 0.2)); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); padding: 8px 0;' }" @update:model-value="onBookSelect">
                     <template #item="{ item, props }">
                       <v-list-item v-bind="props" :title="null" class="mx-2 rounded-lg mb-1" color="primary" style="min-height: 40px;">
                         <template #title>
@@ -471,7 +478,7 @@
                     </template>
                   </v-autocomplete>
                   <div class="d-flex" style="gap: 12px;">
-                    <v-autocomplete v-model="addForm.verseChapter" :items="verseChapterList" :label="t('fields.chapter')" variant="outlined" rounded="lg" density="comfortable" class="modern-input-no-thick mb-3" hide-details style="max-width: 120px;" :menu-props="{ transition: 'fade-transition' }" :list-props="{ style: 'background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border-color, rgba(150, 150, 150, 0.2)); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); padding: 8px 0;' }">
+                    <v-autocomplete v-model="addForm.verseChapter" :items="verseChapterList" :label="t('fields.chapter')" variant="solo-filled" flat bg-color="rgba(128,128,128,0.05)" rounded="xl" density="comfortable" class="modern-input-no-thick mb-3" hide-details style="max-width: 120px;" :menu-props="{ transition: 'fade-transition' }" :list-props="{ style: 'background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border-color, rgba(150, 150, 150, 0.2)); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); padding: 8px 0;' }">
                       <template #item="{ item, props }">
                         <v-list-item v-bind="props" :title="null" class="mx-2 rounded-lg mb-1" color="primary" style="min-height: 40px;">
                           <template #title>
@@ -494,8 +501,10 @@
                     <v-text-field
                       v-model="addForm.verseNumbers"
                       :label="t('fields.verses')"
-                      variant="outlined"
-                      rounded="lg"
+                      variant="solo-filled"
+                      flat
+                      bg-color="rgba(128,128,128,0.05)"
+                      rounded="xl"
                       density="comfortable"
                       class="modern-input-no-thick mb-3"
                       hide-details
@@ -506,19 +515,47 @@
 
                 <!-- Media file selector -->
                 <div v-if="addForm.type === 'media'" class="mb-4">
-                  <v-btn
-                    block
-                    variant="tonal"
-                    color="primary"
-                    rounded="lg"
-                    class="text-none font-weight-bold"
-                    prepend-icon="mdi-folder-open"
+                  <div
+                    v-if="addForm.filePath"
+                    class="rounded-xl pa-4 d-flex align-center justify-space-between"
+                    style="border: 1px solid var(--border-color, rgba(128,128,128,0.2)); background: rgba(128,128,128,0.05);"
+                  >
+                    <div class="d-flex align-center" style="overflow: hidden;">
+                      <v-icon color="primary" size="32" class="mr-3">mdi-file-video</v-icon>
+                      <div class="d-flex flex-column" style="overflow: hidden;">
+                        <span class="font-weight-bold text-truncate" style="color: var(--sidebar-text); max-width: 250px;">
+                          {{ addForm.filePath.split(/[\\/]/).pop() }}
+                        </span>
+                        <span class="text-caption text-truncate" style="color: var(--sidebar-text-secondary); max-width: 250px;" :title="addForm.filePath">
+                          {{ addForm.filePath }}
+                        </span>
+                      </div>
+                    </div>
+                    <div class="d-flex align-center">
+                      <v-btn icon size="small" variant="text" color="primary" class="mr-1" @click="selectMediaFile">
+                        <v-icon>mdi-pencil</v-icon>
+                        <v-tooltip activator="parent" location="top">Trocar</v-tooltip>
+                      </v-btn>
+                      <v-btn icon size="small" variant="text" color="error" @click="addForm.filePath = ''">
+                        <v-icon>mdi-delete</v-icon>
+                        <v-tooltip activator="parent" location="top">Remover</v-tooltip>
+                      </v-btn>
+                    </div>
+                  </div>
+
+                  <div
+                    v-else
+                    class="rounded-xl d-flex flex-column align-center justify-center cursor-pointer"
+                    style="height: 120px; border: 2px dashed var(--border-color, rgba(128,128,128,0.2)); background: rgba(128,128,128,0.02); transition: all 0.2s;"
+                    onmouseover="this.style.background='rgba(128,128,128,0.04)'; this.style.borderColor='rgba(128,128,128,0.5)'"
+                    onmouseout="this.style.background='rgba(128,128,128,0.02)'; this.style.borderColor='var(--border-color, rgba(128,128,128,0.2))'"
                     @click="selectMediaFile"
                   >
-                    {{ addForm.filePath ? 'Trocar Arquivo' : t('fields.select_file') }}
-                  </v-btn>
-                  <div v-if="addForm.filePath" class="text-caption mt-2" style="color: var(--sidebar-text-secondary); word-break: break-all;">
-                    {{ addForm.filePath }}
+                    <v-icon size="36" color="primary" class="mb-2" style="opacity: 0.8;">
+                      mdi-cloud-upload
+                    </v-icon>
+                    <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text);">{{ t('fields.select_file') || 'Selecionar Arquivo' }}</span>
+                    <span class="text-caption mt-1" style="color: var(--sidebar-text-secondary);">Clique para buscar no computador</span>
                   </div>
                 </div>
 
@@ -527,8 +564,10 @@
                   v-if="addForm.type === 'link'"
                   v-model="addForm.url"
                   :label="t('fields.url')"
-                  variant="outlined"
-                  rounded="lg"
+                  variant="solo-filled"
+                  flat
+                  bg-color="rgba(128,128,128,0.05)"
+                  rounded="xl"
                   density="comfortable"
                   class="modern-input-no-thick mb-4"
                   hide-details
@@ -892,12 +931,12 @@ export default {
     },
     getNamePlaceholder(type) {
       const map = {
-        annotation: "Ex: Oração, Doxologia, Ofertório...",
-        category: "Ex: ABERTURA, ENCERRAMENTO...",
+        annotation: "",
+        category: "",
         music: "",
         verse: "",
-        media: "Nome do vídeo",
-        link: "Nome do link",
+        media: "",
+        link: "",
       };
       return map[type] || "";
     },
@@ -1394,8 +1433,8 @@ export default {
   z-index: 10;
 }
 
-.modern-input-no-thick:deep(.v-field--variant-outlined.v-field--focused .v-field__outline) {
-  --v-field-border-width: 1px !important;
+.modern-input-no-thick:deep(.v-field__overlay) {
+  opacity: 0 !important;
 }
 
 .module-icon-box {
