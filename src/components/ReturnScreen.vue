@@ -1,17 +1,19 @@
 <template>
-  <div class="w-100 h-100 d-flex flex-column justify-space-between pa-8" :style="style_bg">
+  <div class="w-100 h-100 d-flex flex-column justify-space-between pa-8 return-screen" :style="style_bg">
     <div class="d-flex flex-column align-center justify-center flex-grow-1" style="gap: 24px;">
       <div v-if="current_lyric" class="text-center current-lyric" v-html="current_lyric" />
-      <div v-else class="text-center current-lyric" style="opacity: 0.4;">
-        {{ t("return_screen_no_song") }}
+      <div v-else class="text-center current-lyric" style="opacity: 0.5;">
+        {{ t("return_screen_pause") }}
       </div>
 
       <div v-if="next_lyric" class="text-center next-lyric" v-html="next_lyric" />
     </div>
 
-    <div class="d-flex align-center justify-space-between status-bar">
-      <span>{{ slide_status }}</span>
-      <span>{{ remaining_time }}</span>
+    <div class="return-divider" :style="{ backgroundColor: font_color }" />
+
+    <div class="d-flex align-center justify-space-between status-bar pt-4">
+      <span class="slide-count">{{ slide_status }}</span>
+      <span class="time">{{ remaining_time }}</span>
     </div>
   </div>
 </template>
@@ -26,10 +28,13 @@ export default {
     background_color() {
       return this.$userdata.get("modules.config.return_screen_bg_color") || "#000000";
     },
+    font_color() {
+      return this.$userdata.get("modules.config.return_screen_font_color") || "#ffffff";
+    },
     style_bg() {
       return {
         backgroundColor: this.background_color,
-        color: "#ffffff",
+        color: this.font_color,
       };
     },
     config() {
@@ -82,6 +87,9 @@ export default {
 </script>
 
 <style scoped>
+.return-screen {
+  text-transform: uppercase;
+}
 .current-lyric {
   font-size: 6vw;
   font-weight: 700;
@@ -94,10 +102,23 @@ export default {
   opacity: 0.6;
   line-height: 1.3;
 }
+.return-divider {
+  width: 100%;
+  height: 2px;
+  opacity: 0.25;
+  border-radius: 1px;
+}
 .status-bar {
+  letter-spacing: 0.05em;
+}
+.slide-count {
+  font-size: 2.6vw;
+  font-weight: 700;
+  opacity: 0.85;
+}
+.time {
   font-size: 1.6vw;
   font-weight: 600;
   opacity: 0.7;
-  letter-spacing: 0.05em;
 }
 </style>

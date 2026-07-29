@@ -35,6 +35,13 @@ export default {
       isAppReady: false,
     };
   },
+  watch: {
+    isAppReady(newVal) {
+      if (newVal) {
+        this.initBackgroundTasks();
+      }
+    },
+  },
   created() {
     this.$userdata.load();
     const theme = this.$userdata.get("theme");
@@ -62,13 +69,6 @@ export default {
   },
   unmounted() {
     window.removeEventListener("keydown", this.handleGlobalKeydown);
-  },
-  watch: {
-    isAppReady(newVal) {
-      if (newVal) {
-        this.initBackgroundTasks();
-      }
-    }
   },
   methods: {
     initBackgroundTasks() {
@@ -101,6 +101,10 @@ export default {
       this.$dev.toogle();
     },
     handleGlobalKeydown(e) {
+      if (this.$route.query.role === "return") {
+        return;
+      }
+
       if (["INPUT", "TEXTAREA"].includes(document.activeElement.tagName) || document.activeElement.isContentEditable) {
         return;
       }

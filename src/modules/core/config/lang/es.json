@@ -55,6 +55,7 @@
     "return_screen_enable": "Activar Pantalla de Retorno",
     "return_screen_select_monitor": "Mostrar pantalla de retorno en el monitor:",
     "return_screen_bg_color": "Color de fondo",
-    "return_screen_no_song": "Ninguna canción en reproducción",
+    "return_screen_font_color": "Color de la fuente",
+    "return_screen_pause": "Pausa",
     "return_screen_slide": "Diapositiva"
 }

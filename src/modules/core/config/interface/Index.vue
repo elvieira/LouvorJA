@@ -597,14 +597,28 @@
                           Nenhum monitor estendido (secundário) detectado no sistema.
                         </v-alert>
 
-                        <div class="text-body-2 font-weight-medium mb-2" style="color: var(--sidebar-text-secondary);">
-                          {{ t('return_screen_bg_color') }}
+                        <div class="d-flex" style="gap: 32px;">
+                          <div>
+                            <div class="text-body-2 font-weight-medium mb-2" style="color: var(--sidebar-text-secondary);">
+                              {{ t('return_screen_bg_color') }}
+                            </div>
+                            <input
+                              v-model="return_screen_bg_color"
+                              type="color"
+                              style="width: 80px; height: 36px; border: none; border-radius: 8px; cursor: pointer; background: transparent; padding: 0;"
+                            />
+                          </div>
+                          <div>
+                            <div class="text-body-2 font-weight-medium mb-2" style="color: var(--sidebar-text-secondary);">
+                              {{ t('return_screen_font_color') }}
+                            </div>
+                            <input
+                              v-model="return_screen_font_color"
+                              type="color"
+                              style="width: 80px; height: 36px; border: none; border-radius: 8px; cursor: pointer; background: transparent; padding: 0;"
+                            />
+                          </div>
                         </div>
-                        <input
-                          v-model="return_screen_bg_color"
-                          type="color"
-                          style="width: 80px; height: 36px; border: none; border-radius: 8px; cursor: pointer; background: transparent; padding: 0;"
-                        />
                       </template>
                     </div>
 
@@ -1066,6 +1080,7 @@ export default {
     return_screen_enabled: false,
     return_screen_monitor: null,
     return_screen_bg_color: "#000000",
+    return_screen_font_color: "#ffffff",
 
     manifest,
   }),
@@ -1171,6 +1186,9 @@ export default {
     return_screen_bg_color(val) {
       this.$userdata.set("modules.config.return_screen_bg_color", val);
     },
+    return_screen_font_color(val) {
+      this.$userdata.set("modules.config.return_screen_font_color", val);
+    },
     slide_align(val) {
       if (val !== undefined && val !== null) {
         this.$userdata.set("modules.config.slide_align", val);
@@ -1263,7 +1281,7 @@ export default {
       "media_slide_monitor", "media_slide_fullscreen", "media_slide_disable_main_if_extended", "media_slide_minimize_player",
       "slide_custom_text_format", "slide_font_size", "slide_font_color", "slide_font_weight",
       "slide_custom_bg", "slide_bg_color", "slide_bg_image", "slide_bg_opacity",
-      "return_screen_enabled", "return_screen_monitor", "return_screen_bg_color",
+      "return_screen_enabled", "return_screen_monitor", "return_screen_bg_color", "return_screen_font_color",
     ];
     fields.forEach(field => {
       const val = this.$userdata.get(`modules.config.${field}`);
