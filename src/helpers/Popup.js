@@ -2,6 +2,14 @@ import $appdata from "@/helpers/AppData";
 import $window from "@/helpers/Window";
 import { markRaw } from "vue";
 
+function splitPopups() {
+  const popups = ($appdata.get("popups") || []).filter(p => !p.closed);
+  return {
+    mainPopups: popups.filter(p => p.role !== "return"),
+    returnPopups: popups.filter(p => p.role === "return"),
+  };
+}
+
 export default {
   async open(params) {
     if (typeof params !== "object") {
@@ -40,43 +48,33 @@ export default {
     }
   },
   async exit() {
-    const popups = $appdata.get("popups") || [];
-    const returnPopups = [];
-    popups.forEach(popup => {
-      if (popup.role === "return") {
-        returnPopups.push(popup);
-        return;
-      }
-      if (popup && !popup.closed) {
-        popup.close();
-      }
-    });
+    const { mainPopups, returnPopups } = splitPopups();
+    mainPopups.forEach(popup => popup.close());
     $appdata.set("popup_module", "");
-    $appdata.set("popups", returnPopups.filter(p => !p.closed));
+    $appdata.set("popups", returnPopups);
   },
   async syncMonitors(monitors, moduleName = "media", forceOpen = false) {
-    let popups = $appdata.get("popups") || [];
-    popups = popups.filter(p => !p.closed);
+    const split = splitPopups();
+    const { returnPopups } = split;
+    let { mainPopups } = split;
 
-    popups.forEach(popup => {
-      if (popup.role !== "return" && popup.monitorId && !monitors.includes(popup.monitorId)) {
+    mainPopups.forEach(popup => {
+      if (popup.monitorId && !monitors.includes(popup.monitorId)) {
         popup.close();
       }
     });
-
-    popups = popups.filter(p => !p.closed);
+    mainPopups = mainPopups.filter(p => !p.closed);
 
     if ($appdata.get("popup_module") === moduleName || forceOpen) {
       for (const monitorId of monitors) {
-        const existing = popups.find(p => p.role !== "return" && p.monitorId === monitorId);
+        const existing = mainPopups.find(p => p.monitorId === monitorId);
         if (!existing || existing.closed) {
           const features = `width=800,height=600,monitor=${monitorId},fullscreen=yes`;
           const newPopup = $window.open("#/popup", `PopupWindow_${monitorId}`, features);
           newPopup.monitorId = monitorId;
-          popups.push(markRaw(newPopup));
+          mainPopups.push(markRaw(newPopup));
         }
       }
-      const mainPopups = popups.filter(p => p.role !== "return");
       if (monitors.length > 0) {
         $appdata.set("popup_module", moduleName);
       } else if (mainPopups.length === 0) {
@@ -84,26 +82,21 @@ export default {
       }
     }
 
-    $appdata.set("popups", popups);
-    const mainPopup = popups.find(p => p.role !== "return");
-    if (mainPopup) {
-      $appdata.set("popup", mainPopup);
+    $appdata.set("popups", [...mainPopups, ...returnPopups]);
+    if (mainPopups.length > 0) {
+      $appdata.set("popup", mainPopups[0]);
     }
   },
   async syncReturnMonitor(monitorId, enabled) {
-    let popups = $appdata.get("popups") || [];
-    popups = popups.filter(p => !p.closed);
-
-    const otherPopups = popups.filter(p => p.role !== "return");
-    const returnPopups = popups.filter(p => p.role === "return");
+    const { mainPopups, returnPopups } = splitPopups();
 
     if (!enabled || !monitorId) {
       returnPopups.forEach(popup => popup.close());
-      $appdata.set("popups", otherPopups);
+      $appdata.set("popups", mainPopups);
       return;
     }
 
-    let keep = returnPopups.find(popup => popup.monitorId === monitorId && !popup.closed);
+    let keep = returnPopups.find(popup => popup.monitorId === monitorId);
     returnPopups.forEach(popup => {
       if (popup !== keep) {
         popup.close();
@@ -118,20 +111,11 @@ export default {
       keep = markRaw(newPopup);
     }
 
-    $appdata.set("popups", [...otherPopups, keep]);
+    $appdata.set("popups", [...mainPopups, keep]);
   },
   async exitReturn() {
-    const popups = $appdata.get("popups") || [];
-    const otherPopups = [];
-    popups.forEach(popup => {
-      if (popup.role === "return") {
-        if (popup && !popup.closed) {
-          popup.close();
-        }
-      } else {
-        otherPopups.push(popup);
-      }
-    });
-    $appdata.set("popups", otherPopups);
+    const { mainPopups, returnPopups } = splitPopups();
+    returnPopups.forEach(popup => popup.close());
+    $appdata.set("popups", mainPopups);
   },
 };
