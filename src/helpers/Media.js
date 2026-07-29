@@ -19,7 +19,7 @@ export default {
       const confirmed = await new Promise((resolve) => {
         $alert.yesno({
           text: "Uma mídia está em reprodução. Deseja encerrá-la e reproduzir esta música?",
-          translate: false
+          translate: false,
         }, (res) => resolve(res === "yes"));
       });
       if (!confirmed) return;
@@ -260,12 +260,11 @@ export default {
 
   async syncReturnMonitor() {
     if (window.electronAPI && window.electronAPI.getDisplays) {
-      const enabled = $userdata.get("modules.config.return_screen_enabled") === true;
       const monitorId = $userdata.get("modules.config.return_screen_monitor");
       const isMediaActive = $appdata.get("modules.media.id_music") != null;
 
       const { default: $popup } = await import("@/helpers/Popup");
-      await $popup.syncReturnMonitor(monitorId, enabled && isMediaActive);
+      await $popup.syncReturnMonitor(monitorId, !!monitorId && isMediaActive);
     }
   },
 

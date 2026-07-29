@@ -540,86 +540,40 @@
                       >
                         Nenhum monitor estendido (secundário) detectado no sistema.
                       </v-alert>
-                    </div>
 
-                    <v-divider class="mb-8" style="opacity: 0.1;" />
-
-                    <!-- TELA DE RETORNO -->
-                    <div class="mb-8">
-                      <div class="d-flex align-center mb-4">
-                        <v-icon size="20" color="primary" class="mr-2">
-                          mdi-monitor-eye
-                        </v-icon>
-                        <span class="text-subtitle-1 font-weight-bold" style="color: var(--sidebar-text);">{{ t('return_screen') }}</span>
+                      <div class="text-body-2 font-weight-medium mb-2 mt-6" style="color: var(--sidebar-text-secondary);">
+                        {{ t('return_screen_select_monitor') }}
                       </div>
-
-                      <v-switch
-                        v-model="return_screen_enabled"
-                        :label="t('return_screen_enable')"
-                        color="primary"
-                        inset
-                        hide-details
-                        class="mb-4 font-weight-medium"
-                      />
-
-                      <template v-if="return_screen_enabled">
-                        <div class="text-body-2 font-weight-medium mb-2" style="color: var(--sidebar-text-secondary);">
-                          {{ t('return_screen_select_monitor') }}
-                        </div>
-                        <div v-if="slideMonitorList.length > 0" class="d-flex flex-wrap mt-2 mb-6" style="gap: 16px;">
-                          <v-card
-                            v-for="monitor in slideMonitorList"
-                            :key="monitor.value"
-                            flat
-                            class="rounded-xl border cursor-pointer"
-                            :class="return_screen_monitor === monitor.value ? 'elevation-2' : ''"
-                            :style="return_screen_monitor === monitor.value ? 'background: rgba(0,151,215,0.08); border: 2px solid var(--accent-blue) !important; transition: all 0.2s;' : 'background: var(--main-bg); border: 2px solid transparent !important; transition: all 0.2s; box-shadow: inset 0 0 0 1px var(--border-color);'"
-                            width="160"
-                            @click="return_screen_monitor = monitor.value"
-                          >
-                            <div class="pa-4 d-flex flex-column align-center">
-                              <v-icon :color="return_screen_monitor === monitor.value ? 'primary' : 'grey'" size="32" class="mb-2 transition-all">
-                                {{ return_screen_monitor === monitor.value ? 'mdi-monitor-eye' : 'mdi-monitor-off' }}
-                              </v-icon>
-                              <span class="text-body-2 font-weight-bold text-center transition-all" :style="return_screen_monitor === monitor.value ? 'color: var(--accent-blue)' : 'color: var(--sidebar-text-secondary)'">
-                                {{ monitor.title }}
-                              </span>
-                            </div>
-                          </v-card>
-                        </div>
-                        <v-alert
-                          v-else
-                          type="info"
-                          variant="tonal"
-                          density="compact"
-                          class="mt-2 mb-6 text-caption rounded-lg"
+                      <div v-if="slideMonitorList.length > 0" class="d-flex flex-wrap mt-2" style="gap: 16px;">
+                        <v-card
+                          v-for="monitor in slideMonitorList"
+                          :key="monitor.value"
+                          flat
+                          class="rounded-xl border cursor-pointer"
+                          :class="return_screen_monitor === monitor.value ? 'elevation-2' : ''"
+                          :style="return_screen_monitor === monitor.value ? 'background: rgba(0,151,215,0.08); border: 2px solid var(--accent-blue) !important; transition: all 0.2s;' : 'background: var(--main-bg); border: 2px solid transparent !important; transition: all 0.2s; box-shadow: inset 0 0 0 1px var(--border-color);'"
+                          width="160"
+                          @click="toggleReturnScreenMonitor(monitor.value)"
                         >
-                          Nenhum monitor estendido (secundário) detectado no sistema.
-                        </v-alert>
-
-                        <div class="d-flex" style="gap: 32px;">
-                          <div>
-                            <div class="text-body-2 font-weight-medium mb-2" style="color: var(--sidebar-text-secondary);">
-                              {{ t('return_screen_bg_color') }}
-                            </div>
-                            <input
-                              v-model="return_screen_bg_color"
-                              type="color"
-                              style="width: 80px; height: 36px; border: none; border-radius: 8px; cursor: pointer; background: transparent; padding: 0;"
-                            />
+                          <div class="pa-4 d-flex flex-column align-center">
+                            <v-icon :color="return_screen_monitor === monitor.value ? 'primary' : 'grey'" size="32" class="mb-2 transition-all">
+                              {{ return_screen_monitor === monitor.value ? 'mdi-monitor-eye' : 'mdi-monitor-off' }}
+                            </v-icon>
+                            <span class="text-body-2 font-weight-bold text-center transition-all" :style="return_screen_monitor === monitor.value ? 'color: var(--accent-blue)' : 'color: var(--sidebar-text-secondary)'">
+                              {{ monitor.title }}
+                            </span>
                           </div>
-                          <div>
-                            <div class="text-body-2 font-weight-medium mb-2" style="color: var(--sidebar-text-secondary);">
-                              {{ t('return_screen_font_color') }}
-                            </div>
-                            <input
-                              v-model="return_screen_font_color"
-                              type="color"
-                              style="width: 80px; height: 36px; border: none; border-radius: 8px; cursor: pointer; background: transparent; padding: 0;"
-                            />
-                          </div>
-                        </div>
-                      </template>
+                        </v-card>
+                      </div>
+                      <v-alert
+                        v-else
+                        type="info"
+                        variant="tonal"
+                        density="compact"
+                        class="mt-2 text-caption rounded-lg"
+                      >
+                        Nenhum monitor estendido (secundário) detectado no sistema.
+                      </v-alert>
                     </div>
 
                     <v-divider class="mb-8" style="opacity: 0.1;" />
@@ -657,6 +611,41 @@
                         hide-details
                         class="font-weight-medium"
                       />
+                    </div>
+
+                    <v-divider class="mb-8" style="opacity: 0.1;" />
+
+                    <!-- TELA DE RETORNO -->
+                    <div class="mb-8">
+                      <div class="d-flex align-center mb-4">
+                        <v-icon size="20" color="primary" class="mr-2">
+                          mdi-monitor-eye
+                        </v-icon>
+                        <span class="text-subtitle-1 font-weight-bold" style="color: var(--sidebar-text);">{{ t('return_screen') }}</span>
+                      </div>
+
+                      <div class="d-flex" style="gap: 32px;">
+                        <div>
+                          <div class="text-body-2 font-weight-medium mb-2" style="color: var(--sidebar-text-secondary);">
+                            {{ t('return_screen_bg_color') }}
+                          </div>
+                          <input
+                            v-model="return_screen_bg_color"
+                            type="color"
+                            style="width: 80px; height: 36px; border: none; border-radius: 8px; cursor: pointer; background: transparent; padding: 0;"
+                          />
+                        </div>
+                        <div>
+                          <div class="text-body-2 font-weight-medium mb-2" style="color: var(--sidebar-text-secondary);">
+                            {{ t('return_screen_font_color') }}
+                          </div>
+                          <input
+                            v-model="return_screen_font_color"
+                            type="color"
+                            style="width: 80px; height: 36px; border: none; border-radius: 8px; cursor: pointer; background: transparent; padding: 0;"
+                          />
+                        </div>
+                      </div>
                     </div>
 
                     <v-divider class="mb-8" style="opacity: 0.1;" />
@@ -1077,7 +1066,6 @@ export default {
     slide_bg_image: null,
     slide_bg_opacity: 100,
 
-    return_screen_enabled: false,
     return_screen_monitor: null,
     return_screen_bg_color: "#000000",
     return_screen_font_color: "#ffffff",
@@ -1174,10 +1162,6 @@ export default {
         $media.syncMonitors();
         this.syncExternalMediaMonitors();
       }
-    },
-    return_screen_enabled(val) {
-      this.$userdata.set("modules.config.return_screen_enabled", val);
-      $media.syncReturnMonitor();
     },
     return_screen_monitor(val) {
       this.$userdata.set("modules.config.return_screen_monitor", val);
@@ -1281,7 +1265,7 @@ export default {
       "media_slide_monitor", "media_slide_fullscreen", "media_slide_disable_main_if_extended", "media_slide_minimize_player",
       "slide_custom_text_format", "slide_font_size", "slide_font_color", "slide_font_weight",
       "slide_custom_bg", "slide_bg_color", "slide_bg_image", "slide_bg_opacity",
-      "return_screen_enabled", "return_screen_monitor", "return_screen_bg_color", "return_screen_font_color",
+      "return_screen_monitor", "return_screen_bg_color", "return_screen_font_color",
     ];
     fields.forEach(field => {
       const val = this.$userdata.get(`modules.config.${field}`);
@@ -1333,6 +1317,9 @@ export default {
         unselected = unselected.filter(m => m !== val);
       }
       this.$userdata.set("modules.config.unselected_slide_monitors", unselected);
+    },
+    toggleReturnScreenMonitor(val) {
+      this.return_screen_monitor = this.return_screen_monitor === val ? null : val;
     },
     toggleMediaSlideMonitor(val) {
       if (this.media_slide_monitor.includes(val)) {
