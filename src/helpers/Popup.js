@@ -83,4 +83,39 @@ export default {
       $appdata.set("popup", popups[0]);
     }
   },
+  async syncReturnMonitor(monitorId, enabled) {
+    let popups = $appdata.get("popups_return") || [];
+    popups = popups.filter(p => !p.closed);
+
+    if (!enabled || !monitorId) {
+      popups.forEach(popup => popup.close());
+      $appdata.set("popups_return", []);
+      return;
+    }
+
+    popups.forEach(popup => {
+      if (popup.monitorId !== monitorId) {
+        popup.close();
+      }
+    });
+    popups = popups.filter(p => !p.closed);
+
+    if (popups.length === 0) {
+      const features = `width=800,height=600,monitor=${monitorId},fullscreen=yes`;
+      const newPopup = $window.open("#/popup?role=return", `PopupReturnWindow_${monitorId}`, features);
+      newPopup.monitorId = monitorId;
+      popups = [markRaw(newPopup)];
+    }
+
+    $appdata.set("popups_return", popups);
+  },
+  async exitReturn() {
+    const popups = $appdata.get("popups_return") || [];
+    popups.forEach(popup => {
+      if (popup && !popup.closed) {
+        popup.close();
+      }
+    });
+    $appdata.set("popups_return", []);
+  },
 };

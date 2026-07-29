@@ -234,6 +234,8 @@ export default {
         }
       }
     }
+
+    this.syncReturnMonitor();
   },
 
   async syncMonitors() {
@@ -253,6 +255,16 @@ export default {
         const { default: $popup } = await import("@/helpers/Popup");
         await $popup.syncMonitors(selectedMonitors, "media", isMediaActive);
       }
+    }
+  },
+
+  async syncReturnMonitor() {
+    if (window.electronAPI && window.electronAPI.getDisplays) {
+      const enabled = $userdata.get("modules.config.return_screen_enabled") === true;
+      const monitorId = $userdata.get("modules.config.return_screen_monitor");
+
+      const { default: $popup } = await import("@/helpers/Popup");
+      await $popup.syncReturnMonitor(monitorId, enabled);
     }
   },
 

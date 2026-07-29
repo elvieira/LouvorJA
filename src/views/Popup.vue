@@ -1,20 +1,28 @@
 <template>
   <div class="w-100 h-100" style="background: #000">
-    <component :is="loadModuleComponent()" v-if="module" />
+    <ReturnScreen v-if="is_return_screen" />
+    <component :is="loadModuleComponent()" v-else-if="module" />
   </div>
 </template>
 
 <script>
 import { defineAsyncComponent } from "vue";
+import ReturnScreen from "@/components/ReturnScreen.vue";
 
 export default {
   name: "PopupPage",
+  components: {
+    ReturnScreen,
+  },
   data: () => ({
     message: null,
   }),
   computed: {
     module() {
       return this.$appdata.get("popup_module");
+    },
+    is_return_screen() {
+      return this.$route.query.role === "return";
     },
   },
   mounted() {

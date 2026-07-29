@@ -85,6 +85,7 @@ export default {
             if (displays.length === 1) {
               const { default: $popup } = await import("@/helpers/Popup");
               $popup.exit();
+              $popup.exitReturn();
             }
           });
         }
