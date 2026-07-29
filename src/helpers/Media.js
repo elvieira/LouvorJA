@@ -452,7 +452,7 @@ export default {
   },
 
   slides() {
-    const data = $appdata.get("modules.media.data");
+    const data = $appdata.get("modules.media.data") || {};
     const showTitle = $userdata.get("modules.config.slide_show_title") !== false;
 
     let prev_image = data.url_image;
