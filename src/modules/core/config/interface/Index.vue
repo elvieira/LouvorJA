@@ -624,26 +624,81 @@
                         <span class="text-subtitle-1 font-weight-bold" style="color: var(--sidebar-text);">{{ t('return_screen') }}</span>
                       </div>
 
-                      <div class="d-flex" style="gap: 32px;">
-                        <div>
-                          <div class="text-body-2 font-weight-medium mb-2" style="color: var(--sidebar-text-secondary);">
-                            {{ t('return_screen_bg_color') }}
-                          </div>
-                          <input
-                            v-model="return_screen_bg_color"
-                            type="color"
-                            style="width: 80px; height: 36px; border: none; border-radius: 8px; cursor: pointer; background: transparent; padding: 0;"
-                          />
+                      <!-- Cor de fundo -->
+                      <div class="mb-6">
+                        <div class="d-flex align-center mb-3">
+                          <v-icon size="18" color="primary" class="mr-2">
+                            mdi-format-color-fill
+                          </v-icon>
+                          <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text);">{{ t('return_screen_bg_color') }}</span>
                         </div>
-                        <div>
-                          <div class="text-body-2 font-weight-medium mb-2" style="color: var(--sidebar-text-secondary);">
-                            {{ t('return_screen_font_color') }}
-                          </div>
-                          <input
-                            v-model="return_screen_font_color"
-                            type="color"
-                            style="width: 80px; height: 36px; border: none; border-radius: 8px; cursor: pointer; background: transparent; padding: 0;"
+                        <div class="d-flex flex-wrap align-center" style="gap: 10px;">
+                          <div
+                            v-for="color in ['#000000', '#192A56', '#FFFFFF', '#2F3640', '#FEF9E7', '#2C3A47', '#6D214F', '#2C2C54']"
+                            :key="color"
+                            class="rounded-circle cursor-pointer elevation-1"
+                            :class="return_screen_bg_color === color ? 'elevation-4' : ''"
+                            :style="{
+                              width: '36px', height: '36px',
+                              background: color,
+                              border: return_screen_bg_color === color ? '3px solid var(--accent-blue)' : '2px solid rgba(255,255,255,0.1)',
+                              transition: 'all 0.2s',
+                              transform: return_screen_bg_color === color ? 'scale(1.15)' : 'scale(1)',
+                            }"
+                            @click="return_screen_bg_color = color"
                           />
+                          <ModernColorPicker v-model="return_screen_bg_color">
+                            <template #activator="{ props }">
+                              <div
+                                v-bind="props"
+                                class="rounded-circle cursor-pointer elevation-1 d-flex align-center justify-center"
+                                style="width: 36px; height: 36px; border: 2px dashed var(--border-color); background: var(--card-bg);"
+                              >
+                                <v-icon size="16" color="grey">
+                                  mdi-eyedropper
+                                </v-icon>
+                              </div>
+                            </template>
+                          </ModernColorPicker>
+                        </div>
+                      </div>
+
+                      <!-- Cor da fonte -->
+                      <div>
+                        <div class="d-flex align-center mb-3">
+                          <v-icon size="18" color="primary" class="mr-2">
+                            mdi-palette
+                          </v-icon>
+                          <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text);">{{ t('return_screen_font_color') }}</span>
+                        </div>
+                        <div class="d-flex flex-wrap align-center" style="gap: 10px;">
+                          <div
+                            v-for="color in ['#FFFFFF', '#f6c32a', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD']"
+                            :key="color"
+                            class="rounded-circle cursor-pointer elevation-1"
+                            :class="return_screen_font_color === color ? 'elevation-4' : ''"
+                            :style="{
+                              width: '36px', height: '36px',
+                              background: color,
+                              border: return_screen_font_color === color ? '3px solid var(--accent-blue)' : '2px solid rgba(0,0,0,0.1)',
+                              transition: 'all 0.2s',
+                              transform: return_screen_font_color === color ? 'scale(1.15)' : 'scale(1)',
+                            }"
+                            @click="return_screen_font_color = color"
+                          />
+                          <ModernColorPicker v-model="return_screen_font_color">
+                            <template #activator="{ props }">
+                              <div
+                                v-bind="props"
+                                class="rounded-circle cursor-pointer elevation-1 d-flex align-center justify-center"
+                                style="width: 36px; height: 36px; border: 2px dashed var(--border-color); background: var(--card-bg);"
+                              >
+                                <v-icon size="16" color="grey">
+                                  mdi-eyedropper
+                                </v-icon>
+                              </div>
+                            </template>
+                          </ModernColorPicker>
                         </div>
                       </div>
                     </div>
@@ -1068,7 +1123,7 @@ export default {
 
     return_screen_monitor: null,
     return_screen_bg_color: "#000000",
-    return_screen_font_color: "#ffffff",
+    return_screen_font_color: "#FFFFFF",
 
     manifest,
   }),
