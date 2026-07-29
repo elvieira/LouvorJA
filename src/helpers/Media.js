@@ -262,9 +262,10 @@ export default {
     if (window.electronAPI && window.electronAPI.getDisplays) {
       const enabled = $userdata.get("modules.config.return_screen_enabled") === true;
       const monitorId = $userdata.get("modules.config.return_screen_monitor");
+      const isMediaActive = $appdata.get("modules.media.id_music") != null;
 
       const { default: $popup } = await import("@/helpers/Popup");
-      await $popup.syncReturnMonitor(monitorId, enabled);
+      await $popup.syncReturnMonitor(monitorId, enabled && isMediaActive);
     }
   },
 
@@ -291,6 +292,8 @@ export default {
         $popup.exit();
       }
     });
+
+    this.syncReturnMonitor();
   },
 
   async openLyric(params) {
