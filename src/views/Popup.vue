@@ -2,20 +2,20 @@
   <div class="w-100 h-100 position-relative" style="background: #000">
     <ReturnScreen v-if="is_return_screen" />
     <component :is="loadModuleComponent()" v-else-if="module" />
-    <CronometroOverlay v-if="show_cronometro_overlay" />
+    <TimerOverlay v-if="show_timer_overlay" />
   </div>
 </template>
 
 <script>
 import { defineAsyncComponent } from "vue";
 import ReturnScreen from "@/components/ReturnScreen.vue";
-import CronometroOverlay from "@/components/CronometroOverlay.vue";
+import TimerOverlay from "@/components/TimerOverlay.vue";
 
 export default {
   name: "PopupPage",
   components: {
     ReturnScreen,
-    CronometroOverlay,
+    TimerOverlay,
   },
   data: () => ({
     message: null,
@@ -27,15 +27,15 @@ export default {
     is_return_screen() {
       return this.$route.query.role === "return";
     },
-    cronometro() {
-      return this.$appdata.get("cronometro") || {};
+    timer() {
+      return this.$appdata.get("timer") || {};
     },
-    show_cronometro_overlay() {
+    show_timer_overlay() {
       // Na tela de retorno, sempre exibe. Na tela principal, evita duplicar
-      // quando o próprio módulo do cronômetro já ocupa a tela inteira.
-      if (!this.cronometro.started) return false;
+      // quando o próprio módulo do timer já ocupa a tela inteira.
+      if (!this.timer.started) return false;
       if (this.is_return_screen) return true;
-      return this.module !== "cronometro";
+      return this.module !== "timer";
     },
   },
   mounted() {

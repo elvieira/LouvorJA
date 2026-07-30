@@ -8,7 +8,7 @@ import manifest from "../manifest.json";
 import Screen from "../components/Screen.vue";
 
 export default {
-  name: "PopupCronometroPage",
+  name: "PopupTimerPage",
   components: {
     Screen,
   },

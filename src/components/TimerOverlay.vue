@@ -1,29 +1,29 @@
 <template>
   <v-fade-transition>
-    <div v-if="visible" class="cronometro-overlay d-flex align-center justify-center">
+    <div v-if="visible" class="timer-overlay d-flex align-center justify-center">
       <v-icon size="20" class="mr-2" style="opacity: 0.8;">
         {{ running ? 'mdi-timer-outline' : 'mdi-timer-pause-outline' }}
       </v-icon>
-      <span class="cronometro-overlay-time">{{ formatted }}</span>
+      <span class="timer-overlay-time">{{ formatted }}</span>
     </div>
   </v-fade-transition>
 </template>
 
 <script>
 export default {
-  name: "CronometroOverlayComponent",
+  name: "TimerOverlayComponent",
   computed: {
-    cronometro() {
-      return this.$appdata.get("cronometro") || {};
+    timer() {
+      return this.$appdata.get("timer") || {};
     },
     visible() {
-      return !!this.cronometro.started;
+      return !!this.timer.started;
     },
     running() {
-      return !!this.cronometro.running;
+      return !!this.timer.running;
     },
     remaining() {
-      return this.cronometro.remaining ?? 0;
+      return this.timer.remaining ?? 0;
     },
     formatted() {
       return this.$datetime.mmss(this.remaining);
@@ -33,7 +33,7 @@ export default {
 </script>
 
 <style scoped>
-.cronometro-overlay {
+.timer-overlay {
   position: absolute;
   top: 24px;
   right: 24px;
@@ -44,7 +44,7 @@ export default {
   padding: 10px 24px;
   pointer-events: none;
 }
-.cronometro-overlay-time {
+.timer-overlay-time {
   font-size: 2.2vw;
   font-weight: 800;
   color: #ffffff;

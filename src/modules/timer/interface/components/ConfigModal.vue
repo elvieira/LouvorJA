@@ -254,7 +254,7 @@ import ModernColorPicker from "@/components/inputs/ModernColorPicker.vue";
 import defaultConfig from "../../defaultConfig";
 
 export default {
-  name: "CronometroConfigModal",
+  name: "TimerConfigModal",
   components: {
     ModernColorPicker,
   },
@@ -269,15 +269,15 @@ export default {
     localConfig: {
       handler(val) {
         const cloned = JSON.parse(JSON.stringify(val));
-        this.$userdata.set("cronometro_config", cloned);
-        this.$appdata.set("cronometro_config", cloned);
+        this.$userdata.set("timer_config", cloned);
+        this.$appdata.set("timer_config", cloned);
       },
       deep: true,
     },
   },
   methods: {
     loadConfig() {
-      const saved = this.$userdata.get("cronometro_config");
+      const saved = this.$userdata.get("timer_config");
       if (saved) {
         this.localConfig = { ...defaultConfig, ...saved };
       } else {
@@ -298,7 +298,7 @@ export default {
       event.target.value = "";
     },
     t(key) {
-      return this.$t(`modules.cronometro.${key}`);
+      return this.$t(`modules.timer.${key}`);
     },
     open() {
       this.visible = true;

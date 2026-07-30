@@ -1,5 +1,5 @@
 {
-  "id": "cronometro",
+  "id": "timer",
   "name": "Cronômetro",
   "version": "1.0.0",
   "description": "Utilitário de cronômetro regressivo. Auxilia no controle de tempo de atividades e apresentações, exibindo a contagem na tela principal e na tela de retorno enquanto estiver em execução.",

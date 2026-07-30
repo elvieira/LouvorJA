@@ -12,7 +12,7 @@
     />
 
     <div
-      class="cronometro-digits position-relative font-weight-black d-flex align-center justify-center text-center w-100"
+      class="timer-digits position-relative font-weight-black d-flex align-center justify-center text-center w-100"
       :style="{
         fontSize: `${digitalFontSize}px`,
         color: preview ? 'var(--sidebar-text)' : config.textColor,
@@ -30,7 +30,7 @@
 import defaultConfig from "../defaultConfig";
 
 export default {
-  name: "CronometroScreen",
+  name: "TimerScreen",
   props: {
     preview: {
       type: Boolean,
@@ -42,11 +42,11 @@ export default {
     s_height: 0,
   }),
   computed: {
-    cronometro() {
-      return this.$appdata.get("cronometro") || {};
+    timer() {
+      return this.$appdata.get("timer") || {};
     },
     config() {
-      const appConfig = this.$appdata.get("cronometro_config");
+      const appConfig = this.$appdata.get("timer_config");
       return { ...defaultConfig, ...appConfig };
     },
     bgLayerStyle() {
@@ -60,10 +60,10 @@ export default {
       };
     },
     running() {
-      return !!this.cronometro.running;
+      return !!this.timer.running;
     },
     remaining() {
-      return this.cronometro.remaining ?? 0;
+      return this.timer.remaining ?? 0;
     },
     formatted() {
       return this.$datetime.mmss(this.remaining);
@@ -100,7 +100,7 @@ export default {
 </script>
 
 <style scoped>
-.cronometro-digits {
+.timer-digits {
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
 }

@@ -16,7 +16,7 @@
         <div class="search-bar ml-4 d-flex align-center" style="flex: 1; justify-content: flex-end; gap: 12px;" />
       </div>
 
-      <!-- Cronometro Display -->
+      <!-- Timer Display -->
       <div class="content-main flex-grow-1 w-100 pa-6 d-flex align-center justify-center" style="overflow: hidden; background: transparent;">
         <div class="clock-widget-container d-flex flex-column justify-center align-center position-relative" style="width: 100%; max-width: 900px; aspect-ratio: 21/9; max-height: 100%; background: var(--card-bg, #ffffff); border-radius: 40px; box-shadow: 0 20px 60px rgba(0,0,0,0.05); border: 1px solid var(--border-color, rgba(0,0,0,0.05)); overflow: hidden; transition: transform 0.3s ease;">
           <div class="position-absolute top-0 right-0 ma-4 d-flex align-center" style="z-index: 2; gap: 8px;">
@@ -39,14 +39,14 @@
                 {{ t('config') }}
               </v-tooltip>
             </v-btn>
-            <LScreenBtn module="cronometro" />
+            <LScreenBtn module="timer" />
           </div>
           <Screen :preview="true" />
         </div>
       </div>
 
       <!-- Controls -->
-      <div class="cronometro-controls flex-shrink-0 d-flex align-center justify-center pb-8" style="gap: 16px;">
+      <div class="timer-controls flex-shrink-0 d-flex align-center justify-center pb-8" style="gap: 16px;">
         <v-text-field
           v-model.number="minutesInput"
           :label="t('minutes')"
@@ -125,20 +125,20 @@ export default {
     module() {
       return this.$appdata.get(`modules.${this.module_id}`);
     },
-    cronometro() {
-      return this.$appdata.get("cronometro") || {};
+    timer() {
+      return this.$appdata.get("timer") || {};
     },
     duration() {
-      return this.cronometro.duration ?? 300;
+      return this.timer.duration ?? 300;
     },
     remaining() {
-      return this.cronometro.remaining ?? this.duration;
+      return this.timer.remaining ?? this.duration;
     },
     running() {
-      return !!this.cronometro.running;
+      return !!this.timer.running;
     },
     started() {
-      return !!this.cronometro.started;
+      return !!this.timer.started;
     },
     minutesInput: {
       get() {
@@ -177,37 +177,37 @@ export default {
       const m = Math.max(parseInt(minutes) || 0, 0);
       const s = Math.max(Math.min(parseInt(seconds) || 0, 59), 0);
       const duration = (m * 60) + s;
-      this.$appdata.set("cronometro.duration", duration);
+      this.$appdata.set("timer.duration", duration);
       if (!this.started) {
-        this.$appdata.set("cronometro.remaining", duration);
+        this.$appdata.set("timer.remaining", duration);
       }
     },
     toggleRunning() {
       if (this.running) {
-        this.$appdata.set("cronometro.running", false);
+        this.$appdata.set("timer.running", false);
         return;
       }
 
       const remaining = this.remaining > 0 ? this.remaining : this.duration;
-      this.$appdata.set("cronometro.remaining", remaining);
-      this.$appdata.set("cronometro.endAt", Date.now() + (remaining * 1000));
-      this.$appdata.set("cronometro.started", true);
-      this.$appdata.set("cronometro.running", true);
+      this.$appdata.set("timer.remaining", remaining);
+      this.$appdata.set("timer.endAt", Date.now() + (remaining * 1000));
+      this.$appdata.set("timer.started", true);
+      this.$appdata.set("timer.running", true);
     },
     reset() {
-      this.$appdata.set("cronometro.running", false);
-      this.$appdata.set("cronometro.started", false);
-      this.$appdata.set("cronometro.remaining", this.duration);
-      this.$appdata.set("cronometro.endAt", null);
+      this.$appdata.set("timer.running", false);
+      this.$appdata.set("timer.started", false);
+      this.$appdata.set("timer.remaining", this.duration);
+      this.$appdata.set("timer.endAt", null);
     },
     tick() {
       if (!this.running) return;
 
-      const next = Math.max(Math.ceil((this.cronometro.endAt - Date.now()) / 1000), 0);
-      this.$appdata.set("cronometro.remaining", next);
+      const next = Math.max(Math.ceil((this.timer.endAt - Date.now()) / 1000), 0);
+      this.$appdata.set("timer.remaining", next);
 
       if (next <= 0) {
-        this.$appdata.set("cronometro.running", false);
+        this.$appdata.set("timer.running", false);
       }
     },
   },
