@@ -7,6 +7,12 @@ export default {
   is_online: false,
   popup: null,
   popup_module: null,
+  cronometro: {
+    duration: 300,
+    remaining: 300,
+    running: false,
+    started: false,
+  },
   import_modules: false,
   loading: false,
   modules: {},
