@@ -308,6 +308,13 @@
   </v-slide-y-reverse-transition>
 
   <ConfigModal v-if="!loading" v-model="showConfigModal" />
+  <BibleQuickSearch
+    v-if="!loading"
+    v-model="showQuickSearch"
+    :books="books"
+    :initial-char="quickSearchInitialChar"
+    @navigate="onQuickNavigate"
+  />
 </template>
 
 <script>
@@ -316,6 +323,7 @@ import LWindow from "@/components/Window.vue";
 import Screen from "../components/Screen.vue";
 import LScreenBtn from "@/components/buttons/Screen.vue";
 import ConfigModal from "../components/ConfigModal.vue";
+import BibleQuickSearch from "../components/QuickSearch.vue";
 import MenuToggleButton from "@/components/MenuToggleButton.vue";
 
 export default {
@@ -325,6 +333,7 @@ export default {
     Screen,
     LScreenBtn,
     ConfigModal,
+    BibleQuickSearch,
     MenuToggleButton,
   },
   data: () => ({
@@ -361,6 +370,8 @@ export default {
     showConfigModal: false,
     showVerseSearch: false,
     verseSearchQuery: "",
+    showQuickSearch: false,
+    quickSearchInitialChar: "",
   }),
   computed: {
     /* COMPUTEDS OBRIGATÓRIAS - INÍCIO */
@@ -514,6 +525,10 @@ export default {
   },
   async mounted() {
     await this.loadData();
+    window.addEventListener("keydown", this.handleQuickSearchKeydown);
+  },
+  unmounted() {
+    window.removeEventListener("keydown", this.handleQuickSearchKeydown);
   },
   methods: {
 
@@ -588,6 +603,36 @@ export default {
     resize(data) {
       this.width = data.container_width;
       this.height = data.container_height;
+    },
+
+    handleQuickSearchKeydown(e) {
+      if (!this.show || this.loading) return;
+      if (this.showQuickSearch || this.showConfigModal || this.showVerseSearch) return;
+      if (e.ctrlKey || e.altKey || e.metaKey) return;
+
+      const target = e.target;
+      const isTyping =
+        target &&
+        (target.tagName === "INPUT" ||
+          target.tagName === "TEXTAREA" ||
+          target.isContentEditable);
+      if (isTyping) return;
+
+      if (!/^[a-zA-Z0-9]$/.test(e.key)) return;
+
+      e.preventDefault();
+      this.quickSearchInitialChar = e.key;
+      this.showQuickSearch = true;
+    },
+
+    async onQuickNavigate({ bookId, chapter, verses }) {
+      this.bible.id_bible_book = bookId;
+      this.bible.chapter = chapter;
+      await this.loadData();
+      if (verses) {
+        this.verseSearchQuery = verses;
+        this.applyVerseSearch();
+      }
     },
 
     async selVersion(id_bible_version) {
