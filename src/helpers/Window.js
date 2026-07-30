@@ -5,4 +5,8 @@ export default {
     }
     return window.open(url, target, features);
   },
+
+  isMainApp(route) {
+    return route.name !== "Popup";
+  },
 };

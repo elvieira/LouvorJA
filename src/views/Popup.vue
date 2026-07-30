@@ -1,18 +1,21 @@
 <template>
-  <div class="w-100 h-100" style="background: #000">
+  <div class="w-100 h-100 position-relative" style="background: #000">
     <ReturnScreen v-if="is_return_screen" />
     <component :is="loadModuleComponent()" v-else-if="module" />
+    <TimerOverlay v-if="show_timer_overlay" />
   </div>
 </template>
 
 <script>
 import { defineAsyncComponent } from "vue";
 import ReturnScreen from "@/components/ReturnScreen.vue";
+import TimerOverlay from "@/components/TimerOverlay.vue";
 
 export default {
   name: "PopupPage",
   components: {
     ReturnScreen,
+    TimerOverlay,
   },
   data: () => ({
     message: null,
@@ -23,6 +26,16 @@ export default {
     },
     is_return_screen() {
       return this.$route.query.role === "return";
+    },
+    timer() {
+      return this.$appdata.get("timer") || {};
+    },
+    show_timer_overlay() {
+      // Na tela de retorno, sempre exibe. Na tela principal, evita duplicar
+      // quando o próprio módulo do timer já ocupa a tela inteira.
+      if (!this.timer.started) return false;
+      if (this.is_return_screen) return true;
+      return this.module !== "timer";
     },
   },
   mounted() {

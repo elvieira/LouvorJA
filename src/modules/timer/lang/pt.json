@@ -1,0 +1,16 @@
+{
+  "title": "Cronômetro",
+  "minutes": "Min",
+  "seconds": "Seg",
+  "start": "Iniciar",
+  "pause": "Pausar",
+  "reset": "Zerar",
+  "config": "Personalizar",
+  "bg_color": "Cor de fundo",
+  "bg_image": "Imagem de fundo",
+  "bg_opacity": "Opacidade do fundo",
+  "select_image": "Clique para selecionar uma imagem",
+  "change_image": "Trocar imagem",
+  "remove_image": "Remover imagem",
+  "text_color": "Cor do Texto"
+}

@@ -7,6 +7,13 @@ export default {
   is_online: false,
   popup: null,
   popup_module: null,
+  timer: {
+    duration: 300,
+    remaining: 300,
+    running: false,
+    started: false,
+    endAt: null,
+  },
   import_modules: false,
   loading: false,
   modules: {},

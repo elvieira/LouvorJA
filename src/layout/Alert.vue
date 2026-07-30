@@ -1,5 +1,6 @@
 <template>
   <v-dialog
+    v-if="isMainApp"
     v-model="alert.show"
     max-width="450"
     persistent
@@ -36,11 +37,16 @@
 </template>
 
 <script>
+import $window from "@/helpers/Window";
+
 export default {
   name: "AlertLayout",
   computed: {
     alert() {
       return this.$appdata.get("alert");
+    },
+    isMainApp() {
+      return $window.isMainApp(this.$route);
     },
   },
   methods: {
