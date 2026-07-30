@@ -20,6 +20,7 @@
           spellcheck="false"
           @keydown.esc="cancel"
           @keydown.enter.prevent="confirm"
+          @keydown.tab.prevent="handleTab"
         />
 
         <div class="mb-5">
@@ -57,6 +58,10 @@
 
         <div v-if="errorMessage" class="text-center mt-4" style="color: #ff6b81; font-weight: 600;">
           {{ errorMessage }}
+        </div>
+
+        <div class="text-caption text-center mt-4" style="color: rgba(255,255,255,0.3);">
+          Tab avança de campo · Enter seleciona
         </div>
       </div>
     </div>
@@ -164,6 +169,16 @@ export default {
         this.books.find((b) => this.normalize(b.name).includes(q)) ||
         null
       );
+    },
+    handleTab(e) {
+      if (e.shiftKey) return;
+      this.nextField();
+    },
+    nextField() {
+      if (this.stage === "verse") return;
+      if (!/\s$/.test(this.query)) {
+        this.query += " ";
+      }
     },
     confirm() {
       if (!this.matchedBook || this.errorMessage) return;

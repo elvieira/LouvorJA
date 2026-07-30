@@ -11,6 +11,16 @@
           <h2 class="section-title mb-0" style="color: var(--sidebar-text); font-size: 24px; font-weight: 600; line-height: 1;">
             {{ t('title') }}
           </h2>
+          <div
+            v-if="!compact"
+            class="d-flex align-center ml-3 text-caption"
+            style="color: var(--sidebar-text-secondary); gap: 4px;"
+          >
+            <v-icon size="14">
+              mdi-keyboard-outline
+            </v-icon>
+            <span>{{ t('quick_search_hint') }}</span>
+          </div>
         </div>
 
         <div class="search-bar ml-4 d-flex align-center" style="flex: 1; justify-content: flex-end; gap: 16px;">
