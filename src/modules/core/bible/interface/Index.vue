@@ -324,7 +324,7 @@
     :books="books"
     :version-id="bible.id_bible_version"
     :initial-char="quickSearchInitialChar"
-    @navigate="navigateTo"
+    @navigate="onQuickSearchNavigate"
   />
 </template>
 
@@ -644,6 +644,13 @@ export default {
       if (verses) {
         this.verseSearchQuery = verses;
         this.applyVerseSearch();
+      }
+    },
+
+    async onQuickSearchNavigate(payload) {
+      await this.navigateTo(payload);
+      if (this.$appdata.get("popup_module") !== this.module_id) {
+        await this.$popup.projectModule(this.module_id);
       }
     },
 
