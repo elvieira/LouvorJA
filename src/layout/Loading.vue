@@ -1,5 +1,10 @@
 <template>
-  <v-dialog v-model="show" max-width="320" persistent>
+  <v-dialog
+    v-if="isMainApp"
+    v-model="show"
+    max-width="320"
+    persistent
+  >
     <v-list color="primary" elevation="12" rounded="lg">
       <v-list-item prepend-icon="$louvorja">
         <template #prepend>
@@ -34,6 +39,9 @@ export default {
       set(value) {
         this.$appdata.set("loading", value);
       },
+    },
+    isMainApp() {
+      return this.$route.name !== "Popup";
     },
   },
 };

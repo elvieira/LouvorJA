@@ -1,5 +1,6 @@
 <template>
   <v-dialog
+    v-if="isMainApp"
     v-model="alert.show"
     max-width="450"
     persistent
@@ -41,6 +42,9 @@ export default {
   computed: {
     alert() {
       return this.$appdata.get("alert");
+    },
+    isMainApp() {
+      return this.$route.name !== "Popup";
     },
   },
   methods: {
