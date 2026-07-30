@@ -117,16 +117,19 @@ export default {
       const num = parseInt(this.chapterQuery, 10);
       return isNaN(num) ? null : num;
     },
+    chapterIsValid() {
+      return !!(
+        this.matchedBook &&
+        this.chapterNum !== null &&
+        this.chapterNum >= 1 &&
+        this.chapterNum <= this.matchedBook.chapters
+      );
+    },
     errorMessage() {
       if (this.stage === "book" && this.bookQuery && !this.matchedBook) {
         return "Nenhum resultado encontrado";
       }
-      if (
-        this.stage !== "book" &&
-        this.matchedBook &&
-        this.chapterQuery &&
-        (this.chapterNum === null || this.chapterNum < 1 || this.chapterNum > this.matchedBook.chapters)
-      ) {
+      if (this.stage !== "book" && this.matchedBook && this.chapterQuery && !this.chapterIsValid) {
         return "Nenhum resultado encontrado";
       }
       return "";
@@ -163,12 +166,9 @@ export default {
       );
     },
     confirm() {
-      if (!this.matchedBook) return;
+      if (!this.matchedBook || this.errorMessage) return;
 
-      const chapter =
-        this.chapterNum && this.chapterNum >= 1 && this.chapterNum <= this.matchedBook.chapters
-          ? this.chapterNum
-          : 1;
+      const chapter = this.chapterIsValid ? this.chapterNum : 1;
 
       this.$emit("navigate", {
         bookId: this.matchedBook.id_bible_book,

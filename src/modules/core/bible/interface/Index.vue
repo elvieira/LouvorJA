@@ -313,7 +313,7 @@
     v-model="showQuickSearch"
     :books="books"
     :initial-char="quickSearchInitialChar"
-    @navigate="onQuickNavigate"
+    @navigate="navigateTo"
   />
 </template>
 
@@ -462,13 +462,7 @@ export default {
       deep: true,
       async handler(val) {
         if (val && val.bookId && val.chapter) {
-          this.bible.id_bible_book = val.bookId;
-          this.bible.chapter = val.chapter;
-          await this.loadData();
-          if (val.verses) {
-            this.verseSearchQuery = val.verses;
-            this.applyVerseSearch();
-          }
+          await this.navigateTo(val);
         }
       }
     },
@@ -625,7 +619,7 @@ export default {
       this.showQuickSearch = true;
     },
 
-    async onQuickNavigate({ bookId, chapter, verses }) {
+    async navigateTo({ bookId, chapter, verses }) {
       this.bible.id_bible_book = bookId;
       this.bible.chapter = chapter;
       await this.loadData();
