@@ -18,6 +18,13 @@ export default {
     return `${minutes}:${String(Math.floor(seconds)).padStart(2, "0")}`;
   },
 
+  mmss(totalSeconds) {
+    const total = Math.max(Math.floor(totalSeconds), 0);
+    const minutes = Math.floor(total / 60).toString().padStart(2, "0");
+    const seconds = (total % 60).toString().padStart(2, "0");
+    return `${minutes}:${seconds}`;
+  },
+
   toNumber(time) {
     if (!time) return 0;
     const parts = time.toString().split(":").map(Number);

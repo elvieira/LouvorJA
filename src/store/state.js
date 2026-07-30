@@ -12,6 +12,7 @@ export default {
     remaining: 300,
     running: false,
     started: false,
+    endAt: null,
   },
   import_modules: false,
   loading: false,

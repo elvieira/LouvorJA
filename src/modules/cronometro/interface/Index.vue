@@ -188,9 +188,9 @@ export default {
         return;
       }
 
-      if (this.remaining <= 0) {
-        this.$appdata.set("cronometro.remaining", this.duration);
-      }
+      const remaining = this.remaining > 0 ? this.remaining : this.duration;
+      this.$appdata.set("cronometro.remaining", remaining);
+      this.$appdata.set("cronometro.endAt", Date.now() + (remaining * 1000));
       this.$appdata.set("cronometro.started", true);
       this.$appdata.set("cronometro.running", true);
     },
@@ -198,11 +198,12 @@ export default {
       this.$appdata.set("cronometro.running", false);
       this.$appdata.set("cronometro.started", false);
       this.$appdata.set("cronometro.remaining", this.duration);
+      this.$appdata.set("cronometro.endAt", null);
     },
     tick() {
       if (!this.running) return;
 
-      const next = Math.max(this.remaining - 1, 0);
+      const next = Math.max(Math.ceil((this.cronometro.endAt - Date.now()) / 1000), 0);
       this.$appdata.set("cronometro.remaining", next);
 
       if (next <= 0) {

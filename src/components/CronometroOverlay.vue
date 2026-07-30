@@ -26,10 +26,7 @@ export default {
       return this.cronometro.remaining ?? 0;
     },
     formatted() {
-      const total = Math.max(Math.floor(this.remaining), 0);
-      const minutes = Math.floor(total / 60).toString().padStart(2, "0");
-      const seconds = (total % 60).toString().padStart(2, "0");
-      return `${minutes}:${seconds}`;
+      return this.$datetime.mmss(this.remaining);
     },
   },
 };

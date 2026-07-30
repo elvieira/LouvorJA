@@ -37,6 +37,8 @@
 </template>
 
 <script>
+import $window from "@/helpers/Window";
+
 export default {
   name: "AlertLayout",
   computed: {
@@ -44,7 +46,7 @@ export default {
       return this.$appdata.get("alert");
     },
     isMainApp() {
-      return this.$route.name !== "Popup";
+      return $window.isMainApp(this.$route);
     },
   },
   methods: {

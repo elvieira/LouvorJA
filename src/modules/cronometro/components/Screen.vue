@@ -27,6 +27,8 @@
 </template>
 
 <script>
+import defaultConfig from "../defaultConfig";
+
 export default {
   name: "CronometroScreen",
   props: {
@@ -38,20 +40,14 @@ export default {
   data: () => ({
     s_width: 0,
     s_height: 0,
-    defaultConfig: {
-      bgColor: "#000000",
-      bgImage: null,
-      bgOpacity: 100,
-      textColor: "#FFFFFF",
-    },
   }),
   computed: {
     cronometro() {
       return this.$appdata.get("cronometro") || {};
     },
     config() {
-      const appConfig = this.$appdata ? this.$appdata.get("cronometro_config") : null;
-      return { ...this.defaultConfig, ...appConfig };
+      const appConfig = this.$appdata.get("cronometro_config");
+      return { ...defaultConfig, ...appConfig };
     },
     bgLayerStyle() {
       return {
@@ -70,10 +66,7 @@ export default {
       return this.cronometro.remaining ?? 0;
     },
     formatted() {
-      const total = Math.max(Math.floor(this.remaining), 0);
-      const minutes = Math.floor(total / 60).toString().padStart(2, "0");
-      const seconds = (total % 60).toString().padStart(2, "0");
-      return `${minutes}:${seconds}`;
+      return this.$datetime.mmss(this.remaining);
     },
     digitalFontSize() {
       const v = Math.min(this.s_width, this.s_height);

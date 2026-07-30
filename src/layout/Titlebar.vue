@@ -63,6 +63,7 @@
 <script>
 import $appdata from "@/helpers/AppData";
 import $alert from "@/helpers/Alert";
+import $window from "@/helpers/Window";
 
 export default {
   name: "AppTitlebar",
@@ -76,7 +77,7 @@ export default {
   },
   computed: {
     isMainApp() {
-      return this.$route.name !== "Popup";
+      return $window.isMainApp(this.$route);
     },
   },
   async mounted() {

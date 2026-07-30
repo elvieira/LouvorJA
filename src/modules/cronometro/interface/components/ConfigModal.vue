@@ -251,6 +251,7 @@
 
 <script>
 import ModernColorPicker from "@/components/inputs/ModernColorPicker.vue";
+import defaultConfig from "../../defaultConfig";
 
 export default {
   name: "CronometroConfigModal",
@@ -259,18 +260,7 @@ export default {
   },
   data: () => ({
     visible: false,
-    localConfig: {
-      bgColor: "#000000",
-      bgImage: null,
-      bgOpacity: 100,
-      textColor: "#FFFFFF",
-    },
-    defaultConfig: {
-      bgColor: "#000000",
-      bgImage: null,
-      bgOpacity: 100,
-      textColor: "#FFFFFF",
-    },
+    localConfig: { ...defaultConfig },
   }),
   watch: {
     visible(val) {
@@ -289,13 +279,13 @@ export default {
     loadConfig() {
       const saved = this.$userdata.get("cronometro_config");
       if (saved) {
-        this.localConfig = { ...this.defaultConfig, ...saved };
+        this.localConfig = { ...defaultConfig, ...saved };
       } else {
-        this.localConfig = JSON.parse(JSON.stringify(this.defaultConfig));
+        this.localConfig = { ...defaultConfig };
       }
     },
     resetToDefault() {
-      this.localConfig = JSON.parse(JSON.stringify(this.defaultConfig));
+      this.localConfig = { ...defaultConfig };
     },
     onBgImageSelect(event) {
       const file = event.target.files?.[0];

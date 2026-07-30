@@ -29,6 +29,8 @@
 </template>
 
 <script>
+import $window from "@/helpers/Window";
+
 export default {
   name: "LoadingLayout",
   computed: {
@@ -41,7 +43,7 @@ export default {
       },
     },
     isMainApp() {
-      return this.$route.name !== "Popup";
+      return $window.isMainApp(this.$route);
     },
   },
 };
