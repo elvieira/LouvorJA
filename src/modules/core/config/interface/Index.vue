@@ -246,7 +246,7 @@
                         hide-details
                         inset
                         class="font-weight-medium mb-2"
-                      ></v-switch>
+                      />
 
                       <v-expand-transition>
                         <div v-show="media_use_internal_player" class="pl-4 mt-4" style="border-left: 2px solid var(--border-color);">
@@ -258,7 +258,7 @@
                             inset
                             density="compact"
                             class="mb-2"
-                          ></v-switch>
+                          />
                           
                           <v-switch
                             v-model="media_auto_project_video"
@@ -268,7 +268,7 @@
                             inset
                             density="compact"
                             class="mb-2"
-                          ></v-switch>
+                          />
                           
                           <v-switch
                             v-model="media_pause_on_minimize"
@@ -277,7 +277,7 @@
                             hide-details
                             inset
                             density="compact"
-                          ></v-switch>
+                          />
                           <v-expand-transition>
                             <div v-show="!media_sync_projection_settings" class="mt-4 pa-4 rounded-xl" style="background: rgba(0,0,0,0.15); border: 1px solid var(--border-color);">
                               <!-- MÚLTIPLAS TELAS (MÍDIA) -->
@@ -342,25 +342,25 @@
                                   density="compact"
                                   class="mb-2 font-weight-medium"
                                 />
-                                  <v-switch
-                                    v-model="media_slide_disable_main_if_extended"
-                                    label="Desativar tela principal caso haja monitor estendido"
-                                    color="primary"
-                                    inset
-                                    hide-details
-                                    density="compact"
-                                    class="mb-2 font-weight-medium"
-                                  />
-                                  <v-switch
-                                    v-model="media_slide_minimize_player"
-                                    label="Minimizar o player automaticamente"
-                                    color="primary"
-                                    inset
-                                    hide-details
-                                    density="compact"
-                                    class="font-weight-medium"
-                                  />
-                                </div>
+                                <v-switch
+                                  v-model="media_slide_disable_main_if_extended"
+                                  label="Desativar tela principal caso haja monitor estendido"
+                                  color="primary"
+                                  inset
+                                  hide-details
+                                  density="compact"
+                                  class="mb-2 font-weight-medium"
+                                />
+                                <v-switch
+                                  v-model="media_slide_minimize_player"
+                                  label="Minimizar o player automaticamente"
+                                  color="primary"
+                                  inset
+                                  hide-details
+                                  density="compact"
+                                  class="font-weight-medium"
+                                />
+                              </div>
                             </div>
                           </v-expand-transition>
                         </div>
@@ -540,6 +540,40 @@
                       >
                         Nenhum monitor estendido (secundário) detectado no sistema.
                       </v-alert>
+
+                      <div class="text-body-2 font-weight-medium mb-2 mt-6" style="color: var(--sidebar-text-secondary);">
+                        {{ t('return_screen_select_monitor') }}
+                      </div>
+                      <div v-if="slideMonitorList.length > 0" class="d-flex flex-wrap mt-2" style="gap: 16px;">
+                        <v-card
+                          v-for="monitor in slideMonitorList"
+                          :key="monitor.value"
+                          flat
+                          class="rounded-xl border cursor-pointer"
+                          :class="return_screen_monitor === monitor.value ? 'elevation-2' : ''"
+                          :style="return_screen_monitor === monitor.value ? 'background: rgba(0,151,215,0.08); border: 2px solid var(--accent-blue) !important; transition: all 0.2s;' : 'background: var(--main-bg); border: 2px solid transparent !important; transition: all 0.2s; box-shadow: inset 0 0 0 1px var(--border-color);'"
+                          width="160"
+                          @click="toggleReturnScreenMonitor(monitor.value)"
+                        >
+                          <div class="pa-4 d-flex flex-column align-center">
+                            <v-icon :color="return_screen_monitor === monitor.value ? 'primary' : 'grey'" size="32" class="mb-2 transition-all">
+                              {{ return_screen_monitor === monitor.value ? 'mdi-monitor-eye' : 'mdi-monitor-off' }}
+                            </v-icon>
+                            <span class="text-body-2 font-weight-bold text-center transition-all" :style="return_screen_monitor === monitor.value ? 'color: var(--accent-blue)' : 'color: var(--sidebar-text-secondary)'">
+                              {{ monitor.title }}
+                            </span>
+                          </div>
+                        </v-card>
+                      </div>
+                      <v-alert
+                        v-else
+                        type="info"
+                        variant="tonal"
+                        density="compact"
+                        class="mt-2 text-caption rounded-lg"
+                      >
+                        Nenhum monitor estendido (secundário) detectado no sistema.
+                      </v-alert>
                     </div>
 
                     <v-divider class="mb-8" style="opacity: 0.1;" />
@@ -577,6 +611,96 @@
                         hide-details
                         class="font-weight-medium"
                       />
+                    </div>
+
+                    <v-divider class="mb-8" style="opacity: 0.1;" />
+
+                    <!-- TELA DE RETORNO -->
+                    <div class="mb-8">
+                      <div class="d-flex align-center mb-4">
+                        <v-icon size="20" color="primary" class="mr-2">
+                          mdi-monitor-eye
+                        </v-icon>
+                        <span class="text-subtitle-1 font-weight-bold" style="color: var(--sidebar-text);">{{ t('return_screen') }}</span>
+                      </div>
+
+                      <!-- Cor de fundo -->
+                      <div class="mb-6">
+                        <div class="d-flex align-center mb-3">
+                          <v-icon size="18" color="primary" class="mr-2">
+                            mdi-format-color-fill
+                          </v-icon>
+                          <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text);">{{ t('return_screen_bg_color') }}</span>
+                        </div>
+                        <div class="d-flex flex-wrap align-center" style="gap: 10px;">
+                          <div
+                            v-for="color in ['#000000', '#192A56', '#FFFFFF', '#2F3640', '#FEF9E7', '#2C3A47', '#6D214F', '#2C2C54']"
+                            :key="color"
+                            class="rounded-circle cursor-pointer elevation-1"
+                            :class="return_screen_bg_color === color ? 'elevation-4' : ''"
+                            :style="{
+                              width: '36px', height: '36px',
+                              background: color,
+                              border: return_screen_bg_color === color ? '3px solid var(--accent-blue)' : '2px solid rgba(255,255,255,0.1)',
+                              transition: 'all 0.2s',
+                              transform: return_screen_bg_color === color ? 'scale(1.15)' : 'scale(1)',
+                            }"
+                            @click="return_screen_bg_color = color"
+                          />
+                          <ModernColorPicker v-model="return_screen_bg_color">
+                            <template #activator="{ props }">
+                              <div
+                                v-bind="props"
+                                class="rounded-circle cursor-pointer elevation-1 d-flex align-center justify-center"
+                                style="width: 36px; height: 36px; border: 2px dashed var(--border-color); background: var(--card-bg);"
+                              >
+                                <v-icon size="16" color="grey">
+                                  mdi-eyedropper
+                                </v-icon>
+                              </div>
+                            </template>
+                          </ModernColorPicker>
+                        </div>
+                      </div>
+
+                      <!-- Cor da fonte -->
+                      <div>
+                        <div class="d-flex align-center mb-3">
+                          <v-icon size="18" color="primary" class="mr-2">
+                            mdi-palette
+                          </v-icon>
+                          <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text);">{{ t('return_screen_font_color') }}</span>
+                        </div>
+                        <div class="d-flex flex-wrap align-center" style="gap: 10px;">
+                          <div
+                            v-for="color in ['#FFFFFF', '#f6c32a', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD']"
+                            :key="color"
+                            class="rounded-circle cursor-pointer elevation-1"
+                            :class="return_screen_font_color === color ? 'elevation-4' : ''"
+                            :style="{
+                              width: '36px', height: '36px',
+                              background: color,
+                              border: return_screen_font_color === color ? '3px solid var(--accent-blue)' : '2px solid rgba(0,0,0,0.1)',
+                              transition: 'all 0.2s',
+                              transform: return_screen_font_color === color ? 'scale(1.15)' : 'scale(1)',
+                            }"
+                            @click="return_screen_font_color = color"
+                          />
+                          <ModernColorPicker v-model="return_screen_font_color">
+                            <template #activator="{ props }">
+                              <div
+                                v-bind="props"
+                                class="rounded-circle cursor-pointer elevation-1 d-flex align-center justify-center"
+                                style="width: 36px; height: 36px; border: 2px dashed var(--border-color); background: var(--card-bg);"
+                              >
+                                <v-icon size="16" color="grey">
+                                  mdi-eyedropper
+                                </v-icon>
+                              </div>
+                            </template>
+                          </ModernColorPicker>
+                        </div>
+                      </div>
                     </div>
 
                     <v-divider class="mb-8" style="opacity: 0.1;" />
@@ -996,7 +1120,11 @@ export default {
     slide_bg_color: "#000000",
     slide_bg_image: null,
     slide_bg_opacity: 100,
-    
+
+    return_screen_monitor: null,
+    return_screen_bg_color: "#000000",
+    return_screen_font_color: "#FFFFFF",
+
     manifest,
   }),
   computed: {
@@ -1090,6 +1218,16 @@ export default {
         this.syncExternalMediaMonitors();
       }
     },
+    return_screen_monitor(val) {
+      this.$userdata.set("modules.config.return_screen_monitor", val);
+      $media.syncReturnMonitor();
+    },
+    return_screen_bg_color(val) {
+      this.$userdata.set("modules.config.return_screen_bg_color", val);
+    },
+    return_screen_font_color(val) {
+      this.$userdata.set("modules.config.return_screen_font_color", val);
+    },
     slide_align(val) {
       if (val !== undefined && val !== null) {
         this.$userdata.set("modules.config.slide_align", val);
@@ -1182,6 +1320,7 @@ export default {
       "media_slide_monitor", "media_slide_fullscreen", "media_slide_disable_main_if_extended", "media_slide_minimize_player",
       "slide_custom_text_format", "slide_font_size", "slide_font_color", "slide_font_weight",
       "slide_custom_bg", "slide_bg_color", "slide_bg_image", "slide_bg_opacity",
+      "return_screen_monitor", "return_screen_bg_color", "return_screen_font_color",
     ];
     fields.forEach(field => {
       const val = this.$userdata.get(`modules.config.${field}`);
@@ -1233,6 +1372,9 @@ export default {
         unselected = unselected.filter(m => m !== val);
       }
       this.$userdata.set("modules.config.unselected_slide_monitors", unselected);
+    },
+    toggleReturnScreenMonitor(val) {
+      this.return_screen_monitor = this.return_screen_monitor === val ? null : val;
     },
     toggleMediaSlideMonitor(val) {
       if (this.media_slide_monitor.includes(val)) {

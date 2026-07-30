@@ -50,5 +50,11 @@
     "change_image": "Cambiar imagen",
     "select_image": "Haz clic para seleccionar una imagen",
     "bg_opacity": "Opacidad del fondo",
-    "config_monitors": "Configurar Monitores"
+    "config_monitors": "Configurar Monitores",
+    "return_screen": "Pantalla de Retorno",
+    "return_screen_select_monitor": "Mostrar pantalla de retorno en el monitor:",
+    "return_screen_bg_color": "Color de fondo",
+    "return_screen_font_color": "Color de la fuente",
+    "return_screen_pause": "Pausa",
+    "return_screen_slide": "Diapositiva"
 }

@@ -19,7 +19,7 @@ export default {
       const confirmed = await new Promise((resolve) => {
         $alert.yesno({
           text: "Uma mídia está em reprodução. Deseja encerrá-la e reproduzir esta música?",
-          translate: false
+          translate: false,
         }, (res) => resolve(res === "yes"));
       });
       if (!confirmed) return;
@@ -234,6 +234,8 @@ export default {
         }
       }
     }
+
+    this.syncReturnMonitor();
   },
 
   async syncMonitors() {
@@ -253,6 +255,16 @@ export default {
         const { default: $popup } = await import("@/helpers/Popup");
         await $popup.syncMonitors(selectedMonitors, "media", isMediaActive);
       }
+    }
+  },
+
+  async syncReturnMonitor() {
+    if (window.electronAPI && window.electronAPI.getDisplays) {
+      const monitorId = $userdata.get("modules.config.return_screen_monitor");
+      const isMediaActive = $appdata.get("modules.media.id_music") != null;
+
+      const { default: $popup } = await import("@/helpers/Popup");
+      await $popup.syncReturnMonitor(monitorId, !!monitorId && isMediaActive);
     }
   },
 
@@ -279,6 +291,8 @@ export default {
         $popup.exit();
       }
     });
+
+    this.syncReturnMonitor();
   },
 
   async openLyric(params) {
@@ -437,7 +451,7 @@ export default {
   },
 
   slides() {
-    const data = $appdata.get("modules.media.data");
+    const data = $appdata.get("modules.media.data") || {};
     const showTitle = $userdata.get("modules.config.slide_show_title") !== false;
 
     let prev_image = data.url_image;

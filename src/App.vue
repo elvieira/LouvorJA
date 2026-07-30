@@ -35,6 +35,13 @@ export default {
       isAppReady: false,
     };
   },
+  watch: {
+    isAppReady(newVal) {
+      if (newVal) {
+        this.initBackgroundTasks();
+      }
+    },
+  },
   created() {
     this.$userdata.load();
     const theme = this.$userdata.get("theme");
@@ -63,13 +70,6 @@ export default {
   unmounted() {
     window.removeEventListener("keydown", this.handleGlobalKeydown);
   },
-  watch: {
-    isAppReady(newVal) {
-      if (newVal) {
-        this.initBackgroundTasks();
-      }
-    }
-  },
   methods: {
     initBackgroundTasks() {
       if (window.electronAPI && window.electronAPI.getDisplays) {
@@ -85,6 +85,7 @@ export default {
             if (displays.length === 1) {
               const { default: $popup } = await import("@/helpers/Popup");
               $popup.exit();
+              $popup.exitReturn();
             }
           });
         }
@@ -100,6 +101,10 @@ export default {
       this.$dev.toogle();
     },
     handleGlobalKeydown(e) {
+      if (this.$route.query.role === "return") {
+        return;
+      }
+
       if (["INPUT", "TEXTAREA"].includes(document.activeElement.tagName) || document.activeElement.isContentEditable) {
         return;
       }
