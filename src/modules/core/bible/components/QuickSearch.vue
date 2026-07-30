@@ -54,6 +54,9 @@
           <div class="font-weight-bold" style="color: #fff; font-size: 1.6rem; min-height: 2.1rem;">
             {{ verseQuery }}<span v-if="stage === 'verse'" class="quick-search-caret">|</span>
           </div>
+          <div v-if="chapterIsValid" class="text-caption" style="color: rgba(255,255,255,0.35);">
+            {{ verseCount !== null ? `Versículos: ${verseCount}` : 'Carregando…' }}
+          </div>
         </div>
 
         <div v-if="errorMessage" class="text-center mt-4" style="color: #ff6b81; font-weight: 600;">
@@ -84,10 +87,15 @@ export default {
       type: String,
       default: "",
     },
+    versionId: {
+      type: [String, Number],
+      default: null,
+    },
   },
   emits: ["update:modelValue", "navigate"],
   data: () => ({
     query: "",
+    verseCount: null,
   }),
   computed: {
     visible: {
@@ -139,6 +147,10 @@ export default {
       }
       return "";
     },
+    chapterKey() {
+      if (!this.chapterIsValid || !this.versionId) return null;
+      return `bible_${this.versionId}_${this.matchedBook.id_bible_book}_${this.chapterNum}`;
+    },
   },
   watch: {
     visible(val) {
@@ -148,6 +160,15 @@ export default {
           this.$refs.hiddenInput?.focus();
         });
       }
+    },
+    chapterKey: {
+      immediate: true,
+      handler(key) {
+        this.verseCount = null;
+        if (key) {
+          this.loadVerseCount(key);
+        }
+      },
     },
   },
   methods: {
@@ -169,6 +190,11 @@ export default {
         this.books.find((b) => this.normalize(b.name).includes(q)) ||
         null
       );
+    },
+    async loadVerseCount(key) {
+      const data = await this.$database.get(key);
+      if (key !== this.chapterKey) return;
+      this.verseCount = data ? Object.keys(data).length : null;
     },
     handleTab(e) {
       if (e.shiftKey) return;

@@ -322,6 +322,7 @@
     v-if="!loading"
     v-model="showQuickSearch"
     :books="books"
+    :version-id="bible.id_bible_version"
     :initial-char="quickSearchInitialChar"
     @navigate="navigateTo"
   />
