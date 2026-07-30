@@ -1,7 +1,7 @@
 <template>
   <div class="w-100 h-100 d-flex flex-column justify-space-between pa-8 return-screen" :style="style_bg">
     <div class="d-flex flex-column align-center justify-center flex-grow-1" style="gap: 24px;">
-      <div v-if="main_text && is_bible_active" class="text-center current-lyric">
+      <div v-if="main_text && is_bible_active" class="text-center current-lyric" :style="{ fontSize: bible_font_size }">
         {{ main_text }}
       </div>
       <div v-else-if="main_text" class="text-center current-lyric" v-html="main_text" />
@@ -45,6 +45,14 @@ export default {
     },
     secondary_text() {
       return this.is_bible_active ? this.bible_data.scriptural_reference : this.next_lyric;
+    },
+    bible_font_size() {
+      const len = (this.main_text || "").length;
+      if (len <= 70) return "5vw";
+      if (len <= 140) return "3.8vw";
+      if (len <= 220) return "3vw";
+      if (len <= 320) return "2.4vw";
+      return "1.9vw";
     },
     background_color() {
       return this.$userdata.get("modules.config.return_screen_bg_color") || "#000000";
