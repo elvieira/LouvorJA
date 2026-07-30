@@ -2,16 +2,21 @@
   <div
     ref="container"
     class="d-flex align-center justify-center position-relative w-100 h-100 overflow-hidden"
-    :style="{
-      background: preview ? 'transparent' : '#000000',
-      color: preview ? 'var(--sidebar-text)' : '#FFFFFF',
-    }"
   >
+    <!-- Background layer (color/image + opacity), isolated so it never fades the digits -->
     <div
-      class="cronometro-digits font-weight-black d-flex align-center justify-center text-center w-100"
+      v-if="!preview"
+      class="position-absolute w-100 h-100"
+      style="top: 0; left: 0;"
+      :style="bgLayerStyle"
+    />
+
+    <div
+      class="cronometro-digits position-relative font-weight-black d-flex align-center justify-center text-center w-100"
       :style="{
         fontSize: `${digitalFontSize}px`,
-        textShadow: preview ? 'none' : '0 4px 30px rgba(255,255,255,0.15)',
+        color: preview ? 'var(--sidebar-text)' : config.textColor,
+        textShadow: preview ? 'none' : `0 4px 30px ${config.textColor}40`,
         fontFamily: 'system-ui, -apple-system, sans-serif',
         opacity: running ? 1 : 0.85,
       }"
@@ -33,10 +38,30 @@ export default {
   data: () => ({
     s_width: 0,
     s_height: 0,
+    defaultConfig: {
+      bgColor: "#000000",
+      bgImage: null,
+      bgOpacity: 100,
+      textColor: "#FFFFFF",
+    },
   }),
   computed: {
     cronometro() {
       return this.$appdata.get("cronometro") || {};
+    },
+    config() {
+      const appConfig = this.$appdata ? this.$appdata.get("cronometro_config") : null;
+      return { ...this.defaultConfig, ...appConfig };
+    },
+    bgLayerStyle() {
+      return {
+        backgroundColor: this.config.bgColor,
+        backgroundImage: this.config.bgImage ? `url(${this.config.bgImage})` : "none",
+        backgroundRepeat: "no-repeat",
+        backgroundPosition: "center center",
+        backgroundSize: "cover",
+        opacity: this.config.bgOpacity / 100,
+      };
     },
     running() {
       return !!this.cronometro.running;

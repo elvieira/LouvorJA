@@ -20,6 +20,25 @@
       <div class="content-main flex-grow-1 w-100 pa-6 d-flex align-center justify-center" style="overflow: hidden; background: transparent;">
         <div class="clock-widget-container d-flex flex-column justify-center align-center position-relative" style="width: 100%; max-width: 900px; aspect-ratio: 21/9; max-height: 100%; background: var(--card-bg, #ffffff); border-radius: 40px; box-shadow: 0 20px 60px rgba(0,0,0,0.05); border: 1px solid var(--border-color, rgba(0,0,0,0.05)); overflow: hidden; transition: transform 0.3s ease;">
           <div class="position-absolute top-0 right-0 ma-4 d-flex align-center" style="z-index: 2; gap: 8px;">
+            <v-btn
+              variant="tonal"
+              color="primary"
+              icon
+              size="small"
+              style="width: 36px; height: 36px;"
+              class="config-palette-btn"
+              @click="$refs.configModal.open()"
+            >
+              <v-icon>mdi-palette</v-icon>
+              <v-tooltip
+                activator="parent"
+                location="bottom"
+                open-delay="300"
+                content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+              >
+                {{ t('config') }}
+              </v-tooltip>
+            </v-btn>
             <LScreenBtn module="cronometro" />
           </div>
           <Screen :preview="true" />
@@ -74,6 +93,9 @@
           {{ t('reset') }}
         </v-btn>
       </div>
+
+      <!-- Config Modal -->
+      <ConfigModal ref="configModal" />
     </div>
   </v-slide-y-reverse-transition>
 </template>
@@ -81,6 +103,7 @@
 <script>
 import Screen from "../components/Screen.vue";
 import LScreenBtn from "@/components/buttons/Screen.vue";
+import ConfigModal from "./components/ConfigModal.vue";
 import MenuToggleButton from "@/components/MenuToggleButton.vue";
 import manifest from "../manifest.json";
 
@@ -89,6 +112,7 @@ export default {
   components: {
     Screen,
     LScreenBtn,
+    ConfigModal,
     MenuToggleButton,
   },
   data: () => ({
