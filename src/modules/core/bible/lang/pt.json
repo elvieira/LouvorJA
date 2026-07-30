@@ -14,5 +14,6 @@
     "text_align": "Alinhamento do Texto",
     "bible_reference": "Referência Bíblica",
     "bg_image": "Imagem de fundo",
-    "remove_image": "Remover"
+    "remove_image": "Remover",
+    "quick_search_hint": "Comece a digitar para buscar rapidamente"
 }

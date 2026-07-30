@@ -56,5 +56,6 @@
     "return_screen_bg_color": "Color de fondo",
     "return_screen_font_color": "Color de la fuente",
     "return_screen_pause": "Pausa",
-    "return_screen_slide": "Diapositiva"
+    "return_screen_slide": "Diapositiva",
+    "return_screen_no_verse": "Ningún versículo seleccionado"
 }

@@ -773,31 +773,40 @@ function createWindow() {
     const targetMonitorId = monitorMatch ? parseInt(monitorMatch[1]) : null;
 
     if (isFullscreen) {
+      const primary = screen.getPrimaryDisplay();
       let targetDisplay = null;
+
       if (targetMonitorId) {
         targetDisplay = displays.find(d => d.id === targetMonitorId);
       }
 
       if (!targetDisplay && displays.length > 1) {
-        const primary = screen.getPrimaryDisplay();
         targetDisplay = displays.find(d => d.id !== primary.id);
       }
 
-      if (!targetDisplay) {
-        targetDisplay = screen.getPrimaryDisplay();
+      if (targetDisplay) {
+        // Existe um monitor secundário real: abre em modo kiosk (sem moldura,
+        // sempre no topo, fora da barra de tarefas) cobrindo esse monitor.
+        windowConfig.x = targetDisplay.bounds.x;
+        windowConfig.y = targetDisplay.bounds.y;
+        windowConfig.width = targetDisplay.bounds.width;
+        windowConfig.height = targetDisplay.bounds.height;
+        windowConfig.resizable = false;
+        windowConfig.frame = false;
+        windowConfig.thickFrame = false;
+        windowConfig.hasShadow = false;
+        windowConfig.autoHideMenuBar = true;
+        windowConfig.skipTaskbar = true;
+        // O fullscreen puro não é ativado na criação no Windows para evitar o bug
+      } else {
+        // Só existe a tela principal: o modo kiosk cobriria a própria janela
+        // do app sem deixar como voltar. Abre como janela normal (com
+        // moldura e na barra de tarefas) em vez de travar o usuário.
+        windowConfig.width = 900;
+        windowConfig.height = 600;
+        windowConfig.resizable = true;
+        windowConfig.autoHideMenuBar = true;
       }
-
-      windowConfig.x = targetDisplay.bounds.x;
-      windowConfig.y = targetDisplay.bounds.y;
-      windowConfig.width = targetDisplay.bounds.width;
-      windowConfig.height = targetDisplay.bounds.height;
-      windowConfig.resizable = false;
-      windowConfig.frame = false;
-      windowConfig.thickFrame = false;
-      windowConfig.hasShadow = false;
-      windowConfig.autoHideMenuBar = true;
-      windowConfig.skipTaskbar = true;
-      // O fullscreen puro não é ativado na criação no Windows para evitar o bug 
     }
 
     return {

@@ -33,6 +33,7 @@ export default {
   data() {
     return {
       isAppReady: false,
+      lastDisplayCount: null,
     };
   },
   watch: {
@@ -75,18 +76,27 @@ export default {
       if (window.electronAPI && window.electronAPI.getDisplays) {
         window.electronAPI.getDisplays().then(displays => {
           this.$appdata.set("system_displays", displays);
+          this.lastDisplayCount = displays.length;
         });
-        
+
         if (window.electronAPI.onDisplaysChanged) {
           window.electronAPI.onDisplaysChanged(async () => {
             const displays = await window.electronAPI.getDisplays();
             this.$appdata.set("system_displays", displays);
-            
-            if (displays.length === 1) {
+
+            // "display-metrics-changed" também dispara quando uma janela
+            // entra/sai de fullscreen (a área útil do monitor muda), não só
+            // quando um monitor é desconectado. Só fecha as projeções quando
+            // a quantidade de telas realmente diminuiu, senão numa máquina
+            // com um único monitor isso fecharia a projeção assim que ela
+            // abrisse.
+            if (this.lastDisplayCount !== null && displays.length < this.lastDisplayCount) {
               const { default: $popup } = await import("@/helpers/Popup");
               $popup.exit();
               $popup.exitReturn();
             }
+
+            this.lastDisplayCount = displays.length;
           });
         }
       }

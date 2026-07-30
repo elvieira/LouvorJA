@@ -1,4 +1,5 @@
 import $appdata from "@/helpers/AppData";
+import $userdata from "@/helpers/UserData";
 import $window from "@/helpers/Window";
 import { markRaw } from "vue";
 
@@ -8,6 +9,13 @@ function splitPopups() {
     mainPopups: popups.filter(p => p.role !== "return"),
     returnPopups: popups.filter(p => p.role === "return"),
   };
+}
+
+function isReturnContentActive() {
+  return (
+    $appdata.get("modules.media.id_music") != null ||
+    !!$appdata.get("modules.bible.data.text")
+  );
 }
 
 export default {
@@ -87,10 +95,11 @@ export default {
       $appdata.set("popup", mainPopups[0]);
     }
   },
-  async syncReturnMonitor(monitorId, enabled) {
+  async syncReturnMonitor(monitorId) {
     const { mainPopups, returnPopups } = splitPopups();
+    const enabled = !!monitorId && isReturnContentActive();
 
-    if (!enabled || !monitorId) {
+    if (!enabled) {
       returnPopups.forEach(popup => popup.close());
       $appdata.set("popups", mainPopups);
       return;
@@ -112,6 +121,27 @@ export default {
     }
 
     $appdata.set("popups", [...mainPopups, keep]);
+  },
+  async projectModule(moduleName) {
+    let selectedMonitors = [];
+    if (window.electronAPI && window.electronAPI.getDisplays) {
+      const displays = await window.electronAPI.getDisplays();
+      if (displays && displays.length > 1) {
+        let configMonitors = $userdata.get("modules.config.slide_monitor");
+        if (!Array.isArray(configMonitors)) {
+          configMonitors = configMonitors ? [configMonitors] : [];
+        }
+        const primary = displays.find(d => d.isPrimary) || displays[0];
+        selectedMonitors = configMonitors.filter(m => m !== primary.id);
+      }
+    }
+
+    if (selectedMonitors.length > 0) {
+      await this.syncMonitors(selectedMonitors, moduleName, true);
+    } else {
+      const fullscreen = $userdata.get("modules.config.slide_fullscreen") !== false;
+      await this.open({ module: moduleName, fullscreen });
+    }
   },
   async exitReturn() {
     const { mainPopups, returnPopups } = splitPopups();
