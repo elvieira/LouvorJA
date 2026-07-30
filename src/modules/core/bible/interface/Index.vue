@@ -515,6 +515,7 @@ export default {
     select_bible() {
       this.send("scriptural_reference", this.select_bible.scriptural_reference);
       this.send("text", this.select_bible.text);
+      this.syncReturnMonitor();
     },
   },
   async mounted() {
@@ -540,6 +541,12 @@ export default {
     },
     send(param, value) {
       this.$appdata.set(`modules.${this.module_id}.data.${param}`, value);
+    },
+    async syncReturnMonitor() {
+      if (window.electronAPI && window.electronAPI.getDisplays) {
+        const monitorId = this.$userdata.get("modules.config.return_screen_monitor");
+        await this.$popup.syncReturnMonitor(monitorId);
+      }
     },
     async loadData() {
       this.loading = true;

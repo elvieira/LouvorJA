@@ -10,6 +10,13 @@ function splitPopups() {
   };
 }
 
+function isReturnContentActive() {
+  return (
+    $appdata.get("modules.media.id_music") != null ||
+    !!$appdata.get("modules.bible.data.text")
+  );
+}
+
 export default {
   async open(params) {
     if (typeof params !== "object") {
@@ -87,10 +94,11 @@ export default {
       $appdata.set("popup", mainPopups[0]);
     }
   },
-  async syncReturnMonitor(monitorId, enabled) {
+  async syncReturnMonitor(monitorId) {
     const { mainPopups, returnPopups } = splitPopups();
+    const enabled = !!monitorId && isReturnContentActive();
 
-    if (!enabled || !monitorId) {
+    if (!enabled) {
       returnPopups.forEach(popup => popup.close());
       $appdata.set("popups", mainPopups);
       return;

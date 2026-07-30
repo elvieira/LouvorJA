@@ -261,10 +261,9 @@ export default {
   async syncReturnMonitor() {
     if (window.electronAPI && window.electronAPI.getDisplays) {
       const monitorId = $userdata.get("modules.config.return_screen_monitor");
-      const isMediaActive = $appdata.get("modules.media.id_music") != null;
 
       const { default: $popup } = await import("@/helpers/Popup");
-      await $popup.syncReturnMonitor(monitorId, !!monitorId && isMediaActive);
+      await $popup.syncReturnMonitor(monitorId);
     }
   },
 

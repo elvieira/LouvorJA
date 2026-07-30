@@ -1,17 +1,23 @@
 <template>
   <div class="w-100 h-100 d-flex flex-column justify-space-between pa-8 return-screen" :style="style_bg">
     <div class="d-flex flex-column align-center justify-center flex-grow-1" style="gap: 24px;">
-      <div v-if="current_lyric" class="text-center current-lyric" v-html="current_lyric" />
+      <div v-if="main_text && is_bible_active" class="text-center current-lyric">
+        {{ main_text }}
+      </div>
+      <div v-else-if="main_text" class="text-center current-lyric" v-html="main_text" />
       <div v-else class="text-center current-lyric" style="opacity: 0.5;">
-        {{ t("return_screen_pause") }}
+        {{ is_bible_active ? t("return_screen_no_verse") : t("return_screen_pause") }}
       </div>
 
-      <div v-if="next_lyric" class="text-center next-lyric" v-html="next_lyric" />
+      <div v-if="secondary_text && is_bible_active" class="text-center next-lyric">
+        {{ secondary_text }}
+      </div>
+      <div v-else-if="secondary_text" class="text-center next-lyric" v-html="secondary_text" />
     </div>
 
     <div class="return-divider" :style="{ backgroundColor: font_color }" />
 
-    <div class="d-flex align-center justify-space-between status-bar pt-4">
+    <div v-if="!is_bible_active" class="d-flex align-center justify-space-between status-bar pt-4">
       <span class="slide-count">{{ slide_status }}</span>
       <span class="time">{{ remaining_time }}</span>
     </div>
@@ -25,6 +31,21 @@ import $datetime from "@/helpers/DateTime";
 export default {
   name: "ReturnScreenComponent",
   computed: {
+    popup_module() {
+      return this.$appdata.get("popup_module");
+    },
+    is_bible_active() {
+      return this.popup_module === "bible";
+    },
+    bible_data() {
+      return this.$appdata.get("modules.bible.data") || {};
+    },
+    main_text() {
+      return this.is_bible_active ? this.bible_data.text : this.current_lyric;
+    },
+    secondary_text() {
+      return this.is_bible_active ? this.bible_data.scriptural_reference : this.next_lyric;
+    },
     background_color() {
       return this.$userdata.get("modules.config.return_screen_bg_color") || "#000000";
     },
