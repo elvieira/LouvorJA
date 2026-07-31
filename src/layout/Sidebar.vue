@@ -144,6 +144,24 @@
         </a>
       </div>
       
+      <div v-if="isDesktop" class="nav-item" :class="{ active: noticeMenuOpen || isNoticeActive }">
+        <a href="#" class="nav-link" @click.prevent>
+          <v-icon class="nav-icon">
+            mdi-bullhorn
+          </v-icon>
+          <span class="nav-text">Avisos</span>
+        </a>
+        <v-menu
+          v-model="noticeMenuOpen"
+          activator="parent"
+          :close-on-content-click="false"
+          location="end"
+          offset="12"
+        >
+          <NoticeTrigger />
+        </v-menu>
+      </div>
+
       <div class="nav-item" :class="{ active: currentModule === 'help' }">
         <a href="#" class="nav-link" @click.prevent="openModule('help')">
           <v-icon class="nav-icon">
@@ -165,9 +183,12 @@
 </template>
 
 <script>
+import NoticeTrigger from "@/components/NoticeTrigger.vue";
+
 export default {
   name: "DashboardSidebar",
   components: {
+    NoticeTrigger,
   },
   props: {
     modelValue: {
@@ -180,6 +201,7 @@ export default {
     return {
       submenuOpen: {},
       windowWidth: window.innerWidth,
+      noticeMenuOpen: false,
     };
   },
   computed: {
@@ -193,6 +215,9 @@ export default {
     },
     updateStatus() {
       return this.$appdata.get("modules.update.status") || "idle";
+    },
+    isNoticeActive() {
+      return !!this.$appdata.get("notice.visible");
     },
     isMobile() {
       return this.windowWidth <= 1024;

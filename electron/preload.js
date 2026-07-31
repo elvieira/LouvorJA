@@ -44,6 +44,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getDisplays: () => ipcRenderer.invoke('get-displays'),
   identifyDisplays: () => ipcRenderer.invoke('identify-displays'),
   onDisplaysChanged: (callback) => ipcRenderer.on('displays-changed', callback),
+  raiseBarWindows: () => ipcRenderer.invoke('raise-bar-windows'),
   
   // Auto-Update
   checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),

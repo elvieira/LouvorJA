@@ -4,7 +4,7 @@
   <div class="main-container" :class="{ 'sidebar-open': sidebarOpen }" @toggle-sidebar="toggleSidebar">
     <v-main class="bg-main">
       <AppModules />
-      
+
       <AppTrayArea />
 
       <transition name="fade-slide">
@@ -190,7 +190,7 @@ export default {
       const raw = this.$appdata.get("modules.external_media.filePath");
       if (!raw) return "";
       if (window.electronAPI) {
-        const prefix = raw.startsWith('/') ? 'local://app' : 'local://app/';
+        const prefix = raw.startsWith("/") ? "local://app" : "local://app/";
         return `${prefix}${raw}`;
       }
       return raw;
@@ -306,6 +306,16 @@ export default {
         }
       }
     });
+
+    // Barra de status/relógio da tela de retorno: nasce junto com o app se
+    // já houver um monitor de retorno configurado, sem depender de nenhuma
+    // ação do operador.
+    if (window.electronAPI && window.electronAPI.isElectron) {
+      const returnMonitorId = this.$userdata.get("modules.config.return_screen_monitor");
+      if (returnMonitorId) {
+        this.$popup.syncStatusBar(returnMonitorId);
+      }
+    }
 
     /*********************************************************************/
     /*********************************************************************/

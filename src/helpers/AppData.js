@@ -10,28 +10,51 @@ export default {
     if (singlePopup && !popups.includes(singlePopup)) {
       popups.push(singlePopup);
     }
+    // Janelas de barra (status/aviso) vivem num array próprio, mas recebem o
+    // mesmo broadcast de estado que as janelas de conteúdo.
+    const barPopups = this.get("barPopups") || [];
 
     if (
-      popups.length > 0 &&
       param != "popup" &&
       param != "popups" &&
+      param != "barPopups" &&
       param != "is_popup" &&
       param != "is_fullscreen"
     ) {
-      const activePopups = [];
-      popups.forEach(popup => {
-        if (!popup.closed) {
-          activePopups.push(popup);
-          try {
-            popup.postMessage({ param, value }, "*");
-          } catch (e) {
-            console.log(e);
+      if (popups.length > 0) {
+        const activePopups = [];
+        popups.forEach(popup => {
+          if (!popup.closed) {
+            activePopups.push(popup);
+            try {
+              popup.postMessage({ param, value }, "*");
+            } catch (e) {
+              console.log(e);
+            }
           }
+        });
+
+        if (activePopups.length !== popups.length) {
+          this.set("popups", activePopups);
         }
-      });
-      
-      if (activePopups.length !== popups.length) {
-        this.set("popups", activePopups);
+      }
+
+      if (barPopups.length > 0) {
+        const activeBarPopups = [];
+        barPopups.forEach(popup => {
+          if (!popup.closed) {
+            activeBarPopups.push(popup);
+            try {
+              popup.postMessage({ param, value }, "*");
+            } catch (e) {
+              console.log(e);
+            }
+          }
+        });
+
+        if (activeBarPopups.length !== barPopups.length) {
+          this.set("barPopups", activeBarPopups);
+        }
       }
     }
   },
@@ -48,6 +71,7 @@ export default {
     let data = Object.assign({}, this.get());
     delete data.popup;
     delete data.popups;
+    delete data.barPopups;
     delete data.is_popup;
     data = JSON.parse(JSON.stringify(data));
     return this.flatten(data);

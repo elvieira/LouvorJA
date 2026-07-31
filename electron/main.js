@@ -558,6 +558,13 @@ ipcMain.handle('get-displays', () => {
   }));
 });
 
+ipcMain.handle('raise-bar-windows', () => {
+  barWindows.forEach(bar => {
+    if (!bar.isDestroyed()) bar.moveTop();
+  });
+  return true;
+});
+
 ipcMain.handle('identify-displays', () => {
   const { screen } = require('electron');
   const displays = screen.getAllDisplays();
@@ -600,6 +607,11 @@ ipcMain.handle('identify-displays', () => {
 });
 
 const isDev = !app.isPackaged;
+
+// Janelas de barra (status/relógio da tela de retorno, aviso sob demanda).
+// Ficam registradas aqui pra poderem ser reforçadas no topo (moveTop) sempre
+// que uma janela de conteúdo fullscreen for criada por cima delas.
+let barWindows = [];
 
 function createWindow() {
   const mainWindow = new BrowserWindow({
@@ -772,6 +784,40 @@ function createWindow() {
     const monitorMatch = features.match(/monitor=(\d+)/);
     const targetMonitorId = monitorMatch ? parseInt(monitorMatch[1]) : null;
 
+    const barMatch = features.match(/bar=(top|bottom)/);
+    const barPosition = barMatch ? barMatch[1] : null;
+
+    if (barPosition) {
+      // Barra fina, opaca, sempre no topo (status/relógio da tela de retorno,
+      // ou aviso sob demanda) — ocupa só uma tira do monitor, não a tela toda.
+      const primary = screen.getPrimaryDisplay();
+      const targetDisplay = (targetMonitorId && displays.find(d => d.id === targetMonitorId)) || primary;
+      const sizeMatch = features.match(/size=([\d.]+)/);
+      const barSizePercent = sizeMatch ? parseFloat(sizeMatch[1]) : 7;
+      const barHeight = Math.max(32, Math.min(220, Math.round(targetDisplay.bounds.height * (barSizePercent / 100))));
+
+      windowConfig.x = targetDisplay.bounds.x;
+      windowConfig.y = barPosition === 'bottom'
+        ? targetDisplay.bounds.y + targetDisplay.bounds.height - barHeight
+        : targetDisplay.bounds.y;
+      windowConfig.width = targetDisplay.bounds.width;
+      windowConfig.height = barHeight;
+      windowConfig.resizable = false;
+      windowConfig.frame = false;
+      windowConfig.thickFrame = false;
+      windowConfig.hasShadow = false;
+      windowConfig.autoHideMenuBar = true;
+      windowConfig.skipTaskbar = true;
+      windowConfig.alwaysOnTop = true;
+      windowConfig.focusable = false;
+      windowConfig.transparent = false;
+
+      return {
+        action: 'allow',
+        overrideBrowserWindowOptions: windowConfig,
+      };
+    }
+
     if (isFullscreen) {
       const primary = screen.getPrimaryDisplay();
       let targetDisplay = null;
@@ -817,18 +863,35 @@ function createWindow() {
 
   mainWindow.webContents.on('did-create-window', (childWindow) => {
     if (!childWindow.isResizable()) {
+      const { screen } = require('electron');
+      const bounds = childWindow.getBounds();
+      const display = screen.getDisplayMatching(bounds);
+      // Janela de barra: bem mais baixa que a altura do monitor. Não deve
+      // virar fullscreen/kiosk — só precisa ficar sempre visível por cima.
+      const isBarWindow = bounds.height < display.bounds.height * 0.5;
+
+      if (isBarWindow) {
+        childWindow.setIgnoreMouseEvents(true);
+        childWindow.setAlwaysOnTop(true, 'screen-saver');
+        barWindows.push(childWindow);
+        childWindow.on('closed', () => {
+          barWindows = barWindows.filter(w => w !== childWindow);
+        });
+        return;
+      }
+
       childWindow.once('ready-to-show', () => {
         if (process.platform === 'win32') {
-          const { screen } = require('electron');
-          const bounds = childWindow.getBounds();
-          const display = screen.getDisplayMatching(bounds);
-
           childWindow.setFullScreen(false);
           childWindow.setBounds(display.bounds);
           childWindow.setAlwaysOnTop(true, 'screen-saver');
         } else {
           childWindow.setFullScreen(true);
         }
+        // Reforça as barras por cima da janela de conteúdo recém-criada.
+        barWindows.forEach(bar => {
+          if (!bar.isDestroyed()) bar.moveTop();
+        });
       });
     }
   });

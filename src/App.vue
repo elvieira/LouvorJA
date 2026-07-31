@@ -94,6 +94,13 @@ export default {
               const { default: $popup } = await import("@/helpers/Popup");
               $popup.exit();
               $popup.exitReturn();
+              $popup.hideNotice();
+
+              const returnMonitorId = this.$userdata.get("modules.config.return_screen_monitor");
+              const stillExists = returnMonitorId && displays.some(d => d.id === returnMonitorId);
+              if (!stillExists) {
+                $popup.closeStatusBar();
+              }
             }
 
             this.lastDisplayCount = displays.length;

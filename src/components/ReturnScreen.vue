@@ -16,17 +16,11 @@
     </div>
 
     <div class="return-divider" :style="{ backgroundColor: font_color }" />
-
-    <div v-if="!is_bible_active" class="d-flex align-center justify-space-between status-bar pt-4">
-      <span class="slide-count">{{ slide_status }}</span>
-      <span class="time">{{ remaining_time }}</span>
-    </div>
   </div>
 </template>
 
 <script>
 import $media from "@/helpers/Media";
-import $datetime from "@/helpers/DateTime";
 
 export default {
   name: "ReturnScreenComponent",
@@ -87,25 +81,6 @@ export default {
     next_lyric() {
       return this.next_slide?.lyric;
     },
-    last_slide() {
-      return this.config.last_slide ?? this.slides.length;
-    },
-    slide_status() {
-      if (!this.slides.length) {
-        return "";
-      }
-      return `${this.t("return_screen_slide")} ${this.slide_index + 1}/${this.last_slide}`;
-    },
-    remaining_time() {
-      const duration = this.config.duration ?? 0;
-      const current_time = this.config.current_time ?? 0;
-      const audio = this.config.audio;
-      if (!audio || !duration) {
-        return "--:--";
-      }
-      const remaining = Math.max(duration - current_time, 0);
-      return $datetime.shortTime(remaining);
-    },
   },
   methods: {
     t(text) {
@@ -136,18 +111,5 @@ export default {
   height: 2px;
   opacity: 0.25;
   border-radius: 1px;
-}
-.status-bar {
-  letter-spacing: 0.05em;
-}
-.slide-count {
-  font-size: 2.6vw;
-  font-weight: 700;
-  opacity: 0.85;
-}
-.time {
-  font-size: 1.6vw;
-  font-weight: 600;
-  opacity: 0.7;
 }
 </style>

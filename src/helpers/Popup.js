@@ -18,6 +18,30 @@ function isReturnContentActive() {
   );
 }
 
+// Janelas de barra (status/relógio da tela de retorno, aviso sob demanda).
+// Ficam num array próprio, separado de "popups", pra nunca serem afetadas
+// pelas rotinas de criar/destruir das janelas de conteúdo acima.
+function getBarPopups() {
+  return ($appdata.get("barPopups") || []).filter(p => !p.closed);
+}
+
+function setBarPopups(list) {
+  $appdata.set("barPopups", list);
+}
+
+async function resolveNoticeMonitors(target) {
+  if (target === "return") {
+    const monitorId = $userdata.get("modules.config.return_screen_monitor");
+    return monitorId ? [monitorId] : [null];
+  }
+
+  let configMonitors = $userdata.get("modules.config.slide_monitor");
+  if (!Array.isArray(configMonitors)) {
+    configMonitors = configMonitors ? [configMonitors] : [];
+  }
+  return configMonitors.length > 0 ? configMonitors : [null];
+}
+
 export default {
   async open(params) {
     if (typeof params !== "object") {
@@ -147,5 +171,74 @@ export default {
     const { mainPopups, returnPopups } = splitPopups();
     returnPopups.forEach(popup => popup.close());
     $appdata.set("popups", mainPopups);
+  },
+
+  // Barra de status/relógio da tela de retorno: sempre viva, independente do
+  // estado da janela de conteúdo. Nasce/reposiciona quando o monitor de
+  // retorno é configurado; fecha quando a configuração é removida.
+  async syncStatusBar(monitorId, force = false) {
+    const current = getBarPopups();
+    const existing = current.find(p => p.role === "status");
+
+    if (!monitorId) {
+      if (existing) existing.close();
+      setBarPopups(current.filter(p => p.role !== "status"));
+      return;
+    }
+
+    if (existing && existing.monitorId === monitorId && !force) {
+      return;
+    }
+    if (existing) {
+      existing.close();
+    }
+
+    const size = $userdata.get("modules.config.return_status_bar_size") || 7;
+    const features = `bar=bottom,monitor=${monitorId},size=${size}`;
+    const win = markRaw($window.open("#/popup?role=status", `StatusBarWindow_${monitorId}_${Date.now()}`, features));
+    win.monitorId = monitorId;
+    win.role = "status";
+
+    setBarPopups([...current.filter(p => p.role !== "status"), win]);
+  },
+  async closeStatusBar() {
+    const current = getBarPopups();
+    current.filter(p => p.role === "status").forEach(p => p.close());
+    setBarPopups(current.filter(p => p.role !== "status"));
+  },
+
+  // Barra de aviso: sob demanda, manual. Um aviso ativo por vez nesta versão,
+  // exibido na(s) tela(s) escolhida(s) pelo operador no momento do disparo.
+  async showNotice({ text, targets }) {
+    if (!text || !Array.isArray(targets) || targets.length === 0) return;
+
+    const current = getBarPopups();
+    current.filter(p => p.role === "notice").forEach(p => p.close());
+    const statusOnly = current.filter(p => p.role === "status");
+
+    $appdata.set("notice.text", text);
+    $appdata.set("notice.visible", true);
+
+    const size = $userdata.get("modules.config.notice_bar_size") || 7;
+    const windows = [];
+    for (const target of targets) {
+      const monitorIds = await resolveNoticeMonitors(target);
+      for (const monitorId of monitorIds) {
+        const features = monitorId ? `bar=top,monitor=${monitorId},size=${size}` : `bar=top,size=${size}`;
+        const name = `NoticeWindow_${target}_${monitorId ?? "primary"}_${Date.now()}`;
+        const win = markRaw($window.open("#/popup?role=notice", name, features));
+        win.role = "notice";
+        win.noticeTarget = target;
+        windows.push(win);
+      }
+    }
+
+    setBarPopups([...statusOnly, ...windows]);
+  },
+  async hideNotice() {
+    const current = getBarPopups();
+    current.filter(p => p.role === "notice").forEach(p => p.close());
+    setBarPopups(current.filter(p => p.role !== "notice"));
+    $appdata.set("notice.visible", false);
   },
 };
