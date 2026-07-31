@@ -1,0 +1,20 @@
+{
+  "title": "Cronômetro",
+  "config": "Configurações",
+  "start": "Iniciar",
+  "pause": "Pausar",
+  "reset": "Zerar",
+  "add_min": "+1 Min",
+  "sub_min": "-1 Min",
+  "mode_stopwatch": "Progressivo",
+  "mode_timer": "Regressivo",
+  "settings_visual_alert": "Alerta Visual",
+  "settings_visual_alert_desc": "Piscar a tela quando o tempo esgotar",
+  "settings_audio_alert": "Alerta Sonoro",
+  "settings_audio_alert_desc": "Tocar aviso sonoro quando o tempo esgotar",
+  "settings_font_color": "Cor da Fonte",
+  "settings_bg_color": "Cor de Fundo",
+  "hours_label": "Horas",
+  "minutes_label": "Minutos",
+  "seconds_label": "Segundos"
+}

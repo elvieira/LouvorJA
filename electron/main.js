@@ -231,64 +231,123 @@ async function getFtpParams() {
 }
 
 ipcMain.handle('download-database', async (event) => {
-  try {
-    const finalDbPath = path.join(app.getPath('userData'), 'database.db');
-    const flagPath = path.join(app.getPath('userData'), 'db_download_complete.flag');
-    
-    if (fs.existsSync(flagPath) && fs.existsSync(finalDbPath)) {
-      console.log('Banco de dados já foi baixado completamente. Pulando FTP.');
-      return true;
-    }
-
-    const ftpParams = await getFtpParams();
-    
-    const client = new ftp.Client();
-    
-    await client.access({
-      host: ftpParams['host'],
-      user: ftpParams['username'],
-      password: ftpParams['password'],
-      port: parseInt(ftpParams['port'] || '21'),
-      secure: false
-    });
-    
-    const langPrefix = (ftpParams['lang'] || 'pt').toLowerCase();
-    const remotePath = (ftpParams['root'] || '/') + (ftpParams['root']?.endsWith('/') ? '' : '/') + `config/${langPrefix}_database.db`;
-    
-    // O check de tamanho agora é secundário, usado apenas para garantir retomada/overwrite caso a flag não exista
-    let size = 0;
-    try {
-      size = await client.size(remotePath);
-    } catch (e) {
-      console.warn('Não foi possível obter o tamanho do arquivo via FTP:', e.message);
-    }
-    
-    if (size > 0 && fs.existsSync(finalDbPath)) {
-      const localStat = fs.statSync(finalDbPath);
-      if (localStat.size === size) {
-        console.log('Banco de dados local já existe e está completo. Pulando download e definindo flag.');
-        fs.writeFileSync(flagPath, '1');
-        client.close();
-        return true;
-      }
-    }
-    
-    client.trackProgress(info => {
-      if (size > 0) {
-        const percent = Math.floor((info.bytesOverall / size) * 100);
-        event.sender.send('download-db-progress', { progress: percent });
-      }
-    });
-    
-    await client.downloadTo(finalDbPath, remotePath);
-    client.close();
-    
-    fs.writeFileSync(flagPath, '1');
+  const finalDbPath = path.join(app.getPath('userData'), 'database.db');
+  const flagPath = path.join(app.getPath('userData'), 'db_download_complete.flag');
+  
+  if (fs.existsSync(flagPath) && fs.existsSync(finalDbPath)) {
+    console.log('Banco de dados já foi baixado completamente. Pulando FTP.');
     return true;
-  } catch (error) {
-    console.error('Erro no download do banco:', error);
-    throw error;
   }
+
+  const ftpParams = await getFtpParams();
+  const langPrefix = (ftpParams['lang'] || 'pt').toLowerCase();
+  const remotePath = (ftpParams['root'] || '/') + (ftpParams['root']?.endsWith('/') ? '' : '/') + `config/${langPrefix}_database.db`;
+  const port = parseInt(ftpParams['port'] || '21');
+
+  // Estratégias de conexão: tenta FTP normal primeiro, depois FTPS como fallback
+  const strategies = [
+    { name: 'FTP', secure: false },
+    { name: 'FTP (retry)', secure: false },
+    { name: 'FTPS (TLS)', secure: true },
+  ];
+
+  let lastError = null;
+
+  for (let i = 0; i < strategies.length; i++) {
+    const strategy = strategies[i];
+    const client = new ftp.Client();
+    client.ftp.verbose = false;
+
+    try {
+      console.log(`[download-database] Tentativa ${i + 1}/${strategies.length} via ${strategy.name}...`);
+
+      const accessOpts = {
+        host: ftpParams['host'],
+        user: ftpParams['username'],
+        password: ftpParams['password'],
+        port: port,
+        secure: strategy.secure,
+      };
+
+      // FTPS: aceitar certificados auto-assinados
+      if (strategy.secure) {
+        accessOpts.secureOptions = { rejectUnauthorized: false };
+      }
+
+      await client.access(accessOpts);
+
+      // Ativar TCP KeepAlive no socket de controle para evitar que firewalls
+      // matem a conexão "ociosa" enquanto o download de dados flui
+      if (client.ftp && client.ftp.socket) {
+        client.ftp.socket.setKeepAlive(true, 10000); // ping a cada 10s
+        client.ftp.socket.setTimeout(120000); // timeout de 2min
+      }
+
+      // Verificar tamanho do arquivo remoto
+      let size = 0;
+      try {
+        size = await client.size(remotePath);
+      } catch (e) {
+        console.warn('Não foi possível obter o tamanho do arquivo via FTP:', e.message);
+      }
+      
+      // Se já existe localmente com tamanho correto, marca como completo
+      if (size > 0 && fs.existsSync(finalDbPath)) {
+        const localStat = fs.statSync(finalDbPath);
+        if (localStat.size === size) {
+          console.log('Banco de dados local já existe e está completo. Pulando download e definindo flag.');
+          fs.writeFileSync(flagPath, '1');
+          client.close();
+          return true;
+        }
+      }
+      
+      // Reportar progresso do download
+      client.trackProgress(info => {
+        if (size > 0) {
+          const percent = Math.floor((info.bytesOverall / size) * 100);
+          event.sender.send('download-db-progress', { progress: percent });
+        }
+      });
+
+      // Baixar para arquivo temporário para evitar corrupção em caso de falha
+      const tempPath = finalDbPath + '.downloading';
+      await client.downloadTo(tempPath, remotePath);
+      client.close();
+
+      // Download completo: mover temp → final
+      if (fs.existsSync(finalDbPath)) {
+        fs.unlinkSync(finalDbPath);
+      }
+      fs.renameSync(tempPath, finalDbPath);
+      fs.writeFileSync(flagPath, '1');
+      
+      console.log(`[download-database] Download concluído com sucesso via ${strategy.name}`);
+      return true;
+
+    } catch (error) {
+      lastError = error;
+      console.error(`[download-database] Falha via ${strategy.name}: ${error.message}`);
+      try { client.close(); } catch (e) { /* ignore */ }
+
+      // Limpar arquivo temporário corrompido
+      const tempPath = finalDbPath + '.downloading';
+      if (fs.existsSync(tempPath)) {
+        try { fs.unlinkSync(tempPath); } catch (e) { /* ignore */ }
+      }
+
+      // Aguardar antes da próxima tentativa (backoff exponencial)
+      if (i < strategies.length - 1) {
+        const waitTime = 3000 * (i + 1); // 3s, 6s
+        console.log(`[download-database] Aguardando ${waitTime / 1000}s antes da próxima tentativa...`);
+        await new Promise(r => setTimeout(r, waitTime));
+      }
+    }
+  }
+
+  // Todas as estratégias falharam
+  console.error('Erro no download do banco: Todas as estratégias falharam.', lastError);
+  throw lastError;
 });
 
 ipcMain.handle('check-old-installation', async (event) => {
@@ -364,6 +423,12 @@ async function getOrCreateFtpClient() {
     });
   } catch (err) {
     throw err;
+  }
+
+  // Ativar TCP KeepAlive para evitar que firewalls corporativos matem a conexão ociosa
+  if (client.ftp && client.ftp.socket) {
+    client.ftp.socket.setKeepAlive(true, 10000);
+    client.ftp.socket.setTimeout(120000);
   }
 
   ftpClient = client;
