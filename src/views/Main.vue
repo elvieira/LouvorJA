@@ -7,8 +7,6 @@
 
       <AppTrayArea />
 
-      <NoticeTrigger v-if="isDesktop" />
-
       <transition name="fade-slide">
         <div v-if="isMinimized && showMiniPlayer" class="mini-player-popup elevation-12">
           <v-card
@@ -150,7 +148,6 @@ import AppSidebar from "@/layout/Sidebar.vue";
 import AppModules from "@/layout/Modules.vue";
 import AppTrayArea from "@/layout/TrayArea.vue";
 import LSlide from "@/components/Slide.vue";
-import NoticeTrigger from "@/components/NoticeTrigger.vue";
 
 export default {
   name: "MainPage",
@@ -160,7 +157,6 @@ export default {
     AppModules,
     AppTrayArea,
     LSlide,
-    NoticeTrigger,
   },
   data() {
     return {
@@ -216,9 +212,6 @@ export default {
     },
     slide() {
       return this.$media.slide();
-    },
-    isDesktop() {
-      return this.$appdata.get("is_desktop");
     },
   },
   watch: {
