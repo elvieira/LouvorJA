@@ -4,8 +4,10 @@
   <div class="main-container" :class="{ 'sidebar-open': sidebarOpen }" @toggle-sidebar="toggleSidebar">
     <v-main class="bg-main">
       <AppModules />
-      
+
       <AppTrayArea />
+
+      <NoticeTrigger v-if="isDesktop" />
 
       <transition name="fade-slide">
         <div v-if="isMinimized && showMiniPlayer" class="mini-player-popup elevation-12">
@@ -148,6 +150,7 @@ import AppSidebar from "@/layout/Sidebar.vue";
 import AppModules from "@/layout/Modules.vue";
 import AppTrayArea from "@/layout/TrayArea.vue";
 import LSlide from "@/components/Slide.vue";
+import NoticeTrigger from "@/components/NoticeTrigger.vue";
 
 export default {
   name: "MainPage",
@@ -157,6 +160,7 @@ export default {
     AppModules,
     AppTrayArea,
     LSlide,
+    NoticeTrigger,
   },
   data() {
     return {
@@ -190,7 +194,7 @@ export default {
       const raw = this.$appdata.get("modules.external_media.filePath");
       if (!raw) return "";
       if (window.electronAPI) {
-        const prefix = raw.startsWith('/') ? 'local://app' : 'local://app/';
+        const prefix = raw.startsWith("/") ? "local://app" : "local://app/";
         return `${prefix}${raw}`;
       }
       return raw;
@@ -212,6 +216,9 @@ export default {
     },
     slide() {
       return this.$media.slide();
+    },
+    isDesktop() {
+      return this.$appdata.get("is_desktop");
     },
   },
   watch: {
@@ -306,6 +313,16 @@ export default {
         }
       }
     });
+
+    // Barra de status/relógio da tela de retorno: nasce junto com o app se
+    // já houver um monitor de retorno configurado, sem depender de nenhuma
+    // ação do operador.
+    if (window.electronAPI && window.electronAPI.isElectron) {
+      const returnMonitorId = this.$userdata.get("modules.config.return_screen_monitor");
+      if (returnMonitorId) {
+        this.$popup.syncStatusBar(returnMonitorId);
+      }
+    }
 
     /*********************************************************************/
     /*********************************************************************/

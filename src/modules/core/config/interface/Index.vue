@@ -1070,6 +1070,7 @@ import manifest from "../manifest.json";
 import MenuToggleButton from "@/components/MenuToggleButton.vue";
 import ModernColorPicker from "@/components/inputs/ModernColorPicker.vue";
 import $media from "@/helpers/Media";
+import $popup from "@/helpers/Popup";
 
 export default {
   name: manifest.id,
@@ -1221,6 +1222,7 @@ export default {
     return_screen_monitor(val) {
       this.$userdata.set("modules.config.return_screen_monitor", val);
       $media.syncReturnMonitor();
+      $popup.syncStatusBar(val);
     },
     return_screen_bg_color(val) {
       this.$userdata.set("modules.config.return_screen_bg_color", val);
