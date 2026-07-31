@@ -176,7 +176,7 @@ export default {
   // Barra de status/relógio da tela de retorno: sempre viva, independente do
   // estado da janela de conteúdo. Nasce/reposiciona quando o monitor de
   // retorno é configurado; fecha quando a configuração é removida.
-  async syncStatusBar(monitorId) {
+  async syncStatusBar(monitorId, force = false) {
     const current = getBarPopups();
     const existing = current.find(p => p.role === "status");
 
@@ -186,14 +186,15 @@ export default {
       return;
     }
 
-    if (existing && existing.monitorId === monitorId) {
+    if (existing && existing.monitorId === monitorId && !force) {
       return;
     }
     if (existing) {
       existing.close();
     }
 
-    const features = `bar=bottom,monitor=${monitorId}`;
+    const size = $userdata.get("modules.config.return_status_bar_size") || 7;
+    const features = `bar=bottom,monitor=${monitorId},size=${size}`;
     const win = markRaw($window.open("#/popup?role=status", `StatusBarWindow_${monitorId}_${Date.now()}`, features));
     win.monitorId = monitorId;
     win.role = "status";
@@ -218,11 +219,12 @@ export default {
     $appdata.set("notice.text", text);
     $appdata.set("notice.visible", true);
 
+    const size = $userdata.get("modules.config.notice_bar_size") || 7;
     const windows = [];
     for (const target of targets) {
       const monitorIds = await resolveNoticeMonitors(target);
       for (const monitorId of monitorIds) {
-        const features = monitorId ? `bar=top,monitor=${monitorId}` : "bar=top";
+        const features = monitorId ? `bar=top,monitor=${monitorId},size=${size}` : `bar=top,size=${size}`;
         const name = `NoticeWindow_${target}_${monitorId ?? "primary"}_${Date.now()}`;
         const win = markRaw($window.open("#/popup?role=notice", name, features));
         win.role = "notice";

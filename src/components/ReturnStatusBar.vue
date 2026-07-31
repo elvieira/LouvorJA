@@ -34,10 +34,10 @@ export default {
       return this.now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
     },
     background_color() {
-      return this.$userdata.get("modules.config.return_screen_bg_color") || "#000000";
+      return this.$userdata.get("modules.config.return_status_bar_bg_color") || "#000000";
     },
     font_color() {
-      return this.$userdata.get("modules.config.return_screen_font_color") || "#ffffff";
+      return this.$userdata.get("modules.config.return_status_bar_font_color") || "#ffffff";
     },
     style_bg() {
       return {

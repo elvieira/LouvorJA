@@ -792,7 +792,9 @@ function createWindow() {
       // ou aviso sob demanda) — ocupa só uma tira do monitor, não a tela toda.
       const primary = screen.getPrimaryDisplay();
       const targetDisplay = (targetMonitorId && displays.find(d => d.id === targetMonitorId)) || primary;
-      const barHeight = Math.max(48, Math.min(120, Math.round(targetDisplay.bounds.height * 0.07)));
+      const sizeMatch = features.match(/size=([\d.]+)/);
+      const barSizePercent = sizeMatch ? parseFloat(sizeMatch[1]) : 7;
+      const barHeight = Math.max(32, Math.min(220, Math.round(targetDisplay.bounds.height * (barSizePercent / 100))));
 
       windowConfig.x = targetDisplay.bounds.x;
       windowConfig.y = barPosition === 'bottom'

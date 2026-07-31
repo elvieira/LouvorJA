@@ -71,6 +71,7 @@ export default {
     let data = Object.assign({}, this.get());
     delete data.popup;
     delete data.popups;
+    delete data.barPopups;
     delete data.is_popup;
     data = JSON.parse(JSON.stringify(data));
     return this.flatten(data);

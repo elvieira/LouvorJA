@@ -701,6 +701,268 @@
                           </ModernColorPicker>
                         </div>
                       </div>
+
+                      <!-- Barra de status/relógio -->
+                      <div class="mt-8">
+                        <div class="d-flex align-center mb-4">
+                          <v-icon size="18" color="primary" class="mr-2">
+                            mdi-clock-outline
+                          </v-icon>
+                          <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text);">Barra de status/relógio</span>
+                        </div>
+
+                        <div class="mb-6">
+                          <div class="d-flex align-center mb-3">
+                            <v-icon size="18" color="primary" class="mr-2">
+                              mdi-format-color-fill
+                            </v-icon>
+                            <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text);">Cor de fundo</span>
+                          </div>
+                          <div class="d-flex flex-wrap align-center" style="gap: 10px;">
+                            <div
+                              v-for="color in ['#000000', '#192A56', '#FFFFFF', '#2F3640', '#FEF9E7', '#2C3A47', '#6D214F', '#2C2C54']"
+                              :key="color"
+                              class="rounded-circle cursor-pointer elevation-1"
+                              :class="return_status_bar_bg_color === color ? 'elevation-4' : ''"
+                              :style="{
+                                width: '36px', height: '36px',
+                                background: color,
+                                border: return_status_bar_bg_color === color ? '3px solid var(--accent-blue)' : '2px solid rgba(255,255,255,0.1)',
+                                transition: 'all 0.2s',
+                                transform: return_status_bar_bg_color === color ? 'scale(1.15)' : 'scale(1)',
+                              }"
+                              @click="return_status_bar_bg_color = color"
+                            />
+                            <ModernColorPicker v-model="return_status_bar_bg_color">
+                              <template #activator="{ props }">
+                                <div
+                                  v-bind="props"
+                                  class="rounded-circle cursor-pointer elevation-1 d-flex align-center justify-center"
+                                  style="width: 36px; height: 36px; border: 2px dashed var(--border-color); background: var(--card-bg);"
+                                >
+                                  <v-icon size="16" color="grey">
+                                    mdi-eyedropper
+                                  </v-icon>
+                                </div>
+                              </template>
+                            </ModernColorPicker>
+                          </div>
+                        </div>
+
+                        <div class="mb-6">
+                          <div class="d-flex align-center mb-3">
+                            <v-icon size="18" color="primary" class="mr-2">
+                              mdi-palette
+                            </v-icon>
+                            <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text);">Cor da fonte</span>
+                          </div>
+                          <div class="d-flex flex-wrap align-center" style="gap: 10px;">
+                            <div
+                              v-for="color in ['#FFFFFF', '#f6c32a', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD']"
+                              :key="color"
+                              class="rounded-circle cursor-pointer elevation-1"
+                              :class="return_status_bar_font_color === color ? 'elevation-4' : ''"
+                              :style="{
+                                width: '36px', height: '36px',
+                                background: color,
+                                border: return_status_bar_font_color === color ? '3px solid var(--accent-blue)' : '2px solid rgba(0,0,0,0.1)',
+                                transition: 'all 0.2s',
+                                transform: return_status_bar_font_color === color ? 'scale(1.15)' : 'scale(1)',
+                              }"
+                              @click="return_status_bar_font_color = color"
+                            />
+                            <ModernColorPicker v-model="return_status_bar_font_color">
+                              <template #activator="{ props }">
+                                <div
+                                  v-bind="props"
+                                  class="rounded-circle cursor-pointer elevation-1 d-flex align-center justify-center"
+                                  style="width: 36px; height: 36px; border: 2px dashed var(--border-color); background: var(--card-bg);"
+                                >
+                                  <v-icon size="16" color="grey">
+                                    mdi-eyedropper
+                                  </v-icon>
+                                </div>
+                              </template>
+                            </ModernColorPicker>
+                          </div>
+                        </div>
+
+                        <div>
+                          <div class="d-flex align-center mb-3">
+                            <v-icon size="18" color="primary" class="mr-2">
+                              mdi-arrow-expand-vertical
+                            </v-icon>
+                            <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text);">Tamanho da barra</span>
+                          </div>
+                          <div class="d-flex align-center" style="gap: 10px;">
+                            <v-btn
+                              icon
+                              size="small"
+                              variant="tonal"
+                              color="primary"
+                              @click="return_status_bar_size = Math.max(4, return_status_bar_size - 1)"
+                            >
+                              <v-icon size="18">
+                                mdi-minus
+                              </v-icon>
+                            </v-btn>
+                            <v-slider
+                              v-model="return_status_bar_size"
+                              :min="4"
+                              :max="15"
+                              :step="1"
+                              color="primary"
+                              track-color="grey-lighten-3"
+                              hide-details
+                              class="flex-grow-1"
+                            />
+                            <v-btn
+                              icon
+                              size="small"
+                              variant="tonal"
+                              color="primary"
+                              @click="return_status_bar_size = Math.min(15, return_status_bar_size + 1)"
+                            >
+                              <v-icon size="18">
+                                mdi-plus
+                              </v-icon>
+                            </v-btn>
+                            <span class="text-body-2" style="color: var(--sidebar-text-secondary); min-width: 40px;">{{ return_status_bar_size }}%</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <v-divider class="mb-8" style="opacity: 0.1;" />
+
+                    <!-- BARRA DE AVISOS -->
+                    <div class="mb-8">
+                      <div class="d-flex align-center mb-4">
+                        <v-icon size="20" color="primary" class="mr-2">
+                          mdi-bullhorn
+                        </v-icon>
+                        <span class="text-subtitle-1 font-weight-bold" style="color: var(--sidebar-text);">Barra de avisos</span>
+                      </div>
+
+                      <div class="mb-6">
+                        <div class="d-flex align-center mb-3">
+                          <v-icon size="18" color="primary" class="mr-2">
+                            mdi-format-color-fill
+                          </v-icon>
+                          <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text);">Cor de fundo</span>
+                        </div>
+                        <div class="d-flex flex-wrap align-center" style="gap: 10px;">
+                          <div
+                            v-for="color in ['#b8280d', '#000000', '#192A56', '#2F3640', '#6D214F', '#2C2C54', '#c0392b', '#e67e22']"
+                            :key="color"
+                            class="rounded-circle cursor-pointer elevation-1"
+                            :class="notice_bar_bg_color === color ? 'elevation-4' : ''"
+                            :style="{
+                              width: '36px', height: '36px',
+                              background: color,
+                              border: notice_bar_bg_color === color ? '3px solid var(--accent-blue)' : '2px solid rgba(255,255,255,0.1)',
+                              transition: 'all 0.2s',
+                              transform: notice_bar_bg_color === color ? 'scale(1.15)' : 'scale(1)',
+                            }"
+                            @click="notice_bar_bg_color = color"
+                          />
+                          <ModernColorPicker v-model="notice_bar_bg_color">
+                            <template #activator="{ props }">
+                              <div
+                                v-bind="props"
+                                class="rounded-circle cursor-pointer elevation-1 d-flex align-center justify-center"
+                                style="width: 36px; height: 36px; border: 2px dashed var(--border-color); background: var(--card-bg);"
+                              >
+                                <v-icon size="16" color="grey">
+                                  mdi-eyedropper
+                                </v-icon>
+                              </div>
+                            </template>
+                          </ModernColorPicker>
+                        </div>
+                      </div>
+
+                      <div class="mb-6">
+                        <div class="d-flex align-center mb-3">
+                          <v-icon size="18" color="primary" class="mr-2">
+                            mdi-palette
+                          </v-icon>
+                          <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text);">Cor da fonte</span>
+                        </div>
+                        <div class="d-flex flex-wrap align-center" style="gap: 10px;">
+                          <div
+                            v-for="color in ['#FFFFFF', '#f6c32a', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD']"
+                            :key="color"
+                            class="rounded-circle cursor-pointer elevation-1"
+                            :class="notice_bar_font_color === color ? 'elevation-4' : ''"
+                            :style="{
+                              width: '36px', height: '36px',
+                              background: color,
+                              border: notice_bar_font_color === color ? '3px solid var(--accent-blue)' : '2px solid rgba(0,0,0,0.1)',
+                              transition: 'all 0.2s',
+                              transform: notice_bar_font_color === color ? 'scale(1.15)' : 'scale(1)',
+                            }"
+                            @click="notice_bar_font_color = color"
+                          />
+                          <ModernColorPicker v-model="notice_bar_font_color">
+                            <template #activator="{ props }">
+                              <div
+                                v-bind="props"
+                                class="rounded-circle cursor-pointer elevation-1 d-flex align-center justify-center"
+                                style="width: 36px; height: 36px; border: 2px dashed var(--border-color); background: var(--card-bg);"
+                              >
+                                <v-icon size="16" color="grey">
+                                  mdi-eyedropper
+                                </v-icon>
+                              </div>
+                            </template>
+                          </ModernColorPicker>
+                        </div>
+                      </div>
+
+                      <div>
+                        <div class="d-flex align-center mb-3">
+                          <v-icon size="18" color="primary" class="mr-2">
+                            mdi-arrow-expand-vertical
+                          </v-icon>
+                          <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text);">Tamanho da barra</span>
+                        </div>
+                        <div class="d-flex align-center" style="gap: 10px;">
+                          <v-btn
+                            icon
+                            size="small"
+                            variant="tonal"
+                            color="primary"
+                            @click="notice_bar_size = Math.max(4, notice_bar_size - 1)"
+                          >
+                            <v-icon size="18">
+                              mdi-minus
+                            </v-icon>
+                          </v-btn>
+                          <v-slider
+                            v-model="notice_bar_size"
+                            :min="4"
+                            :max="15"
+                            :step="1"
+                            color="primary"
+                            track-color="grey-lighten-3"
+                            hide-details
+                            class="flex-grow-1"
+                          />
+                          <v-btn
+                            icon
+                            size="small"
+                            variant="tonal"
+                            color="primary"
+                            @click="notice_bar_size = Math.min(15, notice_bar_size + 1)"
+                          >
+                            <v-icon size="18">
+                              mdi-plus
+                            </v-icon>
+                          </v-btn>
+                          <span class="text-body-2" style="color: var(--sidebar-text-secondary); min-width: 40px;">{{ notice_bar_size }}%</span>
+                        </div>
+                      </div>
                     </div>
 
                     <v-divider class="mb-8" style="opacity: 0.1;" />
@@ -1125,6 +1387,13 @@ export default {
     return_screen_monitor: null,
     return_screen_bg_color: "#000000",
     return_screen_font_color: "#FFFFFF",
+    return_status_bar_bg_color: "#000000",
+    return_status_bar_font_color: "#FFFFFF",
+    return_status_bar_size: 7,
+
+    notice_bar_bg_color: "#b8280d",
+    notice_bar_font_color: "#FFFFFF",
+    notice_bar_size: 7,
 
     manifest,
   }),
@@ -1230,6 +1499,27 @@ export default {
     return_screen_font_color(val) {
       this.$userdata.set("modules.config.return_screen_font_color", val);
     },
+    return_status_bar_bg_color(val) {
+      this.$userdata.set("modules.config.return_status_bar_bg_color", val);
+    },
+    return_status_bar_font_color(val) {
+      this.$userdata.set("modules.config.return_status_bar_font_color", val);
+    },
+    return_status_bar_size(val) {
+      this.$userdata.set("modules.config.return_status_bar_size", val);
+      if (this.return_screen_monitor) {
+        $popup.syncStatusBar(this.return_screen_monitor, true);
+      }
+    },
+    notice_bar_bg_color(val) {
+      this.$userdata.set("modules.config.notice_bar_bg_color", val);
+    },
+    notice_bar_font_color(val) {
+      this.$userdata.set("modules.config.notice_bar_font_color", val);
+    },
+    notice_bar_size(val) {
+      this.$userdata.set("modules.config.notice_bar_size", val);
+    },
     slide_align(val) {
       if (val !== undefined && val !== null) {
         this.$userdata.set("modules.config.slide_align", val);
@@ -1323,6 +1613,8 @@ export default {
       "slide_custom_text_format", "slide_font_size", "slide_font_color", "slide_font_weight",
       "slide_custom_bg", "slide_bg_color", "slide_bg_image", "slide_bg_opacity",
       "return_screen_monitor", "return_screen_bg_color", "return_screen_font_color",
+      "return_status_bar_bg_color", "return_status_bar_font_color", "return_status_bar_size",
+      "notice_bar_bg_color", "notice_bar_font_color", "notice_bar_size",
     ];
     fields.forEach(field => {
       const val = this.$userdata.get(`modules.config.${field}`);
