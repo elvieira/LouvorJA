@@ -24,7 +24,9 @@
     "music": "Música",
     "verse": "Versículo",
     "media": "Mídia",
-    "link": "Link"
+    "link": "Link",
+    "timer": "Cronômetro",
+    "random": "Sorteio"
   },
   "type_descriptions": {
     "annotation": "Texto livre sem ação (ex: Oração, Doxologia)",
@@ -32,7 +34,9 @@
     "music": "Selecione uma música do Hinário ou Coletânea",
     "verse": "Selecione um versículo bíblico",
     "media": "Selecione um arquivo de vídeo",
-    "link": "Adicione uma URL para abrir no navegador"
+    "link": "Adicione uma URL para abrir no navegador",
+    "timer": "Adicione um cronômetro regressivo configurável",
+    "random": "Abra o sorteio de nomes ou números"
   },
   "fields": {
     "name": "Nome",
@@ -44,7 +48,9 @@
     "book": "Livro",
     "chapter": "Capítulo",
     "verses": "Versículos",
-    "search_music": "Buscar música..."
+    "search_music": "Buscar música...",
+    "timer_minutes": "Minutos",
+    "timer_seconds": "Segundos"
   },
   "actions": {
     "save": "Salvar",
