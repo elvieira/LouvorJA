@@ -145,7 +145,7 @@
       </div>
       
       <div v-if="isDesktop" class="nav-item" :class="{ active: noticeMenuOpen || isNoticeActive }">
-        <a href="#" class="nav-link" @click.prevent="noticeMenuOpen = !noticeMenuOpen">
+        <a href="#" class="nav-link" @click.prevent>
           <v-icon class="nav-icon">
             mdi-bullhorn
           </v-icon>
