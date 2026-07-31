@@ -573,6 +573,37 @@
                   hide-details
                   placeholder="https://..."
                 />
+
+                <!-- Timer duration -->
+                <div v-if="addForm.type === 'timer'" class="d-flex mb-4" style="gap: 12px;">
+                  <v-text-field
+                    v-model.number="addForm.timerMinutes"
+                    type="number"
+                    min="0"
+                    :label="t('fields.timer_minutes')"
+                    variant="solo-filled"
+                    flat
+                    bg-color="rgba(128,128,128,0.05)"
+                    rounded="xl"
+                    density="comfortable"
+                    hide-details
+                    class="modern-input-no-thick"
+                  />
+                  <v-text-field
+                    v-model.number="addForm.timerSeconds"
+                    type="number"
+                    min="0"
+                    max="59"
+                    :label="t('fields.timer_seconds')"
+                    variant="solo-filled"
+                    flat
+                    bg-color="rgba(128,128,128,0.05)"
+                    rounded="xl"
+                    density="comfortable"
+                    hide-details
+                    class="modern-input-no-thick"
+                  />
+                </div>
               </v-card-text>
 
               <v-card-actions class="px-6 pb-6 pt-2 d-flex justify-end" style="gap: 12px;">
@@ -709,6 +740,8 @@ export default {
       verseNumbers: "",
       filePath: "",
       url: "",
+      timerMinutes: 5,
+      timerSeconds: 0,
     },
 
     // Custom liturgy dialog
@@ -828,6 +861,8 @@ export default {
         { value: "verse", icon: "mdi-book-open-variant", color: "purple", label: this.t("types.verse"), description: this.t("type_descriptions.verse") },
         { value: "media", icon: "mdi-file-video", color: "orange", label: this.t("types.media"), description: this.t("type_descriptions.media") },
         { value: "link", icon: "mdi-link", color: "cyan", label: this.t("types.link"), description: this.t("type_descriptions.link") },
+        { value: "timer", icon: "mdi-timer-outline", color: "pink", label: this.t("types.timer"), description: this.t("type_descriptions.timer") },
+        { value: "random", icon: "mdi-ticket-confirmation", color: "teal", label: this.t("types.random"), description: this.t("type_descriptions.random") },
       ];
     },
     isFormValid() {
@@ -836,6 +871,7 @@ export default {
       if (this.addForm.type === "verse" && (!this.addForm.verseBookId || !this.addForm.verseChapter)) return false;
       if (this.addForm.type === "media" && !this.addForm.filePath) return false;
       if (this.addForm.type === "link" && !this.addForm.url.trim()) return false;
+      if (this.addForm.type === "timer" && ((parseInt(this.addForm.timerMinutes) || 0) <= 0 && (parseInt(this.addForm.timerSeconds) || 0) <= 0)) return false;
       return true;
     },
     verseChapterList() {
@@ -919,11 +955,11 @@ export default {
 
     // ====== ITEM TYPE HELPERS ======
     getTypeIcon(type) {
-      const map = { annotation: "mdi-text", category: "mdi-tag", music: "mdi-music-note", verse: "mdi-book-open-variant", media: "mdi-file-video", link: "mdi-link" };
+      const map = { annotation: "mdi-text", category: "mdi-tag", music: "mdi-music-note", verse: "mdi-book-open-variant", media: "mdi-file-video", link: "mdi-link", timer: "mdi-timer-outline", random: "mdi-ticket-confirmation" };
       return map[type] || "mdi-help";
     },
     getTypeColor(type) {
-      const map = { annotation: "info", category: "warning", music: "success", verse: "purple", media: "orange", link: "cyan" };
+      const map = { annotation: "info", category: "warning", music: "success", verse: "purple", media: "orange", link: "cyan", timer: "pink", random: "teal" };
       return map[type] || "grey";
     },
     getTypeLabel(type) {
@@ -937,11 +973,13 @@ export default {
         verse: "",
         media: "",
         link: "",
+        timer: "",
+        random: "",
       };
       return map[type] || "";
     },
     isExecutable(item) {
-      return ["music", "verse", "link", "media"].includes(item.type);
+      return ["music", "verse", "link", "media", "timer", "random"].includes(item.type);
     },
 
     getExecuteIcon(type) {
@@ -949,12 +987,14 @@ export default {
         const useInternal = this.$userdata.get("modules.config.media_use_internal_player");
         if (useInternal) return "mdi-play";
       }
-      
+
       const map = {
         music: "mdi-play",
         verse: "mdi-presentation-play",
         link: "mdi-open-in-new",
         media: "mdi-open-in-new",
+        timer: "mdi-open-in-new",
+        random: "mdi-open-in-new",
       };
       return map[type] || "mdi-play";
     },
@@ -963,12 +1003,14 @@ export default {
         const useInternal = this.$userdata.get("modules.config.media_use_internal_player");
         if (useInternal) return this.t("actions.play");
       }
-      
+
       const map = {
         music: "actions.play",
         verse: "actions.project",
         link: "actions.open",
         media: "actions.open",
+        timer: "actions.open",
+        random: "actions.open",
       };
       return this.t(map[type] || "actions.project");
     },
@@ -987,6 +1029,8 @@ export default {
         verseNumbers: "",
         filePath: "",
         url: "",
+        timerMinutes: 5,
+        timerSeconds: 0,
       };
       this.addStep = 2;
     },
@@ -1067,6 +1111,13 @@ export default {
         }
       }
 
+      if (this.addForm.type === "timer") {
+        const m = Math.max(parseInt(this.addForm.timerMinutes) || 0, 0);
+        const s = Math.max(Math.min(parseInt(this.addForm.timerSeconds) || 0, 59), 0);
+        item.timerDuration = (m * 60) + s;
+        item.subtitle = `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+      }
+
       if (this.editingIndex !== null) {
         this.currentItems.splice(this.editingIndex, 1, item);
       } else {
@@ -1104,6 +1155,8 @@ export default {
         verseNumbers: item.verseNumbers || "",
         filePath: item.filePath || "",
         url: item.url || "",
+        timerMinutes: item.timerDuration != null ? Math.floor(item.timerDuration / 60) : 5,
+        timerSeconds: item.timerDuration != null ? item.timerDuration % 60 : 0,
       };
       this.addStep = 2;
       this.showAddMenu = true;
@@ -1279,6 +1332,18 @@ export default {
               window.open(item.url, "_blank");
             }
           }
+          break;
+        case "timer":
+          if (item.timerDuration) {
+            this.$appdata.set("timer.duration", item.timerDuration);
+            if (!this.$appdata.get("timer.started")) {
+              this.$appdata.set("timer.remaining", item.timerDuration);
+            }
+          }
+          this.$modules.open("timer");
+          break;
+        case "random":
+          this.$modules.open("random");
           break;
       }
 
