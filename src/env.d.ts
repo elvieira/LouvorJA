@@ -70,5 +70,6 @@ declare module "@vue/runtime-core" {
     $theme: any;
     $datetime: any;
     $appdata: any;
+    $userdata: any;
   }
 }

@@ -1,5 +1,4 @@
 import type { ModuleManifest } from "@/types/module";
-import Index from "./interface/Index.vue";
 import pt from "./lang/pt.json";
 import es from "./lang/es.json";
 
@@ -25,9 +24,6 @@ const manifest: ModuleManifest = {
   },
   translations: { pt, es },
   translationKey: "lyric",
-  components: {
-    interface: Index,
-  },
 };
 
 export default manifest;

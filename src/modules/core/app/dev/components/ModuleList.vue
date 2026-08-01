@@ -46,8 +46,8 @@
         </div>
         <div class="d-flex flex-wrap gap-2">
           <v-chip
-            v-for="(dependency, key) in module.manifest.dependencies"
-            :key="key"
+            v-for="(dependency, depKey) in module.manifest.dependencies"
+            :key="depKey"
             color="warning"
             size="small"
             variant="tonal"
@@ -99,15 +99,17 @@
   </div>
 </template>
 
-<script>
-export default {
+<script lang="ts">
+import { defineComponent } from "vue";
+
+export default defineComponent({
   name: "ModuleList",
   computed: {
-    modules() {
-      return this.$appdata.get("modules");
+    modules(): Record<string, any> {
+      return this.$appdata.get("modules") || {};
     },
   },
-};
+});
 </script>
 
 <style scoped>

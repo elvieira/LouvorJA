@@ -57,7 +57,7 @@
           <v-tabs-window-item :value="4" class="h-100">
             <div class="h-100 overflow-auto pa-4">
               <v-card class="glass-card pa-4" elevation="0">
-                <VueJsonPretty v-if="tab === 4" :data="$vuetify" />
+                <VueJsonPretty v-if="tab === 4" :data="($vuetify as any)" />
               </v-card>
             </div>
           </v-tabs-window-item>
@@ -67,14 +67,15 @@
   </v-slide-y-reverse-transition>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from "vue";
 import VueJsonPretty from "vue-json-pretty";
 import "vue-json-pretty/lib/styles.css";
 import ModuleList from "../components/ModuleList.vue";
-import manifest from "../manifest.json";
+import manifest from "../manifest";
 import MenuToggleButton from "@/components/MenuToggleButton.vue";
 
-export default {
+export default defineComponent({
   name: manifest.id,
   components: {
     VueJsonPretty,
@@ -88,10 +89,10 @@ export default {
   computed: {
     /* COMPUTEDS OBRIGATÓRIAS - INÍCIO */
     /* NÃO MODIFICAR */
-    module_id() {
+    module_id(): string {
       return manifest.id;
     },
-    module() {
+    module(): any {
       return this.$modules.get(this.module_id);
     },
     /* COMPUTEDS OBRIGATÓRIAS - FIM */
@@ -99,7 +100,7 @@ export default {
   methods: {
     /* METHODS OBRIGATÓRIOS - INÍCIO */
     /* NÃO MODIFICAR */
-    t(text) {
+    t(text: string): string {
       return this.$t(`modules.${this.module_id}.${text}`);
     },
     /* METHODS OBRIGATÓRIOS - FIM */
@@ -114,7 +115,7 @@ export default {
       this.$modules.close(this.module_id);
     },
   },
-};
+});
 </script>
 
 <style lang="scss">
