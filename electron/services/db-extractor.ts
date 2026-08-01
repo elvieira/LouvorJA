@@ -1,32 +1,19 @@
-const Database = require("better-sqlite3");
-const path = require("path");
-const fs = require("fs-extra");
-const { app } = require("electron");
-const crypto = require("crypto");
+import Database from "better-sqlite3";
+import * as path from "path";
+import * as fs from "fs-extra";
+import { app } from "electron";
+import { encryptData } from "../utils/crypto";
 
-const ENCRYPTION_KEY = Buffer.from("v389s8dkj238910s8a7d3h2j1k9s8d7f", "utf8");
-const IV_LENGTH = 16;
+export default class DbExtractor {
+  private dbPath: string;
+  private sysdataDir: string;
 
-function encryptData(text) {
-  try {
-    const iv = crypto.randomBytes(IV_LENGTH);
-    const cipher = crypto.createCipheriv("aes-256-cbc", ENCRYPTION_KEY, iv);
-    let encrypted = cipher.update(text, "utf8", "hex");
-    encrypted += cipher.final("hex");
-    return `${iv.toString("hex")  }:${  encrypted}`;
-  } catch (e) {
-    console.error("Erro ao ofuscar dados", e);
-    return null;
-  }
-}
-
-class DbExtractor {
-  constructor(dbPath) {
+  constructor(dbPath: string) {
     this.dbPath = dbPath;
     this.sysdataDir = path.join(app.getPath("userData"), ".sysdata");
   }
 
-  async extract(progressCallback = () => {}) {
+  async extract(progressCallback: (data: { text: string; progress: number }) => void = () => {}): Promise<void> {
     if (!fs.existsSync(this.dbPath)) {
       throw new Error(`Database file not found at ${this.dbPath}`);
     }
@@ -53,7 +40,7 @@ class DbExtractor {
     }
   }
 
-  saveJson(filename, data) {
+  private saveJson(filename: string, data: unknown): void {
     const filePath = path.join(this.sysdataDir, `${filename}.bin`);
     const jsonString = JSON.stringify(data);
     const encryptedContent = encryptData(jsonString);
@@ -62,10 +49,9 @@ class DbExtractor {
     }
   }
 
-  extractCategories(db) {
-    // pt_categories.json
-    const categoriesRows = db.prepare("SELECT * FROM categories WHERE id_language = 'pt' ORDER BY `order` ASC").all();
-    const categories = [];
+  private extractCategories(db: Database.Database): void {
+    const categoriesRows = db.prepare("SELECT * FROM categories WHERE id_language = 'pt' ORDER BY `order` ASC").all() as Record<string, unknown>[];
+    const categories: Record<string, unknown>[] = [];
 
     for (const cat of categoriesRows) {
       const albumsRows = db.prepare(`
@@ -75,7 +61,7 @@ class DbExtractor {
         LEFT JOIN files f ON a.id_file_image = f.id_file
         WHERE ca.id_category = ?
         ORDER BY ca.\`order\` ASC
-      `).all(cat.id_category);
+      `).all(cat.id_category) as Record<string, unknown>[];
 
       const albums = albumsRows.map(row => ({
         id_album: row.id_album,
@@ -98,13 +84,13 @@ class DbExtractor {
     this.saveJson("pt_categories", categories);
   }
 
-  extractAlbumsAndMusics(db, progressCallback) {
+  private extractAlbumsAndMusics(db: Database.Database, progressCallback: (data: { text: string; progress: number }) => void): void {
     const albums = db.prepare(`
       SELECT a.id_album, a.name, a.color, f.dir, f.file_name 
       FROM albums a
       LEFT JOIN files f ON a.id_file_image = f.id_file
       WHERE a.id_language = 'pt'
-    `).all();
+    `).all() as Record<string, unknown>[];
 
     let processedAlbums = 0;
     const totalAlbums = albums.length;
@@ -115,7 +101,7 @@ class DbExtractor {
         FROM categories_albums ca
         JOIN categories c ON ca.id_category = c.id_category
         WHERE ca.id_album = ?
-      `).all(album.id_album);
+      `).all(album.id_album) as Record<string, unknown>[];
       
       const categoriesSlugs = categoriesRows.map(c => c.slug);
       
@@ -125,7 +111,7 @@ class DbExtractor {
         color: album.color || "",
         url_image: (album.dir && album.file_name) ? `${album.dir}/${album.file_name}` : null,
         categories: categoriesSlugs.length > 0 ? categoriesSlugs : undefined,
-        musics: [],
+        musics: [] as Record<string, unknown>[],
       };
 
       const musicsRows = db.prepare(`
@@ -142,7 +128,7 @@ class DbExtractor {
         LEFT JOIN files fi ON m.id_file_image = fi.id_file
         WHERE am.id_album = ?
         ORDER BY am.track ASC
-      `).all(album.id_album);
+      `).all(album.id_album) as Record<string, unknown>[];
 
       for (const m of musicsRows) {
         albumJson.musics.push({
@@ -160,7 +146,7 @@ class DbExtractor {
           LEFT JOIN files fl ON l.id_file_image = fl.id_file
           WHERE l.id_music = ?
           ORDER BY l.\`order\` ASC
-        `).all(m.id_music);
+        `).all(m.id_music) as Record<string, unknown>[];
 
         const lyricArr = lyricsRows.map(l => ({
           id_lyric: l.id_lyric,
@@ -182,7 +168,7 @@ class DbExtractor {
           LEFT JOIN files f ON a.id_file_image = f.id_file
           LEFT JOIN categories_albums ca ON ca.id_album = a.id_album
           WHERE am.id_music = ?
-        `).all(m.id_music);
+        `).all(m.id_music) as Record<string, unknown>[];
 
         const musicAlbums = musicAlbumsRows.map(a => ({
           id_album: a.id_album,
@@ -217,8 +203,8 @@ class DbExtractor {
     }
   }
 
-  extractHymnals(db) {
-    const getHymnalData = (albumId) => {
+  private extractHymnals(db: Database.Database): void {
+    const getHymnalData = (albumId: number) => {
       const rows = db.prepare(`
         SELECT am.track, m.id_music, m.name, fim.file_name as im_file, fm.duration
         FROM albums_musics am
@@ -227,14 +213,14 @@ class DbExtractor {
         LEFT JOIN files fim ON m.id_file_instrumental_music = fim.id_file
         WHERE am.id_album = ?
         ORDER BY am.track ASC
-      `).all(albumId);
+      `).all(albumId) as Record<string, unknown>[];
 
       return rows.map(r => {
-        const lyrics = db.prepare("SELECT lyric FROM lyrics WHERE id_music = ? ORDER BY `order` ASC").all(r.id_music);
+        const lyrics = db.prepare("SELECT lyric FROM lyrics WHERE id_music = ? ORDER BY `order` ASC").all(r.id_music) as Record<string, unknown>[];
         let fullLyric = "";
         for (const l of lyrics) {
-          if (l.lyric.trim() !== "") {
-            fullLyric += `${l.lyric  } `;
+          if (typeof l.lyric === "string" && l.lyric.trim() !== "") {
+            fullLyric += `${l.lyric} `;
           }
         }
         
@@ -255,34 +241,34 @@ class DbExtractor {
     try {
       this.saveJson("pt_hymnal", getHymnalData(hymnalId));
       this.saveJson("pt_hymnal_1996", getHymnalData(hymnal1996Id));
-    } catch (e) {
-      console.log("Hinarios ignorados caso não existam:", e.message);
+    } catch (e: unknown) {
+      console.log("Hinarios ignorados caso não existam:", (e as Error).message);
     }
   }
 
-  extractBibles(db, progressCallback) {
-    const books = db.prepare("SELECT * FROM bible_book WHERE id_language = 'pt' ORDER BY book_number ASC").all();
+  private extractBibles(db: Database.Database, progressCallback: (data: { text: string; progress: number }) => void): void {
+    const books = db.prepare("SELECT * FROM bible_book WHERE id_language = 'pt' ORDER BY book_number ASC").all() as Record<string, unknown>[];
     this.saveJson("pt_bible_book", books);
 
-    const versions = db.prepare("SELECT * FROM bible_version WHERE id_language = 'pt'").all();
+    const versions = db.prepare("SELECT * FROM bible_version WHERE id_language = 'pt'").all() as Record<string, unknown>[];
     this.saveJson("pt_bible_version", versions);
 
     let processedChapters = 0;
-    const totalChapters = books.reduce((sum, b) => sum + b.chapters, 0) * versions.length;
+    const totalChapters = books.reduce((sum, b) => sum + (b.chapters as number), 0) * versions.length;
 
     for (const version of versions) {
       for (const book of books) {
-        for (let ch = 1; ch <= book.chapters; ch++) {
+        for (let ch = 1; ch <= (book.chapters as number); ch++) {
           const verses = db.prepare(`
             SELECT verse, text 
             FROM bible_verse 
             WHERE id_bible_version = ? AND id_bible_book = ? AND chapter = ?
             ORDER BY verse ASC
-          `).all(version.id_bible_version, book.id_bible_book, ch);
+          `).all(version.id_bible_version, book.id_bible_book, ch) as Record<string, unknown>[];
           
-          const versesObj = {};
+          const versesObj: Record<string, string> = {};
           for (const v of verses) {
-            versesObj[v.verse] = v.text;
+            versesObj[v.verse as number] = v.text as string;
           }
           
           this.saveJson(`bible_${version.id_bible_version}_${book.id_bible_book}_${ch}`, versesObj);
@@ -296,5 +282,3 @@ class DbExtractor {
     }
   }
 }
-
-module.exports = DbExtractor;
