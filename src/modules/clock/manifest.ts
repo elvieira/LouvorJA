@@ -1,0 +1,13 @@
+export default {
+  id: "clock",
+  name: "Relógio",
+  version: "1.0.0",
+  description:
+    "Utilitário de relógio integrado. Exibe as horas e auxilia no cronograma das atividades do programa.",
+  author: "elvieira",
+  category: "utilities",
+  icon: "mdi-clock-outline",
+  minAppVersion: "1.0.0",
+  dependencies: [],
+  permissions: [],
+};

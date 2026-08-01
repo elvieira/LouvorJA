@@ -145,20 +145,25 @@
   </div>
 </template>
 
-<script>
-export default {
+<script lang="ts">
+import { defineComponent, PropType } from "vue";
+
+export default defineComponent({
   name: "ClockScreen",
   props: {
-    height: Number,
+    height: {
+      type: Number as PropType<number>,
+      default: 0,
+    },
     preview: {
-      type: Boolean,
+      type: Boolean as PropType<boolean>,
       default: false,
     },
   },
   data: () => ({
     s_width: 0,
     s_height: 0,
-    timer: null,
+    timer: null as number | null,
     now: new Date(),
     defaultConfig: {
       style: "digital",
@@ -169,24 +174,24 @@ export default {
     },
   }),
   computed: {
-    config() {
+    config(): any {
       // Allow receiving config from appdata directly
       const appConfig = this.$appdata ? this.$appdata.get("clock_config") : null;
       return appConfig || this.defaultConfig;
     },
-    digitalFontSize() {
+    digitalFontSize(): number {
       const v = Math.min(this.s_width, this.s_height);
       const ratio = this.config.showSeconds ? 0.35 : 0.4;
       return Math.max(v * ratio, 20); // Responsive font size
     },
-    analogSize() {
+    analogSize(): number {
       const v = Math.min(this.s_width, this.s_height);
       return Math.max(v * 0.8, 100); // 80% of smallest dimension
     },
-    formattedTime() {
+    formattedTime(): string {
       const opts = {
-        hour: "2-digit",
-        minute: "2-digit",
+        hour: "2-digit" as const,
+        minute: "2-digit" as const,
         hour12: !this.config.format24h,
       };
       let timeString = this.now.toLocaleTimeString("pt-BR", opts);
@@ -194,23 +199,23 @@ export default {
       timeString = timeString.replace(/[a-zA-Z\s]/g, "");
       return timeString;
     },
-    formattedSeconds() {
+    formattedSeconds(): string {
       return this.now.getSeconds().toString().padStart(2, "0");
     },
-    ampm() {
+    ampm(): string {
       return this.now.getHours() >= 12 ? "PM" : "AM";
     },
-    hourAngle() {
+    hourAngle(): number {
       const h = this.now.getHours() % 12;
       const m = this.now.getMinutes();
       return (h * 30) + (m * 0.5);
     },
-    minuteAngle() {
+    minuteAngle(): number {
       const m = this.now.getMinutes();
       const s = this.now.getSeconds();
       return (m * 6) + (s * 0.1);
     },
-    secondAngle() {
+    secondAngle(): number {
       const s = this.now.getSeconds();
       const ms = this.now.getMilliseconds();
       return (s * 6) + (ms * 0.006);
@@ -228,25 +233,26 @@ export default {
   },
   unmounted() {
     window.removeEventListener("resize", this.windowResize);
-    cancelAnimationFrame(this.timer);
+    if (this.timer) {
+      cancelAnimationFrame(this.timer);
+    }
   },
   methods: {
     windowResize() {
-      const container = this.$refs.container;
+      const container = this.$refs.container as HTMLElement | undefined;
       if (container) {
         this.s_width = container.offsetWidth;
         this.s_height = container.offsetHeight;
 
         if (this.s_width <= 0 || this.s_height <= 0) {
-          const self = this;
           setTimeout(() => {
-            self.windowResize();
+            this.windowResize();
           }, 100);
         }
       }
     },
   },
-};
+});
 </script>
 
 <style scoped>

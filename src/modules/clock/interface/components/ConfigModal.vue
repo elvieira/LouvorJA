@@ -244,10 +244,11 @@
   </v-slide-y-reverse-transition>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from "vue";
 import ModernColorPicker from "@/components/inputs/ModernColorPicker.vue";
 
-export default {
+export default defineComponent({
   name: "ClockConfigModal",
   components: {
     ModernColorPicker,
@@ -270,11 +271,11 @@ export default {
     },
   }),
   watch: {
-    visible(val) {
+    visible(val: boolean) {
       if (val) this.loadConfig();
     },
     localConfig: {
-      handler(val) {
+      handler(val: any) {
         const cloned = JSON.parse(JSON.stringify(val));
         this.$userdata.set("clock_config", cloned);
         this.$appdata.set("clock_config", cloned);
@@ -294,7 +295,7 @@ export default {
     resetToDefault() {
       this.localConfig = JSON.parse(JSON.stringify(this.defaultConfig));
     },
-    t(key) {
+    t(key: string): string {
       return this.$t(`modules.clock.${key}`);
     },
     open() {
@@ -304,7 +305,7 @@ export default {
       this.visible = false;
     },
   },
-};
+});
 </script>
 
 <style scoped>

@@ -2,19 +2,9 @@
   <v-slide-y-reverse-transition>
     <div v-if="module?.show" class="module-full-page dashboard-home d-flex flex-column">
       <!-- Top Bar -->
-      <div class="search-header pb-0 flex-shrink-0" style="padding-top: 24px; padding-left: 24px; padding-right: 24px; display: flex; align-items: center;">
-        <MenuToggleButton style="margin-right: 16px;" @toggle-sidebar="toggleSidebar" />
-        <div class="d-flex align-center mr-auto">
-          <div class="module-icon-box d-flex align-center justify-center mr-4">
-            <v-icon :icon="module.icon" size="24" />
-          </div>
-          <h2 class="section-title mb-0 mr-4" style="color: var(--sidebar-text); font-size: 24px; font-weight: 600; line-height: 1;">
-            {{ t('title') }}
-          </h2>
-        </div>
-        
+      <ModuleHeader :title="t('title')" :icon="module.icon">
         <div class="search-bar ml-4 d-flex align-center" style="flex: 1; justify-content: flex-end; gap: 12px;" />
-      </div>
+      </ModuleHeader>
 
       <!-- Clock Display -->
       <div class="content-main flex-grow-1 w-100 pa-6 d-flex align-center justify-center" style="overflow: hidden; background: transparent;">
@@ -27,7 +17,7 @@
               size="small"
               style="width: 36px; height: 36px;"
               class="config-palette-btn"
-              @click="$refs.configModal.open()"
+              @click="openConfig"
             >
               <v-icon>mdi-palette</v-icon>
               <v-tooltip
@@ -51,37 +41,41 @@
   </v-slide-y-reverse-transition>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from "vue";
 import Screen from "../components/Screen.vue";
 import LScreenBtn from "@/components/buttons/Screen.vue";
 import ConfigModal from "./components/ConfigModal.vue";
-import MenuToggleButton from "@/components/MenuToggleButton.vue";
-import manifest from "../manifest.json";
+import ModuleHeader from "@/components/ModuleHeader.vue";
+import manifest from "../manifest";
 
-export default {
+export default defineComponent({
   name: manifest.id,
   components: {
     Screen,
     LScreenBtn,
     ConfigModal,
-    MenuToggleButton,
+    ModuleHeader,
   },
   computed: {
-    module_id() {
+    module_id(): string {
       return manifest.id;
     },
-    module() {
+    module(): any {
       return this.$appdata.get(`modules.${this.module_id}`);
     },
   },
   methods: {
-    t(text) {
+    t(text: string): string {
       return this.$t(`modules.${this.module_id}.${text}`);
+    },
+    openConfig() {
+      (this.$refs.configModal as any).open();
     },
     toggleSidebar() {
       const mainEl = document.querySelector(".main-container");
       if (mainEl) mainEl.dispatchEvent(new CustomEvent("toggle-sidebar"));
     },
   },
-};
+});
 </script>

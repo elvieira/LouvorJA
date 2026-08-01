@@ -2,12 +2,13 @@
   <Screen />
 </template>
 
-<script>
-import manifest from "../manifest.json";
+<script lang="ts">
+import { defineComponent } from "vue";
+import manifest from "../manifest";
 
 import Screen from "../components/Screen.vue";
 
-export default {
+export default defineComponent({
   name: "PopupClockPage",
   components: {
     Screen,
@@ -15,13 +16,13 @@ export default {
   computed: {
     /* COMPUTEDS OBRIGATÓRIAS - INÍCIO */
     /* NÃO MODIFICAR */
-    module_id() {
+    module_id(): string {
       return manifest.id;
     },
-    module() {
+    module(): any {
       return this.$modules.get(this.module_id);
     },
     /* COMPUTEDS OBRIGATÓRIAS - FIM */
   },
-};
+});
 </script>
