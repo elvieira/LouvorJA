@@ -1,0 +1,19 @@
+{
+  "name": "Atualização",
+  "description": "Módulo de atualização do aplicativo.",
+  "all_updated": "Tudo atualizado!",
+  "new_version": "Nova Versão Disponível",
+  "no_pending": "Nenhuma atualização pendente.",
+  "processing": "Processando informações...",
+  "close": "Fechar",
+  "fetching_details": "Buscando detalhes da atualização...",
+  "app_updated_title": "Aplicativo Atualizado",
+  "app_updated_desc": "O seu aplicativo já está utilizando a última versão estável.",
+  "whats_new": "O que há de novo?",
+  "no_release_notes": "Esta atualização não contém notas detalhadas de lançamento.",
+  "downloading": "Baixando atualização...",
+  "update_now": "Atualizar Agora",
+  "downloading_button": "Baixando...",
+  "restart_install": "Reiniciar e Instalar",
+  "try_again": "Tentar Novamente"
+}

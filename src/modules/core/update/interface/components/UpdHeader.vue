@@ -4,10 +4,10 @@
       <div class="d-flex align-center" style="gap: 12px;">
         <div>
           <div class="text-h6 font-weight-bold" style="color: var(--sidebar-text); line-height: 1.2;">
-            {{ updateStatus === 'not-available' ? 'Tudo atualizado!' : 'Nova Versão Disponível' }}
+            {{ updateStatus === 'not-available' ? $t('modules.update.all_updated') : $t('modules.update.new_version') }}
           </div>
           <div class="text-caption mt-1" style="color: var(--sidebar-text-secondary);">
-            {{ updateVersion ? 'v' + updateVersion : (updateStatus === 'not-available' ? 'Nenhuma atualização pendente.' : 'Processando informações...') }}
+            {{ updateVersion ? 'v' + updateVersion : (updateStatus === 'not-available' ? $t('modules.update.no_pending') : $t('modules.update.processing')) }}
           </div>
         </div>
       </div>
@@ -19,7 +19,7 @@
           open-delay="300"
           content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
         >
-          Fechar
+          {{ $t('modules.update.close') }}
         </v-tooltip>
       </v-btn>
     </div>

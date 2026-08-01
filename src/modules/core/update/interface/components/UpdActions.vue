@@ -3,7 +3,7 @@
     <!-- Barra de progresso -->
     <div v-if="updateStatus === 'downloading'" class="mb-4">
       <div class="d-flex align-center justify-space-between mb-2">
-        <span class="text-caption font-weight-medium" style="color: var(--sidebar-text-secondary);">Baixando atualização...</span>
+        <span class="text-caption font-weight-medium" style="color: var(--sidebar-text-secondary);">{{ $t('modules.update.downloading') }}</span>
         <span class="text-caption font-weight-bold" style="color: var(--accent-blue);">{{ Math.round(downloadPercent) }}%</span>
       </div>
       <div style="height: 6px; background: rgba(0,151,215,0.1); border-radius: 6px; overflow: hidden;">
@@ -27,7 +27,7 @@
         prepend-icon="mdi-download"
         @click="$emit('start-download')"
       >
-        Atualizar Agora
+        {{ $t('modules.update.update_now') }}
       </v-btn>
       
       <!-- Botão: Baixando (desabilitado) -->
@@ -41,7 +41,7 @@
         disabled
         prepend-icon="mdi-loading mdi-spin"
       >
-        Baixando...
+        {{ $t('modules.update.downloading_button') }}
       </v-btn>
       
       <!-- Botão: Reiniciar e Instalar -->
@@ -56,7 +56,7 @@
         prepend-icon="mdi-restart"
         @click="$emit('install-update')"
       >
-        Reiniciar e Instalar
+        {{ $t('modules.update.restart_install') }}
       </v-btn>
       
       <!-- Botão: Tentar novamente -->
@@ -71,7 +71,7 @@
         prepend-icon="mdi-refresh"
         @click="$emit('retry-update')"
       >
-        Tentar Novamente
+        {{ $t('modules.update.try_again') }}
       </v-btn>
     </div>
   </div>

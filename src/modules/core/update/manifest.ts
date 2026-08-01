@@ -1,4 +1,7 @@
 import type { ModuleManifest } from "@/types/module";
+import Index from "./interface/Index.vue";
+import pt from "./lang/pt.json";
+import es from "./lang/es.json";
 
 const manifest: ModuleManifest = {
   active: true,
@@ -18,6 +21,11 @@ const manifest: ModuleManifest = {
   dependencies: [],
   permissions: [],
   moduleOptions: { size: "small" },
+  translations: { pt, es },
+  translationKey: "update",
+  components: {
+    interface: Index,
+  },
 };
 
 export default manifest;

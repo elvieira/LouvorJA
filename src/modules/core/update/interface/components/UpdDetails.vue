@@ -9,7 +9,7 @@
         class="mb-3"
       />
       <div class="text-body-2" style="color: var(--sidebar-text-secondary);">
-        Buscando detalhes da atualização...
+        {{ $t('modules.update.fetching_details') }}
       </div>
     </div>
     
@@ -19,10 +19,10 @@
         mdi-check-circle-outline
       </v-icon>
       <div class="text-h6 font-weight-bold" style="color: var(--sidebar-text);">
-        Aplicativo Atualizado
+        {{ $t('modules.update.app_updated_title') }}
       </div>
       <div class="text-body-2" style="color: var(--sidebar-text-secondary); max-width: 300px; margin: 0 auto;">
-        O seu aplicativo já está utilizando a última versão estável.
+        {{ $t('modules.update.app_updated_desc') }}
       </div>
     </div>
 
@@ -32,7 +32,7 @@
         <v-icon size="18" class="mr-1" color="primary">
           mdi-text-box-outline
         </v-icon>
-        O que há de novo?
+        {{ $t('modules.update.whats_new') }}
       </div>
       <!-- eslint-disable vue/no-v-html -->
       <div 
@@ -49,7 +49,7 @@
         mdi-update
       </v-icon>
       <div class="text-body-2" style="color: var(--sidebar-text-secondary);">
-        Esta atualização não contém notas detalhadas de lançamento.
+        {{ $t('modules.update.no_release_notes') }}
       </div>
     </div>
   </div>

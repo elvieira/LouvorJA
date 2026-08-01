@@ -8,5 +8,6 @@ declare module "@vue/runtime-core" {
     $media: unknown;
     $alert: unknown;
     $path: unknown;
+    $t: (key: string, ...args: any[]) => string;
   }
 }
