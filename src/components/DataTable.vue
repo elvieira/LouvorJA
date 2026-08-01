@@ -24,27 +24,30 @@
   </v-table>
 </template>
 
-<script>
-export default {
+<script lang="ts">
+import { defineComponent, PropType } from "vue";
+
+export default defineComponent({
   name: "DataTableComponent",
   props: {
-    modelValue: Object,
-    file: String,
-    search: String,
-    scroll: { type: Object, default: () => ({}) },
-    has_scroll: Boolean,
-    searchable_fields: Object,
-    filter: Object,
+    modelValue: { type: Object as PropType<Record<string, any>>, default: () => ({}) },
+    file: { type: String, required: true },
+    search: { type: String, default: "" },
+    scroll: { type: Object as PropType<Record<string, any>>, default: () => ({}) },
+    hasScroll: { type: Boolean, default: false },
+    searchableFields: { type: Object as PropType<Record<string, boolean>>, default: () => ({}) },
+    filter: { type: Object as PropType<Record<string, boolean>>, default: () => ({}) },
     letter: { type: String, default: "" },
-    sort_by: String,
+    sortBy: { type: String, default: "" },
   },
+  emits: ["update:modelValue"],
   data: () => ({
-    all_data: [],
-    filter_data: [],
-    data: [],
+    all_data: [] as any[],
+    filter_data: [] as any[],
+    data: [] as any[],
     limit: 0,
-    error: null,
-    last_filter: {},
+    error: null as string | null,
+    last_filter: {} as Record<string, any>,
     loading: true,
   }),
   watch: {
@@ -54,11 +57,17 @@ export default {
     search() {
       this.filterData();
     },
-    searchable_fields() {
-      this.compareFilterData();
+    searchableFields: {
+      handler() {
+        this.compareFilterData();
+      },
+      deep: true,
     },
-    filter() {
-      this.compareFilterData();
+    filter: {
+      handler() {
+        this.compareFilterData();
+      },
+      deep: true,
     },
     letter() {
       this.compareFilterData();
@@ -73,6 +82,7 @@ export default {
     },
     async scroll() {
       if (
+        this.scroll && this.scroll.scroll_bottom !== undefined &&
         this.scroll.scroll_bottom <= 50 &&
         this.data.length < this.filter_data.length
       ) {
@@ -92,24 +102,27 @@ export default {
 
       this.all_data = await this.$database.get(this.file);
 
-      if (this.all_data == null) {
+      if (!this.all_data) {
         this.error = this.$t("components.datatable.alerts.not_found");
       }
 
-      if (this.sort_by) {
+      if (this.sortBy && this.all_data) {
         this.all_data.sort((a, b) =>
-          this.$string.sort(a[this.sort_by], b[this.sort_by]),
+          this.$string.sort(a[this.sortBy], b[this.sortBy]),
         );
       }
       this.filterData();
     },
     filterData() {
+      if (!this.all_data) {
+        this.all_data = [];
+      }
       this.limit = 0;
-      const value = this.$string.clean(this.search);
+      const value = this.$string.clean(this.search || "");
 
-      const searchable = this.searchable_fields
-        ? Object.keys(this.searchable_fields).filter(
-          (key) => this.searchable_fields[key] === true,
+      const searchable = this.searchableFields
+        ? Object.keys(this.searchableFields).filter(
+          (key) => this.searchableFields[key] === true,
         )
         : [];
       const filter = this.filter
@@ -118,21 +131,21 @@ export default {
       
       this.filter_data = this.all_data
         .filter((item) => {
-          const isPureNumber = !isNaN(value) && value !== "";
+          const isPureNumber = !isNaN(Number(value)) && value !== "";
           let searchableCondition = false;
           
           if (searchable.length === 0 || value === "") {
             searchableCondition = true;
           } else if (isPureNumber) {
             searchableCondition = searchable.some((key) => {
-              if (!isNaN(item[key]) && item[key] !== null && item[key] !== "") {
+              if (!isNaN(Number(item[key])) && item[key] !== null && item[key] !== "") {
                 return Number(item[key]) === Number(value);
               }
               return false;
-            }) || (item.albums && item.albums.some(al => al.type === "hymnal" && Number(al.pivot?.track) === Number(value)));
+            }) || (item.albums && item.albums.some((al: any) => al.type === "hymnal" && Number(al.pivot?.track) === Number(value)));
           } else {
             searchableCondition = searchable.some((key) => {
-              if (isNaN(item[key]) || item[key] === null) {
+              if (isNaN(Number(item[key])) || item[key] === null) {
                 return this.$string.clean(item[key]).includes(value);
               }
               return false;
@@ -157,12 +170,12 @@ export default {
         })
         .slice();
 
-      if (!isNaN(value) && value !== "") {
+      if (!isNaN(Number(value)) && value !== "") {
         const numValue = Number(value);
         this.filter_data.sort((a, b) => {
-          const getScore = (item) => {
-            if (item.albums?.some(al => al.type === "hymnal" && al.name === "Hinário Adventista" && Number(al.pivot?.track) === numValue)) return 2;
-            if (item.albums?.some(al => al.type === "hymnal" && al.name === "Hinário Adventista 1996" && Number(al.pivot?.track) === numValue)) return 1;
+          const getScore = (item: any) => {
+            if (item.albums?.some((al: any) => al.type === "hymnal" && al.name === "Hinário Adventista" && Number(al.pivot?.track) === numValue)) return 2;
+            if (item.albums?.some((al: any) => al.type === "hymnal" && al.name === "Hinário Adventista 1996" && Number(al.pivot?.track) === numValue)) return 1;
             return 0;
           };
           return getScore(b) - getScore(a);
@@ -178,7 +191,7 @@ export default {
 
       const self = this;
       setTimeout(() => {
-        if (!self.has_scroll && self.data.length < self.filter_data.length) {
+        if (!self.hasScroll && self.data.length < self.filter_data.length) {
           self.paginateData();
         }
       }, 100);
@@ -186,7 +199,7 @@ export default {
 
     compareFilterData() {
       const filter = {
-        searchable_fields: this.searchable_fields,
+        searchableFields: this.searchableFields,
         filter: this.filter,
         letter: this.letter,
       };
@@ -200,7 +213,7 @@ export default {
       this.filterData();
     },
   },
-};
+});
 </script>
 
 <style>

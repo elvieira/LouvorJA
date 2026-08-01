@@ -55,7 +55,7 @@
       v-model="data"
       :search="search"
       :letter="letter"
-      :searchable_fields="{
+      :searchable-fields="{
         name: search_name,
         lyric: search_lyric,
         albums_names: search_album,
@@ -63,7 +63,7 @@
       :filter="{ has_instrumental_music: filter_instrumental_music }"
       :scroll="scroll"
       :has_scroll="has_scroll"
-      sort_by="name"
+      sort-by="name"
       :file="`${$i18n.locale}_musics`"
     >
       <thead>
@@ -118,8 +118,8 @@
           <td>
             <div class="d-flex justify-end">
               <LMusicMenuTable
-                :id_music="item.id_music"
-                :has_instrumental_music="item.has_instrumental_music"
+                :id-music="item.id_music"
+                :has-instrumental-music="item.has_instrumental_music"
               />
             </div>
           </td>

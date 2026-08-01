@@ -41,10 +41,10 @@
             <LTable
               v-model="searchData"
               :search="searchQuery"
-              :searchable_fields="{
+              :searchable-fields="{
                 name: true,
               }"
-              sort_by="name"
+              sort-by="name"
               :file="`${$i18n.locale}_musics`"
               class="flex-grow-1 d-flex flex-column"
               style="background: transparent; min-height: 0;"
@@ -80,8 +80,8 @@
                   <td style="border-bottom: none;">
                     <div class="d-flex justify-end pr-4">
                       <LMusicMenuTable
-                        :id_music="item.id_music"
-                        :has_instrumental_music="item.has_instrumental_music"
+                        :id-music="item.id_music"
+                        :has-instrumental-music="item.has_instrumental_music"
                       />
                     </div>
                   </td>
@@ -179,8 +179,9 @@
   </v-slide-y-reverse-transition>
 </template>
 
-<script>
-import manifest from "../manifest.json";
+<script lang="ts">
+import { defineComponent } from "vue";
+import manifest from "../manifest";
 import MenuToggleButton from "@/components/MenuToggleButton.vue";
 import LTable from "@/components/DataTable.vue";
 import LMusicMenuTable from "@/components/MusicMenuTable.vue";
@@ -188,42 +189,40 @@ import LMusicMenuTable from "@/components/MusicMenuTable.vue";
 import hymnalImg from "@/assets/images/hymnal.jpeg";
 import hymnal1996Img from "@/assets/images/hymnal_1996.jpeg";
 
-export default {
+export default defineComponent({
   name: manifest.id,
   components: {
     MenuToggleButton,
     LTable,
     LMusicMenuTable,
   },
-  data() {
-    return {
-      searchQuery: "",
-      searchData: [],
-      manifest,
-      dynamicCollectionInfo: {},
-      show_home_history: true,
-      hymnalImg,
-      hymnal1996Img,
-    };
-  },
+  data: () => ({
+    searchQuery: "",
+    searchData: { data: [] } as any,
+    manifest,
+    dynamicCollectionInfo: {} as Record<string, any>,
+    show_home_history: true,
+    hymnalImg,
+    hymnal1996Img,
+  }),
   computed: {
     /* COMPUTEDS OBRIGATÓRIAS - INÍCIO */
     /* NÃO MODIFICAR */
-    module_id() {
+    module_id(): string {
       return manifest.id;
     },
-    module() {
+    module(): any {
       return this.$modules.get(this.module_id);
     },
     /* COMPUTEDS OBRIGATÓRIAS - FIM */
 
-    musicModules() {
+    musicModules(): any[] {
       const modules = this.$appdata.get("modules") || {};
       const musicGroup = this.$appdata.get("module_group.musics") || {};
       const musicModuleIds = musicGroup.modules || [];
       
-      const result = [];
-      musicModuleIds.forEach((id) => {
+      const result: any[] = [];
+      musicModuleIds.forEach((id: string) => {
         if (modules[id]) {
           result.push({
             id,
@@ -235,14 +234,14 @@ export default {
       return result;
     },
 
-    shouldShowHistory() {
+    shouldShowHistory(): boolean {
       return this.show_home_history && (this.displayCollections.length > 0 || this.topSongs.length > 0);
     },
     
-    displayCollections() {
+    displayCollections(): any[] {
       const recentCollections = this.$history.getRecentCollections();
       
-      return recentCollections.map((item) => {
+      return recentCollections.map((item: any) => {
         const dynInfo = this.dynamicCollectionInfo[item.id] || {};
         
         return {
@@ -253,24 +252,24 @@ export default {
       });
     },
     
-    topSongs() {
+    topSongs(): any[] {
       return this.$history.getTopSongs(20);
     },
     
-    compact() {
+    compact(): boolean {
       return this.$vuetify.display.width <= 800;
     },
   },
   watch: {
     displayCollections: {
-      handler(newVal) {
+      handler() {
         this.fetchCollectionInfo();
       },
       deep: true,
       immediate: true,
     },
     "module.show": {
-      handler(newVal) {
+      handler(newVal: boolean) {
         if (newVal) {
           const setting = this.$userdata.get("show_home_history");
           this.show_home_history = setting !== false;
@@ -287,19 +286,19 @@ export default {
   methods: {
     /* METHODS OBRIGATÓRIOS - INÍCIO */
     /* NÃO MODIFICAR */
-    t(text) {
+    t(text: string): string {
       return this.$t(`modules.${this.module_id}.${text}`);
     },
     /* METHODS OBRIGATÓRIOS - FIM */
 
     async fetchCollectionInfo() {
       const collections = this.displayCollections;
-      let allCategories;
+      let allCategories: any;
       
       for (const col of collections) {
         if (!this.dynamicCollectionInfo[col.id]) {
           try {
-            const info = { songCount: 0, url_image: null };
+            const info: Record<string, any> = { songCount: 0, url_image: null };
             
             if (col.type === "album") {
               const data = await this.$database.get(`album_${col.id}`);
@@ -328,7 +327,7 @@ export default {
               }
               if (allCategories) {
                 for (const cat of allCategories) {
-                  const albumObj = cat.albums?.find(a => a.id_album === col.id || a.id_album === col.module || a.id_album === col.id.replace("hymnal", "hasd"));
+                  const albumObj = cat.albums?.find((a: any) => a.id_album === col.id || a.id_album === col.module || a.id_album === col.id.replace("hymnal", "hasd"));
                   if (albumObj && albumObj.url_image) {
                     info.url_image = albumObj.url_image;
                     break;
@@ -356,7 +355,7 @@ export default {
       }
     },
     
-    getCollectionImage(collection) {
+    getCollectionImage(collection: any) {
       const name = this.getCollectionName(collection) || "";
       
       if (
@@ -396,10 +395,10 @@ export default {
       }
     },
     
-    handleCollectionsScroll(event) {
+    handleCollectionsScroll(event: WheelEvent) {
       event.preventDefault();
       
-      const collectionsGrid = this.$refs.collectionsGrid;
+      const collectionsGrid = this.$refs.collectionsGrid as HTMLElement;
       
       if (collectionsGrid) {
         const scrollAmount = event.deltaY * 2;
@@ -411,7 +410,7 @@ export default {
       }
     },
     
-    openCollection(collection) {
+    openCollection(collection: any) {
       if (collection.type === "album") {
         this.$media.openAlbum(collection.id);
       } else {
@@ -419,13 +418,13 @@ export default {
       }
     },
     
-    playSong(song) {
+    playSong(song: any) {
       if (song.id_music) {
         this.$media.open({ id_music: song.id_music, mode: "audio" });
       }
     },
     
-    getCollectionName(collection) {
+    getCollectionName(collection: any): string {
       return collection.name || this.$t(collection.title) || collection.id;
     },
     
@@ -438,9 +437,9 @@ export default {
       }
     },
     
-    getHymnalTrack(item) {
+    getHymnalTrack(item: any) {
       if (item && item.albums) {
-        const hymnalAlbum = item.albums.find(a => a.type === "hymnal");
+        const hymnalAlbum = item.albums.find((a: any) => a.type === "hymnal");
         if (hymnalAlbum && hymnalAlbum.pivot && hymnalAlbum.pivot.track) {
           return hymnalAlbum.pivot.track;
         }
@@ -448,13 +447,356 @@ export default {
       return null;
     },
     
-    openAlbum(id_album) {
+    openAlbum(id_album: string) {
       this.$media.openAlbum(id_album);
     },
   },
-};
+});
 </script>
 
 <style lang="scss">
-@use "@/assets/styles/pages/home.scss";
+.dashboard-home {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.search-header, .hero-search-header {
+  background: transparent;
+}
+
+.dashboard-home .search-bar {
+  .v-field {
+    background: var(--card-bg) !important;
+    box-shadow: var(--shadow) !important;
+    border-radius: 25px !important;
+    
+    .v-field__input {
+      padding: 12px 20px !important;
+      font-size: 14px !important;
+    }
+    
+    .v-field__prepend-inner {
+      padding-left: 16px !important;
+      
+      .v-icon {
+        color: var(--accent-blue) !important;
+        opacity: 0.7;
+      }
+    }
+    
+    &:hover {
+      box-shadow: var(--shadow-hover) !important;
+    }
+    
+    &.v-field--focused {
+      box-shadow: 0 4px 20px rgba(0, 151, 215, 0.15) !important;
+    }
+  }
+}
+
+.content-main {
+  padding: 20px 32px 32px 32px;
+  width: 100%;
+  box-sizing: border-box;
+  max-width: 100%;
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 70px);
+}
+
+.dashboard-section {
+  margin-bottom: 40px;
+  display: flex;
+  flex-direction: column;
+  
+  &.collections-section {
+    flex-shrink: 0;
+    position: relative;
+    min-height: 200px;
+  }
+  
+  &.music-section {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .section-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--sidebar-text);
+    margin: 0 !important;
+    padding-bottom: 10px;
+    align-self: flex-start;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+  }
+}
+
+.collections-grid {
+  display: flex;
+  padding: 5px;
+  gap: 24px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 16px;
+  scroll-behavior: smooth;
+  cursor: grab;
+  
+  &:active {
+    cursor: grabbing;
+  }
+  
+}
+
+.collection-card {
+  background: var(--card-bg);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  transition: var(--transition);
+  cursor: pointer;
+  overflow: hidden;
+  width: clamp(150px, 20vh, 250px);
+  flex-shrink: 0;
+  
+  &:hover {
+    box-shadow: var(--shadow-hover);
+    transform: translateY(-2px);
+  }
+  
+  .card-image {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    height: auto;
+    background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-blue-dark) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 48px;
+    position: relative;
+  }
+  
+  .card-content {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 80px;
+    
+    .card-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--sidebar-text);
+      margin-bottom: auto;
+      line-height: 1.3;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    
+    .card-stats {
+      font-size: 12px;
+      color: var(--sidebar-text-secondary);
+      margin-top: 8px;
+      flex-shrink: 0;
+    }
+  }
+}
+
+.music-list {
+  background: var(--card-bg);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+
+  .v-table__wrapper {
+    background: transparent !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    flex: 1 1 auto;
+    height: 100%;
+    
+
+  }
+  
+  table {
+    background: transparent !important;
+    border-spacing: 0;
+  }
+
+  tr:hover td {
+    background: transparent !important;
+  }
+  
+  .music-list-container {
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    flex: 1;
+    
+
+  }
+}
+
+.music-item {
+  display: flex;
+  align-items: center;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border-color);
+  transition: var(--transition);
+  cursor: pointer;
+  
+  &:hover {
+    background: var(--sidebar-hover);
+  }
+  
+  &:last-child {
+    border-bottom: none;
+  }
+  
+  .music-number {
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1;
+    color: var(--accent-blue);
+    min-width: 40px;
+    margin-right: 16px;
+  }
+  
+  .music-info {
+    flex: 1;
+    
+    .music-title {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--sidebar-text);
+      margin-bottom: 4px;
+    }
+    
+    .music-artist {
+      font-size: 13px;
+      color: var(--sidebar-text-secondary);
+    }
+  }
+  
+  .music-duration {
+    font-size: 13px;
+    color: var(--sidebar-text-secondary);
+  }
+
+  .music-plays {
+    font-size: 12px;
+    color: var(--accent-blue);
+    font-weight: 500;
+    margin-right: 16px;
+    white-space: nowrap;
+  }
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  gap: 12px;
+  
+  p {
+    font-size: 14px;
+    color: var(--sidebar-text-secondary);
+    text-align: center;
+  }
+}
+
+@media (max-width: 1024px) {  
+  .search-header {
+    padding: 16px 20px 8px 20px;
+    justify-content: flex-start;
+    
+    .search-bar {
+      max-width: 100%;
+      
+      .v-field__input {
+        padding: 10px 16px !important;
+        font-size: 13px !important;
+      }
+      
+      .v-field__prepend-inner {
+        padding-left: 12px !important;
+      }
+    }
+  }
+  
+  .content-main {
+    padding: 16px 20px 20px 20px;
+    height: calc(100vh - 60px);
+  }
+  
+  .collections-grid {
+    gap: 16px;
+    
+    .collection-card {
+      .card-content {
+        padding: 16px;
+        min-height: 70px;
+        
+        .card-title {
+          font-size: 15px;
+        }
+        
+        .card-stats {
+          font-size: 11px;
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {  
+  .search-header {
+    padding: 12px 16px 6px 16px;
+    
+    .search-bar .v-field {
+      border-radius: 20px !important;
+      
+      .v-field__input {
+        padding: 8px 14px !important;
+        font-size: 12px !important;
+      }
+      
+      .v-field__prepend-inner {
+        padding-left: 10px !important;
+      }
+    }
+  }
+  
+  .collections-grid {
+    gap: 12px;
+    
+    .collection-card {
+      .card-content {
+        padding: 14px;
+        min-height: 65px;
+      }
+    }
+  }
+  
+  .content-main {
+    padding: 12px 16px 16px 16px;
+    height: calc(100vh - 50px);
+  }
+}
 </style>

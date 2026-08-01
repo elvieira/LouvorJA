@@ -24,45 +24,47 @@
   </div>
 </template>
 
-<script>
-export default {
+<script lang="ts">
+import { defineComponent } from "vue";
+
+export default defineComponent({
   name: "MusicMenuTableComponent",
   props: {
-    id_music: Number,
-    has_instrumental_music: [Boolean, Number],
-    color: String,
+    idMusic: { type: Number, required: true },
+    hasInstrumentalMusic: { type: [Boolean, Number], default: false },
+    color: { type: String, default: "" },
   },
   computed: {
-    buttons() {
+    buttons(): Array<{ tooltip: string; disabled: boolean; icon: string; click: () => void }> {
       return [
         {
           tooltip: "Cantado",
           disabled: false,
           icon: "mdi-play-circle",
           click: () =>
-            this.$media.open({ id_music: this.id_music, mode: "audio" }),
+            this.$media.open({ id_music: this.idMusic, mode: "audio" }),
         },
         {
           tooltip: "Playback",
-          disabled: !this.has_instrumental_music,
+          disabled: !this.hasInstrumentalMusic,
           icon: "mdi-play-circle-outline",
           click: () =>
-            this.$media.open({ id_music: this.id_music, mode: "instrumental" }),
+            this.$media.open({ id_music: this.idMusic, mode: "instrumental" }),
         },
         {
           tooltip: "Sem Áudio",
           disabled: false,
           icon: "mdi-monitor",
-          click: () => this.$media.open(this.id_music),
+          click: () => this.$media.open(this.idMusic as any),
         },
         {
           tooltip: "Letra",
           disabled: false,
           icon: "mdi-text-box-outline",
-          click: () => this.$media.openLyric(this.id_music),
+          click: () => this.$media.openLyric(this.idMusic),
         },
       ];
     },
   },
-};
+});
 </script>

@@ -1,34 +1,22 @@
 <template>
   <v-slide-y-reverse-transition>
     <div v-if="module?.show" class="module-full-page dashboard-home d-flex flex-column">
-      <div class="search-header pb-0 flex-shrink-0" style="padding-top: 24px; padding-left: 24px; padding-right: 24px; display: flex; align-items: center; justify-content: space-between;">
-        <div class="d-flex align-center">
-          <MenuToggleButton style="margin-right: 16px;" @toggle-sidebar="toggleSidebar" />
-          <div class="module-icon-box d-flex align-center justify-center mr-4">
-            <v-icon :icon="module.icon" size="24" />
-          </div>
-          <h2 class="section-title mb-0" style="color: var(--sidebar-text); font-size: 24px; font-weight: 600; line-height: 1;">
-            {{ t('title') }}
-          </h2>
-        </div>
-
-        <div class="d-flex align-center">
-          <v-tabs v-model="tab" color="var(--accent-blue)" class="mr-4">
-            <v-tab :value="1">
-              {{ t("modules") }}
-            </v-tab>
-            <v-tab :value="2">
-              {{ t("global-variables") }}
-            </v-tab>
-            <v-tab :value="3">
-              {{ t("user-variables") }}
-            </v-tab>
-            <v-tab :value="4">
-              {{ t("vue-variables") }}
-            </v-tab>
-          </v-tabs>
-        </div>
-      </div>
+      <ModuleHeader :title="t('title')" :icon="module.icon">
+        <v-tabs v-model="tab" color="var(--accent-blue)" class="mr-4">
+          <v-tab :value="1">
+            {{ t("modules") }}
+          </v-tab>
+          <v-tab :value="2">
+            {{ t("global-variables") }}
+          </v-tab>
+          <v-tab :value="3">
+            {{ t("user-variables") }}
+          </v-tab>
+          <v-tab :value="4">
+            {{ t("vue-variables") }}
+          </v-tab>
+        </v-tabs>
+      </ModuleHeader>
 
       <div class="content-main d-flex flex-column flex-grow-1" style="overflow: hidden; padding-top: 16px;">
         <v-tabs-window v-model="tab" class="h-100 w-100">
@@ -73,14 +61,14 @@ import VueJsonPretty from "vue-json-pretty";
 import "vue-json-pretty/lib/styles.css";
 import ModuleList from "../components/ModuleList.vue";
 import manifest from "../manifest";
-import MenuToggleButton from "@/components/MenuToggleButton.vue";
+import ModuleHeader from "@/components/ModuleHeader.vue";
 
 export default defineComponent({
   name: manifest.id,
   components: {
     VueJsonPretty,
     ModuleList,
-    MenuToggleButton,
+    ModuleHeader,
   },
   data: () => ({
     tab: 1,
@@ -119,7 +107,49 @@ export default defineComponent({
 </script>
 
 <style lang="scss">
-@use "@/assets/styles/pages/home.scss";
+.dashboard-home {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.search-header {
+  background: transparent;
+}
+
+.content-main {
+  padding: 20px 32px 32px 32px;
+  width: 100%;
+  box-sizing: border-box;
+  max-width: 100%;
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 70px);
+}
+
+@media (max-width: 1024px) {  
+  .search-header {
+    padding: 16px 20px 8px 20px;
+    justify-content: flex-start;
+  }
+  .content-main {
+    padding: 16px 20px 20px 20px;
+    height: calc(100vh - 60px);
+  }
+}
+
+@media (max-width: 768px) {  
+  .search-header {
+    padding: 12px 16px 6px 16px;
+  }
+  .content-main {
+    padding: 12px 16px 16px 16px;
+    height: calc(100vh - 50px);
+  }
+}
 
 .vjs-tree {
   font-family: 'JetBrains Mono', 'Fira Code', monospace !important;

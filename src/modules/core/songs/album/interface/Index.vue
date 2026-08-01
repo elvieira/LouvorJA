@@ -70,8 +70,8 @@
                 <td class="music-actions">
                   <div class="d-flex justify-end">
                     <MusicMenuTable
-                      :id_music="item.id_music"
-                      :has_instrumental_music="item.has_instrumental_music"
+                      :id-music="item.id_music"
+                      :has-instrumental-music="item.has_instrumental_music"
                     />
                   </div>
                 </td>

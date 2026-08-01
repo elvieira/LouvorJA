@@ -35,13 +35,13 @@
             v-model="data"
             :search="search"
             letter=""
-            :searchable_fields="{
+            :searchable-fields="{
               track: true,
               name: true,
             }"
             :scroll="scroll"
             :has_scroll="has_scroll"
-            sort_by="track"
+            sort-by="track"
             :file="`${$i18n.locale}_hymnal`"
             class="modern-hymnal-table flex-grow-1 d-flex flex-column"
             style="min-height: 0;"
@@ -76,8 +76,8 @@
                 <td class="music-actions">
                   <div class="d-flex justify-end">
                     <LMusicMenuTable
-                      :id_music="item.id_music"
-                      :has_instrumental_music="item.has_instrumental_music"
+                      :id-music="item.id_music"
+                      :has-instrumental-music="item.has_instrumental_music"
                     />
                   </div>
                 </td>
