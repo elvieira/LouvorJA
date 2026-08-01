@@ -134,7 +134,7 @@ export default {
   async init(i18n: any) {
     this.i18n = i18n;
 
-    const modules = import.meta.glob("@/modules/**/index.js", {
+    const modules = import.meta.glob("@/modules/**/index.{js,ts}", {
       eager: true,
     }) as any;
 

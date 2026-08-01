@@ -1,5 +1,5 @@
 import BaseModule from "../../BaseModule";
-import manifest from "./manifest.json";
+import manifest from "./manifest";
 
 export default class extends BaseModule {
   constructor() {

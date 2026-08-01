@@ -1,8 +1,9 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-export default class BaseModule {
-  manifest: any;
+import type { ModuleManifest } from "@/types/module";
 
-  constructor(manifest: any) {
+export default class BaseModule {
+  manifest: ModuleManifest;
+
+  constructor(manifest: ModuleManifest) {
     this.manifest = {
       active: manifest.active ?? true,
       id: manifest.id,
@@ -21,6 +22,7 @@ export default class BaseModule {
       translations: manifest.translations || {},
       system: manifest.system ?? false,
       overlay: manifest.overlay ?? false,
+      moduleOptions: manifest.moduleOptions || null,
     };
   }
 

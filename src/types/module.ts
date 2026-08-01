@@ -5,8 +5,8 @@ export interface ModuleManifest {
   version: string;
   description: string;
   author: string;
-  category: string;
-  icon: string;
+  category: string | null;
+  icon: string | null;
   showInMainMenu?: boolean;
   development?: boolean;
   language?: string | null;
@@ -16,6 +16,8 @@ export interface ModuleManifest {
   translations?: Record<string, unknown>;
   system?: boolean;
   overlay?: boolean;
+  moduleOptions?: Record<string, unknown> | null;
+  translationKey?: string;
   components?: Record<string, unknown>;
   componentsEntry?: unknown;
 }

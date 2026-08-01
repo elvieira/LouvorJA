@@ -10,10 +10,16 @@ module.exports = {
     "eslint:recommended",
   ],
   parserOptions: {
-    parser: "@babel/eslint-parser",
+    parser: {
+      js: "@babel/eslint-parser",
+      jsx: "@babel/eslint-parser",
+      ts: "@typescript-eslint/parser",
+      tsx: "@typescript-eslint/parser",
+    },
     ecmaVersion: "latest",
     sourceType: "module",
     requireConfigFile: false,
+    extraFileExtensions: [".vue"],
   },
   rules: {
     // Vue.js rules
