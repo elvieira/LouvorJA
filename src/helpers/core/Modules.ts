@@ -1,10 +1,11 @@
-import $dev from "@/helpers/Dev";
-import $appdata from "@/helpers/AppData";
-import $media from "@/helpers/Media";
-import $history from "@/helpers/History";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import $dev from "@/helpers/config/Dev";
+import $appdata from "@/helpers/config/AppData";
+import $media from "@/helpers/services/Media";
+
 
 export default {
-  open(id) {
+  open(id: string) {
     if (!this.check(id)) {
       console.error(`Módulo ${id} não encontrado!`);
       return;
@@ -40,7 +41,7 @@ export default {
     $dev.write("open", id);
     $appdata.set(`modules.${id}.show`, true);
   },
-  close(id) {
+  close(id: string) {
     if (!this.check(id)) {
       console.error(`Módulo ${id} não encontrado!`);
       return;
@@ -56,16 +57,16 @@ export default {
       $appdata.set("modules.home.show", true);
     }
   },
-  minimize(id) {
+  minimize(id: string) {
     if (!this.check(id)) {
       console.error(`Módulo ${id} não encontrado!`);
       return;
     }
-    if ($appdata.get(`modules.${id}.title`, "") == "") {
+    if ($appdata.get(`modules.${id}.title`, "") === "") {
       console.error(`Módulo ${id} não possui a prorpiedade "title"!`);
       return;
     }
-    if ($appdata.get(`modules.${id}.icon`, "") == "") {
+    if ($appdata.get(`modules.${id}.icon`, "") === "") {
       console.error(`Módulo ${id} não possui a prorpiedade "icon"!`);
       return;
     }
@@ -74,8 +75,8 @@ export default {
 
     this.addTray(id);
   },
-  get(list = null) {
-    if (list == null) {
+  get(list: any = null): any {
+    if (list === null) {
       return $appdata.get("modules");
     }
 
@@ -90,48 +91,50 @@ export default {
     try {
       return {
         ...Object.fromEntries(
-          list.map((module) => {
+          list.map((module: string) => {
             return [
               module,
-              { id: module, ...$appdata.get(`modules.${module}`) } || {
-                invalid: true,
-                title: "modules.invalid.title",
-                icon: "mdi-alert-circle-outline",
-              },
+              $appdata.get(`modules.${module}`)
+                ? { id: module, ...$appdata.get(`modules.${module}`) }
+                : {
+                  invalid: true,
+                  title: "modules.invalid.title",
+                  icon: "mdi-alert-circle-outline",
+                },
             ];
           }),
         ),
       };
-    } catch (e) {
+    } catch {
       return {};
     }
   },
-  addTray(id) {
+  addTray(id: string) {
     if (!this.check(id)) {
       console.error(`Módulo ${id} não encontrado!`);
       return;
     }
     $appdata.addElement("tray_area.modules", id);
   },
-  removeTray(id) {
+  removeTray(id: string) {
     if (!this.check(id)) {
       console.error(`Módulo ${id} não encontrado!`);
       return;
     }
     $appdata.removeElement("tray_area.modules", id);
   },
-  getTray() {
+  getTray(): any {
     return this.get($appdata.get("tray_area.modules"));
   },
-  setTray(data) {
+  setTray(data: any) {
     return $appdata.set("tray_area.modules", data);
   },
 
-  getMenu() {
+  getMenu(): any {
     return this.get($appdata.get("menu.modules"));
   },
 
-  getGroups() {
+  getGroups(): any {
     const module_group = JSON.parse(
       JSON.stringify($appdata.get("module_group") || {}),
     );
@@ -145,21 +148,21 @@ export default {
     return module_group;
   },
 
-  check(id) {
+  check(id: string): boolean {
     return $appdata.exists(`modules.${id}`);
   },
 
-  sort(modules, $t) {
+  sort(modules: any, $t: any): any {
     return Object.entries(modules)
       .sort(([k1, v1], [k2, v2]) => {
         if (k1 === "dev" && k2 !== "dev") return 1;
         if (k2 === "dev" && k1 !== "dev") return -1;
 
-        const t1 = v1?.title ? $t(v1.title).toLowerCase() : "";
-        const t2 = v2?.title ? $t(v2.title).toLowerCase() : "";
+        const t1 = (v1 as any)?.title ? $t((v1 as any).title).toLowerCase() : "";
+        const t2 = (v2 as any)?.title ? $t((v2 as any).title).toLowerCase() : "";
         return t1.localeCompare(t2);
       })
-      .reduce((acc, [key, value]) => {
+      .reduce((acc: any, [key, value]) => {
         acc[key] = value;
         return acc;
       }, {});

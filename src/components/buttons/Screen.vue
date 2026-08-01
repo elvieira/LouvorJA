@@ -21,7 +21,7 @@
 </template>
 
 <script>
-import $userdata from "@/helpers/UserData";
+import $userdata from "@/helpers/config/UserData";
 
 export default {
   name: "ButtonScreenComponent",
@@ -39,6 +39,7 @@ export default {
       default: "text",
     },
   },
+  emits: ["fullscreen"],
   computed: {
     is_mobile() {
       return this.$appdata.get("is_mobile");
@@ -50,7 +51,7 @@ export default {
       return this.$appdata.get("popup_module");
     },
     is_selected() {
-      return this.is_popup_opened && this.popup_module == this.module;
+      return this.is_popup_opened && this.popup_module === this.module;
     },
   },
   methods: {

@@ -16,7 +16,7 @@ loadFonts();
 
 const app = createApp(App);
 
-import ModuleManager from "@/helpers/ModuleManager";
+import ModuleManager from "@/helpers/core/ModuleManager";
 
 app.use(router);
 app.use(vuetify);
@@ -25,7 +25,8 @@ app.use(helpersPlugin);
 app.use(shortkey, { prevent: ["input", "textarea"] });
 app.use(VueFullscreen);
 
-createI18nInstance().then(async (i18n) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+createI18nInstance().then(async (i18n: any) => {
   app.use(i18n);
   await ModuleManager.init(i18n);
   app.mount("#app");

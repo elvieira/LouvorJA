@@ -1,6 +1,7 @@
-// @/helpers/ModuleTypes.js
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// @/helpers/core/ModuleTypes.ts
 export const ModuleManifest = {
-  create(options) {
+  create(options: any) {
     // Add validation
     const required = ["id", "name", "version"];
     for (const field of required) {
@@ -25,19 +26,22 @@ export const ModuleManifest = {
 };
 
 export class BaseModule {
-  constructor(manifest) {
+  manifest: any;
+  config: any;
+
+  constructor(manifest: any) {
     this.manifest = manifest;
     this.config = manifest.config || {};
   }
 
-  // eslint-disable-next-line no-unused-vars
-  async install(app, context) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async install(app: any, context: any) {
     // Abstract method to be implemented by specific Modules
     throw new Error("Module must implement install method");
   }
 
-  // eslint-disable-next-line no-unused-vars
-  async uninstall(context) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async uninstall(context: any) {
     // Optional uninstall method
   }
 
@@ -45,20 +49,20 @@ export class BaseModule {
     return this.config;
   }
 
-  setConfig(config) {
+  setConfig(config: any) {
     this.config = { ...this.config, ...config };
   }
 
   // Utility methods for module developers
-  registerComponent(app, component, name) {
+  registerComponent(app: any, component: any, name?: string) {
     app.component(name || component.name, component);
   }
 
-  registerRoute(router, route) {
+  registerRoute(router: any, route: any) {
     router.addRoute(route);
   }
 
-  registerStoreModule(store, module) {
+  registerStoreModule(store: any, module: any) {
     store.registerModule(this.manifest.id, module);
   }
 }

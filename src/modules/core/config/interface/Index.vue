@@ -945,7 +945,7 @@
 import manifest from "../manifest.json";
 import MenuToggleButton from "@/components/MenuToggleButton.vue";
 import ModernColorPicker from "@/components/inputs/ModernColorPicker.vue";
-import $media from "@/helpers/Media";
+import $media from "@/helpers/services/Media";
 
 export default {
   name: manifest.id,
@@ -1164,16 +1164,16 @@ export default {
       this.slide_align = savedSlideAlign;
     }
 
-    if (this.$userdata.get("modules.config.slide_fullscreen") != null) {
+    if (this.$userdata.get("modules.config.slide_fullscreen") !== null) {
       this.slide_fullscreen = this.$userdata.get("modules.config.slide_fullscreen");
     }
-    if (this.$userdata.get("modules.config.slide_disable_main_if_extended") != null) {
+    if (this.$userdata.get("modules.config.slide_disable_main_if_extended") !== null) {
       this.slide_disable_main_if_extended = this.$userdata.get("modules.config.slide_disable_main_if_extended");
     }
-    if (this.$userdata.get("modules.config.slide_minimize_player") != null) {
+    if (this.$userdata.get("modules.config.slide_minimize_player") !== null) {
       this.slide_minimize_player = this.$userdata.get("modules.config.slide_minimize_player");
     }
-    if (this.$userdata.get("modules.config.slide_show_title") != null) {
+    if (this.$userdata.get("modules.config.slide_show_title") !== null) {
       this.slide_show_title = this.$userdata.get("modules.config.slide_show_title");
     }
     
@@ -1195,7 +1195,7 @@ export default {
       return this.$t(`modules.${this.module_id}.${text}`);
     },
     async syncExternalMediaMonitors() {
-      const isExternalMediaActive = this.$appdata.get("modules.external_media.filePath") != null;
+      const isExternalMediaActive = this.$appdata.get("modules.external_media.filePath") !== null;
       if (!isExternalMediaActive) return;
 
       const syncSettings = this.$userdata.get("modules.config.media_sync_projection_settings") !== false;
@@ -1213,7 +1213,7 @@ export default {
           const primary = displays.find(d => d.isPrimary) || displays[0];
           selectedMonitors = selectedMonitors.filter(m => m !== primary.id);
           
-          const { default: $popup } = await import("@/helpers/Popup");
+          const { default: $popup } = await import("@/helpers/ui/Popup");
           await $popup.syncMonitors(selectedMonitors, "external_media", isExternalMediaActive);
         }
       }

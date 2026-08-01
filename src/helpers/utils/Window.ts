@@ -1,5 +1,5 @@
 export default {
-  open(url, target, features) {
+  open(url: string, target?: string, features?: string): Window | null {
     if (url.startsWith("/")) {
       url = (import.meta.env.BASE_URL ?? "/") + url.slice(1);
     }

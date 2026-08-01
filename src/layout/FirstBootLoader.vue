@@ -42,11 +42,12 @@
 </template>
 
 <script>
-import $path from "@/helpers/Path";
-import $alert from "@/helpers/Alert";
+import $path from "@/helpers/utils/Path";
+import $alert from "@/helpers/ui/Alert";
 
 export default {
   name: "FirstBootLoader",
+  emits: ["boot-complete"],
   data() {
     return {
       isOpen: true,

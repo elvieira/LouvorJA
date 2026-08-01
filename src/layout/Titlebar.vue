@@ -61,8 +61,8 @@
 </template>
 
 <script>
-import $appdata from "@/helpers/AppData";
-import $alert from "@/helpers/Alert";
+import $appdata from "@/helpers/config/AppData";
+import $alert from "@/helpers/ui/Alert";
 
 export default {
   name: "AppTitlebar",
@@ -95,7 +95,7 @@ export default {
 
       // Intercepta pedido de fechamento
       window.electronAPI.onRequestCloseApp(() => {
-        const isMediaActive = $appdata.get("modules.media.id_music") != null || $appdata.get("modules.media.show");
+        const isMediaActive = $appdata.get("modules.media.id_music") !== null || $appdata.get("modules.media.show");
         const popups = $appdata.get("popups") || [];
         const hasProjector = popups.some(p => !p.closed);
 

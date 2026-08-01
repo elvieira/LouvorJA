@@ -1,5 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export default class BaseModule {
-  constructor(manifest) {
+  manifest: any;
+
+  constructor(manifest: any) {
     this.manifest = {
       active: manifest.active ?? true,
       id: manifest.id,

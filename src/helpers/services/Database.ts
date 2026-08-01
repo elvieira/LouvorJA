@@ -1,20 +1,20 @@
-import $alert from "@/helpers/Alert";
-import $path from "@/helpers/Path";
-import $dev from "@/helpers/Dev";
-import $storage from "@/helpers/Storage";
-import $appdata from "@/helpers/AppData";
+import $alert from "@/helpers/ui/Alert";
+import $path from "@/helpers/utils/Path";
+import $dev from "@/helpers/config/Dev";
+import $storage from "@/helpers/services/Storage";
+import $appdata from "@/helpers/config/AppData";
 
 const isDesktop = !!(window.electronAPI && window.electronAPI.isElectron);
 
 export default {
-  async get(file) {
+  async get<T = unknown>(file: string): Promise<T | null> {
     try {
       const cache_name = `db:${file}`;
       const cache = $storage.get(cache_name, null, "session");
 
       if (cache) {
         $dev.write("Lendo BD do cache", file);
-        return cache;
+        return cache as T;
       }
 
       if (isDesktop) {
@@ -22,7 +22,7 @@ export default {
         if (localData) {
           $dev.write("Lendo BD do disco local (Offline)", file);
           $storage.set(cache_name, localData, "session");
-          return localData;
+          return localData as T;
         }
         $dev.write("BD local não encontrado, baixando e salvando:", file);
       }
@@ -31,7 +31,7 @@ export default {
       const url = `${$path.db(`/${file}`)}?${date}`;
       $dev.write("Abrindo BD", url);
       
-      let data = null;
+      let data: T | null = null;
       let retries = 3;
       let delayMs = 1000;
       
@@ -39,13 +39,13 @@ export default {
         try {
           const response = await fetch(url, {
             headers: {
-              "Api-Token": import.meta.env.VITE_API_TOKEN,
+              "Api-Token": import.meta.env.VITE_API_TOKEN as string,
             },
           });
 
           if (response.status === 429) {
             $dev.write(`Rate limit 429 em ${file}. Tentando novamente...`, delayMs);
-            await new Promise(r => setTimeout(r, delayMs));
+            await new Promise((r) => setTimeout(r, delayMs));
             retries--;
             delayMs *= 1.5;
             continue;
@@ -53,7 +53,7 @@ export default {
 
           if (!response.ok) {
             if (response.status >= 500) {
-              await new Promise(r => setTimeout(r, delayMs));
+              await new Promise((r) => setTimeout(r, delayMs));
               retries--;
               delayMs *= 1.5;
               continue;
@@ -61,11 +61,12 @@ export default {
             throw new Error(`Status ${response.status}`);
           }
           
-          data = await response.json();
+          data = await response.json() as T;
           break; // Sucesso
-        } catch (error) {
-          if (retries > 1 && (error.message.includes("Failed to fetch") || error.message.includes("NetworkError"))) {
-            await new Promise(r => setTimeout(r, delayMs));
+        } catch (error: unknown) {
+          const errMessage = error instanceof Error ? error.message : String(error);
+          if (retries > 1 && (errMessage.includes("Failed to fetch") || errMessage.includes("NetworkError"))) {
+            await new Promise((r) => setTimeout(r, delayMs));
             retries--;
             delayMs *= 1.5;
             continue;
@@ -85,11 +86,12 @@ export default {
       }
 
       return data;
-    } catch (error) {
+    } catch (error: unknown) {
       if ($appdata.get("system_first_boot_loading") === true) {
         return null;
       }
-      $alert.error({ text: "messages.file_database_not_found", error });
+      const errMessage = error instanceof Error ? error.message : String(error);
+      $alert.error({ text: "messages.file_database_not_found", error: errMessage });
       return null;
     }
   },

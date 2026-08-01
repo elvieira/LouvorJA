@@ -1,6 +1,7 @@
-import $dev from "@/helpers/Dev";
-import $storage from "@/helpers/Storage";
-import $appdata from "@/helpers/AppData";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import $dev from "@/helpers/config/Dev";
+import $storage from "@/helpers/services/Storage";
+import $appdata from "@/helpers/config/AppData";
 
 export default {
   save() {
@@ -15,14 +16,14 @@ export default {
   },
   load() {
     $dev.write("carregando dados");
-    const data = $appdata.flatten($storage.get("user_data"));
+    const data = $appdata.flatten($storage.get("user_data") as Record<string, any>);
 
     Object.keys(data).map((item) => {
       $appdata.set(`user_data.${item}`, data[item]);
     });
   },
 
-  set(param, value) {
+  set(param: string, value: any) {
     $dev.write("set userdata", { param, value });
     $appdata.set(`user_data.${param}`, value);
 
@@ -30,7 +31,7 @@ export default {
     this.save();
   },
 
-  get(param, ifnull = null) {
+  get(param?: string, ifnull: any = null): any {
     //$dev.write("get userdata", { param, ifnull });
     if (!param) {
       return $appdata.get("user_data", ifnull);

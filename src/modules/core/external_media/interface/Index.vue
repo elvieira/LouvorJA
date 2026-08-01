@@ -450,7 +450,7 @@ export default {
         }
       }
     },
-    filePath(newVal, oldVal) {
+    filePath(newVal) {
       this.mediaReady = false;
       this.userPaused = false;
       if (newVal) {
@@ -586,7 +586,7 @@ export default {
       if (el.paused) {
         this.userPaused = false;
         el.play().then(() => {
-        }).catch((err) => {
+        }).catch((_err) => {
         });
       } else {
         this.userPaused = true;
@@ -604,7 +604,7 @@ export default {
           el.volume = this.volume / 100;
           if (!this.userPaused) {
             el.play().then(() => {
-            }).catch((err) => {
+            }).catch((_err) => {
             });
           }
         }
@@ -621,8 +621,8 @@ export default {
       const el = event.target;
       const error = el?.error;
       if (error) {
-        const codes = { 1: "MEDIA_ERR_ABORTED", 2: "MEDIA_ERR_NETWORK", 3: "MEDIA_ERR_DECODE", 4: "MEDIA_ERR_SRC_NOT_SUPPORTED" };
-      } else {
+        // const codes = { 1: "MEDIA_ERR_ABORTED", 2: "MEDIA_ERR_NETWORK", 3: "MEDIA_ERR_DECODE", 4: "MEDIA_ERR_SRC_NOT_SUPPORTED" };
+        console.error("Media error:", error.code);
       }
     },
 
@@ -719,7 +719,7 @@ export default {
       this.$appdata.set("modules.external_media.title", "");
 
       // Close projection if open
-      import("@/helpers/Popup").then(({ default: $popup }) => {
+      import("@/helpers/ui/Popup").then(({ default: $popup }) => {
         if (this.$appdata.get("popup_module") === "external_media") {
           $popup.exit();
         }

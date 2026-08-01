@@ -1,5 +1,5 @@
 export default {
-  clean(text) {
+  clean(text: string | null | undefined): string {
     text = text || "";
 
     return text
@@ -8,20 +8,20 @@ export default {
       .replace(/[\u0300-\u036f]/g, "")
       .replace(/[^a-z0-9]/g, "");
   },
-  sort(a, b) {
+  sort(a: string | number | null | undefined, b: string | number | null | undefined): number {
     if (typeof a === "number" && typeof b === "number") {
       return a - b;
     }
 
-    a = a || "";
-    b = b || "";
+    const strA = String(a || "");
+    const strB = String(b || "");
 
-    return a
+    return strA
       .toLowerCase()
       .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "")
       .localeCompare(
-        b
+        strB
           .toLowerCase()
           .normalize("NFD")
           .replace(/[\u0300-\u036f]/g, ""),

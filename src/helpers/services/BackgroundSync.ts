@@ -1,12 +1,14 @@
-import $db from "@/helpers/Database";
-import $path from "@/helpers/Path";
+import $db from "@/helpers/services/Database";
+import $path from "@/helpers/utils/Path";
 
 class BackgroundSync {
+  isRunning: boolean;
+
   constructor() {
     this.isRunning = false;
   }
 
-  async start() {
+  async start(): Promise<void> {
     if (!window.electronAPI || !window.electronAPI.isElectron) return;
     if (this.isRunning) return;
 
@@ -14,7 +16,7 @@ class BackgroundSync {
       this.isRunning = true;
       
       // 1. Verificar se as capas já foram todas baixadas no passado
-      const isComplete = await window.electronAPI.getLocalDb("system_covers_downloaded");
+      const isComplete = await window.electronAPI.getLocalDb("system_covers_downloaded") as { complete: boolean } | undefined;
       if (isComplete && isComplete.complete) {
         console.log("[BackgroundSync] Todas as capas já constam como baixadas. Verificação ignorada.");
         this.isRunning = false;
@@ -24,23 +26,23 @@ class BackgroundSync {
       console.log("[BackgroundSync] Iniciando verificação de capas ausentes em background...");
 
       // 2. Extrair a lista de todas as capas
-      const categories = await $db.get("pt_categories");
+      const categories = await $db.get<Array<{ albums?: Array<{ url_image?: string }> }>>("pt_categories");
       if (!categories || !Array.isArray(categories)) {
         this.isRunning = false;
         return;
       }
 
-      const allImages = new Set();
+      const allImages = new Set<string>();
       for (const cat of categories) {
         if (cat.albums && Array.isArray(cat.albums)) {
-          cat.albums.forEach(a => {
+          cat.albums.forEach((a) => {
             if (a.url_image) allImages.add(a.url_image);
           });
         }
       }
 
       const imagesList = Array.from(allImages);
-      const missingImages = [];
+      const missingImages: string[] = [];
 
       // 3. Checar uma a uma para ver se já existe no HD
       console.log(`[BackgroundSync] Verificando ${imagesList.length} capas no disco...`);
@@ -70,14 +72,16 @@ class BackgroundSync {
         }
 
         const batch = missingImages.slice(i, i + batchSize);
-        await Promise.all(batch.map(async (urlImage) => {
+        await Promise.all(batch.map(async (urlImage: string) => {
           const imgFilename = urlImage.split("/").pop();
           const fullUrl = `${$path.file(urlImage)}`;
-          await window.electronAPI.downloadMedia(fullUrl, "covers", imgFilename);
+          if (imgFilename) {
+            await window.electronAPI.downloadMedia(fullUrl, "covers", imgFilename);
+          }
         }));
 
         // Pequeno atraso para alívio do servidor, mesmo se o Electron já tem Retry
-        await new Promise(r => setTimeout(r, 1000));
+        await new Promise((r) => setTimeout(r, 1000));
       }
 
       // Se passou por tudo e a internet ainda está ok, assume que terminou
@@ -86,7 +90,7 @@ class BackgroundSync {
         await window.electronAPI.saveLocalDb("system_covers_downloaded", { complete: true });
       }
 
-    } catch (e) {
+    } catch (e: unknown) {
       console.error("[BackgroundSync] Erro na sincronização de background:", e);
     } finally {
       this.isRunning = false;

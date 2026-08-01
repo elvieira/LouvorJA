@@ -1,10 +1,13 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { AppState } from "./state";
+
 export default {
-  setData(state, data) {
+  setData(state: AppState, data: any[]) {
     const value = data.pop();
     const param = data.join(".");
 
     const keys = param.split(".");
-    let current = state;
+    let current: any = state;
 
     for (let i = 0; i < keys.length - 1; i++) {
       const key = keys[i];
@@ -16,12 +19,12 @@ export default {
     current[keys[keys.length - 1]] = value;
   },
 
-  addElementArray(state, data) {
+  addElementArray(state: AppState, data: any[]) {
     const value = data.pop();
     const param = data.join(".");
 
     const keys = param.split(".");
-    let current = state;
+    let current: any = state;
 
     for (let i = 0; i < keys.length - 1; i++) {
       const key = keys[i];
@@ -32,12 +35,12 @@ export default {
     }
     current[keys[keys.length - 1]].push(value);
   },
-  removeElementArray(state, data) {
+  removeElementArray(state: AppState, data: any[]) {
     const value = data.pop();
     const param = data.join(".");
 
     const keys = param.split(".");
-    let current = state;
+    let current: any = state;
 
     for (let i = 0; i < keys.length - 1; i++) {
       const key = keys[i];
@@ -48,7 +51,7 @@ export default {
     }
 
     current[keys[keys.length - 1]] = current[keys[keys.length - 1]].filter(
-      (item) => item !== value,
+      (item: any) => item !== value,
     );
   },
 };

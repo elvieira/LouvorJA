@@ -1,10 +1,28 @@
-import $storage from "@/helpers/Storage";
-import $appdata from "@/helpers/AppData";
+import $storage from "@/helpers/services/Storage";
+import $appdata from "@/helpers/config/AppData";
 
 const RECENT_COLLECTIONS_KEY = "history_recent_collections";
 const TOP_SONGS_KEY = "history_top_songs";
 const MAX_RECENT_COLLECTIONS = 7;
 const MAX_TOP_SONGS = 20;
+
+export interface RecentCollection {
+  id: string | number;
+  type?: string;
+  name?: string;
+  icon?: string;
+  timestamp?: number;
+  url_image?: string | null;
+}
+
+export interface SongPlay {
+  id_music: string | number;
+  name?: string;
+  album_name?: string;
+  duration?: string;
+  play_count?: number;
+  last_played?: number;
+}
 
 setTimeout(() => {
   if (!$appdata.exists(RECENT_COLLECTIONS_KEY)) {
@@ -18,12 +36,11 @@ setTimeout(() => {
 export default {
   /**
    * Adiciona uma coletânea/módulo ao histórico de recentes.
-   * @param {Object} data - { id, type, name, icon }
    */
-  addRecentCollection(data) {
+  addRecentCollection(data: RecentCollection) {
     if (!data || !data.id) return;
 
-    const collections = $storage.get(RECENT_COLLECTIONS_KEY, []);
+    const collections = $storage.get(RECENT_COLLECTIONS_KEY, []) as RecentCollection[];
 
     const filtered = collections.filter(
       (item) => !(item.id === data.id && item.type === data.type),
@@ -46,20 +63,19 @@ export default {
 
   /**
    * Retorna as últimas coletâneas/módulos abertos (reativo).
-   * @returns {Array}
    */
-  getRecentCollections() {
-    return $appdata.get(RECENT_COLLECTIONS_KEY, $storage.get(RECENT_COLLECTIONS_KEY, []));
+  getRecentCollections(): RecentCollection[] {
+    return $appdata.get(RECENT_COLLECTIONS_KEY, $storage.get(RECENT_COLLECTIONS_KEY, [])) as RecentCollection[];
   },
 
-  addSongPlay(data) {
+  addSongPlay(data: SongPlay) {
     if (!data || !data.id_music) return;
 
     const songs = this._getAllSongPlays();
     const key = String(data.id_music);
 
     if (songs[key]) {
-      songs[key].play_count += 1;
+      songs[key].play_count = (songs[key].play_count || 0) + 1;
       songs[key].name = data.name || songs[key].name;
       songs[key].album_name = data.album_name || songs[key].album_name;
       songs[key].duration = data.duration || songs[key].duration;
@@ -79,15 +95,15 @@ export default {
     $appdata.set(TOP_SONGS_KEY, songs);
   },
 
-  getTopSongs(limit = MAX_TOP_SONGS) {
+  getTopSongs(limit = MAX_TOP_SONGS): SongPlay[] {
     const songs = $appdata.get(TOP_SONGS_KEY, $storage.get(TOP_SONGS_KEY, {}));
-    return Object.values(songs)
-      .sort((a, b) => b.play_count - a.play_count)
+    return Object.values(songs as Record<string, SongPlay>)
+      .sort((a, b) => (b.play_count || 0) - (a.play_count || 0))
       .slice(0, limit);
   },
 
-  _getAllSongPlays() {
-    return $storage.get(TOP_SONGS_KEY, {});
+  _getAllSongPlays(): Record<string, SongPlay> {
+    return $storage.get(TOP_SONGS_KEY, {}) as Record<string, SongPlay>;
   },
 
   clearAll() {

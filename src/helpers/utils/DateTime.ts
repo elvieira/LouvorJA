@@ -1,24 +1,25 @@
 export default {
-  shortTime(time) {
+  shortTime(time: number | string): string {
     let hours = 0;
     let minutes = 0;
     let seconds = 0;
-    if (isNaN(time)) {
-      const [h, m, s] = time.split(":").map(Number);
-      hours = h;
-      minutes = m;
-      seconds = s;
+    if (typeof time === "string" || isNaN(Number(time))) {
+      const parts = String(time).split(":").map(Number);
+      hours = parts[0] || 0;
+      minutes = parts[1] || 0;
+      seconds = parts[2] || 0;
     } else {
-      hours = Math.floor(time / 3600);
-      minutes = Math.floor((time % 3600) / 60);
-      seconds = time % 60;
+      const t = Number(time);
+      hours = Math.floor(t / 3600);
+      minutes = Math.floor((t % 3600) / 60);
+      seconds = t % 60;
     }
 
     minutes += hours * 60;
     return `${minutes}:${String(Math.floor(seconds)).padStart(2, "0")}`;
   },
 
-  toNumber(time) {
+  toNumber(time: number | string | null | undefined): number {
     if (!time) return 0;
     const parts = time.toString().split(":").map(Number);
 

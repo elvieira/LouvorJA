@@ -20,7 +20,7 @@ import AppLoading from "@/layout/Loading.vue";
 import FirstBootLoader from "@/layout/FirstBootLoader.vue";
 import AppTitlebar from "@/layout/Titlebar.vue";
 import AppAlert from "@/layout/Alert.vue";
-import BackgroundSync from "@/helpers/BackgroundSync";
+import BackgroundSync from "@/helpers/services/BackgroundSync";
 
 export default {
   name: "App",
@@ -83,7 +83,7 @@ export default {
             this.$appdata.set("system_displays", displays);
             
             if (displays.length === 1) {
-              const { default: $popup } = await import("@/helpers/Popup");
+              const { default: $popup } = await import("@/helpers/ui/Popup");
               $popup.exit();
             }
           });

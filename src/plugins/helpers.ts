@@ -1,21 +1,23 @@
-import Modules from "@/helpers/Modules";
-import Dev from "@/helpers/Dev";
-import String from "@/helpers/String";
-import UserData from "@/helpers/UserData";
-import AppData from "@/helpers/AppData";
-import DateTime from "@/helpers/DateTime";
-import Theme from "@/helpers/Theme";
-import Path from "@/helpers/Path";
-import Media from "@/helpers/Media";
-import Alert from "@/helpers/Alert";
-import Popup from "@/helpers/Popup";
-import Database from "@/helpers/Database";
-import History from "@/helpers/History";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import Modules from "@/helpers/core/Modules";
+import Dev from "@/helpers/config/Dev";
+import UserData from "@/helpers/config/UserData";
+
+import AppData from "@/helpers/config/AppData";
+import String from "@/helpers/utils/String";
+import DateTime from "@/helpers/utils/DateTime";
+import Theme from "@/helpers/config/Theme";
+import Path from "@/helpers/utils/Path";
+import Media from "@/helpers/services/Media";
+import Alert from "@/helpers/ui/Alert";
+import Popup from "@/helpers/ui/Popup";
+import Database from "@/helpers/services/Database";
+import History from "@/helpers/services/History";
 
 export const HelpersSymbol = Symbol("helpers");
 
 export default {
-  install(app) {
+  install(app: any) {
     const helpers = {
       userdata: UserData,
       appdata: AppData,

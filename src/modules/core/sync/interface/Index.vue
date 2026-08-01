@@ -219,10 +219,10 @@
 </template>
 
 <script>
-import $path from "@/helpers/Path";
-import $db from "@/helpers/Database";
+import $path from "@/helpers/utils/Path";
+import $db from "@/helpers/services/Database";
 import manifest from "../manifest.json";
-import MenuToggleButton from "@/components/MenuToggleButton.vue";
+
 
 import hymnalImg from "@/assets/images/hymnal.jpeg";
 import hymnal1996Img from "@/assets/images/hymnal_1996.jpeg";
@@ -230,7 +230,6 @@ import hymnal1996Img from "@/assets/images/hymnal_1996.jpeg";
 export default {
   name: "SyncIndex",
   components: {
-    MenuToggleButton,
   },
   data() {
     return {
