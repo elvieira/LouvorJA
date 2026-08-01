@@ -66,5 +66,9 @@ declare module "@vue/runtime-core" {
     $alert: any;
     $db: any;
     $router: any;
+    $path: any;
+    $theme: any;
+    $datetime: any;
+    $appdata: any;
   }
 }

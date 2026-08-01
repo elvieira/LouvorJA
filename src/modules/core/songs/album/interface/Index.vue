@@ -17,7 +17,7 @@
             open-delay="300"
             content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
           >
-            Voltar
+            {{ t('back') }}
           </v-tooltip>
         </v-btn>
         
@@ -50,7 +50,7 @@
           <v-table class="modern-hymnal-table flex-grow-1 d-flex flex-column" style="min-height: 0; background: transparent;">
             <tbody class="music-list-container">
               <tr
-                v-for="item in module.data.musics"
+                v-for="item in module?.data?.musics"
                 :key="item.id_music"
                 class="music-item"
                 style="cursor: pointer;"
@@ -84,13 +84,14 @@
   </v-slide-y-reverse-transition>
 </template>
 
-<script>
-import manifest from "../manifest.json";
+<script lang="ts">
+import { defineComponent } from "vue";
+import manifest from "../manifest";
 
 import MusicMenuTable from "@/components/MusicMenuTable.vue";
 import MenuToggleButton from "@/components/MenuToggleButton.vue";
 
-export default {
+export default defineComponent({
   name: "AlbumModule",
   components: {
     MusicMenuTable,
@@ -99,21 +100,21 @@ export default {
   computed: {
     /* COMPUTEDS OBRIGATÓRIAS - INÍCIO */
     /* NÃO MODIFICAR */
-    module_id() {
+    module_id(): string {
       return manifest.id;
     },
-    module() {
+    module(): any {
       return this.$modules.get(this.module_id);
     },
     /* COMPUTEDS OBRIGATÓRIAS - FIM */
-    loading() {
-      return this.$appdata.get("modules.album.loading");
+    loading(): boolean {
+      return this.$appdata.get("modules.album.loading") || false;
     },
   },
   methods: {
     /* METHODS OBRIGATÓRIOS - INÍCIO */
     /* NÃO MODIFICAR */
-    t(text) {
+    t(text: string): string {
       return this.$t(`modules.${this.module_id}.${text}`);
     },
     /* METHODS OBRIGATÓRIOS - FIM */
@@ -124,7 +125,7 @@ export default {
       }
     },
   },
-};
+});
 </script>
 
 <style lang="scss">
