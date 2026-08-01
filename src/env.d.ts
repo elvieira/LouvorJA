@@ -49,8 +49,22 @@ interface ElectronAPI {
   onUpdateError: (callback: (error: unknown) => void) => void
 }
 
-interface Window {
-  electronAPI?: ElectronAPI
+declare global {
+  interface Window {
+    electronAPI?: ElectronAPI
+  }
 }
 
+export {};
 
+declare module "@vue/runtime-core" {
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  interface ComponentCustomProperties {
+    $media: any;
+    $modules: any;
+    $t: any;
+    $alert: any;
+    $db: any;
+    $router: any;
+  }
+}

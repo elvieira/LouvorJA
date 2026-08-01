@@ -26,7 +26,7 @@
                   open-delay="300"
                   content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
                 >
-                  Fechar
+                  {{ t('close') }}
                 </v-tooltip>
               </v-btn>
             </div>
@@ -36,7 +36,7 @@
           </div>
           
           <div class="pa-6 pt-4 flex-grow-1" style="overflow-y: auto;">
-            <v-skeleton-loader v-if="module.loading" type="text@5" />
+            <v-skeleton-loader v-if="module?.loading" type="text@5" />
             <div v-else class="lyric-content-wrapper">
               <div v-for="line in lyric" :key="line.id_lyric" class="lyric-line mb-4">
                 <b v-if="line.aux_lyric" class="d-block text-primary text-caption mb-1 text-uppercase font-weight-bold" style="letter-spacing: 0.5px;">{{ line.aux_lyric }}</b>
@@ -50,39 +50,40 @@
   </v-slide-y-reverse-transition>
 </template>
 
-<script>
-import manifest from "../manifest.json";
+<script lang="ts">
+import { defineComponent } from "vue";
+import manifest from "../manifest";
 
-export default {
+export default defineComponent({
   name: "LyricModule",
   computed: {
     /* COMPUTEDS OBRIGATÓRIAS - INÍCIO */
     /* NÃO MODIFICAR */
-    module_id() {
+    module_id(): string {
       return manifest.id;
     },
-    module() {
+    module(): any {
       return this.$modules.get(this.module_id);
     },
     /* COMPUTEDS OBRIGATÓRIAS - FIM */
-    config() {
+    config(): any {
       return this.module?.config;
     },
-    lyric() {
+    lyric(): any[] {
       return this.module?.data?.lyric
         ?.slice()
-        .sort((a, b) => a.order - b.order);
+        .sort((a: any, b: any) => a.order - b.order) || [];
     },
   },
   methods: {
     /* METHODS OBRIGATÓRIOS - INÍCIO */
     /* NÃO MODIFICAR */
-    t(text) {
+    t(text: string): string {
       return this.$t(`modules.${this.module_id}.${text}`);
     },
     /* METHODS OBRIGATÓRIOS - FIM */
   },
-};
+});
 </script>
 
 <style lang="scss">
