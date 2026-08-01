@@ -10,12 +10,13 @@
   />
 </template>
 
-<script>
-import manifest from "../manifest.json";
+<script lang="ts">
+import { defineComponent } from "vue";
+import manifest from "../manifest";
 
 import LSlide from "@/components/Slide.vue";
 
-export default {
+export default defineComponent({
   name: "PopupMediaPage",
   components: {
     LSlide,
@@ -23,22 +24,22 @@ export default {
   computed: {
     /* COMPUTEDS OBRIGATÓRIAS - INÍCIO */
     /* NÃO MODIFICAR */
-    module_id() {
+    module_id(): string {
       return manifest.id;
     },
-    module() {
+    module(): any {
       return this.$modules.get(this.module_id);
     },
     /* COMPUTEDS OBRIGATÓRIAS - FIM */
-    config() {
+    config(): any {
       return this.$media.config();
     },
-    slide_index() {
+    slide_index(): number {
       return this.config.slide_index;
     },
-    slide() {
+    slide(): any {
       return this.$media.slide();
     },
   },
-};
+});
 </script>

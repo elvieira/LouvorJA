@@ -69,7 +69,7 @@ export default {
         if (val) {
           video.pause();
         } else {
-          video.play().catch((err) => {
+          video.play().catch(() => {
           });
         }
       });
@@ -81,7 +81,7 @@ export default {
       if (video) {
         video.currentTime = this.currentTime || 0;
         if (!this.isPaused) {
-          video.play().catch((err) => {
+          video.play().catch(() => {
           });
         }
       }
@@ -92,7 +92,7 @@ export default {
       const video = this.$refs.popupVideo;
       if (video && !this.isPaused) {
         video.currentTime = this.currentTime || 0;
-        video.play().catch((err) => {
+        video.play().catch(() => {
         });
       }
     },
@@ -100,6 +100,7 @@ export default {
       const el = event.target;
       const error = el?.error;
       if (error) {
+        console.error("Video error:", error);
       }
     },
   },

@@ -1,4 +1,5 @@
 <template>
+  <!-- eslint-disable vue/no-v-html -->
   <Window
     v-model="module.show"
     title=""
@@ -176,8 +177,9 @@
   </Window>
 </template>
 
-<script>
-import manifest from "../manifest.json";
+<script lang="ts">
+import { defineComponent } from "vue";
+import manifest from "../manifest";
 
 import Window from "@/components/Window.vue";
 
@@ -185,7 +187,7 @@ import LSlide from "@/components/Slide.vue";
 import LPlayer from "@/components/Player.vue";
 import LFullscreenPlayer from "@/components/FullscreenPlayer.vue";
 
-export default {
+export default defineComponent({
   name: "MediaComponent",
   components: {
     Window,
@@ -198,60 +200,60 @@ export default {
     scrollPos: 0,
   }),
   computed: {
-    module_id() {
+    module_id(): string {
       return manifest.id;
     },
-    module() {
+    module(): any {
       return this.$modules.get(this.module_id);
     },
-    is_online() {
+    is_online(): boolean {
       return this.$appdata.get("is_online");
     },
-    loading() {
+    loading(): boolean {
       return this.module.loading;
     },
-    config() {
+    config(): any {
       return this.$media.config();
     },
-    slide_index() {
+    slide_index(): number {
       return this.config?.slide_index;
     },
-    slides() {
+    slides(): any[] {
       return this.$media.slides();
     },
-    slide() {
+    slide(): any {
       return this.$media.slide();
     },
     fullscreen: {
-      get() {
+      get(): boolean {
         return this.module.config.fullscreen;
       },
-      set(value) {
+      set(value: boolean) {
         this.$media.fullscreen(value);
       },
     },
     lazy_load: {
-      get() {
+      get(): boolean {
         return this.$userdata.get("modules.media.lazy_load");
       },
-      set(value) {
+      set(value: boolean) {
         this.$userdata.set("modules.media.lazy_load", value);
       },
     },
     fade_audio: {
-      get() {
+      get(): boolean {
         return this.$userdata.get("modules.media.fade_audio");
       },
-      set(value) {
+      set(value: boolean) {
         this.$userdata.set("modules.media.fade_audio", value);
       },
     },
-    isPlaylistOpen() {
+    isPlaylistOpen(): boolean {
       return this.$appdata.get("modules.media.show_playlist") || false;
     },
   },
   watch: {
-    "module.show"(newVal) {
+    "module.show"(newVal: boolean) {
       if (newVal) {
         const slideFullscreen = this.$userdata.get("modules.config.slide_fullscreen") !== false;
         const disableIfExtended = this.$userdata.get("modules.config.slide_disable_main_if_extended") !== false;
@@ -262,11 +264,11 @@ export default {
         }
 
         if (window.electronAPI && window.electronAPI.getDisplays) {
-          window.electronAPI.getDisplays().then(displays => {
+          window.electronAPI.getDisplays().then((displays: any) => {
             let hasExtended = false;
             if (displays && displays.length > 1) {
-              const primary = displays.find(d => d.isPrimary) || displays[0];
-              const extendedSelected = slideMonitors.filter(m => m !== primary.id);
+              const primary = displays.find((d: any) => d.isPrimary) || displays[0];
+              const extendedSelected = slideMonitors.filter((m: string) => m !== primary.id);
               hasExtended = extendedSelected.length > 0;
             }
             if (slideFullscreen && !(disableIfExtended && hasExtended)) {
@@ -293,9 +295,9 @@ export default {
         return;
       }
 
-      if (this.$refs?.slideItem && this.$refs?.slideItem[0]?.$el) {
+      if (this.$refs?.slideItem && (this.$refs?.slideItem as any)[0]?.$el) {
         const self = this;
-        const height = this.$refs.slideItem[0].$el.offsetHeight;
+        const height = (this.$refs.slideItem as any)[0].$el.offsetHeight;
         setTimeout(() => {
           self.scrollPos = self.slide_index * height - height;
         }, 100);
@@ -303,14 +305,14 @@ export default {
     },
   },
   methods: {
-    t(text) {
+    t(text: string): string {
       return this.$t(`modules.${this.module_id}.${text}`);
     },
-    resize(data) {
+    resize(data: any) {
       this.preview_height = data.container_height;
     },
   },
-};
+});
 </script>
 
 <style lang="scss">
