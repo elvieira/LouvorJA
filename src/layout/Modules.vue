@@ -35,20 +35,21 @@ export default {
       }
 
       const comp = defineAsyncComponent(() => {
-        // Try to load from modules interface directory
-        return import(`@/modules/core/${module.id}/interface/Index.vue`).catch(
-          () => {
-            // Try to load from CUSTOM module interface directory
-            return import(`@/modules/${module.id}/interface/Index.vue`).catch((e) => {
-              this.$alert.error({
-                text: "messages.error_import_module",
-                error: e,
-              });
-
-              return null;
-            });
-          },
-        );
+        // Encontra o componente em qualquer subdiretório de modules usando import.meta.glob
+        const moduleComponents = import.meta.glob("@/modules/**/interface/Index.vue");
+        const match = Object.keys(moduleComponents).find(path => path.endsWith(`/${module.id}/interface/Index.vue`));
+        
+        if (match) {
+          return moduleComponents[match]();
+        } 
+        return Promise.reject(new Error(`Module component ${module.id} not found`)).catch((e) => {
+          this.$alert.error({
+            text: "messages.error_import_module",
+            error: e,
+          });
+          return null;
+        });
+        
       });
 
       this.componentCache[module.id] = comp;

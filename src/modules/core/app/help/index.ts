@@ -1,4 +1,4 @@
-import BaseModule from "../../BaseModule";
+import BaseModule from "@/modules/BaseModule";
 import manifest from "./manifest";
 
 export default class extends BaseModule {

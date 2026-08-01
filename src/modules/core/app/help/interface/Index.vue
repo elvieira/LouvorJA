@@ -34,7 +34,7 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import manifest from "../manifest";
-import packageJson from "../../../../../package.json";
+import packageJson from "../../../../../../package.json";
 import ModuleHeader from "@/components/ModuleHeader.vue";
 import HelpAbout from "./components/HelpAbout.vue";
 import HelpDevelopers from "./components/HelpDevelopers.vue";

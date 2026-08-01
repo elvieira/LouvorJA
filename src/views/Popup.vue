@@ -33,20 +33,20 @@ export default {
   methods: {
     loadModuleComponent() {
       return defineAsyncComponent(() => {
-        return import(
-          `@/modules/core/${this.module}/interface/Popup.vue`
-        ).catch(() => {
-          return import(`@/modules/${this.module}/interface/Popup.vue`).catch(
-            (e) => {
-              this.$alert.error({
-                text: "messages.error_import_module",
-                error: e,
-              });
-
-              return null;
-            },
-          );
+        const moduleComponents = import.meta.glob("@/modules/**/interface/Popup.vue");
+        const match = Object.keys(moduleComponents).find(path => path.endsWith(`/${this.module}/interface/Popup.vue`));
+        
+        if (match) {
+          return moduleComponents[match]();
+        } 
+        return Promise.reject(new Error(`Popup component for ${this.module} not found`)).catch((e) => {
+          this.$alert.error({
+            text: "messages.error_import_module",
+            error: e,
+          });
+          return null;
         });
+        
       });
     },
   },
