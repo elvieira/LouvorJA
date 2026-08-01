@@ -284,24 +284,26 @@
   </v-slide-y-reverse-transition>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent, PropType } from "vue";
 import ModernColorPicker from "@/components/inputs/ModernColorPicker.vue";
 
-export default {
+export default defineComponent({
   name: "SorteioConfigModal",
   components: {
     ModernColorPicker,
   },
   props: {
     modelValue: {
-      type: Boolean,
+      type: Boolean as PropType<boolean>,
       default: false,
     },
-    module_id: {
-      type: String,
+    moduleId: {
+      type: String as PropType<string>,
       required: true,
     },
   },
+  emits: ["update:modelValue"],
   data: () => ({
     localConfig: {
       background: "#ffffff",
@@ -320,23 +322,23 @@ export default {
   }),
   computed: {
     visible: {
-      get() {
+      get(): boolean {
         return this.modelValue;
       },
-      set(value) {
+      set(value: boolean) {
         this.$emit("update:modelValue", value);
       },
     },
   },
   watch: {
-    visible(val) {
+    visible(val: boolean) {
       if (val) {
         this.loadConfig();
       }
     },
     localConfig: {
-      handler(val) {
-        this.$appdata.set(`modules.${this.module_id}.config`, JSON.parse(JSON.stringify(val)));
+      handler(val: any) {
+        this.$appdata.set(`modules.${this.moduleId}.config`, JSON.parse(JSON.stringify(val)));
       },
       deep: true,
     },
@@ -345,11 +347,11 @@ export default {
     this.loadConfig();
   },
   methods: {
-    t(text) {
-      return this.$t(`modules.${this.module_id}.${text}`);
+    t(text: string): string {
+      return this.$t(`modules.${this.moduleId}.${text}`);
     },
     loadConfig() {
-      const savedConfig = this.$appdata.get(`modules.${this.module_id}.config`);
+      const savedConfig = this.$appdata.get(`modules.${this.moduleId}.config`);
       if (savedConfig) {
         this.localConfig = { ...this.defaultConfig, ...savedConfig };
       } else {
@@ -360,7 +362,7 @@ export default {
       this.localConfig = { ...this.defaultConfig };
     },
     saveAndClose() {
-      this.$appdata.set(`modules.${this.module_id}.config`, this.localConfig);
+      this.$appdata.set(`modules.${this.moduleId}.config`, this.localConfig);
       this.$userdata.set("sorteio_config", this.localConfig);
       this.close();
     },
@@ -368,7 +370,7 @@ export default {
       this.visible = false;
     },
   },
-};
+});
 </script>
 
 <style scoped>

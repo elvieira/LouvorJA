@@ -2,45 +2,34 @@
   <v-slide-y-reverse-transition>
     <div v-if="module?.show" class="module-full-page dashboard-home d-flex flex-column">
       <!-- Top Bar -->
-      <div class="search-header pb-0 flex-shrink-0" style="padding-top: 24px; padding-left: 24px; padding-right: 24px; display: flex; align-items: center;">
-        <MenuToggleButton style="margin-right: 16px;" @toggle-sidebar="toggleSidebar" />
-        <div class="d-flex align-center mr-auto">
-          <div class="module-icon-box d-flex align-center justify-center mr-4">
-            <v-icon :icon="module.icon" size="24" />
-          </div>
-          <h2 class="section-title mb-0 mr-4" style="color: var(--sidebar-text); font-size: 24px; font-weight: 600; line-height: 1;">
-            {{ t('title') }}
-          </h2>
-          <v-btn-toggle
-            v-model="drawMode"
-            mandatory
-            color="primary"
-            variant="tonal"
-            class="rounded-lg"
-            style="height: 36px; background: var(--card-bg); box-shadow: inset 0 0 0 1px var(--border-color);"
-          >
-            <v-btn value="names" class="text-caption font-weight-bold px-3 text-none">
-              {{ t('mode_names') }}
-            </v-btn>
-            <v-btn value="numbers" class="text-caption font-weight-bold px-3 text-none">
-              {{ t('mode_numbers') }}
-            </v-btn>
-          </v-btn-toggle>
-        </div>
-        
-        <div class="search-bar ml-4 d-flex align-center" style="flex: 1; justify-content: flex-end; gap: 12px;">
-          <v-btn
-            variant="flat"
-            color="error"
-            rounded="lg"
-            class="text-none font-weight-bold"
-            prepend-icon="mdi-refresh"
-            @click="resetAll"
-          >
-            {{ t('reset') }}
+      <ModuleHeader :title="t('title')" :icon="module.icon">
+        <v-btn-toggle
+          v-model="drawMode"
+          mandatory
+          color="primary"
+          variant="tonal"
+          class="rounded-lg"
+          style="height: 36px; background: var(--card-bg); box-shadow: inset 0 0 0 1px var(--border-color);"
+        >
+          <v-btn value="names" class="text-caption font-weight-bold px-3 text-none">
+            {{ t('mode_names') }}
           </v-btn>
-        </div>
-      </div>
+          <v-btn value="numbers" class="text-caption font-weight-bold px-3 text-none">
+            {{ t('mode_numbers') }}
+          </v-btn>
+        </v-btn-toggle>
+        
+        <v-btn
+          variant="flat"
+          color="error"
+          rounded="lg"
+          class="text-none font-weight-bold ml-4"
+          prepend-icon="mdi-refresh"
+          @click="resetAll"
+        >
+          {{ t('reset') }}
+        </v-btn>
+      </ModuleHeader>
 
       <!-- Main Layout -->
       <div class="content-main d-flex" :class="compact ? 'flex-column' : 'flex-row'" style="overflow-x: hidden; padding: 24px; min-height: 0; gap: 24px; flex-grow: 1;">
@@ -85,7 +74,7 @@
                   rounded="lg"
                   class="text-none mb-2 font-weight-bold"
                   prepend-icon="mdi-file-upload-outline"
-                  @click="$refs.fileInputCompact.click()"
+                  @click="openFileInputCompact"
                 >
                   {{ t('import_names') }}
                   <v-tooltip
@@ -291,7 +280,7 @@
                 rounded="lg"
                 class="text-none mb-2 font-weight-bold"
                 prepend-icon="mdi-file-upload-outline"
-                @click="$refs.fileInput.click()"
+                @click="openFileInput"
               >
                 {{ t('import_names') }}
                 <v-tooltip
@@ -521,23 +510,24 @@
         </div>
       </div>
       
-      <ConfigModal v-model="showConfig" :module_id="module_id" />
+      <ConfigModal v-model="showConfig" :module-id="module_id" />
     </div>
   </v-slide-y-reverse-transition>
 </template>
 
-<script>
-import MenuToggleButton from "@/components/MenuToggleButton.vue";
+<script lang="ts">
+import { defineComponent } from "vue";
 import LScreenBtn from "@/components/buttons/Screen.vue";
 import ConfigModal from "./components/ConfigModal.vue";
-import manifest from "../manifest.json";
+import ModuleHeader from "@/components/ModuleHeader.vue";
+import manifest from "../manifest";
 
-export default {
+export default defineComponent({
   name: "SorteioPage",
   components: {
-    MenuToggleButton,
     LScreenBtn,
     ConfigModal,
+    ModuleHeader,
   },
   data: () => ({
     defaultConfig: { background: "#ffffff", color: "#0097d7", fontSizePc: 15, textTransform: "none", animationSpeed: "normal" },
@@ -545,57 +535,57 @@ export default {
     drawMode: "names",
     numMin: 1,
     numMax: 100,
-    availableNames: [],
-    drawnNames: [],
+    availableNames: [] as string[],
+    drawnNames: [] as string[],
     isDrawing: false,
     currentDisplay: "",
     showConfig: false,
-    drawInterval: null,
+    drawInterval: null as ReturnType<typeof setTimeout> | null,
     animationDuration: 3000,
   }),
   computed: {
-    module_id() {
+    module_id(): string {
       return manifest.id;
     },
-    module() {
+    module(): any {
       return this.$appdata.get(`modules.${this.module_id}`);
     },
-    availableUndrawnNames() {
+    availableUndrawnNames(): string[] {
       return this.availableNames.filter(n => !this.drawnNames.includes(n));
     },
-    reversedDrawnNames() {
+    reversedDrawnNames(): string[] {
       return [...this.drawnNames].reverse();
     },
-    compact() {
+    compact(): boolean {
       return this.$vuetify.display.width < 1400;
     },
-    config() {
+    config(): any {
       return this.$appdata.get(`modules.${this.module_id}.config`) || this.defaultConfig;
     },
   },
   watch: {
     availableNames: {
-      handler(val) {
+      handler(val: string[]) {
         this.$appdata.set(`modules.${this.module_id}.data.availableNames`, val);
         this.$userdata.set("sorteio_available", val);
       },
       deep: true,
     },
     drawnNames: {
-      handler(val) {
+      handler(val: string[]) {
         this.$appdata.set(`modules.${this.module_id}.data.drawnNames`, val);
         this.$userdata.set("sorteio_drawn", val);
       },
       deep: true,
     },
-    currentDisplay(val) {
+    currentDisplay(val: string) {
       this.$appdata.set(`modules.${this.module_id}.data.currentDisplay`, val);
       this.$appdata.set(`modules.${this.module_id}.data.isDrawing`, this.isDrawing);
     },
-    isDrawing(val) {
+    isDrawing(val: boolean) {
       this.$appdata.set(`modules.${this.module_id}.data.isDrawing`, val);
     },
-    drawMode(val) {
+    drawMode() {
       this.resetAll();
     },
   },
@@ -606,15 +596,21 @@ export default {
     this.$appdata.set(`modules.${this.module_id}.data.isDrawing`, this.isDrawing);
   },
   beforeUnmount() {
-    if (this.drawInterval) clearInterval(this.drawInterval);
+    if (this.drawInterval) clearTimeout(this.drawInterval);
   },
   methods: {
-    t(text) {
+    t(text: string): string {
       return this.$t(`modules.${this.module_id}.${text}`);
     },
     toggleSidebar() {
       const mainEl = document.querySelector(".main-container");
       if (mainEl) mainEl.dispatchEvent(new CustomEvent("toggle-sidebar"));
+    },
+    openFileInput() {
+      (this.$refs.fileInput as HTMLElement).click();
+    },
+    openFileInputCompact() {
+      (this.$refs.fileInputCompact as HTMLElement).click();
     },
     loadState() {
       const available = this.$userdata.get("sorteio_available");
@@ -630,19 +626,19 @@ export default {
         this.newName = "";
       }
     },
-    removeName(index) {
+    removeName(index: number) {
       this.availableNames.splice(index, 1);
     },
-    removeDrawn(index) {
+    removeDrawn(index: number) {
       this.drawnNames.splice(index, 1);
     },
-    handleFileUpload(event) {
+    handleFileUpload(event: any) {
       const file = event.target.files[0];
       if (!file) return;
 
       const reader = new FileReader();
       reader.onload = (e) => {
-        const text = e.target.result;
+        const text = e.target?.result as string;
         const lines = text.split(/\r?\n/).map(line => line.trim()).filter(line => line.length > 0);
         
         let addedCount = 0;
@@ -673,8 +669,8 @@ export default {
       this.currentDisplay = "";
     },
     generateNumberRange() {
-      const min = parseInt(this.numMin, 10);
-      const max = parseInt(this.numMax, 10);
+      const min = parseInt(String(this.numMin), 10);
+      const max = parseInt(String(this.numMax), 10);
       if (isNaN(min) || isNaN(max) || min >= max || max - min > 100000) {
         return;
       }
@@ -722,7 +718,7 @@ export default {
       
       this.drawInterval = setTimeout(tick, intervalTime);
     },
-    finishDraw(undrawn) {
+    finishDraw(undrawn: string[]) {
       this.isDrawing = false;
       const randIndex = Math.floor(Math.random() * undrawn.length);
       const winner = undrawn[randIndex];
@@ -732,7 +728,7 @@ export default {
       // We can add a confetti trigger here if we implement one
     },
   },
-};
+});
 </script>
 
 <style scoped>

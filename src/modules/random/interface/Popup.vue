@@ -27,10 +27,11 @@
   </div>
 </template>
 
-<script>
-import manifest from "../manifest.json";
+<script lang="ts">
+import { defineComponent } from "vue";
+import manifest from "../manifest";
 
-export default {
+export default defineComponent({
   name: "PopupSorteioPage",
   data: () => ({
     defaultConfig: {
@@ -42,18 +43,18 @@ export default {
     },
   }),
   computed: {
-    module_id() {
+    module_id(): string {
       return manifest.id;
     },
-    config() {
+    config(): any {
       return this.$appdata.get(`modules.${this.module_id}.config`) || this.defaultConfig;
     },
-    data() {
+    data(): any {
       return this.$appdata.get(`modules.${this.module_id}.data`) || {
         currentDisplay: "",
         isDrawing: false,
       };
     },
   },
-};
+});
 </script>
