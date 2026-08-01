@@ -15,7 +15,7 @@
                   mdi-library
                 </v-icon>
                 <h2 class="text-h5 font-weight-bold mb-0" style="color: var(--sidebar-text);">
-                  Biblioteca Local
+                  {{ $t('modules.sync.title') }}
                 </h2>
               </div>
               <v-btn icon variant="text" @click="closeModule">
@@ -26,12 +26,12 @@
                   open-delay="300"
                   content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
                 >
-                  Fechar
+                  {{ $t('modules.sync.close') }}
                 </v-tooltip>
               </v-btn>
             </div>
             <p class="text-caption mb-0" style="color: var(--sidebar-text-secondary);">
-              Baixe as coletâneas para poder reproduzir as músicas.
+              {{ $t('modules.sync.description') }}
             </p>
           </div>
           
@@ -48,7 +48,7 @@
             >
               <v-icon start>
                 mdi-download-multiple
-              </v-icon> Baixar Todas
+              </v-icon> {{ $t('modules.sync.download_all') }}
             </v-btn>
             <v-btn 
               v-else
@@ -61,7 +61,7 @@
             >
               <v-icon start>
                 mdi-close-circle-multiple
-              </v-icon> Cancelar Todas
+              </v-icon> {{ $t('modules.sync.cancel_all') }}
             </v-btn>
           </div>
 
@@ -74,129 +74,14 @@
               </h3>
             
               <v-list class="bg-transparent" lines="two">
-                <v-list-item 
+                <SyncAlbumItem
                   v-for="album in cat.albums" 
                   :key="album.id_album" 
-                  class="mb-2 rounded-xl pa-3" 
-                  style="background: transparent; box-shadow: inset 0 0 0 1px var(--border-color); transition: all 0.2s;"
-                >
-                  <template #prepend>
-                    <v-avatar
-                      rounded="lg"
-                      size="48"
-                      color="primary"
-                      variant="tonal"
-                      class="mr-3"
-                    >
-                      <v-img v-if="album.coverUrl" :src="album.coverUrl" cover />
-                      <v-icon v-else>
-                        mdi-album
-                      </v-icon>
-                    </v-avatar>
-                  </template>
-                
-                  <v-list-item-title class="font-weight-bold text-body-2" style="color: var(--sidebar-text);">
-                    {{ album.name }}
-                  </v-list-item-title>
-                
-                  <v-list-item-subtitle v-if="album.status === 'downloading'" class="mt-1">
-                    <div class="d-flex justify-space-between align-center mb-1">
-                      <span class="text-caption font-weight-medium text-primary">
-                        {{ album.progressText || 'Baixando...' }}
-                      </span>
-                      <span class="text-caption font-weight-bold text-primary">{{ album.progress }}%</span>
-                    </div>
-                    <v-progress-linear
-                      :model-value="album.progress"
-                      color="primary"
-                      height="5"
-                      rounded
-                      striped
-                    />
-                  </v-list-item-subtitle>
-                
-                  <v-list-item-subtitle v-else class="text-caption" style="color: var(--sidebar-text-secondary);">
-                    {{ album.subtitle || '' }}
-                  </v-list-item-subtitle>
-                
-                  <template #append>
-                    <v-btn
-                      v-if="album.status === 'idle'"
-                      color="primary"
-                      variant="tonal"
-                      size="small"
-                      class="text-none font-weight-bold rounded-lg px-4"
-                      @click="downloadAlbum(album)"
-                    >
-                      <v-icon start size="16">
-                        mdi-download
-                      </v-icon> Baixar
-                    </v-btn>
-                  
-                    <v-btn
-                      v-else-if="album.status === 'downloading'"
-                      color="error"
-                      variant="tonal"
-                      size="small"
-                      class="rounded-lg ml-2"
-                      icon
-                      @click="cancelAlbum(album)"
-                    >
-                      <v-icon>mdi-close</v-icon>
-                      <v-tooltip
-                        activator="parent"
-                        location="top"
-                        open-delay="300"
-                        content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
-                      >
-                        Cancelar
-                      </v-tooltip>
-                    </v-btn>
-
-                    <div v-else-if="album.status === 'downloaded'" class="d-flex align-center">
-                      <v-chip
-                        color="success"
-                        variant="tonal"
-                        size="small"
-                        class="font-weight-bold mr-2"
-                      >
-                        <v-icon start size="14">
-                          mdi-check-circle
-                        </v-icon> Baixado
-                      </v-chip>
-                      <v-btn
-                        color="error"
-                        variant="text"
-                        size="small"
-                        icon
-                        @click="deleteAlbum(album)"
-                      >
-                        <v-icon>mdi-delete</v-icon>
-                        <v-tooltip
-                          activator="parent"
-                          location="top"
-                          open-delay="300"
-                          content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
-                        >
-                          Excluir Coletânea
-                        </v-tooltip>
-                      </v-btn>
-                    </div>
-                  
-                    <v-btn
-                      v-else-if="album.status === 'error'"
-                      color="error"
-                      variant="tonal"
-                      size="small"
-                      class="text-none font-weight-bold rounded-lg px-3"
-                      @click="downloadAlbum(album)"
-                    >
-                      <v-icon start size="16">
-                        mdi-refresh
-                      </v-icon> Tentar Novamente
-                    </v-btn>
-                  </template>
-                </v-list-item>
+                  :album="album"
+                  @download="downloadAlbum"
+                  @cancel="cancelAlbum"
+                  @delete="deleteAlbum"
+                />
               </v-list>
             </div>
           
@@ -208,7 +93,7 @@
                 size="32"
               />
               <p v-else class="text-caption" style="color: var(--sidebar-text-secondary);">
-                Nenhuma coletânea disponível. Execute a inicialização primeiro.
+                {{ $t('modules.sync.no_collections') }}
               </p>
             </div>
           </div>
@@ -218,23 +103,27 @@
   </v-slide-y-reverse-transition>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from "vue";
 import $path from "@/helpers/utils/Path";
 import $db from "@/helpers/services/Database";
-import manifest from "../manifest.json";
-
+import manifest from "../manifest";
 
 import hymnalImg from "@/assets/images/hymnal.jpeg";
 import hymnal1996Img from "@/assets/images/hymnal_1996.jpeg";
 
-export default {
+import SyncAlbumItem from "./components/SyncAlbumItem.vue";
+import type { SyncAlbum, SyncCategory } from "./types";
+
+export default defineComponent({
   name: "SyncIndex",
   components: {
+    SyncAlbumItem,
   },
   data() {
     return {
       manifest,
-      categoriesWithAlbums: [],
+      categoriesWithAlbums: [] as SyncCategory[],
       loadingList: false,
       cancelToken: false,
       isDownloadingAll: false,
@@ -243,26 +132,20 @@ export default {
     };
   },
   computed: {
-    module_id() {
+    module_id(): string {
       return manifest.id;
     },
-    module() {
+    module(): any {
       return this.$modules.get(this.module_id);
     },
-    hasNoIdleAlbums() {
-      return !this.categoriesWithAlbums.some(cat => cat.albums.some(a => a.status === "idle"));
+    hasNoIdleAlbums(): boolean {
+      return !this.categoriesWithAlbums.some((cat: SyncCategory) => cat.albums.some((a: SyncAlbum) => a.status === "idle"));
     },
   },
   async mounted() {
     await this.loadCollections();
   },
   methods: {
-    async toggleSidebar() {
-      const mainEl = document.querySelector(".main-container");
-      if (mainEl) {
-        mainEl.dispatchEvent(new CustomEvent("toggle-sidebar"));
-      }
-    },
     closeModule() {
       this.$modules.close(this.module_id);
     },
@@ -271,27 +154,27 @@ export default {
       this.loadingList = true;
       
       try {
-        const categories = await $db.get("pt_categories");
-        const manifest = await window.electronAPI.getLocalDb("downloaded_albums") || [];
+        const categories = (await $db.get("pt_categories")) as any[];
+        const downloadedManifest = ((await window.electronAPI.getLocalDb("downloaded_albums")) as any[]) || [];
         
         if (!categories || !Array.isArray(categories)) {
           this.loadingList = false;
           return;
         }
         
-        const result = [];
+        const result: SyncCategory[] = [];
         
-        const hymnalsList = [];
-        const hymnal = await $db.get("pt_hymnal");
-        const hymnal1996 = await $db.get("pt_hymnal_1996");
+        const hymnalsList: SyncAlbum[] = [];
+        const hymnal = (await $db.get("pt_hymnal")) as any[];
+        const hymnal1996 = (await $db.get("pt_hymnal_1996")) as any[];
         
         if (hymnal && hymnal.length > 0) {
           hymnalsList.push({
             id_album: "hymnal",
-            name: "Hinário Adventista",
-            subtitle: `Hinário oficial com ${  hymnal.length  } hinos`,
+            name: this.$t("modules.sync.hymnal_name"),
+            subtitle: this.$t("modules.sync.hymnal_subtitle", { count: hymnal.length }),
             coverUrl: this.hymnalImg,
-            status: manifest.includes("hymnal") ? "downloaded" : "idle",
+            status: downloadedManifest.includes("hymnal") ? "downloaded" : "idle",
             progress: 0,
             totalCount: 0,
             downloadedCount: 0,
@@ -302,10 +185,10 @@ export default {
         if (hymnal1996 && hymnal1996.length > 0) {
           hymnalsList.push({
             id_album: "hymnal_1996",
-            name: "Hinário Adventista (1996)",
-            subtitle: `Edição de 1996 com ${  hymnal1996.length  } hinos`,
+            name: this.$t("modules.sync.hymnal_1996_name"),
+            subtitle: this.$t("modules.sync.hymnal_1996_subtitle", { count: hymnal1996.length }),
             coverUrl: this.hymnal1996Img,
-            status: manifest.includes("hymnal_1996") ? "downloaded" : "idle",
+            status: downloadedManifest.includes("hymnal_1996") ? "downloaded" : "idle",
             progress: 0,
             totalCount: 0,
             downloadedCount: 0,
@@ -316,7 +199,7 @@ export default {
         if (hymnalsList.length > 0) {
           result.push({
             id_category: "hymnals",
-            name: "Hinários",
+            name: this.$t("modules.sync.hymnals_category"),
             albums: hymnalsList,
           });
         }
@@ -324,13 +207,13 @@ export default {
         for (const cat of categories) {
           if (!cat.albums || cat.albums.length === 0) continue;
           
-          const albumsList = [];
+          const albumsList: SyncAlbum[] = [];
           for (const a of cat.albums) {
-            if ([712, 629].includes(a.id_album)) continue;
+            if ([712, 629].includes(a.id_album as number)) continue;
             
             let coverUrl = null;
             if (a.url_image) {
-              const imgRelativePath = a.url_image.replace(/^\/(musics|images|covers)\//, "");
+              const imgRelativePath = (a.url_image as string).replace(/^\/(musics|images|covers)\//, "");
               const localCheck = await window.electronAPI.checkMedia("covers", imgRelativePath);
               coverUrl = localCheck || $path.file(a.url_image);
             }
@@ -341,7 +224,7 @@ export default {
               subtitle: a.subtitle || "",
               coverUrl,
               rawCoverUrl: a.url_image,
-              status: manifest.includes(a.id_album) ? "downloaded" : "idle",
+              status: downloadedManifest.includes(a.id_album) ? "downloaded" : "idle",
               progress: 0,
               totalCount: 0,
               downloadedCount: 0,
@@ -358,7 +241,7 @@ export default {
         }
         
         // Ordenação personalizada
-        const orderMap = {
+        const orderMap: Record<string, number> = {
           hymnals: 1,
           Hinários: 1,
           "CDs Oficiais/Ano": 2,
@@ -384,7 +267,7 @@ export default {
       const isDownloading = this.categoriesWithAlbums.some(cat => cat.albums.some(a => a.status === "downloading"));
       this.$appdata.set("sync_is_downloading", isDownloading);
     },
-    async downloadAlbum(album) {
+    async downloadAlbum(album: SyncAlbum) {
       if (!window.electronAPI) return;
       if (this.cancelToken) return;
       
@@ -395,14 +278,14 @@ export default {
       album.totalCount = 0;
       album.downloadedCount = 0;
       album.cancelToken = false;
-      album.progressText = "Preparando...";
+      album.progressText = "Preparando..."; 
       
       try {
-        let musicFiles = [];
-        let slideFiles = [];
+        let musicFiles: string[] = [];
+        let slideFiles: string[] = [];
 
         if (album.isHymnal) {
-          const hymnalData = await $db.get(`pt_${album.id_album}`);
+          const hymnalData = (await $db.get(`pt_${album.id_album}`)) as any[];
           if (!hymnalData || !Array.isArray(hymnalData)) {
             album.status = "idle";
             return;
@@ -414,21 +297,21 @@ export default {
           for (const song of hymnalData) {
             fetched++;
             album.progress = Math.floor((fetched / totalToFetch) * 10);
-            const musicData = await $db.get(`music_${song.id_music}`);
+            const musicData = (await $db.get(`music_${song.id_music}`)) as any;
             if (musicData) {
               if (musicData.url_music) musicFiles.push(musicData.url_music);
               if (musicData.url_instrumental_music) musicFiles.push(musicData.url_instrumental_music);
               if (musicData.url_image) slideFiles.push(musicData.url_image);
               
               if (musicData.lyric) {
-                musicData.lyric.forEach(l => {
+                musicData.lyric.forEach((l: any) => {
                   if (l.url_image) slideFiles.push(l.url_image);
                 });
               }
             }
           }
         } else {
-          const albumData = await $db.get(`album_${album.id_album}`);
+          const albumData = (await $db.get(`album_${album.id_album}`)) as any;
           if (!albumData || !albumData.musics || !Array.isArray(albumData.musics)) {
             album.status = "idle";
             return;
@@ -440,14 +323,14 @@ export default {
           for (const song of albumData.musics) {
             fetched++;
             album.progress = Math.floor((fetched / totalToFetch) * 10);
-            const musicData = await $db.get(`music_${song.id_music}`);
+            const musicData = (await $db.get(`music_${song.id_music}`)) as any;
             if (musicData) {
               if (musicData.url_music) musicFiles.push(musicData.url_music);
               if (musicData.url_instrumental_music) musicFiles.push(musicData.url_instrumental_music);
               if (musicData.url_image) slideFiles.push(musicData.url_image);
               
               if (musicData.lyric) {
-                musicData.lyric.forEach(l => {
+                musicData.lyric.forEach((l: any) => {
                   if (l.url_image) slideFiles.push(l.url_image);
                 });
               }
@@ -478,9 +361,9 @@ export default {
         const batchSize = 5;
         let consecutiveErrors = 0;
         let totalErrors = 0;
-        const MAX_CONSECUTIVE_ERRORS = 5; // Aborta se 5 falhas seguidas (servidor provavelmente caiu)
+        const MAX_CONSECUTIVE_ERRORS = 5; 
         
-        album.progressText = "Baixando...";
+        album.progressText = this.$t("modules.sync.downloading");
         
         for (let i = 0; i < allMediaFiles.length; i += batchSize) {
           if (this.cancelToken || album.cancelToken || !navigator.onLine) {
@@ -503,7 +386,7 @@ export default {
                 console.warn(`[Sync] Falha ao baixar: ${relativePath} (${consecutiveErrors} consecutivas)`);
                 return;
               }
-              consecutiveErrors = 0; // Reset ao ter sucesso
+              consecutiveErrors = 0; 
             }
             downloaded++;
             album.downloadedCount = downloaded;
@@ -515,19 +398,19 @@ export default {
         
         if (abortedByErrors || !navigator.onLine) {
           album.status = "error";
-          album.progressText = !navigator.onLine ? "Sem internet" : "Falha no servidor";
+          album.progressText = !navigator.onLine ? this.$t("modules.sync.no_internet") : this.$t("modules.sync.server_failure");
           if (!this.isDownloadingAll) {
             this.$alert.error({
-              title: "Falha no download",
+              title: this.$t("modules.sync.download_failed"),
               text: !navigator.onLine 
-                ? "Não foi possível baixar os arquivos. Verifique sua conexão com a internet." 
-                : `Não foi possível concluir o download pois o servidor está indisponível no momento. ${totalErrors} arquivo(s) falharam. Tente novamente mais tarde.`,
+                ? this.$t("modules.sync.error_no_internet")
+                : this.$t("modules.sync.error_server", { count: totalErrors }),
               translate: false,
             });
           }
         } else if (this.cancelToken || album.cancelToken) {
           album.status = "idle";
-          album.progressText = "Cancelado";
+          album.progressText = this.$t("modules.sync.cancelled");
         } else {
           if (totalErrors > 0) {
             console.warn(`[Sync] Coletânea baixada com ${totalErrors} arquivo(s) faltando.`);
@@ -538,16 +421,16 @@ export default {
       } catch (error) {
         console.error("Erro ao baixar album:", error);
         album.status = "error";
-        album.progressText = "Erro ao baixar";
+        album.progressText = this.$t("modules.sync.download_error");
       } finally {
         this.checkGlobalDownloadState();
       }
     },
-    async markAlbumDownloaded(albumId) {
-      const manifest = await window.electronAPI.getLocalDb("downloaded_albums") || [];
-      if (!manifest.includes(albumId)) {
-        manifest.push(albumId);
-        await window.electronAPI.saveLocalDb("downloaded_albums", manifest);
+    async markAlbumDownloaded(albumId: string | number) {
+      const downloadedManifest = (await window.electronAPI.getLocalDb("downloaded_albums")) as any[] || [];
+      if (!downloadedManifest.includes(albumId)) {
+        downloadedManifest.push(albumId);
+        await window.electronAPI.saveLocalDb("downloaded_albums", downloadedManifest);
       }
     },
     async downloadAllAlbums() {
@@ -563,8 +446,8 @@ export default {
             if (album.status === "error" && !navigator.onLine) {
               this.cancelAll();
               this.$alert.error({
-                title: "Sem conexão",
-                text: "O download em lote foi cancelado porque não há conexão com a internet.",
+                title: this.$t("modules.sync.no_connection"),
+                text: this.$t("modules.sync.batch_cancelled_no_internet"),
                 translate: false,
               });
               break;
@@ -580,38 +463,38 @@ export default {
     cancelAll() {
       this.cancelToken = true;
     },
-    cancelAlbum(album) {
+    cancelAlbum(album: SyncAlbum) {
       album.cancelToken = true;
     },
-    deleteAlbum(album) {
+    deleteAlbum(album: SyncAlbum) {
       this.$alert.yesno({
-        title: "Excluir Coletânea",
-        text: `Tem certeza que deseja excluir a coletânea "<b>${album.name}</b>"? Isso irá apagar os arquivos do seu computador.`,
+        title: this.$t("modules.sync.delete_album"),
+        text: this.$t("modules.sync.delete_confirm", { name: album.name }),
         translate: false,
-      }, async (resp) => {
+      }, async (resp: string) => {
         if (resp === "yes") {
-          let manifest = await window.electronAPI.getLocalDb("downloaded_albums") || [];
-          manifest = manifest.filter(id => id !== album.id_album);
-          await window.electronAPI.saveLocalDb("downloaded_albums", manifest);
+          let downloadedManifest = (await window.electronAPI.getLocalDb("downloaded_albums")) as any[] || [];
+          downloadedManifest = downloadedManifest.filter((id: string | number) => id !== album.id_album);
+          await window.electronAPI.saveLocalDb("downloaded_albums", downloadedManifest);
           
           album.status = "idle";
           album.progress = 0;
           album.downloadedCount = 0;
           
           try {
-            let musicFiles = [];
-            let slideFiles = [];
+            let musicFiles: string[] = [];
+            let slideFiles: string[] = [];
             if (album.isHymnal) {
-              const hymnalData = await $db.get(`pt_${album.id_album}`);
+              const hymnalData = (await $db.get(`pt_${album.id_album}`)) as any[];
               if (hymnalData) {
                 for (const song of hymnalData) {
-                  const musicData = await $db.get(`music_${song.id_music}`);
+                  const musicData = (await $db.get(`music_${song.id_music}`)) as any;
                   if (musicData) {
                     if (musicData.url_music) musicFiles.push(musicData.url_music);
                     if (musicData.url_instrumental_music) musicFiles.push(musicData.url_instrumental_music);
                     if (musicData.url_image) slideFiles.push(musicData.url_image);
                     if (musicData.lyric) {
-                      musicData.lyric.forEach(l => {
+                      musicData.lyric.forEach((l: any) => {
                         if (l.url_image) slideFiles.push(l.url_image);
                       });
                     }
@@ -619,16 +502,16 @@ export default {
                 }
               }
             } else {
-              const albumData = await $db.get(`album_${album.id_album}`);
+              const albumData = (await $db.get(`album_${album.id_album}`)) as any;
               if (albumData && albumData.musics) {
                 for (const song of albumData.musics) {
-                  const musicData = await $db.get(`music_${song.id_music}`);
+                  const musicData = (await $db.get(`music_${song.id_music}`)) as any;
                   if (musicData) {
                     if (musicData.url_music) musicFiles.push(musicData.url_music);
                     if (musicData.url_instrumental_music) musicFiles.push(musicData.url_instrumental_music);
                     if (musicData.url_image) slideFiles.push(musicData.url_image);
                     if (musicData.lyric) {
-                      musicData.lyric.forEach(l => {
+                      musicData.lyric.forEach((l: any) => {
                         if (l.url_image) slideFiles.push(l.url_image);
                       });
                     }
@@ -655,5 +538,5 @@ export default {
       });
     },
   },
-};
+});
 </script>
