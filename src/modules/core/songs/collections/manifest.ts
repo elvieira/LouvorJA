@@ -1,0 +1,13 @@
+export default {
+  id: "collections",
+  name: "Álbuns",
+  version: "2.0.0",
+  description:
+    "Central de coletâneas e álbuns musicais. Organize, busque e navegue por todas as coleções de músicas disponíveis no sistema.",
+  author: "maycorolbuche",
+  category: "musics",
+  icon: "mdi-music-box-multiple",
+  minAppVersion: "1.0.0",
+  dependencies: ["album"],
+  permissions: [],
+};

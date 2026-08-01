@@ -1,18 +1,7 @@
 <template>
   <v-slide-y-reverse-transition>
     <div v-if="module?.show" class="module-full-page dashboard-home d-flex flex-column">
-      <div class="search-header pb-0 flex-shrink-0" style="padding-top: 24px; padding-left: 24px; padding-right: 24px; display: flex; align-items: center;">
-        <MenuToggleButton style="margin-right: 16px;" @toggle-sidebar="toggleSidebar" />
-
-        <div class="d-flex align-center mr-auto">
-          <div class="module-icon-box d-flex align-center justify-center mr-4">
-            <v-icon :icon="module.icon" size="24" />
-          </div>
-          <h2 class="section-title mb-0" style="color: var(--sidebar-text); font-size: 24px; font-weight: 600; line-height: 1;">
-            {{ t('title') }}
-          </h2>
-        </div>
-
+      <ModuleHeader :title="t('title')" :icon="module.icon">
         <div class="search-bar ml-4 d-flex align-center" style="max-width: 500px; flex: 1; gap: 16px;">
           <v-text-field
             v-model="search"
@@ -72,7 +61,7 @@
             </v-card>
           </v-menu>
         </div>
-      </div>
+      </ModuleHeader>
 
       <div class="content-main d-flex flex-column flex-grow-1" style="overflow: hidden; padding-top: 16px;">
         <v-progress-linear
@@ -174,43 +163,46 @@
   </v-slide-y-reverse-transition>
 </template>
 
-<script>
-import manifest from "../manifest.json";
-import MenuToggleButton from "@/components/MenuToggleButton.vue";
-
+<script lang="ts">
+import { defineComponent } from "vue";
+import manifest from "../manifest";
+import ModuleHeader from "@/components/ModuleHeader.vue";
 import LMusicMenuTable from "@/components/MusicMenuTable.vue";
 
-export default {
+export default defineComponent({
   name: manifest.id,
   components: {
     LMusicMenuTable,
-    MenuToggleButton,
+    ModuleHeader,
   },
   data: () => ({
     search: "",
-    all_musics: [],
+    all_musics: [] as any[],
     indexing: false,
     indexed: false,
-    categories: [],
-    lang: null,
+    categories: [] as any[],
+    lang: null as string | null,
     id_category: 0,
     loading: false,
-    error: null,
+    error: null as string | null,
   }),
   computed: {
-    module_id() {
+    /* COMPUTEDS OBRIGATÓRIAS - INÍCIO */
+    /* NÃO MODIFICAR */
+    module_id(): string {
       return manifest.id;
     },
-    module() {
+    module(): any {
       return this.$modules.get(this.module_id);
     },
-    categoryOptions() {
+    /* COMPUTEDS OBRIGATÓRIAS - FIM */
+    categoryOptions(): any[] {
       return [
         { id_category: 0, name: this.t("all_collections") },
         ...this.categories,
       ];
     },
-    albums() {
+    albums(): any[] {
       if (!this.categories) {
         return [];
       }
@@ -218,35 +210,35 @@ export default {
         return [
           ...new Map(
             this.categories
-              .reduce((acc, category) => acc.concat(category.albums), [])
-              .map((album) => [album.id_album, { ...album, subtitle: null }]),
+              .reduce((acc: any[], category: any) => acc.concat(category.albums), [])
+              .map((album: any) => [album.id_album, { ...album, subtitle: null }]),
           ).values(),
-        ].sort((a, b) => this.$string.sort(a.name, b.name));
+        ].sort((a: any, b: any) => this.$string.sort(a.name, b.name));
       }
 
       return this.categories
-        .filter((item) => item.id_category == this.id_category)[0]
-        ?.albums.sort((a, b) => a.order - b.order) || [];
+        .filter((item: any) => item.id_category === this.id_category)[0]
+        ?.albums.sort((a: any, b: any) => a.order - b.order) || [];
     },
-    filteredMusics() {
+    filteredMusics(): any[] {
       if (!this.search || this.search.length <= 1 || this.all_musics.length === 0) {
         return [];
       }
       const term = this.$string.clean(this.search);
-      return this.all_musics.filter(m => {
+      return this.all_musics.filter((m: any) => {
         const name = this.$string.clean(m.name);
-        if (!isNaN(m.track) && !isNaN(term)) {
+        if (!isNaN(m.track) && !isNaN(term as any)) {
           return Number(m.track) === Number(term) || name.includes(term);
         }
         return name.includes(term);
       });
     },
-    compact() {
+    compact(): boolean {
       return this.$vuetify.display.width <= 600;
     },
   },
   watch: {
-    search(val) {
+    search(val: string) {
       if (val && val.length > 1 && !this.indexed) {
         this.buildSearchIndex();
       }
@@ -256,15 +248,12 @@ export default {
     await this.loadData();
   },
   methods: {
-    t(text) {
+    /* METHODS OBRIGATÓRIOS - INÍCIO */
+    /* NÃO MODIFICAR */
+    t(text: string): string {
       return this.$t(`modules.${this.module_id}.${text}`);
     },
-    toggleSidebar() {
-      const mainEl = document.querySelector(".main-container");
-      if (mainEl) {
-        mainEl.dispatchEvent(new CustomEvent("toggle-sidebar"));
-      }
-    },
+    /* METHODS OBRIGATÓRIOS - FIM */
     playFirstResult() {
       if (this.filteredMusics && this.filteredMusics.length > 0) {
         const first = this.filteredMusics[0];
@@ -282,7 +271,7 @@ export default {
         `${this.$i18n.locale}_categories`,
       );
 
-      if (this.categories == null) {
+      if (!this.categories) {
         this.$modules.close(this.module_id);
         return;
       }
@@ -291,7 +280,7 @@ export default {
         if (window.electronAPI) {
           for (const cat of this.categories) {
             if (cat.albums) {
-              cat.albums = cat.albums.filter(a => ![712, 629].includes(a.id_album));
+              cat.albums = cat.albums.filter((a: any) => ![712, 629].includes(a.id_album));
               for (const album of cat.albums) {
                 if (album.url_image) {
                   const imgRelativePath = album.url_image.replace(/^\/(musics|images|covers)\//, "");
@@ -306,16 +295,16 @@ export default {
         }
         
         // Remove categorias que ficaram sem álbuns
-        this.categories = this.categories.filter(cat => cat.albums && cat.albums.length > 0);
+        this.categories = this.categories.filter((cat: any) => cat.albums && cat.albums.length > 0);
         
         // Ordenação personalizada
-        const orderMap = {
+        const orderMap: Record<string, number> = {
           "CDs Oficiais/Ano": 2,
           Infantis: 98,
           Doxologia: 99,
         };
         
-        this.categories.sort((a, b) => {
+        this.categories.sort((a: any, b: any) => {
           const orderA = orderMap[a.id_category] || orderMap[a.name] || 50;
           const orderB = orderMap[b.id_category] || orderMap[b.name] || 50;
           if (orderA !== orderB) return orderA - orderB;
@@ -327,11 +316,11 @@ export default {
       this.lang = this.$i18n.locale;
       this.loading = false;
     },
-    openAlbum(id_album) {
+    openAlbum(id_album: number) {
       this.$media.openAlbum(id_album);
     },
-    async show(value) {
-      if (value && this.lang != this.$i18n.locale) {
+    async show(value: boolean) {
+      if (value && this.lang !== this.$i18n.locale) {
         await this.loadData();
       }
     },
@@ -340,17 +329,17 @@ export default {
       this.indexing = true;
       
       try {
-        const musics = [];
-        const allAlbums = this.categories.reduce((acc, cat) => acc.concat(cat.albums), []);
+        const musics: any[] = [];
+        const allAlbums = this.categories.reduce((acc: any[], cat: any) => acc.concat(cat.albums), []);
         
-        const uniqueAlbums = [...new Map(allAlbums.map(a => [a.id_album, a])).values()];
+        const uniqueAlbums = [...new Map(allAlbums.map((a: any) => [a.id_album, a])).values()];
         
-        const promises = uniqueAlbums.map(a => this.$database.get(`album_${a.id_album}`));
+        const promises = uniqueAlbums.map((a: any) => this.$database.get(`album_${a.id_album}`));
         const results = await Promise.all(promises);
         
-        results.forEach(albumData => {
+        results.forEach((albumData: any) => {
           if (albumData && albumData.musics) {
-            albumData.musics.forEach(m => {
+            albumData.musics.forEach((m: any) => {
               musics.push({
                 ...m,
                 album_name: albumData.name,
@@ -372,7 +361,7 @@ export default {
       this.id_category = 0;
     },
   },
-};
+});
 </script>
 
 <style lang="scss">
