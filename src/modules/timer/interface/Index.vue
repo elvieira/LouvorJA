@@ -2,36 +2,25 @@
   <v-slide-y-reverse-transition>
     <div v-if="module?.show" class="module-full-page dashboard-home d-flex flex-column">
       <!-- Top Bar -->
-      <div class="search-header pb-0 flex-shrink-0" style="padding-top: 24px; padding-left: 24px; padding-right: 24px; display: flex; align-items: center;">
-        <MenuToggleButton style="margin-right: 16px;" @toggle-sidebar="toggleSidebar" />
-        <div class="d-flex align-center mr-auto">
-          <div class="module-icon-box d-flex align-center justify-center mr-4">
-            <v-icon :icon="module.icon" size="24" />
-          </div>
-          <h2 class="section-title mb-0 mr-4" style="color: var(--sidebar-text); font-size: 24px; font-weight: 600; line-height: 1;">
-            {{ t('title') }}
-          </h2>
-          <v-btn-toggle
-            v-model="isStopwatchStr"
-            mandatory
-            color="primary"
-            variant="tonal"
-            class="rounded-lg"
-            style="height: 36px; background: var(--card-bg); box-shadow: inset 0 0 0 1px var(--border-color);"
-            :disabled="isRunning"
-            @update:model-value="onModeChange"
-          >
-            <v-btn value="false" class="text-caption font-weight-bold px-3 text-none">
-              {{ t('mode_timer') }}
-            </v-btn>
-            <v-btn value="true" class="text-caption font-weight-bold px-3 text-none">
-              {{ t('mode_stopwatch') }}
-            </v-btn>
-          </v-btn-toggle>
-        </div>
-        
-        <div class="search-bar ml-4 d-flex align-center" style="flex: 1; justify-content: flex-end; gap: 12px;" />
-      </div>
+      <ModuleHeader :title="t('title')" :icon="module.icon">
+        <v-btn-toggle
+          v-model="isStopwatchStr"
+          mandatory
+          color="primary"
+          variant="tonal"
+          class="rounded-lg"
+          style="height: 36px; background: var(--card-bg); box-shadow: inset 0 0 0 1px var(--border-color);"
+          :disabled="isRunning"
+          @update:model-value="onModeChange"
+        >
+          <v-btn value="false" class="text-caption font-weight-bold px-3 text-none">
+            {{ t('mode_timer') }}
+          </v-btn>
+          <v-btn value="true" class="text-caption font-weight-bold px-3 text-none">
+            {{ t('mode_stopwatch') }}
+          </v-btn>
+        </v-btn-toggle>
+      </ModuleHeader>
 
       <!-- Main Content -->
       <div class="content-main flex-grow-1 w-100 pa-6 d-flex flex-column align-center justify-center" style="overflow-y: auto; background: transparent;">
@@ -134,27 +123,28 @@
   </v-slide-y-reverse-transition>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from "vue";
 import Screen from "./components/Screen.vue";
 import LScreenBtn from "@/components/buttons/Screen.vue";
 import ConfigModal from "./components/ConfigModal.vue";
-import MenuToggleButton from "@/components/MenuToggleButton.vue";
-import manifest from "../manifest.json";
+import ModuleHeader from "@/components/ModuleHeader.vue";
+import manifest from "../manifest";
 
-export default {
+export default defineComponent({
   name: manifest.id,
   components: {
     Screen,
     LScreenBtn,
     ConfigModal,
-    MenuToggleButton,
+    ModuleHeader,
   },
   data: () => ({
     isStopwatchStr: "false",
     showConfig: false,
   }),
   computed: {
-    config() {
+    config(): any {
       return this.$appdata.get(`modules.${this.module_id}.config`) || {
         fontColor: "#ffffff",
         bgColor: "#000000",
@@ -162,13 +152,13 @@ export default {
         audioAlert: true,
       };
     },
-    module_id() {
+    module_id(): string {
       return manifest.id;
     },
-    module() {
+    module(): any {
       return this.$appdata.get(`modules.${this.module_id}`);
     },
-    timerData() {
+    timerData(): any {
       return this.$appdata.get(`modules.${this.module_id}.data`) || {
         isStopwatch: false,
         isRunning: false,
@@ -178,23 +168,23 @@ export default {
         isAlerting: false,
       };
     },
-    isStopwatch() {
+    isStopwatch(): boolean {
       return this.timerData.isStopwatch;
     },
-    isRunning() {
+    isRunning(): boolean {
       return this.timerData.isRunning;
     },
-    targetDuration() {
+    targetDuration(): number {
       return this.timerData.targetDuration;
     },
     editHours: {
-      get() {
+      get(): number {
         const ms = this.isStopwatch ? this.timerData.accumulatedTime : this.timerData.targetDuration;
         return Math.floor(ms / 3600000);
       },
-      set(val) {
-        const hrs = parseInt(val) || 0;
-        const ms = (hrs * 3600000) + (this.editMinutes * 60000) + (this.editSeconds * 1000);
+      set(val: string | number) {
+        const hrs = typeof val === "string" ? parseInt(val) : val;
+        const ms = ((hrs || 0) * 3600000) + (this.editMinutes * 60000) + (this.editSeconds * 1000);
         if (this.isStopwatch) {
           this.updateData({ accumulatedTime: ms });
         } else {
@@ -203,13 +193,13 @@ export default {
       },
     },
     editMinutes: {
-      get() {
+      get(): number {
         const ms = this.isStopwatch ? this.timerData.accumulatedTime : this.timerData.targetDuration;
         return Math.floor((ms % 3600000) / 60000);
       },
-      set(val) {
-        const mins = parseInt(val) || 0;
-        const ms = (this.editHours * 3600000) + (mins * 60000) + (this.editSeconds * 1000);
+      set(val: string | number) {
+        const mins = typeof val === "string" ? parseInt(val) : val;
+        const ms = (this.editHours * 3600000) + ((mins || 0) * 60000) + (this.editSeconds * 1000);
         if (this.isStopwatch) {
           this.updateData({ accumulatedTime: ms });
         } else {
@@ -218,13 +208,13 @@ export default {
       },
     },
     editSeconds: {
-      get() {
+      get(): number {
         const ms = this.isStopwatch ? this.timerData.accumulatedTime : this.timerData.targetDuration;
         return Math.floor((ms % 60000) / 1000);
       },
-      set(val) {
-        const secs = parseInt(val) || 0;
-        const ms = (this.editHours * 3600000) + (this.editMinutes * 60000) + (secs * 1000);
+      set(val: string | number) {
+        const secs = typeof val === "string" ? parseInt(val) : val;
+        const ms = (this.editHours * 3600000) + (this.editMinutes * 60000) + ((secs || 0) * 1000);
         if (this.isStopwatch) {
           this.updateData({ accumulatedTime: ms });
         } else {
@@ -242,18 +232,18 @@ export default {
     }
   },
   methods: {
-    t(text) {
+    t(text: string): string {
       return this.$t(`modules.${this.module_id}.${text}`);
     },
     toggleSidebar() {
       const mainEl = document.querySelector(".main-container");
       if (mainEl) mainEl.dispatchEvent(new CustomEvent("toggle-sidebar"));
     },
-    updateData(updates) {
+    updateData(updates: any) {
       const current = this.timerData;
       this.$appdata.set(`modules.${this.module_id}.data`, { ...current, ...updates });
     },
-    onModeChange(val) {
+    onModeChange(val: string) {
       const isStopwatch = val === "true";
       this.updateData({
         isStopwatch,
@@ -266,11 +256,15 @@ export default {
     toggleTimer() {
       if (this.isRunning) {
         // Pause
-        const elapsed = Date.now() - this.timerData.baseTime;
+        const now = Date.now();
+        let elapsed = 0;
+        if (this.timerData.baseTime) {
+          elapsed = now - this.timerData.baseTime;
+        }
         this.updateData({
           isRunning: false,
           accumulatedTime: this.timerData.accumulatedTime + elapsed,
-          isAlerting: false,
+          baseTime: 0,
         });
       } else {
         // Stop Alerting if we were
@@ -287,6 +281,7 @@ export default {
         this.updateData({
           isRunning: true,
           baseTime: Date.now(),
+          isAlerting: false,
         });
       }
     },
@@ -294,41 +289,43 @@ export default {
       this.updateData({
         isRunning: false,
         accumulatedTime: 0,
-        baseTime: Date.now(),
+        baseTime: 0,
         isAlerting: false,
         targetDuration: this.isStopwatch ? 0 : 5 * 60000, // Reset to 5 min for timer
       });
     },
   },
-};
+});
 </script>
 
 <style scoped>
 .time-input {
   width: 100px;
   height: 100px;
-  font-size: 3.5rem;
-  font-weight: 800;
-  text-align: center;
   background: var(--card-bg, #ffffff);
-  border-radius: 28px;
-  border: 2px solid var(--border-color, rgba(0,0,0,0.1));
-  color: var(--sidebar-text, #000);
+  border-radius: 20px;
+  border: 1px solid var(--border-color, rgba(0,0,0,0.1));
+  font-size: 3.5rem;
+  font-weight: 700;
+  text-align: center;
+  color: var(--sidebar-text);
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+  transition: all 0.3s ease;
+  font-variant-numeric: tabular-nums;
   outline: none;
-  transition: all 0.2s ease;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.04);
 }
 .time-input:focus {
-  border-color: rgba(var(--v-theme-primary), 1);
-  box-shadow: 0 0 0 4px rgba(var(--v-theme-primary), 0.15);
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 0 3px rgba(0, 151, 215, 0.2);
 }
-/* Hide arrows */
-.time-input::-webkit-outer-spin-button,
-.time-input::-webkit-inner-spin-button {
+.time-input::-webkit-inner-spin-button,
+.time-input::-webkit-outer-spin-button {
   -webkit-appearance: none;
+  appearance: none;
   margin: 0;
 }
 .time-input[type=number] {
   -moz-appearance: textfield;
+  appearance: textfield;
 }
 </style>

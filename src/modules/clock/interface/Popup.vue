@@ -6,7 +6,7 @@
 import { defineComponent } from "vue";
 import manifest from "../manifest";
 
-import Screen from "../components/Screen.vue";
+import Screen from "./components/Screen.vue";
 
 export default defineComponent({
   name: "PopupClockPage",

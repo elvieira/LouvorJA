@@ -217,21 +217,22 @@
   </v-slide-y-reverse-transition>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent, PropType } from "vue";
 import ModernColorPicker from "@/components/inputs/ModernColorPicker.vue";
 
-export default {
+export default defineComponent({
   name: "ConfigModal",
   components: {
     ModernColorPicker,
   },
   props: {
     modelValue: {
-      type: Boolean,
+      type: Boolean as PropType<boolean>,
       default: false,
     },
     moduleId: {
-      type: String,
+      type: String as PropType<string>,
       required: true,
     },
   },
@@ -252,20 +253,20 @@ export default {
   }),
   computed: {
     internalValue: {
-      get() {
+      get(): boolean {
         return this.modelValue;
       },
-      set(val) {
+      set(val: boolean) {
         this.$emit("update:modelValue", val);
       },
     },
   },
   watch: {
-    internalValue(val) {
+    internalValue(val: boolean) {
       if (val) this.loadConfig();
     },
     localConfig: {
-      handler(val) {
+      handler(val: any) {
         const cloned = JSON.parse(JSON.stringify(val));
         this.$appdata.set(`modules.${this.moduleId}.config`, cloned);
       },
@@ -276,7 +277,7 @@ export default {
     this.loadConfig();
   },
   methods: {
-    t(text) {
+    t(text: string): string {
       return this.$t(`modules.${this.moduleId}.${text}`);
     },
     loadConfig() {
@@ -294,7 +295,7 @@ export default {
       this.internalValue = false;
     },
   },
-};
+});
 </script>
 
 <style scoped>

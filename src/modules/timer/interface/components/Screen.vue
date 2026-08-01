@@ -9,12 +9,14 @@
   </div>
 </template>
 
-<script>
-export default {
+<script lang="ts">
+import { defineComponent, PropType } from "vue";
+
+export default defineComponent({
   name: "TimerScreen",
   props: {
     preview: {
-      type: Boolean,
+      type: Boolean as PropType<boolean>,
       default: false,
     },
   },
@@ -22,11 +24,11 @@ export default {
     module_id: "timer",
     currentTimeMs: 0,
     isAlerting: false,
-    animationFrameId: null,
-    audioContext: null,
+    animationFrameId: null as number | null,
+    audioContext: null as AudioContext | null,
   }),
   computed: {
-    config() {
+    config(): any {
       return this.$appdata.get(`modules.${this.module_id}.config`) || {
         fontColor: "#ffffff",
         bgColor: "#000000",
@@ -34,7 +36,7 @@ export default {
         audioAlert: true,
       };
     },
-    timerData() {
+    timerData(): any {
       return this.$appdata.get(`modules.${this.module_id}.data`) || {
         isStopwatch: false,
         isRunning: false,
@@ -44,7 +46,7 @@ export default {
         isAlerting: false,
       };
     },
-    formattedTime() {
+    formattedTime(): string {
       const totalSeconds = Math.floor(this.currentTimeMs / 1000);
       const h = Math.floor(totalSeconds / 3600);
       const m = Math.floor((totalSeconds % 3600) / 60);
@@ -59,7 +61,7 @@ export default {
       }
       return `${mStr}:${sStr}`;
     },
-    textStyle() {
+    textStyle(): any {
       return {
         color: this.preview ? "var(--sidebar-text)" : this.config.fontColor,
         fontSize: this.preview ? "clamp(4rem, 8vw, 8rem)" : "25vmin",
@@ -67,7 +69,7 @@ export default {
         textShadow: this.preview ? "none" : "0 10px 40px rgba(0,0,0,0.5)",
       };
     },
-    backgroundStyle() {
+    backgroundStyle(): any {
       if (this.preview) return { background: "transparent" };
       return {
         background: this.config.bgColor,
@@ -75,7 +77,7 @@ export default {
     },
   },
   watch: {
-    "timerData.isAlerting"(newVal, oldVal) {
+    "timerData.isAlerting"(newVal: boolean, oldVal: boolean) {
       if (newVal && !oldVal && !this.preview) { // only trigger sound on projector/main instance if possible, or maybe both is fine but audio alert is better handled if preview plays it too? Actually let's let projector play it.
         this.triggerAlert();
       }
@@ -133,7 +135,7 @@ export default {
       
       try {
         if (!this.audioContext) {
-          this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+          this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
         }
         
         const oscillator = this.audioContext.createOscillator();
@@ -156,7 +158,7 @@ export default {
       }
     },
   },
-};
+});
 </script>
 
 <style scoped>

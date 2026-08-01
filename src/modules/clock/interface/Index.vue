@@ -43,7 +43,7 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import Screen from "../components/Screen.vue";
+import Screen from "./components/Screen.vue";
 import LScreenBtn from "@/components/buttons/Screen.vue";
 import ConfigModal from "./components/ConfigModal.vue";
 import ModuleHeader from "@/components/ModuleHeader.vue";
