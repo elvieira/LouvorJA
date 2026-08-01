@@ -1,0 +1,21 @@
+{
+  "title": "Ajuda e sobre",
+  "tab_about": "Sobre",
+  "tab_developers": "Desenvolvedores",
+  "version": "Versão {version} (Beta)",
+  "app_desc": "Aplicativo desktop para gerenciamento e apresentação de músicas, hinos, letras e recursos multimídia para igrejas. Feito com amor e tecnologia para tornar a adoração ainda mais fluida.",
+  "manual_title": "Manual de Uso",
+  "manual_desc": "Aprenda a utilizar todos os recursos",
+  "manual_btn": "Acessar",
+  "support_title": "Suporte e Dúvidas",
+  "support_desc": "Fale diretamente com os desenvolvedores",
+  "support_btn": "Contato",
+  "updates_title": "Atualizações",
+  "updates_desc": "Verificar por novas versões disponíveis",
+  "updates_btn": "Verificar",
+  "diagnostics_title": "Diagnóstico",
+  "diagnostics_desc": "Visualizar logs e informações do sistema",
+  "diagnostics_btn": "Visualizar",
+  "devs_title": "Equipe e Contribuidores",
+  "devs_desc": "As informações sobre os desenvolvedores e contribuidores do projeto estarão disponíveis aqui em breve."
+}
