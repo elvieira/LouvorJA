@@ -114,7 +114,9 @@
 
               <!-- Audio-only visual placeholder -->
               <div v-if="!isVideo && filePath" class="d-flex flex-column align-center justify-center text-white" style="gap: 16px;">
-                <v-icon size="80" color="white" style="opacity: 0.6;">mdi-music-circle</v-icon>
+                <v-icon size="80" color="white" style="opacity: 0.6;">
+                  mdi-music-circle
+                </v-icon>
                 <div class="text-h6 font-weight-medium text-center px-6" style="opacity: 0.9;">
                   {{ mediaTitle }}
                 </div>
@@ -135,7 +137,14 @@
                     @mouseleave="fullscreenMouseLeave"
                   >
                     <div class="external-media-controls-bar fullscreen-bar w-100 d-flex align-center px-6 py-2">
-                      <v-btn icon variant="text" color="white" size="large" class="mx-1 play-btn" @click="togglePlay">
+                      <v-btn
+                        icon
+                        variant="text"
+                        color="white"
+                        size="large"
+                        class="mx-1 play-btn"
+                        @click="togglePlay"
+                      >
                         <v-icon>{{ isPaused ? 'mdi-play-circle' : 'mdi-pause-circle' }}</v-icon>
                       </v-btn>
                       <span class="text-caption mr-3 font-weight-medium text-white" style="opacity: 0.8;">{{ formatTime(currentTime) }}</span>
@@ -150,17 +159,60 @@
                         @click="seekFromProgress"
                       />
                       <span class="text-caption ml-3 font-weight-medium text-white" style="opacity: 0.8;">{{ formatTime(duration) }}</span>
-                      <v-menu location="top center" :close-on-content-click="false" open-on-hover :open-delay="50" :attach="true">
+                      <v-menu
+                        location="top center"
+                        :close-on-content-click="false"
+                        open-on-hover
+                        :open-delay="50"
+                        :attach="true"
+                      >
                         <template #activator="{ props }">
-                          <v-btn :icon="volumeIcon" variant="text" color="white" size="small" v-bind="props" class="mx-1" @click="toggleMute" />
+                          <v-btn
+                            :icon="volumeIcon"
+                            variant="text"
+                            color="white"
+                            size="small"
+                            v-bind="props"
+                            class="mx-1"
+                            @click="toggleMute"
+                          />
                         </template>
-                        <v-card class="py-2 px-4 rounded-lg d-flex align-center modern-glass-menu elevation-0" theme="dark" min-width="130" height="40" style="overflow: hidden;">
-                          <v-slider v-model="volume" color="white" track-color="grey" hide-details thumb-size="12" step="1" min="0" max="100" class="ma-0 pa-0 w-100" @update:model-value="onVolumeChange" />
+                        <v-card
+                          class="py-2 px-4 rounded-lg d-flex align-center modern-glass-menu elevation-0"
+                          theme="dark"
+                          min-width="130"
+                          height="40"
+                          style="overflow: hidden;"
+                        >
+                          <v-slider
+                            v-model="volume"
+                            color="white"
+                            track-color="grey"
+                            hide-details
+                            thumb-size="12"
+                            step="1"
+                            min="0"
+                            max="100"
+                            class="ma-0 pa-0 w-100"
+                            @update:model-value="onVolumeChange"
+                          />
                         </v-card>
                       </v-menu>
-                      <v-btn variant="text" size="small" icon color="white" class="mx-1" @click="isFullscreen = false">
+                      <v-btn
+                        variant="text"
+                        size="small"
+                        icon
+                        color="white"
+                        class="mx-1"
+                        @click="isFullscreen = false"
+                      >
                         <v-icon>mdi-fullscreen-exit</v-icon>
-                        <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">
+                        <v-tooltip
+                          activator="parent"
+                          location="top"
+                          open-delay="300"
+                          content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+                        >
                           Sair da Tela Cheia
                         </v-tooltip>
                       </v-btn>
@@ -181,7 +233,14 @@
                 <span class="text-caption text-truncate text-grey" style="line-height: 1.2;">{{ mediaSubtitle || (isVideo ? 'Vídeo' : 'Áudio') }}</span>
               </div>
               <div class="d-flex align-center mr-6">
-                <v-btn icon variant="text" color="white" size="large" class="mx-1 play-btn" @click="togglePlay">
+                <v-btn
+                  icon
+                  variant="text"
+                  color="white"
+                  size="large"
+                  class="mx-1 play-btn"
+                  @click="togglePlay"
+                >
                   <v-icon>{{ isPaused ? 'mdi-play-circle' : 'mdi-pause-circle' }}</v-icon>
                 </v-btn>
               </div>
@@ -200,17 +259,60 @@
                 <span class="text-caption ml-3 font-weight-medium text-white" style="opacity: 0.8;">{{ formatTime(duration) }}</span>
               </div>
               <div class="d-flex align-center">
-                <v-menu location="top center" :close-on-content-click="false" open-on-hover :open-delay="50">
+                <v-menu
+                  location="top center"
+                  :close-on-content-click="false"
+                  open-on-hover
+                  :open-delay="50"
+                >
                   <template #activator="{ props }">
-                    <v-btn :icon="volumeIcon" variant="text" color="white" size="small" v-bind="props" class="mx-1" @click="toggleMute" />
+                    <v-btn
+                      :icon="volumeIcon"
+                      variant="text"
+                      color="white"
+                      size="small"
+                      v-bind="props"
+                      class="mx-1"
+                      @click="toggleMute"
+                    />
                   </template>
-                  <v-card class="py-2 px-4 rounded-lg d-flex align-center modern-glass-menu elevation-0" theme="dark" min-width="130" height="40" style="overflow: hidden;">
-                    <v-slider v-model="volume" color="white" track-color="grey" hide-details thumb-size="12" step="1" min="0" max="100" class="ma-0 pa-0 w-100" @update:model-value="onVolumeChange" />
+                  <v-card
+                    class="py-2 px-4 rounded-lg d-flex align-center modern-glass-menu elevation-0"
+                    theme="dark"
+                    min-width="130"
+                    height="40"
+                    style="overflow: hidden;"
+                  >
+                    <v-slider
+                      v-model="volume"
+                      color="white"
+                      track-color="grey"
+                      hide-details
+                      thumb-size="12"
+                      step="1"
+                      min="0"
+                      max="100"
+                      class="ma-0 pa-0 w-100"
+                      @update:model-value="onVolumeChange"
+                    />
                   </v-card>
                 </v-menu>
-                <v-btn v-if="isVideo" variant="text" size="small" icon color="white" class="mx-1" @click="isFullscreen = true">
+                <v-btn
+                  v-if="isVideo"
+                  variant="text"
+                  size="small"
+                  icon
+                  color="white"
+                  class="mx-1"
+                  @click="isFullscreen = true"
+                >
                   <v-icon>mdi-fullscreen</v-icon>
-                  <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">
+                  <v-tooltip
+                    activator="parent"
+                    location="top"
+                    open-delay="300"
+                    content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+                  >
                     Tela Cheia
                   </v-tooltip>
                 </v-btn>
@@ -272,7 +374,7 @@ export default {
       if (!this.rawFilePath) return "";
       if (window.electronAPI) {
         // Usa o dummy host 'app' para evitar que o Chromium altere o case do path no macOS/Linux
-        const prefix = this.rawFilePath.startsWith('/') ? 'local://app' : 'local://app/';
+        const prefix = this.rawFilePath.startsWith("/") ? "local://app" : "local://app/";
         return `${prefix}${this.rawFilePath}`;
       }
       return this.rawFilePath;

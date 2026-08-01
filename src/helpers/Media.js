@@ -19,7 +19,7 @@ export default {
       const confirmed = await new Promise((resolve) => {
         $alert.yesno({
           text: "Uma mídia está em reprodução. Deseja encerrá-la e reproduzir esta música?",
-          translate: false
+          translate: false,
         }, (res) => resolve(res === "yes"));
       });
       if (!confirmed) return;

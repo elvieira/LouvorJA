@@ -9,9 +9,21 @@
     </div>
 
     <div class="d-flex align-center mr-6">
-      <v-btn icon variant="text" :color="textColor" size="large" class="mx-1 play-btn" @click="togglePlay">
+      <v-btn
+        icon
+        variant="text"
+        :color="textColor"
+        size="large"
+        class="mx-1 play-btn"
+        @click="togglePlay"
+      >
         <v-icon>{{ isPaused ? 'mdi-play-circle' : 'mdi-pause-circle' }}</v-icon>
-        <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">
+        <v-tooltip
+          activator="parent"
+          location="top"
+          open-delay="300"
+          content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+        >
           {{ isPaused ? 'Reproduzir' : 'Pausar' }}
         </v-tooltip>
       </v-btn>
@@ -33,9 +45,22 @@
     </div>
 
     <div v-if="duration > 0" class="d-flex align-center">
-      <v-menu location="top center" :close-on-content-click="false" open-on-hover :open-delay="50">
+      <v-menu
+        location="top center"
+        :close-on-content-click="false"
+        open-on-hover
+        :open-delay="50"
+      >
         <template #activator="{ props }">
-          <v-btn :icon="volumeIcon" variant="text" :color="textColor" size="small" v-bind="props" class="mx-1" @click="toggleMute" />
+          <v-btn
+            :icon="volumeIcon"
+            variant="text"
+            :color="textColor"
+            size="small"
+            v-bind="props"
+            class="mx-1"
+            @click="toggleMute"
+          />
         </template>
         <v-card 
           class="py-2 px-4 rounded-lg d-flex align-center elevation-3" 
@@ -72,7 +97,12 @@
         @click="maximize()"
       >
         <v-icon>mdi-arrow-expand-all</v-icon>
-        <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">
+        <v-tooltip
+          activator="parent"
+          location="top"
+          open-delay="300"
+          content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+        >
           Maximizar
         </v-tooltip>
       </v-btn>
@@ -85,7 +115,12 @@
         @click="closeMedia()"
       >
         <v-icon>mdi-close</v-icon>
-        <v-tooltip activator="parent" location="top" open-delay="300" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">
+        <v-tooltip
+          activator="parent"
+          location="top"
+          open-delay="300"
+          content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+        >
           Fechar
         </v-tooltip>
       </v-btn>
@@ -186,21 +221,21 @@ export default {
     togglePlay() {
       this.$appdata.set("modules.external_media.config.request_action", {
         action: "toggle_play",
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
     },
     seekFromProgress() {
       this.$appdata.set("modules.external_media.config.request_action", {
         action: "seek",
         value: this.progress,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
     },
     onVolumeChange() {
       this.$appdata.set("modules.external_media.config.request_action", {
         action: "set_volume",
         value: this.volume,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
       this.$appdata.set("modules.external_media.config.volume", this.volume);
     },
@@ -220,7 +255,7 @@ export default {
     closeMedia() {
       this.$appdata.set("modules.external_media.config.request_action", {
         action: "close",
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
     },
     formatTime(seconds) {

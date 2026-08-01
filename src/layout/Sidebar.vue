@@ -253,8 +253,8 @@ export default {
       const entries = Object.entries(allModules)
         .filter(([key, module]) => !groupedModuleIds.has(key) && module.showInMainMenu)
         .sort(([k1, v1], [k2, v2]) => {
-          if (k1 === 'dev' && k2 !== 'dev') return 1;
-          if (k2 === 'dev' && k1 !== 'dev') return -1;
+          if (k1 === "dev" && k2 !== "dev") return 1;
+          if (k2 === "dev" && k1 !== "dev") return -1;
           
           const t1 = v1?.title ? this.$t(v1.title).toLowerCase() : "";
           const t2 = v2?.title ? this.$t(v2.title).toLowerCase() : "";

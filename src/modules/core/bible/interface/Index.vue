@@ -459,7 +459,7 @@ export default {
             this.applyVerseSearch();
           }
         }
-      }
+      },
     },
     async show() {
       if (this.show) {

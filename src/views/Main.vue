@@ -190,7 +190,7 @@ export default {
       const raw = this.$appdata.get("modules.external_media.filePath");
       if (!raw) return "";
       if (window.electronAPI) {
-        const prefix = raw.startsWith('/') ? 'local://app' : 'local://app/';
+        const prefix = raw.startsWith("/") ? "local://app" : "local://app/";
         return `${prefix}${raw}`;
       }
       return raw;

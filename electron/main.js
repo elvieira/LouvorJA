@@ -1,58 +1,58 @@
-const { app, BrowserWindow, Menu, ipcMain, protocol, net, dialog, shell } = require('electron');
-const path = require('path');
-const fs = require('fs');
-const fsExtra = require('fs-extra');
-const crypto = require('crypto');
-const { autoUpdater } = require('electron-updater');
-const DbExtractor = require('./DbExtractor');
-const ftp = require('basic-ftp');
+const { app, BrowserWindow, Menu, ipcMain, protocol, net, dialog, shell } = require("electron");
+const path = require("path");
+const fs = require("fs");
+const fsExtra = require("fs-extra");
+const crypto = require("crypto");
+const { autoUpdater } = require("electron-updater");
+const DbExtractor = require("./DbExtractor");
+const ftp = require("basic-ftp");
 
 // Chave estática para ofuscação (não é segurança alta, apenas ofuscação)
-const ENCRYPTION_KEY = Buffer.from('v389s8dkj238910s8a7d3h2j1k9s8d7f', 'utf8');
+const ENCRYPTION_KEY = Buffer.from("v389s8dkj238910s8a7d3h2j1k9s8d7f", "utf8");
 const IV_LENGTH = 16;
 
 function encryptData(text) {
   try {
     const iv = crypto.randomBytes(IV_LENGTH);
-    const cipher = crypto.createCipheriv('aes-256-cbc', ENCRYPTION_KEY, iv);
-    let encrypted = cipher.update(text, 'utf8', 'hex');
-    encrypted += cipher.final('hex');
-    return iv.toString('hex') + ':' + encrypted;
+    const cipher = crypto.createCipheriv("aes-256-cbc", ENCRYPTION_KEY, iv);
+    let encrypted = cipher.update(text, "utf8", "hex");
+    encrypted += cipher.final("hex");
+    return `${iv.toString("hex")  }:${  encrypted}`;
   } catch (e) {
-    console.error('Erro ao ofuscar dados', e);
+    console.error("Erro ao ofuscar dados", e);
     return null;
   }
 }
 
 function decryptData(text) {
   try {
-    const textParts = text.split(':');
+    const textParts = text.split(":");
     if (textParts.length !== 2) return null;
-    const iv = Buffer.from(textParts[0], 'hex');
-    const encryptedText = Buffer.from(textParts[1], 'hex');
-    const decipher = crypto.createDecipheriv('aes-256-cbc', ENCRYPTION_KEY, iv);
-    let decrypted = decipher.update(encryptedText, 'hex', 'utf8');
-    decrypted += decipher.final('utf8');
+    const iv = Buffer.from(textParts[0], "hex");
+    const encryptedText = Buffer.from(textParts[1], "hex");
+    const decipher = crypto.createDecipheriv("aes-256-cbc", ENCRYPTION_KEY, iv);
+    let decrypted = decipher.update(encryptedText, "hex", "utf8");
+    decrypted += decipher.final("utf8");
     return decrypted;
   } catch (e) {
-    console.error('Erro ao desofuscar dados', e);
+    console.error("Erro ao desofuscar dados", e);
     return null;
   }
 }
 
-app.setName('Louvor JA');
+app.setName("Louvor JA");
 
-const userDataPath = app.getPath('userData');
-const sysDbPath = path.join(userDataPath, '.sysdata');
-const oldDbPath = path.join(userDataPath, 'database');
-const mediaPath = path.join(userDataPath, 'Media');
-const coversPath = path.join(mediaPath, 'covers');
-const musicPath = path.join(mediaPath, 'music');
-const slidesPath = path.join(mediaPath, 'images');
+const userDataPath = app.getPath("userData");
+const sysDbPath = path.join(userDataPath, ".sysdata");
+const oldDbPath = path.join(userDataPath, "database");
+const mediaPath = path.join(userDataPath, "Media");
+const coversPath = path.join(mediaPath, "covers");
+const musicPath = path.join(mediaPath, "music");
+const slidesPath = path.join(mediaPath, "images");
 
 if (fs.existsSync(oldDbPath)) {
   try {
-    const fsExtra = require('fs-extra');
+    const fsExtra = require("fs-extra");
     fsExtra.removeSync(oldDbPath);
   } catch (e) { }
 }
@@ -61,30 +61,30 @@ if (fs.existsSync(oldDbPath)) {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 });
 
-ipcMain.handle('open-file-dialog', async (event, options) => {
+ipcMain.handle("open-file-dialog", async (event, options) => {
   const win = BrowserWindow.fromWebContents(event.sender);
   const result = await dialog.showOpenDialog(win, {
-    title: options?.title || 'Selecionar Arquivo',
+    title: options?.title || "Selecionar Arquivo",
     filters: options?.filters || [
-      { name: 'Vídeos', extensions: ['mp4', 'mkv', 'avi', 'mov', 'wmv', 'webm'] },
+      { name: "Vídeos", extensions: ["mp4", "mkv", "avi", "mov", "wmv", "webm"] },
     ],
-    properties: ['openFile'],
+    properties: ["openFile"],
   });
   if (result.canceled) return null;
   return result.filePaths[0];
 });
 
-ipcMain.handle('open-external', async (event, url) => {
+ipcMain.handle("open-external", async (event, url) => {
   if (url) await shell.openExternal(url);
 });
 
-ipcMain.handle('open-path', async (event, filePath) => {
+ipcMain.handle("open-path", async (event, filePath) => {
   if (filePath) await shell.openPath(filePath);
 });
 
-ipcMain.handle('clear-all-data', async () => {
+ipcMain.handle("clear-all-data", async () => {
   try {
-    const fsExtra = require('fs-extra');
+    const fsExtra = require("fs-extra");
     if (fsExtra.existsSync(sysDbPath)) fsExtra.emptyDirSync(sysDbPath);
     if (fsExtra.existsSync(mediaPath)) fsExtra.emptyDirSync(mediaPath);
     [sysDbPath, mediaPath, coversPath, musicPath, slidesPath].forEach(dir => {
@@ -92,28 +92,28 @@ ipcMain.handle('clear-all-data', async () => {
     });
     return true;
   } catch (error) {
-    console.error('Erro ao limpar dados:', error);
+    console.error("Erro ao limpar dados:", error);
     return false;
   }
 });
 
-ipcMain.handle('clear-sys-data', async () => {
+ipcMain.handle("clear-sys-data", async () => {
   try {
-    const fsExtra = require('fs-extra');
+    const fsExtra = require("fs-extra");
     if (fsExtra.existsSync(sysDbPath)) fsExtra.emptyDirSync(sysDbPath);
     if (!fs.existsSync(sysDbPath)) fs.mkdirSync(sysDbPath, { recursive: true });
     return true;
   } catch (error) {
-    console.error('Erro ao limpar sysdata:', error);
+    console.error("Erro ao limpar sysdata:", error);
     return false;
   }
 });
 
-ipcMain.handle('get-local-db', async (event, filename) => {
+ipcMain.handle("get-local-db", async (event, filename) => {
   try {
     const filePath = path.join(sysDbPath, `${filename}.bin`);
     if (fs.existsSync(filePath)) {
-      const encryptedContent = fs.readFileSync(filePath, 'utf8');
+      const encryptedContent = fs.readFileSync(filePath, "utf8");
       const decryptedString = decryptData(encryptedContent);
       if (decryptedString) {
         return JSON.parse(decryptedString);
@@ -123,14 +123,14 @@ ipcMain.handle('get-local-db', async (event, filename) => {
     // Fallback: busca versão não criptografada/sem extensão (ex: do DbExtractor)
     const plainFilePath = path.join(sysDbPath, filename);
     if (fs.existsSync(plainFilePath)) {
-      const content = fs.readFileSync(plainFilePath, 'utf8');
+      const content = fs.readFileSync(plainFilePath, "utf8");
       const data = JSON.parse(content);
       
       // Converte para o novo formato criptografado em background
       try {
         const encryptedContent = encryptData(content);
         if (encryptedContent) {
-          fs.writeFileSync(filePath, encryptedContent, 'utf8');
+          fs.writeFileSync(filePath, encryptedContent, "utf8");
           fs.unlinkSync(plainFilePath);
         }
       } catch (e) {
@@ -146,13 +146,13 @@ ipcMain.handle('get-local-db', async (event, filename) => {
   }
 });
 
-ipcMain.handle('save-local-db', async (event, filename, data) => {
+ipcMain.handle("save-local-db", async (event, filename, data) => {
   try {
     const filePath = path.join(sysDbPath, `${filename}.bin`);
     const jsonString = JSON.stringify(data);
     const encryptedContent = encryptData(jsonString);
     if (encryptedContent) {
-      fs.writeFileSync(filePath, encryptedContent, 'utf8');
+      fs.writeFileSync(filePath, encryptedContent, "utf8");
       return true;
     }
     return false;
@@ -161,9 +161,9 @@ ipcMain.handle('save-local-db', async (event, filename, data) => {
   }
 });
 
-ipcMain.handle('extract-local-db', async (event) => {
+ipcMain.handle("extract-local-db", async (event) => {
   try {
-    const finalDbPath = path.join(app.getPath('userData'), 'database.db');
+    const finalDbPath = path.join(app.getPath("userData"), "database.db");
     
     if (!fs.existsSync(finalDbPath)) {
       throw new Error(`Arquivo não encontrado em: ${finalDbPath}`);
@@ -171,21 +171,21 @@ ipcMain.handle('extract-local-db', async (event) => {
     
     const extractor = new DbExtractor(finalDbPath);
     await extractor.extract((data) => {
-      event.sender.send('extract-progress', data);
+      event.sender.send("extract-progress", data);
     });
     
     // Excluir após extração para economizar espaço
     try {
       fs.unlinkSync(finalDbPath);
-      const flagPath = path.join(app.getPath('userData'), 'db_download_complete.flag');
+      const flagPath = path.join(app.getPath("userData"), "db_download_complete.flag");
       if (fs.existsSync(flagPath)) fs.unlinkSync(flagPath);
     } catch(e) {
-      console.error('Erro ao excluir database.db após extração:', e);
+      console.error("Erro ao excluir database.db após extração:", e);
     }
     
     return true;
   } catch (error) {
-    console.error('Erro na extração do banco:', error);
+    console.error("Erro na extração do banco:", error);
     throw error;
   }
 });
@@ -195,32 +195,32 @@ let globalFtpParams = null;
 async function getFtpParams() {
   if (globalFtpParams) return globalFtpParams;
 
-  const response = await net.fetch('https://api.louvorja.com.br/params?type=env');
-  if (!response.ok) throw new Error('Falha ao buscar parâmetros');
+  const response = await net.fetch("https://api.louvorja.com.br/params?type=env");
+  if (!response.ok) throw new Error("Falha ao buscar parâmetros");
   const text = await response.text();
   
   const params = {};
-  text.split('\n').forEach(line => {
-    const idx = line.indexOf('=');
+  text.split("\n").forEach(line => {
+    const idx = line.indexOf("=");
     if (idx > 0) {
       params[line.slice(0, idx).trim()] = line.slice(idx + 1).trim();
     }
   });
   
-  const connFtp = params['conn_ftp'];
-  if (!connFtp) throw new Error('conn_ftp não encontrado');
+  const connFtp = params["conn_ftp"];
+  if (!connFtp) throw new Error("conn_ftp não encontrado");
   
-  const payload = Buffer.from('pc_name=Electron&lang=PT').toString('base64');
-  const ftpUrl = connFtp + (connFtp.includes('?') ? '&' : '?') + 'data=' + payload + '&lang=PT';
+  const payload = Buffer.from("pc_name=Electron&lang=PT").toString("base64");
+  const ftpUrl = `${connFtp + (connFtp.includes("?") ? "&" : "?")  }data=${  payload  }&lang=PT`;
   
   const ftpResponse = await net.fetch(ftpUrl);
-  if (!ftpResponse.ok) throw new Error('Falha ao autorizar FTP');
+  if (!ftpResponse.ok) throw new Error("Falha ao autorizar FTP");
   const encodedFtpParams = await ftpResponse.text();
   
-  const decodedFtpText = Buffer.from(encodedFtpParams, 'base64').toString('utf8');
+  const decodedFtpText = Buffer.from(encodedFtpParams, "base64").toString("utf8");
   const ftpParams = {};
-  decodedFtpText.split('\n').forEach(line => {
-    const idx = line.indexOf('=');
+  decodedFtpText.split("\n").forEach(line => {
+    const idx = line.indexOf("=");
     if (idx > 0) {
       ftpParams[line.slice(0, idx).trim()] = line.slice(idx + 1).trim();
     }
@@ -230,25 +230,25 @@ async function getFtpParams() {
   return ftpParams;
 }
 
-ipcMain.handle('download-database', async (event) => {
-  const finalDbPath = path.join(app.getPath('userData'), 'database.db');
-  const flagPath = path.join(app.getPath('userData'), 'db_download_complete.flag');
+ipcMain.handle("download-database", async (event) => {
+  const finalDbPath = path.join(app.getPath("userData"), "database.db");
+  const flagPath = path.join(app.getPath("userData"), "db_download_complete.flag");
   
   if (fs.existsSync(flagPath) && fs.existsSync(finalDbPath)) {
-    console.log('Banco de dados já foi baixado completamente. Pulando FTP.');
+    console.log("Banco de dados já foi baixado completamente. Pulando FTP.");
     return true;
   }
 
   const ftpParams = await getFtpParams();
-  const langPrefix = (ftpParams['lang'] || 'pt').toLowerCase();
-  const remotePath = (ftpParams['root'] || '/') + (ftpParams['root']?.endsWith('/') ? '' : '/') + `config/${langPrefix}_database.db`;
-  const port = parseInt(ftpParams['port'] || '21');
+  const langPrefix = (ftpParams["lang"] || "pt").toLowerCase();
+  const remotePath = `${(ftpParams["root"] || "/") + (ftpParams["root"]?.endsWith("/") ? "" : "/")  }config/${langPrefix}_database.db`;
+  const port = parseInt(ftpParams["port"] || "21");
 
   // Estratégias de conexão: tenta FTP normal primeiro, depois FTPS como fallback
   const strategies = [
-    { name: 'FTP', secure: false },
-    { name: 'FTP (retry)', secure: false },
-    { name: 'FTPS (TLS)', secure: true },
+    { name: "FTP", secure: false },
+    { name: "FTP (retry)", secure: false },
+    { name: "FTPS (TLS)", secure: true },
   ];
 
   let lastError = null;
@@ -262,10 +262,10 @@ ipcMain.handle('download-database', async (event) => {
       console.log(`[download-database] Tentativa ${i + 1}/${strategies.length} via ${strategy.name}...`);
 
       const accessOpts = {
-        host: ftpParams['host'],
-        user: ftpParams['username'],
-        password: ftpParams['password'],
-        port: port,
+        host: ftpParams["host"],
+        user: ftpParams["username"],
+        password: ftpParams["password"],
+        port,
         secure: strategy.secure,
       };
 
@@ -288,15 +288,15 @@ ipcMain.handle('download-database', async (event) => {
       try {
         size = await client.size(remotePath);
       } catch (e) {
-        console.warn('Não foi possível obter o tamanho do arquivo via FTP:', e.message);
+        console.warn("Não foi possível obter o tamanho do arquivo via FTP:", e.message);
       }
       
       // Se já existe localmente com tamanho correto, marca como completo
       if (size > 0 && fs.existsSync(finalDbPath)) {
         const localStat = fs.statSync(finalDbPath);
         if (localStat.size === size) {
-          console.log('Banco de dados local já existe e está completo. Pulando download e definindo flag.');
-          fs.writeFileSync(flagPath, '1');
+          console.log("Banco de dados local já existe e está completo. Pulando download e definindo flag.");
+          fs.writeFileSync(flagPath, "1");
           client.close();
           return true;
         }
@@ -306,12 +306,12 @@ ipcMain.handle('download-database', async (event) => {
       client.trackProgress(info => {
         if (size > 0) {
           const percent = Math.floor((info.bytesOverall / size) * 100);
-          event.sender.send('download-db-progress', { progress: percent });
+          event.sender.send("download-db-progress", { progress: percent });
         }
       });
 
       // Baixar para arquivo temporário para evitar corrupção em caso de falha
-      const tempPath = finalDbPath + '.downloading';
+      const tempPath = `${finalDbPath  }.downloading`;
       await client.downloadTo(tempPath, remotePath);
       client.close();
 
@@ -320,7 +320,7 @@ ipcMain.handle('download-database', async (event) => {
         fs.unlinkSync(finalDbPath);
       }
       fs.renameSync(tempPath, finalDbPath);
-      fs.writeFileSync(flagPath, '1');
+      fs.writeFileSync(flagPath, "1");
       
       console.log(`[download-database] Download concluído com sucesso via ${strategy.name}`);
       return true;
@@ -331,7 +331,7 @@ ipcMain.handle('download-database', async (event) => {
       try { client.close(); } catch (e) { /* ignore */ }
 
       // Limpar arquivo temporário corrompido
-      const tempPath = finalDbPath + '.downloading';
+      const tempPath = `${finalDbPath  }.downloading`;
       if (fs.existsSync(tempPath)) {
         try { fs.unlinkSync(tempPath); } catch (e) { /* ignore */ }
       }
@@ -346,27 +346,27 @@ ipcMain.handle('download-database', async (event) => {
   }
 
   // Todas as estratégias falharam
-  console.error('Erro no download do banco: Todas as estratégias falharam.', lastError);
+  console.error("Erro no download do banco: Todas as estratégias falharam.", lastError);
   throw lastError;
 });
 
-ipcMain.handle('check-old-installation', async (event) => {
-  if (process.platform !== 'win32') return false;
-  const oldPath = 'C:\\Program Files (x86)\\Louvor JA\\config\\database.db';
+ipcMain.handle("check-old-installation", async (event) => {
+  if (process.platform !== "win32") return false;
+  const oldPath = "C:\\Program Files (x86)\\Louvor JA\\config\\database.db";
   return fs.existsSync(oldPath);
 });
 
-ipcMain.handle('import-old-installation', async (event) => {
+ipcMain.handle("import-old-installation", async (event) => {
   try {
-    const oldPath = 'C:\\Program Files (x86)\\Louvor JA\\config\\database.db';
-    const finalDbPath = path.join(app.getPath('userData'), 'database.db');
-    const flagPath = path.join(app.getPath('userData'), 'db_download_complete.flag');
+    const oldPath = "C:\\Program Files (x86)\\Louvor JA\\config\\database.db";
+    const finalDbPath = path.join(app.getPath("userData"), "database.db");
+    const flagPath = path.join(app.getPath("userData"), "db_download_complete.flag");
     
     fs.copyFileSync(oldPath, finalDbPath);
-    fs.writeFileSync(flagPath, '1');
+    fs.writeFileSync(flagPath, "1");
     return true;
   } catch (error) {
-    console.error('Erro ao importar versão antiga:', error);
+    console.error("Erro ao importar versão antiga:", error);
     return false;
   }
 });
@@ -382,7 +382,7 @@ function resetFtpFallbackTimer() {
   if (ftpFallbackTimer) clearTimeout(ftpFallbackTimer);
   // Se não houver requisições de mídia por 2 minutos, voltamos a tentar HTTP
   ftpFallbackTimer = setTimeout(() => {
-    console.log('[FTP] Timeout de inatividade HTTP atingido. Voltando a tentar HTTP...');
+    console.log("[FTP] Timeout de inatividade HTTP atingido. Voltando a tentar HTTP...");
     useFtpFallback = false;
   }, 120000);
 }
@@ -392,7 +392,7 @@ function scheduleFtpClose() {
   // Fecha a conexão FTP se ficar 30s sem uso
   ftpCloseTimer = setTimeout(() => {
     if (ftpClient) {
-      console.log('[FTP] Fechando conexão FTP por inatividade...');
+      console.log("[FTP] Fechando conexão FTP por inatividade...");
       try { ftpClient.close(); } catch (e) { /* ignore */ }
       ftpClient = null;
     }
@@ -409,17 +409,17 @@ async function getOrCreateFtpClient() {
   const client = new ftp.Client();
   client.ftp.verbose = false;
 
-  const host = ftpParams['host'];
-  const user = ftpParams['username'];
-  const port = parseInt(ftpParams['port'] || '21');
+  const host = ftpParams["host"];
+  const user = ftpParams["username"];
+  const port = parseInt(ftpParams["port"] || "21");
   
   try {
     await client.access({
-      host: host,
-      user: user,
-      password: ftpParams['password'],
-      port: port,
-      secure: false
+      host,
+      user,
+      password: ftpParams["password"],
+      port,
+      secure: false,
     });
   } catch (err) {
     throw err;
@@ -465,20 +465,20 @@ const ftpMutex = new Mutex();
 async function downloadMediaViaFtp(destFolderType, filename, filePath, retries = 2) {
   const ftpParams = await getFtpParams();
 
-  let ftpFolder = 'config/capas';
-  if (destFolderType === 'music') ftpFolder = 'config/musicas';
-  else if (destFolderType === 'slides') ftpFolder = 'config/imagens';
+  let ftpFolder = "config/capas";
+  if (destFolderType === "music") ftpFolder = "config/musicas";
+  else if (destFolderType === "slides") ftpFolder = "config/imagens";
 
   let cleanFilename = filename;
   // O servidor FTP não possui as subpastas pt/ ou es/ sob config/musicas
-  if (cleanFilename.startsWith('pt/') || cleanFilename.startsWith('es/')) {
+  if (cleanFilename.startsWith("pt/") || cleanFilename.startsWith("es/")) {
     cleanFilename = cleanFilename.substring(3);
   }
 
   // Construir o caminho remoto exatamente como o Delphi faz:
   // ftp_dir + arquivo_ftp (onde ftp_dir = root, e arquivo_ftp = config/musicas/...)
-  const root = ftpParams['root'] || '/';
-  const remotePath = root + (root.endsWith('/') ? '' : '/') + `${ftpFolder}/${cleanFilename}`;
+  const root = ftpParams["root"] || "/";
+  const remotePath = `${root + (root.endsWith("/") ? "" : "/")  }${ftpFolder}/${cleanFilename}`;
 
   await ftpMutex.lock();
   try {
@@ -512,22 +512,22 @@ async function downloadMediaViaFtp(destFolderType, filename, filePath, retries =
 function buildApiUrl(destFolderType, filename) {
   // Constrói a URL real da API a partir do tipo e nome do arquivo
   // Mapeamento: music -> /musics/, slides -> /images/, covers -> /covers/
-  let urlFolder = 'covers';
-  if (destFolderType === 'music') urlFolder = 'musics';
-  else if (destFolderType === 'slides') urlFolder = 'images';
+  let urlFolder = "covers";
+  if (destFolderType === "music") urlFolder = "musics";
+  else if (destFolderType === "slides") urlFolder = "images";
 
-  const cleanFilename = filename.replace(/\\/g, '/');
-  return `https://api.louvorja.com.br/file/${urlFolder}/${encodeURIComponent(cleanFilename).replace(/%2F/g, '/')}`;
+  const cleanFilename = filename.replace(/\\/g, "/");
+  return `https://api.louvorja.com.br/file/${urlFolder}/${encodeURIComponent(cleanFilename).replace(/%2F/g, "/")}`;
 }
 
-ipcMain.handle('download-media', async (event, url, destFolderType, filename) => {
+ipcMain.handle("download-media", async (event, url, destFolderType, filename) => {
   try {
     // Busca credenciais preventivamente ANTES de qualquer risco de tomar 429 na mídia
-    await getFtpParams().catch(e => console.warn('Não foi possível fazer pre-fetch das credenciais FTP:', e.message));
+    await getFtpParams().catch(e => console.warn("Não foi possível fazer pre-fetch das credenciais FTP:", e.message));
 
     let destFolder = coversPath;
-    if (destFolderType === 'music') destFolder = musicPath;
-    else if (destFolderType === 'slides') destFolder = slidesPath;
+    if (destFolderType === "music") destFolder = musicPath;
+    else if (destFolderType === "slides") destFolder = slidesPath;
 
     const decodedFilename = decodeURIComponent(filename);
     const filePath = path.join(destFolder, decodedFilename);
@@ -544,7 +544,7 @@ ipcMain.handle('download-media', async (event, url, destFolderType, filename) =>
         await downloadMediaViaFtp(destFolderType, decodedFilename, filePath);
         return true;
       } catch (ftpError) {
-        console.error('[FTP] Erro no fallback FTP (direto):', ftpError.message);
+        console.error("[FTP] Erro no fallback FTP (direto):", ftpError.message);
         return false;
       }
     }
@@ -554,14 +554,14 @@ ipcMain.handle('download-media', async (event, url, destFolderType, filename) =>
     const response = await net.fetch(apiUrl);
 
     if (response.status === 429) {
-      console.warn(`[HTTP] Rate limit 429 atingido. Trocando para FTP para todos os downloads...`);
+      console.warn("[HTTP] Rate limit 429 atingido. Trocando para FTP para todos os downloads...");
       useFtpFallback = true;
       resetFtpFallbackTimer();
       try {
         await downloadMediaViaFtp(destFolderType, decodedFilename, filePath);
         return true;
       } catch (ftpError) {
-        console.error('[FTP] Erro no fallback FTP após 429:', ftpError.message);
+        console.error("[FTP] Erro no fallback FTP após 429:", ftpError.message);
         return false;
       }
     }
@@ -573,30 +573,30 @@ ipcMain.handle('download-media', async (event, url, destFolderType, filename) =>
     fs.writeFileSync(filePath, buffer);
     return true;
   } catch (error) {
-    console.error('[Download] Erro baixando mídia:', error.message);
+    console.error("[Download] Erro baixando mídia:", error.message);
     return false;
   }
 });
 
-ipcMain.handle('check-media', async (event, destFolderType, filename) => {
+ipcMain.handle("check-media", async (event, destFolderType, filename) => {
   let destFolder = coversPath;
-  if (destFolderType === 'music') destFolder = musicPath;
-  else if (destFolderType === 'slides') destFolder = slidesPath;
+  if (destFolderType === "music") destFolder = musicPath;
+  else if (destFolderType === "slides") destFolder = slidesPath;
 
   const decodedFilename = decodeURIComponent(filename);
   const filePath = path.join(destFolder, decodedFilename);
   if (fs.existsSync(filePath)) {
-    const cleanFilename = decodedFilename.replace(/\\/g, '/');
-    const mappedType = destFolderType === 'slides' ? 'images' : destFolderType;
+    const cleanFilename = decodedFilename.replace(/\\/g, "/");
+    const mappedType = destFolderType === "slides" ? "images" : destFolderType;
     return `local://media/${mappedType}/${cleanFilename}`;
   }
   return false;
 });
 
-ipcMain.handle('delete-media', async (event, destFolderType, filename) => {
+ipcMain.handle("delete-media", async (event, destFolderType, filename) => {
   let destFolder = coversPath;
-  if (destFolderType === 'music') destFolder = musicPath;
-  else if (destFolderType === 'slides') destFolder = slidesPath;
+  if (destFolderType === "music") destFolder = musicPath;
+  else if (destFolderType === "slides") destFolder = slidesPath;
 
   const decodedFilename = decodeURIComponent(filename);
   const filePath = path.join(destFolder, decodedFilename);
@@ -605,30 +605,30 @@ ipcMain.handle('delete-media', async (event, destFolderType, filename) => {
       fs.unlinkSync(filePath);
       return true;
     } catch (e) {
-      console.error('Erro ao deletar mídia:', e);
+      console.error("Erro ao deletar mídia:", e);
       return false;
     }
   }
   return true;
 });
 
-ipcMain.handle('get-displays', () => {
-  const { screen } = require('electron');
+ipcMain.handle("get-displays", () => {
+  const { screen } = require("electron");
   return screen.getAllDisplays().map(d => ({
     id: d.id,
     bounds: d.bounds,
     workArea: d.workArea,
     scaleFactor: d.scaleFactor,
-    isPrimary: d.id === screen.getPrimaryDisplay().id
+    isPrimary: d.id === screen.getPrimaryDisplay().id,
   }));
 });
 
-ipcMain.handle('identify-displays', () => {
-  const { screen } = require('electron');
+ipcMain.handle("identify-displays", () => {
+  const { screen } = require("electron");
   const displays = screen.getAllDisplays();
 
   displays.forEach((display, index) => {
-    let win = new BrowserWindow({
+    const win = new BrowserWindow({
       x: display.bounds.x,
       y: display.bounds.y,
       width: display.bounds.width,
@@ -638,7 +638,7 @@ ipcMain.handle('identify-displays', () => {
       alwaysOnTop: true,
       focusable: false,
       hasShadow: false,
-      webPreferences: { nodeIntegration: false, contextIsolation: true }
+      webPreferences: { nodeIntegration: false, contextIsolation: true },
     });
 
     win.setIgnoreMouseEvents(true);
@@ -653,7 +653,7 @@ ipcMain.handle('identify-displays', () => {
       </html>
     `;
 
-    win.loadURL('data:text/html;charset=utf-8,' + encodeURIComponent(html));
+    win.loadURL(`data:text/html;charset=utf-8,${  encodeURIComponent(html)}`);
 
     setTimeout(() => {
       if (win && !win.isDestroyed()) {
@@ -672,147 +672,147 @@ function createWindow() {
     height: 900,
     minWidth: 920,
     minHeight: 760,
-    title: 'Louvor JA',
-    icon: path.join(__dirname, '../public/ico/favicon.png'),
+    title: "Louvor JA",
+    icon: path.join(__dirname, "../public/ico/favicon.png"),
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
+      preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,
       nodeIntegration: false,
     },
-    frame: false
+    frame: false,
   });
 
-  mainWindow.on('page-title-updated', (event) => {
+  mainWindow.on("page-title-updated", (event) => {
     event.preventDefault();
   });
 
-  mainWindow.on('maximize', () => {
-    mainWindow.webContents.send('window-maximized-state', true);
+  mainWindow.on("maximize", () => {
+    mainWindow.webContents.send("window-maximized-state", true);
   });
-  mainWindow.on('unmaximize', () => {
-    mainWindow.webContents.send('window-maximized-state', false);
+  mainWindow.on("unmaximize", () => {
+    mainWindow.webContents.send("window-maximized-state", false);
   });
 
   // Menu nativo personalizado
   const menuTemplate = [
     // macOS: menu com nome do app
-    ...(process.platform === 'darwin' ? [{
-      label: 'Louvor JA',
+    ...(process.platform === "darwin" ? [{
+      label: "Louvor JA",
       submenu: [
-        { role: 'about' },
-        { type: 'separator' },
-        { role: 'services' },
-        { type: 'separator' },
-        { role: 'hide' },
-        { role: 'hideOthers' },
-        { role: 'unhide' },
-        { type: 'separator' },
-        { role: 'quit' }
-      ]
+        { role: "about" },
+        { type: "separator" },
+        { role: "services" },
+        { type: "separator" },
+        { role: "hide" },
+        { role: "hideOthers" },
+        { role: "unhide" },
+        { type: "separator" },
+        { role: "quit" },
+      ],
     }, {
-      label: 'Edit',
+      label: "Edit",
       submenu: [
-        { role: 'undo' },
-        { role: 'redo' },
-        { type: 'separator' },
-        { role: 'cut' },
-        { role: 'copy' },
-        { role: 'paste' },
-        { role: 'pasteAndMatchStyle' },
-        { role: 'delete' },
-        { role: 'selectAll' }
-      ]
+        { role: "undo" },
+        { role: "redo" },
+        { type: "separator" },
+        { role: "cut" },
+        { role: "copy" },
+        { role: "paste" },
+        { role: "pasteAndMatchStyle" },
+        { role: "delete" },
+        { role: "selectAll" },
+      ],
     }] : []),
     {
-      label: 'Página Inicial',
+      label: "Página Inicial",
       submenu: [
         {
-          label: 'Ir para Página Inicial',
-          accelerator: 'CmdOrCtrl+H',
+          label: "Ir para Página Inicial",
+          accelerator: "CmdOrCtrl+H",
           click: () => {
-            mainWindow.webContents.send('navigate-module', 'home');
-          },
-        }
-      ]
-    },
-    {
-      label: 'Álbuns e Coletâneas',
-      submenu: [
-        {
-          label: 'Hinário Adventista',
-          click: () => {
-            mainWindow.webContents.send('navigate-module', 'hymnal');
-          },
-        },
-        {
-          label: 'Hinário Adventista - 1996',
-          click: () => {
-            mainWindow.webContents.send('navigate-module', 'hymnal_1996');
-          },
-        },
-        {
-          label: 'Álbuns',
-          click: () => {
-            mainWindow.webContents.send('navigate-module', 'collections');
+            mainWindow.webContents.send("navigate-module", "home");
           },
         },
       ],
     },
     {
-      label: 'Bíblia',
+      label: "Álbuns e Coletâneas",
       submenu: [
         {
-          label: 'Abrir Bíblia',
-          accelerator: 'CmdOrCtrl+B',
+          label: "Hinário Adventista",
           click: () => {
-            mainWindow.webContents.send('navigate-module', 'bible');
+            mainWindow.webContents.send("navigate-module", "hymnal");
           },
-        }
-      ]
+        },
+        {
+          label: "Hinário Adventista - 1996",
+          click: () => {
+            mainWindow.webContents.send("navigate-module", "hymnal_1996");
+          },
+        },
+        {
+          label: "Álbuns",
+          click: () => {
+            mainWindow.webContents.send("navigate-module", "collections");
+          },
+        },
+      ],
     },
     {
-      label: 'Utilitários',
+      label: "Bíblia",
       submenu: [
         {
-          label: 'Módulos utilitários',
-          enabled: false
-        }
-      ]
+          label: "Abrir Bíblia",
+          accelerator: "CmdOrCtrl+B",
+          click: () => {
+            mainWindow.webContents.send("navigate-module", "bible");
+          },
+        },
+      ],
     },
     {
-      label: 'Biblioteca Local',
+      label: "Utilitários",
       submenu: [
         {
-          label: 'Abrir Biblioteca',
-          accelerator: 'CmdOrCtrl+L',
-          click: () => {
-            mainWindow.webContents.send('navigate-module', 'sync');
-          },
-        }
-      ]
+          label: "Módulos utilitários",
+          enabled: false,
+        },
+      ],
     },
     {
-      label: 'Configurações',
+      label: "Biblioteca Local",
       submenu: [
         {
-          label: 'Abrir Configurações',
-          accelerator: 'CmdOrCtrl+,',
+          label: "Abrir Biblioteca",
+          accelerator: "CmdOrCtrl+L",
           click: () => {
-            mainWindow.webContents.send('navigate-module', 'config');
+            mainWindow.webContents.send("navigate-module", "sync");
           },
-        }
-      ]
+        },
+      ],
     },
     {
-      label: 'Ajuda',
+      label: "Configurações",
       submenu: [
         {
-          label: 'Ajuda e Sobre',
+          label: "Abrir Configurações",
+          accelerator: "CmdOrCtrl+,",
           click: () => {
-            mainWindow.webContents.send('navigate-route', 'help');
+            mainWindow.webContents.send("navigate-module", "config");
           },
-        }
-      ]
+        },
+      ],
+    },
+    {
+      label: "Ajuda",
+      submenu: [
+        {
+          label: "Ajuda e Sobre",
+          click: () => {
+            mainWindow.webContents.send("navigate-route", "help");
+          },
+        },
+      ],
     },
   ];
 
@@ -820,18 +820,18 @@ function createWindow() {
   Menu.setApplicationMenu(menu);
 
   mainWindow.webContents.setWindowOpenHandler(({ url, features }) => {
-    const isFullscreen = features.includes('fullscreen=yes');
-    const { screen } = require('electron');
+    const isFullscreen = features.includes("fullscreen=yes");
+    const { screen } = require("electron");
     const displays = screen.getAllDisplays();
 
-    let windowConfig = {
+    const windowConfig = {
       width: 800,
       height: 600,
       webPreferences: {
-        preload: path.join(__dirname, 'preload.js'),
+        preload: path.join(__dirname, "preload.js"),
         contextIsolation: true,
         nodeIntegration: false,
-      }
+      },
     };
 
     const monitorMatch = features.match(/monitor=(\d+)/);
@@ -866,22 +866,22 @@ function createWindow() {
     }
 
     return {
-      action: 'allow',
-      overrideBrowserWindowOptions: windowConfig
+      action: "allow",
+      overrideBrowserWindowOptions: windowConfig,
     };
   });
 
-  mainWindow.webContents.on('did-create-window', (childWindow) => {
+  mainWindow.webContents.on("did-create-window", (childWindow) => {
     if (!childWindow.isResizable()) {
-      childWindow.once('ready-to-show', () => {
-        if (process.platform === 'win32') {
-          const { screen } = require('electron');
+      childWindow.once("ready-to-show", () => {
+        if (process.platform === "win32") {
+          const { screen } = require("electron");
           const bounds = childWindow.getBounds();
           const display = screen.getDisplayMatching(bounds);
 
           childWindow.setFullScreen(false);
           childWindow.setBounds(display.bounds);
-          childWindow.setAlwaysOnTop(true, 'screen-saver');
+          childWindow.setAlwaysOnTop(true, "screen-saver");
         } else {
           childWindow.setFullScreen(true);
         }
@@ -891,18 +891,18 @@ function createWindow() {
 
   if (isDev) {
     // Em desenvolvimento, carrega o servidor Vite
-    mainWindow.loadURL('http://localhost:5173');
+    mainWindow.loadURL("http://localhost:5173");
     // mainWindow.webContents.openDevTools();
   } else {
     // Em produção, carrega o build estático
-    mainWindow.loadFile(path.join(__dirname, '..', 'dist', 'index.html'));
+    mainWindow.loadFile(path.join(__dirname, "..", "dist", "index.html"));
   }
 
   // Intercepta o evento de fechar para perguntar ao usuário
-  mainWindow.on('close', (e) => {
+  mainWindow.on("close", (e) => {
     if (!global.isQuitting) {
       e.preventDefault();
-      mainWindow.webContents.send('request-close-app');
+      mainWindow.webContents.send("request-close-app");
     }
   });
 }
@@ -911,21 +911,21 @@ function createWindow() {
 
 // Registra o protocolo customizado como privilegiado ANTES do app estar pronto
 protocol.registerSchemesAsPrivileged([
-  { scheme: 'local', privileges: { standard: true, bypassCSP: true, supportFetchAPI: true, secure: true, corsEnabled: true, stream: true } }
+  { scheme: "local", privileges: { standard: true, bypassCSP: true, supportFetchAPI: true, secure: true, corsEnabled: true, stream: true } },
 ]);
 
 app.whenReady().then(() => {
   // Bloqueios de Segurança para Produção (Impede DevTools e Reload)
   if (!isDev) {
-    app.on('browser-window-created', (event, window) => {
-      window.webContents.on('before-input-event', (event, input) => {
-        const isReload = (input.control && input.key.toLowerCase() === 'r') || input.key === 'F5';
-        const isDevTools = (input.control && input.shift && input.key.toLowerCase() === 'i') || input.key === 'F12';
+    app.on("browser-window-created", (event, window) => {
+      window.webContents.on("before-input-event", (event, input) => {
+        const isReload = (input.control && input.key.toLowerCase() === "r") || input.key === "F5";
+        const isDevTools = (input.control && input.shift && input.key.toLowerCase() === "i") || input.key === "F12";
         if (isReload || isDevTools) {
           event.preventDefault();
         }
       });
-      window.webContents.on('devtools-opened', () => {
+      window.webContents.on("devtools-opened", () => {
         window.webContents.closeDevTools();
       });
     });
@@ -933,7 +933,7 @@ app.whenReady().then(() => {
 
   // Protocolo customizado para carregar mídia local offline via API nativa do Chromium
   // Garante suporte perfeito a Range requests e MP4 metadata buffering
-  protocol.registerFileProtocol('local', (request, callback) => {
+  protocol.registerFileProtocol("local", (request, callback) => {
     let url;
     try {
       url = new URL(request.url);
@@ -944,38 +944,38 @@ app.whenReady().then(() => {
     let filePath = decodeURIComponent(url.pathname);
     const host = url.host;
 
-    if (host === 'app') {
+    if (host === "app") {
       // Arquivo externo absoluto (ex: local://app/Users/...)
-      if (process.platform === 'win32' && filePath.match(/^\/[a-zA-Z]:\//)) {
+      if (process.platform === "win32" && filePath.match(/^\/[a-zA-Z]:\//)) {
         filePath = filePath.slice(1);
       }
       return callback({ path: filePath });
     }
 
     // Caminho relativo da biblioteca (ex: local:///musics/... ou local://media/covers/...)
-    let fallbackPath = '';
-    if (host === 'media') {
+    let fallbackPath = "";
+    if (host === "media") {
       fallbackPath = filePath;
     } else if (host) {
-      fallbackPath = '/' + host + filePath;
+      fallbackPath = `/${  host  }${filePath}`;
     } else {
       fallbackPath = filePath;
     }
 
-    const userDataPath = app.getPath('userData');
-    const mediaPath = path.join(userDataPath, 'Media');
+    const userDataPath = app.getPath("userData");
+    const mediaPath = path.join(userDataPath, "Media");
     filePath = path.join(mediaPath, fallbackPath);
 
-    const fs = require('fs');
+    const fs = require("fs");
 
     if (!fs.existsSync(filePath)) {
       // Proxy transparente: baixa da API e salva localmente antes de servir
-      const apiUrl = `https://api.louvorja.com.br/file${fallbackPath.replace(/\\/g, '/')}`;
+      const apiUrl = `https://api.louvorja.com.br/file${fallbackPath.replace(/\\/g, "/")}`;
       net.fetch(apiUrl).then(res => {
         if (res.ok) {
           return res.arrayBuffer();
         }
-        throw new Error('API request failed');
+        throw new Error("API request failed");
       }).then(buffer => {
         fs.mkdirSync(path.dirname(filePath), { recursive: true });
         fs.writeFileSync(filePath, Buffer.from(buffer));
@@ -992,20 +992,20 @@ app.whenReady().then(() => {
 
   createWindow();
 
-  const { screen } = require('electron');
+  const { screen } = require("electron");
   const notifyDisplaysChanged = () => {
     BrowserWindow.getAllWindows().forEach(win => {
       if (!win.isDestroyed()) {
-        win.webContents.send('displays-changed');
+        win.webContents.send("displays-changed");
       }
     });
   };
 
-  screen.on('display-added', notifyDisplaysChanged);
-  screen.on('display-removed', notifyDisplaysChanged);
-  screen.on('display-metrics-changed', notifyDisplaysChanged);
+  screen.on("display-added", notifyDisplaysChanged);
+  screen.on("display-removed", notifyDisplaysChanged);
+  screen.on("display-metrics-changed", notifyDisplaysChanged);
 
-  app.on('activate', () => {
+  app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) {
       createWindow();
     }
@@ -1013,36 +1013,36 @@ app.whenReady().then(() => {
 });
 
 // Controle customizado da barra de título
-ipcMain.handle('window-control', (event, action) => {
+ipcMain.handle("window-control", (event, action) => {
   const win = BrowserWindow.fromWebContents(event.sender);
   if (!win) return;
-  if (action === 'minimize') {
+  if (action === "minimize") {
     win.minimize();
-  } else if (action === 'maximize') {
+  } else if (action === "maximize") {
     if (win.isMaximized()) {
       win.unmaximize();
     } else {
       win.maximize();
     }
-  } else if (action === 'close') {
+  } else if (action === "close") {
     // Em vez de fechar direto, pede confirmação
     if (win === BrowserWindow.getAllWindows()[0] || win.id === 1) { // mainWindow
-      win.webContents.send('request-close-app');
+      win.webContents.send("request-close-app");
     } else {
       win.close();
     }
-  } else if (action === 'is-maximized') {
+  } else if (action === "is-maximized") {
     return win.isMaximized();
   }
 });
 
 // Encerra o aplicativo inteiro à força após confirmação do usuário
-ipcMain.handle('force-quit-app', () => {
+ipcMain.handle("force-quit-app", () => {
   global.isQuitting = true;
   app.quit();
 });
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
+app.on("window-all-closed", () => {
+  if (process.platform !== "darwin") {
     app.quit();
   }
 });
@@ -1057,24 +1057,24 @@ function setupAutoUpdater() {
   const mainWin = BrowserWindow.getAllWindows()[0];
   if (!mainWin) return;
 
-  autoUpdater.on('update-available', (info) => {
-    console.log('Update available:', info.version);
-    mainWin.webContents.send('update-available', {
+  autoUpdater.on("update-available", (info) => {
+    console.log("Update available:", info.version);
+    mainWin.webContents.send("update-available", {
       version: info.version,
       releaseDate: info.releaseDate,
       releaseNotes: info.releaseNotes,
     });
   });
 
-  autoUpdater.on('update-not-available', (info) => {
-    console.log('No update available. Current version is up-to-date.');
-    mainWin.webContents.send('update-not-available', {
+  autoUpdater.on("update-not-available", (info) => {
+    console.log("No update available. Current version is up-to-date.");
+    mainWin.webContents.send("update-not-available", {
       version: info.version,
     });
   });
 
-  autoUpdater.on('download-progress', (progress) => {
-    mainWin.webContents.send('update-download-progress', {
+  autoUpdater.on("download-progress", (progress) => {
+    mainWin.webContents.send("update-download-progress", {
       percent: Math.round(progress.percent),
       bytesPerSecond: progress.bytesPerSecond,
       transferred: progress.transferred,
@@ -1082,16 +1082,16 @@ function setupAutoUpdater() {
     });
   });
 
-  autoUpdater.on('update-downloaded', (info) => {
-    console.log('Update downloaded:', info.version);
-    mainWin.webContents.send('update-downloaded', {
+  autoUpdater.on("update-downloaded", (info) => {
+    console.log("Update downloaded:", info.version);
+    mainWin.webContents.send("update-downloaded", {
       version: info.version,
     });
   });
 
-  autoUpdater.on('error', (error) => {
-    console.error('Auto-updater error:', error.message);
-    mainWin.webContents.send('update-error', {
+  autoUpdater.on("error", (error) => {
+    console.error("Auto-updater error:", error.message);
+    mainWin.webContents.send("update-error", {
       message: error.message,
     });
   });
@@ -1099,32 +1099,32 @@ function setupAutoUpdater() {
   // Verifica atualizações 5 segundos após iniciar
   setTimeout(() => {
     autoUpdater.checkForUpdates().catch((err) => {
-      console.log('Check for updates failed:', err.message);
+      console.log("Check for updates failed:", err.message);
     });
   }, 5000);
 }
 
-ipcMain.handle('check-for-updates', async () => {
+ipcMain.handle("check-for-updates", async () => {
   try {
     const result = await autoUpdater.checkForUpdates();
     return result;
   } catch (error) {
-    console.error('Check for updates error:', error.message);
+    console.error("Check for updates error:", error.message);
     return null;
   }
 });
 
-ipcMain.handle('download-update', async () => {
+ipcMain.handle("download-update", async () => {
   try {
     await autoUpdater.downloadUpdate();
     return true;
   } catch (error) {
-    console.error('Download update error:', error.message);
+    console.error("Download update error:", error.message);
     return false;
   }
 });
 
-ipcMain.handle('quit-and-install', () => {
+ipcMain.handle("quit-and-install", () => {
   global.isQuitting = true;
   autoUpdater.quitAndInstall(true, true);
 });

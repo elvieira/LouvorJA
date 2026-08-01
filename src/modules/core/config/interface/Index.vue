@@ -246,7 +246,7 @@
                         hide-details
                         inset
                         class="font-weight-medium mb-2"
-                      ></v-switch>
+                      />
 
                       <v-expand-transition>
                         <div v-show="media_use_internal_player" class="pl-4 mt-4" style="border-left: 2px solid var(--border-color);">
@@ -258,7 +258,7 @@
                             inset
                             density="compact"
                             class="mb-2"
-                          ></v-switch>
+                          />
                           
                           <v-switch
                             v-model="media_auto_project_video"
@@ -268,7 +268,7 @@
                             inset
                             density="compact"
                             class="mb-2"
-                          ></v-switch>
+                          />
                           
                           <v-switch
                             v-model="media_pause_on_minimize"
@@ -277,7 +277,7 @@
                             hide-details
                             inset
                             density="compact"
-                          ></v-switch>
+                          />
                           <v-expand-transition>
                             <div v-show="!media_sync_projection_settings" class="mt-4 pa-4 rounded-xl" style="background: rgba(0,0,0,0.15); border: 1px solid var(--border-color);">
                               <!-- MÚLTIPLAS TELAS (MÍDIA) -->
@@ -342,25 +342,25 @@
                                   density="compact"
                                   class="mb-2 font-weight-medium"
                                 />
-                                  <v-switch
-                                    v-model="media_slide_disable_main_if_extended"
-                                    label="Desativar tela principal caso haja monitor estendido"
-                                    color="primary"
-                                    inset
-                                    hide-details
-                                    density="compact"
-                                    class="mb-2 font-weight-medium"
-                                  />
-                                  <v-switch
-                                    v-model="media_slide_minimize_player"
-                                    label="Minimizar o player automaticamente"
-                                    color="primary"
-                                    inset
-                                    hide-details
-                                    density="compact"
-                                    class="font-weight-medium"
-                                  />
-                                </div>
+                                <v-switch
+                                  v-model="media_slide_disable_main_if_extended"
+                                  label="Desativar tela principal caso haja monitor estendido"
+                                  color="primary"
+                                  inset
+                                  hide-details
+                                  density="compact"
+                                  class="mb-2 font-weight-medium"
+                                />
+                                <v-switch
+                                  v-model="media_slide_minimize_player"
+                                  label="Minimizar o player automaticamente"
+                                  color="primary"
+                                  inset
+                                  hide-details
+                                  density="compact"
+                                  class="font-weight-medium"
+                                />
+                              </div>
                             </div>
                           </v-expand-transition>
                         </div>

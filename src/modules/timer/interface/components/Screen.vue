@@ -23,7 +23,7 @@ export default {
     currentTimeMs: 0,
     isAlerting: false,
     animationFrameId: null,
-    audioContext: null
+    audioContext: null,
   }),
   computed: {
     config() {
@@ -31,7 +31,7 @@ export default {
         fontColor: "#ffffff",
         bgColor: "#000000",
         visualAlert: true,
-        audioAlert: true
+        audioAlert: true,
       };
     },
     timerData() {
@@ -41,7 +41,7 @@ export default {
         baseTime: 0,
         accumulatedTime: 0,
         targetDuration: 0,
-        isAlerting: false
+        isAlerting: false,
       };
     },
     formattedTime() {
@@ -50,25 +50,25 @@ export default {
       const m = Math.floor((totalSeconds % 3600) / 60);
       const s = totalSeconds % 60;
       
-      const mStr = m.toString().padStart(2, '0');
-      const sStr = s.toString().padStart(2, '0');
+      const mStr = m.toString().padStart(2, "0");
+      const sStr = s.toString().padStart(2, "0");
       
       if (h > 0) {
-        const hStr = h.toString().padStart(2, '0');
+        const hStr = h.toString().padStart(2, "0");
         return `${hStr}:${mStr}:${sStr}`;
       }
       return `${mStr}:${sStr}`;
     },
     textStyle() {
       return {
-        color: this.preview ? 'var(--sidebar-text)' : this.config.fontColor,
+        color: this.preview ? "var(--sidebar-text)" : this.config.fontColor,
         fontSize: this.preview ? "clamp(4rem, 8vw, 8rem)" : "25vmin",
         lineHeight: 1,
         textShadow: this.preview ? "none" : "0 10px 40px rgba(0,0,0,0.5)",
       };
     },
     backgroundStyle() {
-      if (this.preview) return { background: 'transparent' };
+      if (this.preview) return { background: "transparent" };
       return {
         background: this.config.bgColor,
       };
@@ -80,7 +80,7 @@ export default {
         this.triggerAlert();
       }
       this.isAlerting = newVal;
-    }
+    },
   },
   mounted() {
     this.isAlerting = this.timerData.isAlerting;
@@ -139,7 +139,7 @@ export default {
         const oscillator = this.audioContext.createOscillator();
         const gainNode = this.audioContext.createGain();
         
-        oscillator.type = 'sine';
+        oscillator.type = "sine";
         oscillator.frequency.setValueAtTime(880, this.audioContext.currentTime); // A5
         oscillator.frequency.exponentialRampToValueAtTime(440, this.audioContext.currentTime + 0.5);
         
@@ -154,8 +154,8 @@ export default {
       } catch (e) {
         console.error("Audio alert failed", e);
       }
-    }
-  }
+    },
+  },
 };
 </script>
 

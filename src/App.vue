@@ -35,6 +35,13 @@ export default {
       isAppReady: false,
     };
   },
+  watch: {
+    isAppReady(newVal) {
+      if (newVal) {
+        this.initBackgroundTasks();
+      }
+    },
+  },
   created() {
     this.$userdata.load();
     const theme = this.$userdata.get("theme");
@@ -62,13 +69,6 @@ export default {
   },
   unmounted() {
     window.removeEventListener("keydown", this.handleGlobalKeydown);
-  },
-  watch: {
-    isAppReady(newVal) {
-      if (newVal) {
-        this.initBackgroundTasks();
-      }
-    }
   },
   methods: {
     initBackgroundTasks() {

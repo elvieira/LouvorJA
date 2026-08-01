@@ -196,7 +196,7 @@ export default {
             } else if (e.message && e.message.includes("429")) {
               throw new Error("Muitos acessos ao servidor (Rate Limit). Tente novamente mais tarde.");
             } else {
-              throw new Error("Falha ao conectar com o servidor: " + e.message);
+              throw new Error(`Falha ao conectar com o servidor: ${  e.message}`);
             }
           }
           
@@ -212,7 +212,7 @@ export default {
                   title: "Versão antiga detectada",
                   text: "Detectamos que você possui a versão antiga do Louvor JA instalada neste computador.<br><br>Gostaria de importar o banco de dados da versão antiga para a nova versão?<br><br>Isso agilizará o processo de inicialização. Fique tranquilo, isso não irá alterar, remover ou interferir no funcionamento da versão antiga instalada.",
                   translate: false,
-                  center: true
+                  center: true,
                 }, (resp) => {
                   resolve(resp === "yes");
                 });

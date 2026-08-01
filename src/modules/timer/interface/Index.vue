@@ -30,17 +30,21 @@
           </v-btn-toggle>
         </div>
         
-        <div class="search-bar ml-4 d-flex align-center" style="flex: 1; justify-content: flex-end; gap: 12px;">
-        </div>
+        <div class="search-bar ml-4 d-flex align-center" style="flex: 1; justify-content: flex-end; gap: 12px;" />
       </div>
 
       <!-- Main Content -->
       <div class="content-main flex-grow-1 w-100 pa-6 d-flex flex-column align-center justify-center" style="overflow-y: auto; background: transparent;">
-        
         <!-- PREVIEW TV -->
         <div class="preview-tv position-relative mb-8" :style="{ width: '100%', maxWidth: '900px', aspectRatio: '21/9', maxHeight: '100%', background: 'var(--card-bg, #ffffff)', borderRadius: '40px', boxShadow: '0 20px 60px rgba(0,0,0,0.05)', border: '1px solid var(--border-color, rgba(0,0,0,0.05))', overflow: 'hidden' }">
           <div class="position-absolute top-0 right-0 ma-4 d-flex align-center" style="z-index: 2; gap: 8px;">
-            <v-btn variant="tonal" color="primary" icon size="small" @click="showConfig = true">
+            <v-btn
+              variant="tonal"
+              color="primary"
+              icon
+              size="small"
+              @click="showConfig = true"
+            >
               <v-icon>mdi-palette-outline</v-icon>
             </v-btn>
             <LScreenBtn module="timer" />
@@ -54,17 +58,39 @@
           <v-expand-transition>
             <div v-if="!isRunning" class="d-flex align-center mb-6">
               <div class="d-flex flex-column align-center">
-                <input type="number" v-model="editHours" class="time-input" min="0" max="99" />
+                <input
+                  v-model="editHours"
+                  type="number"
+                  class="time-input"
+                  min="0"
+                  max="99"
+                />
                 <span class="text-caption font-weight-bold mt-2" style="color: var(--sidebar-text-secondary); text-transform: uppercase; letter-spacing: 1px;">{{ t('hours_label') }}</span>
               </div>
-              <div class="text-h3 font-weight-bold mx-3 pb-6" style="color: var(--sidebar-text-secondary);">:</div>
+              <div class="text-h3 font-weight-bold mx-3 pb-6" style="color: var(--sidebar-text-secondary);">
+                :
+              </div>
               <div class="d-flex flex-column align-center">
-                <input type="number" v-model="editMinutes" class="time-input" min="0" max="59" />
+                <input
+                  v-model="editMinutes"
+                  type="number"
+                  class="time-input"
+                  min="0"
+                  max="59"
+                />
                 <span class="text-caption font-weight-bold mt-2" style="color: var(--sidebar-text-secondary); text-transform: uppercase; letter-spacing: 1px;">{{ t('minutes_label') }}</span>
               </div>
-              <div class="text-h3 font-weight-bold mx-3 pb-6" style="color: var(--sidebar-text-secondary);">:</div>
+              <div class="text-h3 font-weight-bold mx-3 pb-6" style="color: var(--sidebar-text-secondary);">
+                :
+              </div>
               <div class="d-flex flex-column align-center">
-                <input type="number" v-model="editSeconds" class="time-input" min="0" max="59" />
+                <input
+                  v-model="editSeconds"
+                  type="number"
+                  class="time-input"
+                  min="0"
+                  max="59"
+                />
                 <span class="text-caption font-weight-bold mt-2" style="color: var(--sidebar-text-secondary); text-transform: uppercase; letter-spacing: 1px;">{{ t('seconds_label') }}</span>
               </div>
             </div>
@@ -125,7 +151,7 @@ export default {
   },
   data: () => ({
     isStopwatchStr: "false",
-    showConfig: false
+    showConfig: false,
   }),
   computed: {
     config() {
@@ -133,7 +159,7 @@ export default {
         fontColor: "#ffffff",
         bgColor: "#000000",
         visualAlert: true,
-        audioAlert: true
+        audioAlert: true,
       };
     },
     module_id() {
@@ -149,7 +175,7 @@ export default {
         baseTime: 0,
         accumulatedTime: 0,
         targetDuration: 5 * 60000, // 5 min default
-        isAlerting: false
+        isAlerting: false,
       };
     },
     isStopwatch() {
@@ -174,7 +200,7 @@ export default {
         } else {
           this.updateData({ targetDuration: ms });
         }
-      }
+      },
     },
     editMinutes: {
       get() {
@@ -189,7 +215,7 @@ export default {
         } else {
           this.updateData({ targetDuration: ms });
         }
-      }
+      },
     },
     editSeconds: {
       get() {
@@ -204,8 +230,8 @@ export default {
         } else {
           this.updateData({ targetDuration: ms });
         }
-      }
-    }
+      },
+    },
   },
   mounted() {
     // Initialize data if not present
@@ -234,7 +260,7 @@ export default {
         isRunning: false,
         accumulatedTime: 0,
         baseTime: Date.now(),
-        isAlerting: false
+        isAlerting: false,
       });
     },
     toggleTimer() {
@@ -244,7 +270,7 @@ export default {
         this.updateData({
           isRunning: false,
           accumulatedTime: this.timerData.accumulatedTime + elapsed,
-          isAlerting: false
+          isAlerting: false,
         });
       } else {
         // Stop Alerting if we were
@@ -260,7 +286,7 @@ export default {
         // Start
         this.updateData({
           isRunning: true,
-          baseTime: Date.now()
+          baseTime: Date.now(),
         });
       }
     },
@@ -270,9 +296,9 @@ export default {
         accumulatedTime: 0,
         baseTime: Date.now(),
         isAlerting: false,
-        targetDuration: this.isStopwatch ? 0 : 5 * 60000 // Reset to 5 min for timer
+        targetDuration: this.isStopwatch ? 0 : 5 * 60000, // Reset to 5 min for timer
       });
-    }
+    },
   },
 };
 </script>

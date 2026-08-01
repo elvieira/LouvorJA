@@ -10,7 +10,7 @@
       @canplay="onCanPlay"
       @error="onError"
     />
-    <div v-else></div>
+    <div v-else />
   </div>
 </template>
 
@@ -33,7 +33,7 @@ export default {
       if (!this.rawFilePath) return "";
       if (window.electronAPI) {
         // Usa o dummy host 'app' para evitar que o Chromium altere o case do path no macOS/Linux
-        const prefix = this.rawFilePath.startsWith('/') ? 'local://app' : 'local://app/';
+        const prefix = this.rawFilePath.startsWith("/") ? "local://app" : "local://app/";
         return `${prefix}${this.rawFilePath}`;
       }
       return this.rawFilePath;

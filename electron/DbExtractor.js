@@ -1,21 +1,21 @@
-const Database = require('better-sqlite3');
-const path = require('path');
-const fs = require('fs-extra');
-const { app } = require('electron');
-const crypto = require('crypto');
+const Database = require("better-sqlite3");
+const path = require("path");
+const fs = require("fs-extra");
+const { app } = require("electron");
+const crypto = require("crypto");
 
-const ENCRYPTION_KEY = Buffer.from('v389s8dkj238910s8a7d3h2j1k9s8d7f', 'utf8');
+const ENCRYPTION_KEY = Buffer.from("v389s8dkj238910s8a7d3h2j1k9s8d7f", "utf8");
 const IV_LENGTH = 16;
 
 function encryptData(text) {
   try {
     const iv = crypto.randomBytes(IV_LENGTH);
-    const cipher = crypto.createCipheriv('aes-256-cbc', ENCRYPTION_KEY, iv);
-    let encrypted = cipher.update(text, 'utf8', 'hex');
-    encrypted += cipher.final('hex');
-    return iv.toString('hex') + ':' + encrypted;
+    const cipher = crypto.createCipheriv("aes-256-cbc", ENCRYPTION_KEY, iv);
+    let encrypted = cipher.update(text, "utf8", "hex");
+    encrypted += cipher.final("hex");
+    return `${iv.toString("hex")  }:${  encrypted}`;
   } catch (e) {
-    console.error('Erro ao ofuscar dados', e);
+    console.error("Erro ao ofuscar dados", e);
     return null;
   }
 }
@@ -23,7 +23,7 @@ function encryptData(text) {
 class DbExtractor {
   constructor(dbPath) {
     this.dbPath = dbPath;
-    this.sysdataDir = path.join(app.getPath('userData'), '.sysdata');
+    this.sysdataDir = path.join(app.getPath("userData"), ".sysdata");
   }
 
   async extract(progressCallback = () => {}) {
@@ -35,19 +35,19 @@ class DbExtractor {
     const db = new Database(this.dbPath, { readonly: true });
     
     try {
-      progressCallback({ text: 'Extraindo categorias...', progress: 10 });
+      progressCallback({ text: "Extraindo categorias...", progress: 10 });
       this.extractCategories(db);
 
-      progressCallback({ text: 'Extraindo álbuns...', progress: 20 });
+      progressCallback({ text: "Extraindo álbuns...", progress: 20 });
       this.extractAlbumsAndMusics(db, progressCallback);
 
-      progressCallback({ text: 'Extraindo hinários...', progress: 60 });
+      progressCallback({ text: "Extraindo hinários...", progress: 60 });
       this.extractHymnals(db);
 
-      progressCallback({ text: 'Extraindo Bíblias...', progress: 70 });
+      progressCallback({ text: "Extraindo Bíblias...", progress: 70 });
       this.extractBibles(db, progressCallback);
 
-      progressCallback({ text: 'Extração concluída', progress: 100 });
+      progressCallback({ text: "Extração concluída", progress: 100 });
     } finally {
       db.close();
     }
@@ -58,13 +58,13 @@ class DbExtractor {
     const jsonString = JSON.stringify(data);
     const encryptedContent = encryptData(jsonString);
     if (encryptedContent) {
-      fs.writeFileSync(filePath, encryptedContent, 'utf8');
+      fs.writeFileSync(filePath, encryptedContent, "utf8");
     }
   }
 
   extractCategories(db) {
     // pt_categories.json
-    const categoriesRows = db.prepare(`SELECT * FROM categories WHERE id_language = 'pt' ORDER BY \`order\` ASC`).all();
+    const categoriesRows = db.prepare("SELECT * FROM categories WHERE id_language = 'pt' ORDER BY `order` ASC").all();
     const categories = [];
 
     for (const cat of categoriesRows) {
@@ -82,8 +82,8 @@ class DbExtractor {
         name: row.name,
         color: row.color,
         url_image: (row.dir && row.file_name) ? `${row.dir}/${row.file_name}` : null,
-        subtitle: row.subtitle || '',
-        order: row.order
+        subtitle: row.subtitle || "",
+        order: row.order,
       }));
 
       categories.push({
@@ -91,11 +91,11 @@ class DbExtractor {
         name: cat.name,
         slug: cat.slug,
         order: cat.order,
-        albums: albums.length > 0 ? albums : undefined
+        albums: albums.length > 0 ? albums : undefined,
       });
     }
 
-    this.saveJson('pt_categories', categories);
+    this.saveJson("pt_categories", categories);
   }
 
   extractAlbumsAndMusics(db, progressCallback) {
@@ -122,10 +122,10 @@ class DbExtractor {
       const albumJson = {
         id_album: album.id_album,
         name: album.name,
-        color: album.color || '',
+        color: album.color || "",
         url_image: (album.dir && album.file_name) ? `${album.dir}/${album.file_name}` : null,
         categories: categoriesSlugs.length > 0 ? categoriesSlugs : undefined,
-        musics: []
+        musics: [],
       };
 
       const musicsRows = db.prepare(`
@@ -150,7 +150,7 @@ class DbExtractor {
           name: m.name,
           has_instrumental_music: m.im_file ? 1 : 0,
           duration: m.duration,
-          track: m.track
+          track: m.track,
         });
 
         const lyricsRows = db.prepare(`
@@ -172,7 +172,7 @@ class DbExtractor {
           time: l.time,
           instrumental_time: l.instrumental_time,
           show_slide: l.show_slide,
-          order: l.order
+          order: l.order,
         }));
 
         const musicAlbumsRows = db.prepare(`
@@ -189,7 +189,7 @@ class DbExtractor {
           name: a.name,
           track: a.track,
           url_image: (a.dir && a.file_name) ? `${a.dir}/${a.file_name}` : null,
-          order: a.order || 0
+          order: a.order || 0,
         }));
 
         const musicJson = {
@@ -202,7 +202,7 @@ class DbExtractor {
           url_music: (m.m_dir && m.m_file) ? `${m.m_dir}/${m.m_file}` : null,
           url_instrumental_music: (m.im_dir && m.im_file) ? `${m.im_dir}/${m.im_file}` : null,
           lyric: lyricArr,
-          albums: musicAlbums
+          albums: musicAlbums,
         };
 
         this.saveJson(`music_${m.id_music}`, musicJson);
@@ -212,7 +212,7 @@ class DbExtractor {
       
       processedAlbums++;
       if (processedAlbums % 10 === 0) {
-        progressCallback({ text: 'Extraindo álbuns...', progress: 20 + Math.floor((processedAlbums / totalAlbums) * 40) });
+        progressCallback({ text: "Extraindo álbuns...", progress: 20 + Math.floor((processedAlbums / totalAlbums) * 40) });
       }
     }
   }
@@ -230,11 +230,11 @@ class DbExtractor {
       `).all(albumId);
 
       return rows.map(r => {
-        const lyrics = db.prepare(`SELECT lyric FROM lyrics WHERE id_music = ? ORDER BY \`order\` ASC`).all(r.id_music);
-        let fullLyric = '';
+        const lyrics = db.prepare("SELECT lyric FROM lyrics WHERE id_music = ? ORDER BY `order` ASC").all(r.id_music);
+        let fullLyric = "";
         for (const l of lyrics) {
-          if (l.lyric.trim() !== '') {
-            fullLyric += l.lyric + " ";
+          if (l.lyric.trim() !== "") {
+            fullLyric += `${l.lyric  } `;
           }
         }
         
@@ -244,7 +244,7 @@ class DbExtractor {
           track: r.track,
           has_instrumental_music: r.im_file ? 1 : 0,
           duration: r.duration,
-          lyric: fullLyric
+          lyric: fullLyric,
         };
       });
     };
@@ -253,19 +253,19 @@ class DbExtractor {
     const hymnal1996Id = 629;
     
     try {
-      this.saveJson('pt_hymnal', getHymnalData(hymnalId));
-      this.saveJson('pt_hymnal_1996', getHymnalData(hymnal1996Id));
+      this.saveJson("pt_hymnal", getHymnalData(hymnalId));
+      this.saveJson("pt_hymnal_1996", getHymnalData(hymnal1996Id));
     } catch (e) {
       console.log("Hinarios ignorados caso não existam:", e.message);
     }
   }
 
   extractBibles(db, progressCallback) {
-    const books = db.prepare(`SELECT * FROM bible_book WHERE id_language = 'pt' ORDER BY book_number ASC`).all();
-    this.saveJson('pt_bible_book', books);
+    const books = db.prepare("SELECT * FROM bible_book WHERE id_language = 'pt' ORDER BY book_number ASC").all();
+    this.saveJson("pt_bible_book", books);
 
-    const versions = db.prepare(`SELECT * FROM bible_version WHERE id_language = 'pt'`).all();
-    this.saveJson('pt_bible_version', versions);
+    const versions = db.prepare("SELECT * FROM bible_version WHERE id_language = 'pt'").all();
+    this.saveJson("pt_bible_version", versions);
 
     let processedChapters = 0;
     const totalChapters = books.reduce((sum, b) => sum + b.chapters, 0) * versions.length;
@@ -289,7 +289,7 @@ class DbExtractor {
           
           processedChapters++;
           if (processedChapters % 100 === 0) {
-            progressCallback({ text: 'Extraindo Bíblias...', progress: 70 + Math.floor((processedChapters / totalChapters) * 30) });
+            progressCallback({ text: "Extraindo Bíblias...", progress: 70 + Math.floor((processedChapters / totalChapters) * 30) });
           }
         }
       }
