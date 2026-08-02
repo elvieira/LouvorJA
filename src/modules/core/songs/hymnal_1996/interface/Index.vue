@@ -1,18 +1,7 @@
 <template>
   <v-slide-y-reverse-transition>
     <div v-if="module?.show" class="module-full-page dashboard-home d-flex flex-column">
-      <div class="search-header pb-0 flex-shrink-0" style="padding-top: 24px; padding-left: 24px; padding-right: 24px; display: flex; align-items: center;">
-        <MenuToggleButton style="margin-right: 16px;" @toggle-sidebar="toggleSidebar" />
-        
-        <div class="d-flex align-center mr-auto">
-          <div class="module-icon-box d-flex align-center justify-center mr-4">
-            <v-icon :icon="module.icon" size="24" />
-          </div>
-          <h2 class="section-title mb-0" style="color: var(--sidebar-text); font-size: 24px; font-weight: 600; line-height: 1;">
-            {{ t('title') }}
-          </h2>
-        </div>
-
+      <ModuleHeader :title="t('title')" :icon="module.icon">
         <div class="search-bar ml-4" style="max-width: 400px; flex: 1;">
           <v-text-field
             v-model="search"
@@ -27,7 +16,7 @@
             @keydown.enter="playFirstResult"
           />
         </div>
-      </div>
+      </ModuleHeader>
 
       <div class="content-main d-flex flex-column flex-grow-1" style="overflow: hidden; padding-top: 16px;">
         <div class="music-list flex-grow-1 d-flex flex-column" style="background: transparent; box-shadow: none; min-height: 0;">
@@ -93,17 +82,17 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import manifest from "../manifest";
-import MenuToggleButton from "@/components/MenuToggleButton.vue";
 
 import LTable from "@/components/DataTable.vue";
 import LMusicMenuTable from "@/components/MusicMenuTable.vue";
+import ModuleHeader from "@/components/ModuleHeader.vue";
 
 export default defineComponent({
   name: "Hymnal1996Module",
   components: {
+    ModuleHeader,
     LTable,
     LMusicMenuTable,
-    MenuToggleButton,
   },
 
   data() {
@@ -143,12 +132,6 @@ export default defineComponent({
       return this.$t(`modules.${this.module_id}.${text}`);
     },
     /* METHODS OBRIGATÓRIOS - FIM */
-    toggleSidebar() {
-      const mainEl = document.querySelector(".main-container");
-      if (mainEl) {
-        mainEl.dispatchEvent(new CustomEvent("toggle-sidebar"));
-      }
-    },
 
     onScroll(data: any) {
       this.scroll = data;

@@ -284,8 +284,7 @@ export default {
   beforeUnmount() {
     window.removeEventListener("resize", this.handleResize);
   },
-  mounted() {
-  },
+
   methods: {
     handleResize() {
       this.windowWidth = window.innerWidth;

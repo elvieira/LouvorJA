@@ -11,7 +11,7 @@
       </h2>
     </div>
     
-    <div class="d-flex align-center" style="max-width: 100%; overflow-x: auto;">
+    <div class="module-header-actions d-flex align-center justify-end" style="max-width: 100%; flex: 1; overflow: visible;">
       <slot />
     </div>
   </div>

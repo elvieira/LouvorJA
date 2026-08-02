@@ -3,9 +3,9 @@
 </template>
 
 <script>
-import manifest from "../manifest.json";
+import manifest from "../manifest";
 
-import Screen from "../components/Screen.vue";
+import Screen from "./components/Screen.vue";
 
 export default {
   name: "PopupBiblePage",

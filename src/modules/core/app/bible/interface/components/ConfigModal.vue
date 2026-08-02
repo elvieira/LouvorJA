@@ -366,6 +366,7 @@ export default {
       default: false,
     },
   },
+  emits: ["update:modelValue"],
   data: () => ({
     localConfig: {
       fontSizePc: 15,

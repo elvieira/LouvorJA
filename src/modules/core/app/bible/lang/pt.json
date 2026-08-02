@@ -14,5 +14,10 @@
     "text_align": "Alinhamento do Texto",
     "bible_reference": "Referência Bíblica",
     "bg_image": "Imagem de fundo",
-    "remove_image": "Remover"
+    "remove_image": "Remover",
+    "books": "Livros",
+    "chapters": "Cap.",
+    "search_verse": "Pesquisar versículo",
+    "close_search": "Fechar pesquisa",
+    "select_version": "Selecionar Versão"
 }

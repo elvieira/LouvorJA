@@ -28,12 +28,15 @@
 </template>
 
 <script>
-import manifest from "../manifest.json";
+import manifest from "../../manifest";
 
 export default {
   name: "ScreenBiblePage",
   props: {
-    height: Number,
+    height: {
+      type: Number,
+      default: 0,
+    },
   },
   data: () => ({
     s_width: 0,
