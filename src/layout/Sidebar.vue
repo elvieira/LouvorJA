@@ -164,11 +164,11 @@
   </div>
 </template>
 
-<script>
-export default {
+<script lang="ts">
+import { defineComponent } from "vue";
+
+export default defineComponent({
   name: "DashboardSidebar",
-  components: {
-  },
   props: {
     modelValue: {
       type: Boolean,
@@ -178,33 +178,34 @@ export default {
   emits: ["update:modelValue"],
   data() {
     return {
-      submenuOpen: {},
+      submenuOpen: {} as Record<string, boolean>,
       windowWidth: window.innerWidth,
+      submenuTimeout: null as any,
     };
   },
   computed: {
     isOpen: {
-      get() {
+      get(): boolean {
         return this.modelValue;
       },
-      set(val) {
+      set(val: boolean) {
         this.$emit("update:modelValue", val);
       },
     },
-    updateStatus() {
-      return this.$appdata.get("modules.update.status") || "idle";
+    updateStatus(): string {
+      return (this as any).$appdata.get("modules.update.status") || "idle";
     },
-    isMobile() {
+    isMobile(): boolean {
       return this.windowWidth <= 1024;
     },
-    isDesktop() {
-      return window.electronAPI && window.electronAPI.isElectron;
+    isDesktop(): boolean {
+      return !!(window as any).electronAPI?.isElectron;
     },
-    currentRoute() {
-      return this.$route.name?.toLowerCase() || "";
+    currentRoute(): string {
+      return ((this as any).$route.name as string)?.toLowerCase() || "";
     },
-    currentModule() {
-      const modules = this.$appdata.get("modules") || {};
+    currentModule(): string | null {
+      const modules = (this as any).$appdata.get("modules") || {};
       const overlays = ["album", "media", "lyric"];
       
       if (modules["sync"]?.show) {
@@ -212,26 +213,26 @@ export default {
       }
       
       for (const [key, module] of Object.entries(modules)) {
-        if (module.show && !overlays.includes(key) && key !== "sync") {
+        if ((module as any).show && !overlays.includes(key) && key !== "sync") {
           return key;
         }
       }
       return null;
     },
-    moduleGroups() {
-      const groups = this.$appdata.get("module_group") || {};
-      const result = {};
+    moduleGroups(): Record<string, any> {
+      const groups = (this as any).$appdata.get("module_group") || {};
+      const result: Record<string, any> = {};
       
-      const groupIcons = {
+      const groupIcons: Record<string, string> = {
         musics: "mdi-play",
         bible: "mdi-book",
         utilities: "mdi-plus-circle",
       };
 
       for (const [key, group] of Object.entries(groups)) {
-        if (group.modules && group.modules.length > 0) {
+        if ((group as any).modules && (group as any).modules.length > 0) {
           result[key] = {
-            ...group,
+            ...(group as any),
             icon: groupIcons[key] || "mdi-folder",
           };
         }
@@ -239,43 +240,43 @@ export default {
 
       return result;
     },
-    individualModules() {
-      const allModules = this.$appdata.get("modules") || {};
-      const groups = this.$appdata.get("module_group") || {};
-      const groupedModuleIds = new Set();
+    individualModules(): Record<string, any> {
+      const allModules = (this as any).$appdata.get("modules") || {};
+      const groups = (this as any).$appdata.get("module_group") || {};
+      const groupedModuleIds = new Set<string>();
       
-      Object.values(groups).forEach((group) => {
+      Object.values(groups).forEach((group: any) => {
         if (group.modules) {
-          group.modules.forEach((id) => groupedModuleIds.add(id));
+          group.modules.forEach((id: string) => groupedModuleIds.add(id));
         }
       });
       
       const entries = Object.entries(allModules)
-        .filter(([key, module]) => !groupedModuleIds.has(key) && module.showInMainMenu)
-        .sort(([k1, v1], [k2, v2]) => {
+        .filter(([key, module]: [string, any]) => !groupedModuleIds.has(key) && module.showInMainMenu)
+        .sort(([k1, v1]: [string, any], [k2, v2]: [string, any]) => {
           if (k1 === "dev" && k2 !== "dev") return 1;
           if (k2 === "dev" && k1 !== "dev") return -1;
           
-          const t1 = v1?.title ? this.$t(v1.title).toLowerCase() : "";
-          const t2 = v2?.title ? this.$t(v2.title).toLowerCase() : "";
+          const t1 = v1?.title ? (this as any).$t(v1.title).toLowerCase() : "";
+          const t2 = v2?.title ? (this as any).$t(v2.title).toLowerCase() : "";
           return t1.localeCompare(t2);
         });
         
-      const result = {};
+      const result: Record<string, any> = {};
       for (const [key, module] of entries) {
         result[key] = module;
       }
       
       return result;
     },
-    language() {
-      return this.$userdata.get("language");
+    language(): string {
+      return (this as any).$userdata.get("language");
     },
-    isDev() {
-      return this.$appdata.get("is_dev");
+    isDev(): boolean {
+      return (this as any).$appdata.get("is_dev");
     },
-    isDownloading() {
-      return this.$appdata.get("sync_is_downloading") === true;
+    isDownloading(): boolean {
+      return (this as any).$appdata.get("sync_is_downloading") === true;
     },
   },
   mounted() {
@@ -292,22 +293,21 @@ export default {
     closeSidebar() {
       this.isOpen = false;
     },
-
-    navigateTo(route) {
+    navigateTo(route: string) {
       if (route === "home") {
-        this.$modules.open("home");
+        (this as any).$modules.open("home");
       }
       if (this.isMobile) {
         this.closeSidebar();
       }
     },
-    openModule(moduleId) {
-      this.$modules.open(moduleId);
+    openModule(moduleId: string) {
+      (this as any).$modules.open(moduleId);
       if (this.isMobile) {
         this.closeSidebar();
       }
     },
-    toggleSubmenu(submenu) {
+    toggleSubmenu(submenu: string) {
       const isCurrentlyOpen = this.submenuOpen[submenu];
       let wasAnyOtherOpen = false;
       
@@ -330,12 +330,12 @@ export default {
         }
       }
     },
-    isGroupActive(group) {
+    isGroupActive(group: any): boolean {
       if (!group || !group.modules) return false;
       return group.modules.includes(this.currentModule);
     },
-    shouldShowModule(moduleId) {
-      const module = this.$appdata.get(`modules.${moduleId}`);
+    shouldShowModule(moduleId: string): boolean {
+      const module = (this as any).$appdata.get(`modules.${moduleId}`);
       if (!module) return false;
       
       if (module.language && module.language !== this.language) {
@@ -348,19 +348,280 @@ export default {
       
       return true;
     },
-    getModuleTitle(moduleId) {
-      const module = this.$appdata.get(`modules.${moduleId}`);
-      return module ? this.$t(module.title) : moduleId;
+    getModuleTitle(moduleId: string): string {
+      const module = (this as any).$appdata.get(`modules.${moduleId}`);
+      return module ? (this as any).$t(module.title) : moduleId;
     },
     openUpdateModule() {
-      this.$modules.open("update");
+      (this as any).$modules.open("update");
     },
   },
-};
+});
 </script>
 
 <style lang="scss">
-@use "@/assets/styles/layout/sidebar.scss";
+.dashboard-sidebar {
+  width: var(--sidebar-width);
+  background: var(--sidebar-bg);
+  color: var(--sidebar-text);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  height: calc(100vh - 32px);
+  left: 0;
+  top: 32px;
+  z-index: 9999;
+  overflow: hidden;
+  border-right: 1px solid var(--sidebar-border);
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+
+  .sidebar-header {
+    padding: 24px 24px;
+    border-bottom: 1px solid var(--sidebar-border);
+    background: transparent;
+    
+    .logo-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      
+      .logo-svg {
+        width: 38px;
+        height: 38px;
+        flex-shrink: 0;
+      }
+      
+      .logo-text .logo-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--sidebar-text);
+        letter-spacing: 0.8px;
+        background: linear-gradient(135deg, var(--accent-yellow) 0%, var(--accent-blue) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+    }
+  }
+
+  .sidebar-nav-main {
+    flex: 1;
+    padding: 20px 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 2px;
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    &::before,
+    &::after {
+      content: '';
+      margin: auto;
+    }
+  }
+
+  .sidebar-footer {
+    padding: 16px 0 24px 0;
+    border-top: 1px solid var(--sidebar-border);
+    background: transparent;
+  }
+
+  .nav-item {
+    position: relative;
+    margin: 4px 16px;
+    border-radius: var(--border-radius);
+    transition: var(--transition);
+    
+    &.close-item {
+      display: none;
+      margin-bottom: 8px;
+      
+      .close-sidebar-btn {
+        background: none;
+        border: none;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        padding: 10px 16px;
+        color: var(--accent-blue);
+        gap: 12px;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+        border-radius: var(--border-radius);
+        
+        .nav-icon {
+          font-size: 22px;
+          min-width: 22px;
+          color: var(--accent-blue);
+        }
+        
+        .nav-text {
+          flex: 1;
+          text-align: left;
+          font-weight: 600;
+        }
+        
+        &:hover {
+          background: var(--sidebar-hover);
+          color: var(--accent-blue-dark);
+          
+          .nav-icon {
+            color: var(--accent-blue-dark);
+          }
+        }
+        
+        &:active {
+          transform: scale(0.98);
+        }
+      }
+    }
+    
+    &.main-item {
+      margin: 4px 16px;
+      
+      .nav-link {
+        padding: 12px 16px;
+        font-size: 15px;
+        font-weight: 600;
+        
+        .nav-icon {
+          font-size: 22px;
+          min-width: 22px;
+          color: var(--accent-blue);
+        }
+        
+        .nav-text {
+          font-weight: 600;
+        }
+      }
+    }
+    
+    &:hover {
+      background: var(--sidebar-hover);
+      border-radius: var(--border-radius);
+    }
+    
+    &.active {
+      background: var(--sidebar-active);
+      border-radius: var(--border-radius);
+      
+      .nav-link {
+        color: white;
+        
+        .nav-icon {
+          color: white;
+        }
+      }
+    }
+    
+    &.group-active {
+      background: var(--sidebar-active);
+      border-radius: var(--border-radius);
+      
+      .nav-link {
+        color: white;
+        
+        .nav-icon {
+          color: white;
+        }
+      }
+    }
+    
+    .nav-link {
+      display: flex;
+      align-items: center;
+      padding: 8px 16px;
+      color: var(--sidebar-text);
+      text-decoration: none;
+      gap: 16px;
+      font-size: 14px;
+      font-weight: 500;
+      transition: var(--transition);
+      
+      .nav-icon {
+        font-size: 20px;
+        min-width: 20px;
+        color: var(--accent-blue);
+      }
+      
+      .nav-text {
+        flex: 1;
+      }
+      
+      .nav-arrow {
+        font-size: 16px;
+        transition: transform 0.3s ease;
+        
+        &.expanded {
+          transform: rotate(90deg);
+        }
+      }
+    }
+  }
+
+  .nav-submenu {
+    padding-left: 32px;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+    
+    &.expanded {
+      max-height: 200px;
+    }
+    
+    .nav-item {
+      margin: 1px 0;
+      
+      &.active .nav-link {
+        color: white !important;
+      }
+
+      .nav-link {
+        padding: 6px 16px;
+        font-size: 13px;
+        color: var(--sidebar-text-secondary);
+        
+        &:hover {
+          color: var(--sidebar-text);
+        }
+      }
+    }
+  }
+}
+
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 9998;
+}
+
+@media (max-width: 1024px) {
+  .dashboard-sidebar .nav-item.close-item {
+    display: block !important;
+  }
+  
+  .sidebar-overlay {
+    display: block;
+  }
+  
+  .dashboard-sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    
+    &.open {
+      transform: translateX(0);
+    }
+  }
+}
 
 .pulse-animation {
   animation: pulse-border 2s infinite;
