@@ -13,7 +13,7 @@ const manifest: ModuleManifest = {
   icon: "mdi-text",
   showInMainMenu: false,
   development: false,
-  system: false,
+  system: true,
   overlay: true,
   language: null,
   minAppVersion: "1.0.0",

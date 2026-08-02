@@ -14,7 +14,7 @@ const manifest: ModuleManifest = {
   icon: "mdi-library",
   showInMainMenu: false,
   development: false,
-  system: false,
+  system: true,
   overlay: true,
   language: null,
   minAppVersion: "1.0.0",

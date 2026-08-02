@@ -6,6 +6,7 @@ export default {
   author: "maycorolbuche",
   category: null,
   icon: null,
+  system: true,
   minAppVersion: "1.0.0",
   dependencies: [],
   permissions: [],
