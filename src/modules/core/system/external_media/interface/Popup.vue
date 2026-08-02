@@ -14,22 +14,23 @@
   </div>
 </template>
 
-<script>
-import manifest from "../manifest.json";
+<script lang="ts">
+import { defineComponent } from "vue";
+import manifest from "../manifest";
 
-export default {
+export default defineComponent({
   name: "PopupExternalMediaPage",
   computed: {
-    module_id() {
+    module_id(): string {
       return manifest.id;
     },
-    module() {
+    module(): any {
       return this.$modules.get(this.module_id);
     },
-    rawFilePath() {
+    rawFilePath(): string {
       return this.$appdata.get("modules.external_media.filePath") || "";
     },
-    filePath() {
+    filePath(): string {
       if (!this.rawFilePath) return "";
       if (window.electronAPI) {
         // Usa o dummy host 'app' para evitar que o Chromium altere o case do path no macOS/Linux
@@ -38,34 +39,35 @@ export default {
       }
       return this.rawFilePath;
     },
-    mediaTitle() {
+    mediaTitle(): string {
       return this.$appdata.get("modules.external_media.title") || "Mídia Externa";
     },
-    isVideo() {
+    isVideo(): boolean {
       if (!this.rawFilePath) return false;
-      const ext = this.rawFilePath.split(".").pop().toLowerCase();
+      const ext = this.rawFilePath.split(".").pop()?.toLowerCase() || "";
       return ["mp4", "mkv", "avi", "mov", "wmv", "webm"].includes(ext);
     },
-    isPaused() {
+    isPaused(): boolean {
       return this.$appdata.get("modules.external_media.config.is_paused");
     },
-    currentTime() {
+    currentTime(): number {
       return this.$appdata.get("modules.external_media.config.current_time");
     },
   },
   watch: {
-    currentTime(val) {
-      const video = this.$refs.popupVideo;
+    currentTime(val: number) {
+      const video = this.$refs.popupVideo as HTMLVideoElement;
       if (video && !video.seeking) {
         if (Math.abs(video.currentTime - val) > 0.5) {
           video.currentTime = val;
         }
       }
     },
-    isPaused(val) {
+    isPaused(val: boolean) {
       this.$nextTick(() => {
-        const video = this.$refs.popupVideo;
+        const video = this.$refs.popupVideo as HTMLVideoElement;
         if (!video) return;
+        
         if (val) {
           video.pause();
         } else {
@@ -77,7 +79,7 @@ export default {
   },
   mounted() {
     this.$nextTick(() => {
-      const video = this.$refs.popupVideo;
+      const video = this.$refs.popupVideo as HTMLVideoElement;
       if (video) {
         video.currentTime = this.currentTime || 0;
         if (!this.isPaused) {
@@ -89,20 +91,20 @@ export default {
   },
   methods: {
     onCanPlay() {
-      const video = this.$refs.popupVideo;
+      const video = this.$refs.popupVideo as HTMLVideoElement;
       if (video && !this.isPaused) {
         video.currentTime = this.currentTime || 0;
         video.play().catch(() => {
         });
       }
     },
-    onError(event) {
-      const el = event.target;
+    onError(event: Event) {
+      const el = event.target as any;
       const error = el?.error;
       if (error) {
         console.error("Video error:", error);
       }
     },
   },
-};
+});
 </script>

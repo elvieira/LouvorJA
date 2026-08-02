@@ -123,251 +123,89 @@
               </div>
 
               <!-- Fullscreen controls overlay -->
-              <div
+              <FullscreenControls
                 v-if="isFullscreen"
-                class="position-absolute w-100 h-100 top-0 left-0"
-                style="z-index: 9999"
-                @mousemove="onFullscreenMouseMove"
-              >
-                <transition name="slide-up">
-                  <div
-                    v-if="fullscreenControlsVisible"
-                    class="position-absolute w-100 bottom-0"
-                    @mouseenter="fullscreenMouseEnter"
-                    @mouseleave="fullscreenMouseLeave"
-                  >
-                    <div class="external-media-controls-bar fullscreen-bar w-100 d-flex align-center px-6 py-2">
-                      <v-btn
-                        icon
-                        variant="text"
-                        color="white"
-                        size="large"
-                        class="mx-1 play-btn"
-                        @click="togglePlay"
-                      >
-                        <v-icon>{{ isPaused ? 'mdi-play-circle' : 'mdi-pause-circle' }}</v-icon>
-                      </v-btn>
-                      <span class="text-caption mr-3 font-weight-medium text-white" style="opacity: 0.8;">{{ formatTime(currentTime) }}</span>
-                      <v-progress-linear
-                        v-model="progress"
-                        clickable
-                        :height="4"
-                        color="white"
-                        :bg-opacity="0.3"
-                        rounded
-                        class="flex-grow-1 timeline-slider mx-2"
-                        @click="seekFromProgress"
-                      />
-                      <span class="text-caption ml-3 font-weight-medium text-white" style="opacity: 0.8;">{{ formatTime(duration) }}</span>
-                      <v-menu
-                        location="top center"
-                        :close-on-content-click="false"
-                        open-on-hover
-                        :open-delay="50"
-                        :attach="true"
-                      >
-                        <template #activator="{ props }">
-                          <v-btn
-                            :icon="volumeIcon"
-                            variant="text"
-                            color="white"
-                            size="small"
-                            v-bind="props"
-                            class="mx-1"
-                            @click="toggleMute"
-                          />
-                        </template>
-                        <v-card
-                          class="py-2 px-4 rounded-lg d-flex align-center modern-glass-menu elevation-0"
-                          theme="dark"
-                          min-width="130"
-                          height="40"
-                          style="overflow: hidden;"
-                        >
-                          <v-slider
-                            v-model="volume"
-                            color="white"
-                            track-color="grey"
-                            hide-details
-                            thumb-size="12"
-                            step="1"
-                            min="0"
-                            max="100"
-                            class="ma-0 pa-0 w-100"
-                            @update:model-value="onVolumeChange"
-                          />
-                        </v-card>
-                      </v-menu>
-                      <v-btn
-                        variant="text"
-                        size="small"
-                        icon
-                        color="white"
-                        class="mx-1"
-                        @click="isFullscreen = false"
-                      >
-                        <v-icon>mdi-fullscreen-exit</v-icon>
-                        <v-tooltip
-                          activator="parent"
-                          location="top"
-                          open-delay="300"
-                          content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
-                        >
-                          Sair da Tela Cheia
-                        </v-tooltip>
-                      </v-btn>
-                    </div>
-                  </div>
-                </transition>
-              </div>
+                :is-paused="isPaused"
+                :current-time="currentTime"
+                :duration="duration"
+                :progress="progress"
+                :volume="volume"
+                @toggle-play="togglePlay"
+                @seek="seekFromProgressVal"
+                @toggle-mute="toggleMute"
+                @update:volume="setVolume"
+                @exit-fullscreen="isFullscreen = false"
+              />
             </div>
           </fullscreen>
         </div>
 
         <!-- Bottom Controls (pill bar, not fullscreen) -->
-        <div v-if="!isFullscreen" class="floating-pill-container position-absolute w-100 d-flex justify-center" style="bottom: 40px; z-index: 20; pointer-events: none;">
-          <div style="pointer-events: auto;">
-            <div class="modern-pill-player d-flex align-center px-6 py-2 mx-auto">
-              <div v-if="pillWidth >= 600" class="player-info d-flex flex-column mr-6" style="max-width: 220px; min-width: 150px;">
-                <span class="text-subtitle-2 font-weight-bold text-truncate text-white" style="line-height: 1.2;">{{ mediaTitle }}</span>
-                <span class="text-caption text-truncate text-grey" style="line-height: 1.2;">{{ mediaSubtitle || (isVideo ? 'Vídeo' : 'Áudio') }}</span>
-              </div>
-              <div class="d-flex align-center mr-6">
-                <v-btn
-                  icon
-                  variant="text"
-                  color="white"
-                  size="large"
-                  class="mx-1 play-btn"
-                  @click="togglePlay"
-                >
-                  <v-icon>{{ isPaused ? 'mdi-play-circle' : 'mdi-pause-circle' }}</v-icon>
-                </v-btn>
-              </div>
-              <div class="player-timeline-wrapper d-flex align-center flex-grow-1 mr-6" style="min-width: 150px;">
-                <span class="text-caption mr-3 font-weight-medium text-white" style="opacity: 0.8;">{{ formatTime(currentTime) }}</span>
-                <v-progress-linear
-                  v-model="progress"
-                  clickable
-                  :height="4"
-                  color="white"
-                  :bg-opacity="0.3"
-                  rounded
-                  class="flex-grow-1 timeline-slider"
-                  @click="seekFromProgress"
-                />
-                <span class="text-caption ml-3 font-weight-medium text-white" style="opacity: 0.8;">{{ formatTime(duration) }}</span>
-              </div>
-              <div class="d-flex align-center">
-                <v-menu
-                  location="top center"
-                  :close-on-content-click="false"
-                  open-on-hover
-                  :open-delay="50"
-                >
-                  <template #activator="{ props }">
-                    <v-btn
-                      :icon="volumeIcon"
-                      variant="text"
-                      color="white"
-                      size="small"
-                      v-bind="props"
-                      class="mx-1"
-                      @click="toggleMute"
-                    />
-                  </template>
-                  <v-card
-                    class="py-2 px-4 rounded-lg d-flex align-center modern-glass-menu elevation-0"
-                    theme="dark"
-                    min-width="130"
-                    height="40"
-                    style="overflow: hidden;"
-                  >
-                    <v-slider
-                      v-model="volume"
-                      color="white"
-                      track-color="grey"
-                      hide-details
-                      thumb-size="12"
-                      step="1"
-                      min="0"
-                      max="100"
-                      class="ma-0 pa-0 w-100"
-                      @update:model-value="onVolumeChange"
-                    />
-                  </v-card>
-                </v-menu>
-                <v-btn
-                  v-if="isVideo"
-                  variant="text"
-                  size="small"
-                  icon
-                  color="white"
-                  class="mx-1"
-                  @click="isFullscreen = true"
-                >
-                  <v-icon>mdi-fullscreen</v-icon>
-                  <v-tooltip
-                    activator="parent"
-                    location="top"
-                    open-delay="300"
-                    content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
-                  >
-                    Tela Cheia
-                  </v-tooltip>
-                </v-btn>
-              </div>
-            </div>
-          </div>
-        </div>
+        <PlayerControls
+          v-if="!isFullscreen"
+          :title="mediaTitle"
+          :subtitle="mediaSubtitle"
+          :is-video="isVideo"
+          :is-paused="isPaused"
+          :current-time="currentTime"
+          :duration="duration"
+          :progress="progress"
+          :volume="volume"
+          :pill-width="pillWidth"
+          @toggle-play="togglePlay"
+          @seek="seekFromProgressVal"
+          @toggle-mute="toggleMute"
+          @update:volume="setVolume"
+          @enter-fullscreen="isFullscreen = true"
+        />
       </div>
     </Window>
   </div>
 </template>
 
-<script>
-import manifest from "../manifest.json";
+<script lang="ts">
+import { defineComponent } from "vue";
+import manifest from "../manifest";
 import Window from "@/components/Window.vue";
 import ButtonScreen from "@/components/buttons/Screen.vue";
+import FullscreenControls from "./components/FullscreenControls.vue";
+import PlayerControls from "./components/PlayerControls.vue";
 
-export default {
+export default defineComponent({
   name: "ExternalMediaComponent",
   components: {
     Window,
     ButtonScreen,
+    FullscreenControls,
+    PlayerControls,
   },
-  data() {
-    return {
-      isPaused: true,
-      currentTime: 0,
-      duration: 0,
-      progress: 0,
-      volume: 100,
-      savedVolume: 100,
-      isFullscreen: false,
-      pillWidth: 800,
-      pillResizeObserver: null,
-      fullscreenControlsVisible: false,
-      fullscreenTimer: null,
-      fullscreenTimerActive: true,
-      mediaReady: false,
-      userPaused: false,
-    };
-  },
+  data: () => ({
+    isPaused: true,
+    currentTime: 0,
+    duration: 0,
+    progress: 0,
+    volume: 100,
+    savedVolume: 100,
+    isFullscreen: false,
+    pillWidth: 800,
+    pillResizeObserver: null as ResizeObserver | null,
+    mediaReady: false,
+    userPaused: false,
+  }),
   computed: {
-    requestAction() {
+    requestAction(): string {
       return this.$appdata.get("modules.external_media.config.request_action");
     },
-    autoProject() {
+    autoProject(): boolean {
       return this.$userdata.get("modules.config.media_auto_project_video") !== false;
     },
-    module_id() {
+    module_id(): string {
       return manifest.id;
     },
-    module() {
+    module(): any {
       return this.$modules.get(this.module_id);
     },
-    rawFilePath() {
+    rawFilePath(): string {
       return this.$appdata.get("modules.external_media.filePath") || "";
     },
     filePath() {
@@ -545,9 +383,9 @@ export default {
       
       let hasExtended = false;
       if (window.electronAPI && window.electronAPI.getDisplays) {
-        window.electronAPI.getDisplays().then(displays => {
+        window.electronAPI.getDisplays().then((displays: any[]) => {
           if (displays && displays.length > 1) {
-            const primary = displays.find(d => d.isPrimary) || displays[0];
+            const primary = displays.find((d: any) => d.isPrimary) || displays[0];
             const extendedSelected = slideMonitors.filter(m => m !== primary.id);
             hasExtended = extendedSelected.length > 0;
           }
@@ -664,19 +502,24 @@ export default {
 
     // --- Controls ---
 
-    seekFromProgress() {
+    seekFromProgressVal(val: number) {
       const el = this.getMediaEl();
       if (!el || !this.duration) return;
-      const time = (this.duration * this.progress) / 100;
+      const time = (this.duration * val) / 100;
       el.currentTime = time;
     },
 
-    onVolumeChange() {
+    setVolume(val: number) {
+      this.volume = val;
       const el = this.getMediaEl();
       if (el) {
         el.volume = this.volume / 100;
       }
       this.$appdata.set("modules.external_media.config.volume", this.volume);
+    },
+
+    onVolumeChange() {
+      this.setVolume(this.volume);
     },
 
     toggleMute() {
@@ -726,35 +569,8 @@ export default {
       });
     },
 
-    formatTime(seconds) {
-      if (!seconds || isNaN(seconds)) return "0:00";
-      const mins = Math.floor(seconds / 60);
-      const secs = Math.floor(seconds % 60);
-      return `${mins}:${secs.toString().padStart(2, "0")}`;
-    },
-
-    // --- Fullscreen ---
-    onFullscreenMouseMove() {
-      if (!this.fullscreenTimerActive) return;
-      this.fullscreenControlsVisible = true;
-      this.startFullscreenHideTimer();
-    },
-    fullscreenMouseEnter() {
-      this.fullscreenTimerActive = false;
-      clearTimeout(this.fullscreenTimer);
-    },
-    fullscreenMouseLeave() {
-      this.fullscreenTimerActive = true;
-      this.startFullscreenHideTimer();
-    },
-    startFullscreenHideTimer() {
-      clearTimeout(this.fullscreenTimer);
-      this.fullscreenTimer = setTimeout(() => {
-        this.fullscreenControlsVisible = false;
-      }, 2000);
-    },
   },
-};
+});
 </script>
 
 <style lang="scss">

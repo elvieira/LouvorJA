@@ -9,6 +9,9 @@
     "minimize": "Minimizar",
     "maximize": "Maximizar",
     "close": "Cerrar",
-    "projecting": "Proyectando en la pantalla externa..."
+    "projecting": "Proyectando en la pantalla externa...",
+    "exit_fullscreen": "Salir de pantalla completa",
+    "video": "Video",
+    "audio": "Audio"
   }
 }
