@@ -132,7 +132,7 @@
         mdi-magnify
       </v-icon>
       <p style="color: var(--sidebar-text-secondary); font-weight: 500;">
-        Nenhuma música encontrada
+        {{ t('data.empty_search') }}
       </p>
     </div>
 
@@ -144,8 +144,9 @@
   </LWindow>
 </template>
 
-<script>
-import manifest from "../manifest.json";
+<script lang="ts">
+import { defineComponent } from "vue";
+import manifest from "../manifest";
 
 import LWindow from "@/components/Window.vue";
 import LTable from "@/components/DataTable.vue";
@@ -154,7 +155,7 @@ import LCheckbox from "@/components/inputs/CheckBox.vue";
 import LMusicMenuTable from "@/components/MusicMenuTable.vue";
 import LLetterPaginate from "@/components/LetterPagination.vue";
 
-export default {
+export default defineComponent({
   name: "MusicModule",
   components: {
     LWindow,
@@ -165,13 +166,15 @@ export default {
     LLetterPaginate,
   },
 
-  data: () => ({
-    search: "",
-    data: [],
-    scroll: {},
-    has_scroll: false,
-    letter: "",
-  }),
+  data() {
+    return {
+      search: "",
+      data: { filter_count: 0, data: [] } as any,
+      scroll: {} as any,
+      has_scroll: false,
+      letter: "",
+    };
+  },
   computed: {
     /* COMPUTEDS OBRIGATÓRIAS - INÍCIO */
     /* NÃO MODIFICAR */
@@ -237,23 +240,23 @@ export default {
   methods: {
     /* METHODS OBRIGATÓRIOS - INÍCIO */
     /* NÃO MODIFICAR */
-    t(text) {
+    t(text: string) {
       return this.$t(`modules.${this.module_id}.${text}`);
     },
     /* METHODS OBRIGATÓRIOS - FIM */
 
-    onScroll(data) {
+    onScroll(data: any) {
       this.scroll = data;
     },
-    hasScroll(data) {
+    hasScroll(data: boolean) {
       this.has_scroll = data;
     },
-    openAlbum(id_album) {
+    openAlbum(id_album: string) {
       this.$media.openAlbum(id_album);
     },
     close() {
       this.search = "";
     },
   },
-};
+});
 </script>

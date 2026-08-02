@@ -15,6 +15,7 @@
     },
     "data": {
         "records": "Total de registros",
-        "not_found": "Não foram encontados registros com os filtros selecionados! Tente alterar os filtros de pesquisa."
+        "not_found": "Não foram encontados registros com os filtros selecionados! Tente alterar os filtros de pesquisa.",
+        "empty_search": "Nenhuma música encontrada"
     }
 }
