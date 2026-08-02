@@ -1,0 +1,22 @@
+import type { ModuleManifest } from "@/types/module";
+import es from "./lang/es.json";
+import pt from "./lang/pt.json";
+
+const manifest: ModuleManifest = {
+  id: "hymnal",
+  name: "Hinário Adventista",
+  version: "2.0.0",
+  description: "Hinário Adventista Oficial. Acesso rápido e prático a todos os louvores tradicionais, organizados numericamente.",
+  author: "maycorolbuche",
+  category: "musics",
+  icon: "mdi-music-clef-treble",
+  minAppVersion: "1.0.0",
+  dependencies: [
+    "media",
+    "lyric",
+  ],
+  permissions: [],
+  translations: { pt, es },
+};
+
+export default manifest;

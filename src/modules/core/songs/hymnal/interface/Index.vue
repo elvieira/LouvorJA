@@ -51,7 +51,7 @@
                 mdi-magnify
               </v-icon>
               <p style="color: var(--sidebar-text-secondary); font-weight: 500;">
-                Nenhuma música encontrada
+                {{ t('data.empty_search') }}
               </p>
             </div>
             <tbody v-else class="music-list-container">
@@ -90,14 +90,15 @@
   </v-slide-y-reverse-transition>
 </template>
 
-<script>
-import manifest from "../manifest.json";
+<script lang="ts">
+import { defineComponent } from "vue";
+import manifest from "../manifest";
 import MenuToggleButton from "@/components/MenuToggleButton.vue";
 
 import LTable from "@/components/DataTable.vue";
 import LMusicMenuTable from "@/components/MusicMenuTable.vue";
 
-export default {
+export default defineComponent({
   name: "HymnalModule",
   components: {
     LTable,
@@ -105,12 +106,14 @@ export default {
     MenuToggleButton,
   },
 
-  data: () => ({
-    search: "",
-    data: [],
-    scroll: {},
-    has_scroll: false,
-  }),
+  data() {
+    return {
+      search: "",
+      data: { filter_count: 0, data: [] } as any,
+      scroll: {} as any,
+      has_scroll: false,
+    };
+  },
   computed: {
     /* COMPUTEDS OBRIGATÓRIAS - INÍCIO */
     /* NÃO MODIFICAR */
@@ -136,7 +139,7 @@ export default {
   methods: {
     /* METHODS OBRIGATÓRIOS - INÍCIO */
     /* NÃO MODIFICAR */
-    t(text) {
+    t(text: string) {
       return this.$t(`modules.${this.module_id}.${text}`);
     },
     /* METHODS OBRIGATÓRIOS - FIM */
@@ -147,10 +150,10 @@ export default {
       }
     },
 
-    onScroll(data) {
+    onScroll(data: any) {
       this.scroll = data;
     },
-    hasScroll(data) {
+    hasScroll(data: boolean) {
       this.has_scroll = data;
     },
     playFirstResult() {
@@ -165,7 +168,7 @@ export default {
       this.search = "";
     },
   },
-};
+});
 </script>
 
 <style lang="scss">
