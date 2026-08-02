@@ -1,0 +1,23 @@
+import type { ModuleManifest } from "@/types/module";
+import es from "./lang/es.json";
+import pt from "./lang/pt.json";
+
+const manifest: ModuleManifest = {
+  id: "hymnal_1996",
+  name: "Hinário Adventista - 1996",
+  version: "2.0.0",
+  description: "Hinário Adventista (Edição 1996). Coleção clássica com as letras e músicas originais da edição de 1996.",
+  author: "maycorolbuche",
+  category: "musics",
+  icon: "mdi-music-clef-treble",
+  language: "pt",
+  minAppVersion: "1.0.0",
+  dependencies: [
+    "media",
+    "lyric",
+  ],
+  permissions: [],
+  translations: { pt, es },
+};
+
+export default manifest;
