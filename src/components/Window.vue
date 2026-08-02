@@ -135,26 +135,29 @@ export default {
       type: Boolean,
       default: false,
     },
-    scrollPos: Number,
-    title: String,
-    subtitle: String,
-    icon: String,
-    image: String,
+    scrollPos: { type: Number, default: 0 },
+    title: { type: String, default: "" },
+    subtitle: { type: String, default: "" },
+    icon: { type: String, default: "" },
+    image: { type: String, default: "" },
     compact: Boolean,
-    compact_footer: Boolean,
+    /* eslint-disable vue/prop-name-casing */
+    compact_footer: { type: Boolean, default: false },
+    /* eslint-enable vue/prop-name-casing */
     closable: Boolean,
     minimizable: Boolean,
-    titleClass: String,
+    titleClass: { type: String, default: "" },
     dark: Boolean,
-    index: [Boolean, Number, String],
-    size: String,
-    imageSize: Number,
-    color: String,
-    slotRightClass: String,
-    slotLeftStyle: [String, Object],
-    slotRightStyle: [String, Object],
+    index: { type: [Boolean, Number, String], default: false },
+    size: { type: String, default: "" },
+    imageSize: { type: Number, default: 0 },
+    color: { type: String, default: "" },
+    slotRightClass: { type: String, default: "" },
+    slotLeftStyle: { type: [String, Object], default: "" },
+    slotRightStyle: { type: [String, Object], default: "" },
     eager: Boolean,
   },
+  emits: ["update:modelValue", "close", "minimize", "scroll", "hasScroll", "resize"],
 
   data: () => ({
     container_height: 0,
@@ -177,16 +180,16 @@ export default {
     w_width() {
       return this.compact_screen
         ? "100%"
-        : this.size == "small"
+        : this.size === "small"
           ? "500px"
-          : this.size == "large"
+          : this.size === "large"
             ? "95%"
             : "90%";
     },
     w_height() {
       return this.compact_screen || this.compact_height
         ? "100%"
-        : this.size == "small"
+        : this.size === "small"
           ? "550px"
           : "90%";
     },

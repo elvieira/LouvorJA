@@ -5,10 +5,10 @@
         <div v-if="showContent" class="text-center" style="max-width: 500px; width: 100%;">
           <img src="/ico/favicon.svg" width="80" class="mb-6 pulse-anim" />
           <h2 class="text-h4 font-weight-bold mb-2" style="color: var(--sidebar-text);">
-            {{ isFirstBoot ? 'Preparando o Louvor JA' : 'Iniciando o Louvor JA' }}
+            {{ isFirstBoot ? $t('first_boot.title_prepare') : $t('first_boot.title_start') }}
           </h2>
           <p class="text-subtitle-1 mb-8" style="color: var(--sidebar-text-secondary);">
-            Aguarde instantes enquanto organizamos tudo para você.
+            {{ $t('first_boot.subtitle') }}
           </p>
 
           <div class="mb-2 d-flex justify-space-between align-center px-4">
@@ -32,7 +32,7 @@
               class="mt-4"
               @click="retrySync"
             >
-              Tentar Novamente
+              {{ $t('first_boot.retry_button') }}
             </v-btn>
           </div>
         </div>
@@ -53,12 +53,13 @@ export default {
       isOpen: true,
       showContent: false,
       progress: 0,
-      statusText: "Iniciando...",
+      statusText: "",
       isFirstBoot: false,
       hasError: false,
     };
   },
   mounted() {
+    this.statusText = this.$t("first_boot.status.starting");
     this.$appdata.set("system_first_boot_loading", true);
 
     if (window.location.href.includes("popup")) {
@@ -84,7 +85,7 @@ export default {
       setTimeout(() => {
         this.showContent = true;
         this.progress = 50;
-        this.statusText = "Modo de visualização (fechando em 5s)...";
+        this.statusText = this.$t("first_boot.status.view_mode");
         setTimeout(() => {
           this.isOpen = false;
         }, 5000);
@@ -93,7 +94,7 @@ export default {
     async retrySync() {
       this.hasError = false;
       this.progress = 0;
-      this.statusText = "Tentando novamente...";
+      this.statusText = this.$t("first_boot.status.retrying");
       await this.runFirstBootSync();
     },
     async checkFirstBoot() {
@@ -113,7 +114,7 @@ export default {
         await this.runFirstBootSync();
       } else {
         this.isFirstBoot = false;
-        this.statusText = "Carregando ambiente...";
+        this.statusText = this.$t("first_boot.status.loading_env");
         this.progress = 0;
         
         let step = 0;
@@ -177,7 +178,7 @@ export default {
       try {
         if (window.electronAPI) {
           this.progress = 0;
-          this.statusText = "Preparando...";
+          this.statusText = this.$t("first_boot.status.preparing");
           
           window.electronAPI.onExtractProgress((data) => {
             this.progress = data.progress;
@@ -193,15 +194,15 @@ export default {
             await this.fetchAndSave("config");
           } catch (e) {
             if (e.message && (e.message.includes("Failed to fetch") || e.message.includes("NetworkError"))) {
-              throw new Error("Sem conexão com a internet. Verifique sua rede e tente novamente.");
+              throw new Error(this.$t("first_boot.errors.no_internet"));
             } else if (e.message && e.message.includes("429")) {
-              throw new Error("Muitos acessos ao servidor (Rate Limit). Tente novamente mais tarde.");
+              throw new Error(this.$t("first_boot.errors.rate_limit"));
             } else {
-              throw new Error(`Falha ao conectar com o servidor: ${  e.message}`);
+              throw new Error(this.$t("first_boot.errors.server_fail").replace("{0}", e.message));
             }
           }
           
-          this.statusText = "Baixando banco de dados...";
+          this.statusText = this.$t("first_boot.status.downloading_db");
           this.progress = 0;
           
           let shouldDownloadDb = true;
@@ -210,8 +211,8 @@ export default {
             if (hasOldVersion) {
               const wantsToImport = await new Promise((resolve) => {
                 $alert.yesno({
-                  title: "Versão antiga detectada",
-                  text: "Detectamos que você possui a versão antiga do Louvor JA instalada neste computador.<br><br>Gostaria de importar o banco de dados da versão antiga para a nova versão?<br><br>Isso agilizará o processo de inicialização. Fique tranquilo, isso não irá alterar, remover ou interferir no funcionamento da versão antiga instalada.",
+                  title: this.$t("first_boot.old_version.title"),
+                  text: this.$t("first_boot.old_version.text"),
                   translate: false,
                   center: true,
                 }, (resp) => {
@@ -220,12 +221,12 @@ export default {
               });
               
               if (wantsToImport) {
-                this.statusText = "Importando dados da versão antiga...";
+                this.statusText = this.$t("first_boot.status.importing_old");
                 const imported = await window.electronAPI.importOldInstallation();
                 if (imported) {
                   shouldDownloadDb = false;
                 } else {
-                  this.statusText = "Falha ao importar. Baixando do servidor...";
+                  this.statusText = this.$t("first_boot.status.import_failed");
                 }
               }
             }
@@ -235,18 +236,18 @@ export default {
             try {
               await window.electronAPI.downloadDatabase();
             } catch (e) {
-              throw new Error("Erro no download do banco de dados. Verifique a internet e tente novamente.");
+              throw new Error(this.$t("first_boot.errors.db_download_fail"));
             }
           }
           
-          this.statusText = "Extraindo dados locais...";
+          this.statusText = this.$t("first_boot.status.extracting");
           this.progress = 0;
           
           let success = false;
           try {
             success = await window.electronAPI.extractLocalDb();
           } catch (e) {
-            throw new Error("Erro na extração dos dados locais.");
+            throw new Error(this.$t("first_boot.errors.extraction_fail"));
           }
 
           if (success) {

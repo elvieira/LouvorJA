@@ -160,20 +160,20 @@
             class="py-2"
             :bg-color="location === 'footer' ? (isDark ? 'var(--card-bg)' : 'white') : 'transparent'"
           >
-            <template v-for="(mode, key) in menu_modes" :key="key">
-              <v-divider v-if="mode.title == '-'" class="my-2 border-opacity-25" />
+            <template v-for="(menuMode, key) in menu_modes" :key="key">
+              <v-divider v-if="menuMode.title === '-'" class="my-2 border-opacity-25" />
               <v-list-item
                 v-else
-                :active="mode.active"
-                :disabled="mode.disabled"
+                :active="menuMode.active"
+                :disabled="menuMode.disabled"
                 :active-color="location === 'footer' ? 'var(--accent-blue)' : 'white'"
                 class="mx-2 rounded-lg mb-1"
                 style="min-height: 40px;"
-                @click="mode.click"
+                @click="menuMode.click"
               >
                 <div class="d-flex align-center">
-                  <v-icon :icon="mode.icon" size="small" class="mr-3" />
-                  <span class="text-body-2 font-weight-medium">{{ mode.title }}</span>
+                  <v-icon :icon="menuMode.icon" size="small" class="mr-3" />
+                  <span class="text-body-2 font-weight-medium">{{ menuMode.title }}</span>
                 </div>
               </v-list-item>
             </template>
@@ -224,7 +224,7 @@
       </v-btn>
 
       <v-btn
-        v-if="location == 'fullscreen'"
+        v-if="location === 'fullscreen'"
         variant="text"
         size="small"
         icon
@@ -243,7 +243,7 @@
         </v-tooltip>
       </v-btn>
       <v-btn
-        v-else-if="location == 'window'"
+        v-else-if="location === 'window'"
         variant="text"
         size="small"
         icon
@@ -263,7 +263,7 @@
       </v-btn>
 
       <v-btn 
-        v-if="location == 'window' && playerWidth >= 880"
+        v-if="location === 'window' && playerWidth >= 880"
         variant="text" 
         size="small" 
         icon 
@@ -286,15 +286,13 @@
 </template>
 
 <script>
-import LScreenBtn from "@/components/buttons/Screen.vue";
-
 export default {
   name: "PlayerComponent",
-  components: {
-    LScreenBtn,
-  },
   props: {
-    location: String,
+    location: {
+      type: String,
+      default: "window",
+    },
   },
   data() {
     return {
@@ -343,7 +341,7 @@ export default {
           mode: "audio",
           title: this.$t("modules.media.general.sung"),
           color: "info",
-          active: this.media.config.mode == "audio",
+          active: this.media.config.mode === "audio",
           icon: "mdi-play-circle",
           tray_icon: "mdi-account-voice",
           click: () =>
@@ -357,7 +355,7 @@ export default {
           mode: "instrumental",
           title: this.$t("modules.media.general.instrumental"),
           color: "success",
-          active: this.media.config.mode == "instrumental",
+          active: this.media.config.mode === "instrumental",
           disabled: !this.has_instrumental_music,
           icon: "mdi-play-circle-outline",
           tray_icon: "mdi-music-note",
@@ -372,7 +370,7 @@ export default {
           mode: "no_audio",
           title: this.$t("modules.media.general.no_audio"),
           color: "error",
-          active: this.media.config.mode == "no_audio",
+          active: this.media.config.mode === "no_audio",
           icon: "mdi-monitor",
           tray_icon: "mdi-music-off",
           click: () =>
@@ -392,20 +390,14 @@ export default {
     },
     mode() {
       return this.menu_modes.filter(
-        (item) => item.mode == this.media.config.mode,
+        (item) => item.mode === this.media.config.mode,
       )[0];
     },
     volume_icon() {
-      switch (true) {
-      case this.media.config.volume <= 0:
-        return "mdi-volume-mute";
-      case this.media.config.volume <= 20:
-        return "mdi-volume-low";
-      case this.media.config.volume <= 70:
-        return "mdi-volume-medium";
-      default:
-        return "mdi-volume-high";
-      }
+      if (this.media.config.volume <= 0) return "mdi-volume-mute";
+      if (this.media.config.volume <= 20) return "mdi-volume-low";
+      if (this.media.config.volume <= 70) return "mdi-volume-medium";
+      return "mdi-volume-high";
     },
     is_mobile() {
       return this.$appdata.get("is_mobile");

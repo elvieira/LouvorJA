@@ -21,12 +21,22 @@
 export default {
   name: "InputSearchComponent",
   props: {
-    modelValue: String,
-    label: String,
+    modelValue: {
+      type: String,
+      default: "",
+    },
+    label: {
+      type: String,
+      default: "",
+    },
     disabled: Boolean,
-    disabledHint: String,
+    disabledHint: {
+      type: String,
+      default: "",
+    },
     error: Boolean,
   },
+  emits: ["update:modelValue"],
   computed: {
     input: {
       get() {

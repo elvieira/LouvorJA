@@ -40,6 +40,7 @@ export default {
       required: true,
     },
   },
+  emits: ["show", "close", "minimize"],
   computed: {
     module_id() {
       return this.manifest.id;

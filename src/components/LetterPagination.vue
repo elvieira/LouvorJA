@@ -35,8 +35,12 @@
 export default {
   name: "LetterPaginationComponent",
   props: {
-    modelValue: String,
+    modelValue: {
+      type: String,
+      default: "",
+    },
   },
+  emits: ["update:modelValue"],
   computed: {
     input: {
       get() {

@@ -18,6 +18,7 @@
           :style="{ padding: `${Math.max(16, fontSizePc(4))}px` }"
         >
           <div class="d-flex flex-column align-center justify-center w-100">
+            <!-- eslint-disable vue/no-v-html -->
             <div
               v-if="slide.aux_text"
               :style="style_aux_text(slide)"
@@ -28,6 +29,7 @@
               :style="style_text(slide)"
               v-html="slide.text"
             />
+            <!-- eslint-enable vue/no-v-html -->
           </div>
         </div>
       </div>
@@ -38,14 +40,34 @@
 <script>
 export default {
   name: "SlideComponent",
+  /* eslint-disable vue/prop-name-casing */
   props: {
-    slide_number: Number,
-    cover: Boolean,
-    text: String,
-    aux_text: String,
-    image: String,
-    image_position: Number,
+    slide_number: {
+      type: Number,
+      default: 0,
+    },
+    cover: {
+      type: Boolean,
+      default: false,
+    },
+    text: {
+      type: String,
+      default: "",
+    },
+    aux_text: {
+      type: String,
+      default: "",
+    },
+    image: {
+      type: String,
+      default: "",
+    },
+    image_position: {
+      type: Number,
+      default: 50,
+    },
   },
+  /* eslint-enable vue/prop-name-casing */
   data: () => ({
     slides: [{}, {}],
     repeat: false,
@@ -118,12 +140,12 @@ export default {
     setSlide() {
       this.updateSettings();
       if (
-        this.$string.clean(this.slides[1].text) ==
+        this.$string.clean(this.slides[1].text) ===
         this.$string.clean(this.props_slide.text) &&
-        this.$string.clean(this.slides[1].aux_text) ==
+        this.$string.clean(this.slides[1].aux_text) ===
         this.$string.clean(this.props_slide.aux_text) &&
-        this.slides[1].image == this.props_slide.image &&
-        this.slides[1].cover == this.props_slide.cover
+        this.slides[1].image === this.props_slide.image &&
+        this.slides[1].cover === this.props_slide.cover
       ) {
         this.repeat = !this.repeat;
       } else {

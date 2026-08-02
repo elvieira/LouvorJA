@@ -51,5 +51,33 @@
         "developer_mode_disabled": "Modo DESENVOLVEDOR desativado!",
         "error_import_module": "Erro ao importar módulo",
         "misconfigured_module": "Este módulo está mal configurado. O id informado no manifest.json deve ter o mesmo nome da pasta onde está localizado!"
+    },
+    "first_boot": {
+        "title_prepare": "Preparando o Louvor JA",
+        "title_start": "Iniciando o Louvor JA",
+        "subtitle": "Aguarde instantes enquanto organizamos tudo para você.",
+        "retry_button": "Tentar Novamente",
+        "status": {
+            "starting": "Iniciando...",
+            "view_mode": "Modo de visualização (fechando em 5s)...",
+            "retrying": "Tentando novamente...",
+            "loading_env": "Carregando ambiente...",
+            "preparing": "Preparando...",
+            "downloading_db": "Baixando banco de dados...",
+            "importing_old": "Importando dados da versão antiga...",
+            "import_failed": "Falha ao importar. Baixando do servidor...",
+            "extracting": "Extraindo dados locais..."
+        },
+        "errors": {
+            "no_internet": "Sem conexão com a internet. Verifique sua rede e tente novamente.",
+            "rate_limit": "Muitos acessos ao servidor (Rate Limit). Tente novamente mais tarde.",
+            "server_fail": "Falha ao conectar com o servidor: {0}",
+            "db_download_fail": "Erro no download do banco de dados. Verifique a internet e tente novamente.",
+            "extraction_fail": "Erro na extração dos dados locais."
+        },
+        "old_version": {
+            "title": "Versão antiga detectada",
+            "text": "Detectamos que você possui a versão antiga do Louvor JA instalada neste computador.<br><br>Gostaria de importar o banco de dados da versão antiga para a nova versão?<br><br>Isso agilizará o processo de inicialização. Fique tranquilo, isso não irá alterar, remover ou interferir no funcionamento da versão antiga instalada."
+        }
     }
 }

@@ -1305,82 +1305,77 @@ export default {
     async executeItem(item) {
       let targetModule = null;
 
-      switch (item.type) {
-        case "music":
-          if (item.musicId) {
-            this.$media.open({ id_music: item.musicId, mode: "audio" });
-            targetModule = "media";
-          }
-          break;
-        case "verse":
-          if (item.verseBookId && item.verseChapter) {
-            targetModule = "bible";
-            this.$nextTick(() => {
-              this.$appdata.set("modules.bible.data.navigate", {
-                bookId: item.verseBookId,
-                chapter: item.verseChapter,
-                verses: item.verseNumbers,
-              });
+      if (item.type === "music") {
+        if (item.musicId) {
+          this.$media.open({ id_music: item.musicId, mode: "audio" });
+          targetModule = "media";
+        }
+      } else if (item.type === "verse") {
+        if (item.verseBookId && item.verseChapter) {
+          targetModule = "bible";
+          this.$nextTick(() => {
+            this.$appdata.set("modules.bible.data.navigate", {
+              bookId: item.verseBookId,
+              chapter: item.verseChapter,
+              verses: item.verseNumbers,
             });
-          }
-          break;
-        case "media":
-          if (item.filePath) {
-            const useInternal = this.$userdata.get("modules.config.media_use_internal_player");
-            
-            if (useInternal) {
-              if (this.$appdata.get("modules.media.id_music")) {
-                const confirmed = await new Promise((resolve) => {
-                  this.$alert.yesno({
-                    text: "Uma música está em reprodução no momento. Deseja encerrá-la e reproduzir esta mídia?",
-                    translate: false,
+          });
+        }
+      } else if (item.type === "media") {
+        if (item.filePath) {
+          const useInternal = this.$userdata.get("modules.config.media_use_internal_player");
+          
+          if (useInternal) {
+            if (this.$appdata.get("modules.media.id_music")) {
+              const confirmed = await new Promise((resolve) => {
+                this.$alert.yesno({
+                  text: "Uma música está em reprodução no momento. Deseja encerrá-la e reproduzir esta mídia?",
+                  translate: false,
                 }, (res) => resolve(res === "yes"));
-                });
-                if (!confirmed) return;
-                this.$media.close(true);
-              }
-
-              // Reproduz no reprodutor interno (external_media)
-              this.$appdata.set("modules.external_media.filePath", item.filePath);
-              this.$appdata.set("modules.external_media.title", item.name || "");
-              this.$appdata.set("modules.external_media.subtitle", item.subtitle || "");
-              this.$appdata.set("modules.external_media.minimized", false);
-              this.$appdata.set("modules.external_media.config", {
-                is_paused: true,
-                current_time: 0,
-                progress: 0,
-                duration: 0,
-                volume: 100,
               });
+              if (!confirmed) return;
+              this.$media.close(true);
+            }
 
-              // Check if it's audio-only
-              const ext = item.filePath.split(".").pop().toLowerCase();
-              const isAudio = ["mp3", "wav", "flac", "aac", "ogg", "wma", "m4a"].includes(ext);
+            // Reproduz no reprodutor interno (external_media)
+            this.$appdata.set("modules.external_media.filePath", item.filePath);
+            this.$appdata.set("modules.external_media.title", item.name || "");
+            this.$appdata.set("modules.external_media.subtitle", item.subtitle || "");
+            this.$appdata.set("modules.external_media.minimized", false);
+            this.$appdata.set("modules.external_media.config", {
+              is_paused: true,
+              current_time: 0,
+              progress: 0,
+              duration: 0,
+              volume: 100,
+            });
 
-              if (isAudio) {
+            // Check if it's audio-only
+            const ext = item.filePath.split(".").pop().toLowerCase();
+            const isAudio = ["mp3", "wav", "flac", "aac", "ogg", "wma", "m4a"].includes(ext);
+
+            if (isAudio) {
               // Audio goes straight to footer bar (minimized)
-                this.$appdata.set("modules.external_media.minimized", true);
-              } else {
+              this.$appdata.set("modules.external_media.minimized", true);
+            } else {
               // Video opens the full module
-                this.$appdata.set("modules.external_media.show", true);
-              }
-            } else {
+              this.$appdata.set("modules.external_media.show", true);
+            }
+          } else {
             // Reproduz no reprodutor padrão do sistema operacional
-              if (window.electronAPI && window.electronAPI.openPath) {
-                window.electronAPI.openPath(item.filePath);
-              }
+            if (window.electronAPI && window.electronAPI.openPath) {
+              window.electronAPI.openPath(item.filePath);
             }
           }
-          break;
-        case "link":
-          if (item.url) {
-            if (window.electronAPI && window.electronAPI.openExternal) {
-              window.electronAPI.openExternal(item.url);
-            } else {
-              window.open(item.url, "_blank");
-            }
+        }
+      } else if (item.type === "link") {
+        if (item.url) {
+          if (window.electronAPI && window.electronAPI.openExternal) {
+            window.electronAPI.openExternal(item.url);
+          } else {
+            window.open(item.url, "_blank");
           }
-          break;
+        }
       }
 
       if (targetModule) {

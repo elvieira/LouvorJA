@@ -23,11 +23,18 @@
 export default {
   name: "CheckBoxComponent",
   props: {
-    modelValue: Boolean,
-    label: String,
+    modelValue: {
+      type: Boolean,
+      default: false,
+    },
+    label: {
+      type: String,
+      default: "",
+    },
     disabled: Boolean,
     switch: Boolean,
   },
+  emits: ["update:modelValue"],
   computed: {
     input: {
       get() {

@@ -9,13 +9,17 @@
   >
     <v-card :color="alert.color" class="modern-alert-card rounded-xl">
       <v-card-title v-if="alert.title" class="pt-6 px-6">
+        <!-- eslint-disable vue/no-v-html -->
         <div v-if="alert.translate" v-html="$t(alert.title)" />
         <div v-else v-html="alert.title" />
+        <!-- eslint-enable vue/no-v-html -->
       </v-card-title>
       <v-card-text v-if="alert.text" class="px-6 pb-2" :class="alert.title ? 'pt-2' : 'pt-8'">
+        <!-- eslint-disable vue/no-v-html -->
         <div v-if="alert.translate" class="alert-text-content" v-html="$t(alert.text)" />
         <div v-else class="alert-text-content" v-html="alert.text" />
         <small v-if="alert.error" class="text-error mt-2 d-block" v-html="alert.error" />
+        <!-- eslint-enable vue/no-v-html -->
       </v-card-text>
       <v-card-actions class="px-6 pb-6 pt-2 d-flex justify-end" style="gap: 12px;">
         <v-spacer />

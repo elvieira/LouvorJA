@@ -51,5 +51,33 @@
         "developer_mode_disabled": "Modo DESARROLLADOR desactivado!",
         "error_import_module": "Error al importar el módulo",
         "misconfigured_module": "Este módulo está mal configurado. ¡La identificación ingresada en manifest.json debe tener el mismo nombre que la carpeta donde se encuentra!"
+    },
+    "first_boot": {
+        "title_prepare": "Preparando Loor JA",
+        "title_start": "Iniciando Loor JA",
+        "subtitle": "Espera un momento mientras organizamos todo para ti.",
+        "retry_button": "Intentar Nuevamente",
+        "status": {
+            "starting": "Iniciando...",
+            "view_mode": "Modo de visualización (cerrando en 5s)...",
+            "retrying": "Intentando nuevamente...",
+            "loading_env": "Cargando ambiente...",
+            "preparing": "Preparando...",
+            "downloading_db": "Descargando base de datos...",
+            "importing_old": "Importando datos de la versión antigua...",
+            "import_failed": "Fallo al importar. Descargando del servidor...",
+            "extracting": "Extrayendo datos locales..."
+        },
+        "errors": {
+            "no_internet": "Sin conexión a internet. Verifica tu red e intenta nuevamente.",
+            "rate_limit": "Demasiados accesos al servidor (Rate Limit). Intenta nuevamente más tarde.",
+            "server_fail": "Fallo al conectar con el servidor: {0}",
+            "db_download_fail": "Error en la descarga de la base de datos. Verifica tu internet e intenta nuevamente.",
+            "extraction_fail": "Error en la extracción de los datos locales."
+        },
+        "old_version": {
+            "title": "Versión antigua detectada",
+            "text": "Detectamos que tienes la versión antigua de Loor JA instalada en esta computadora.<br><br>¿Te gustaría importar la base de datos de la versión antigua a la nueva versión?<br><br>Esto acelerará el proceso de inicialización. No te preocupes, esto no alterará, eliminará ni interferirá con el funcionamiento de la versión antigua instalada."
+        }
     }
 }
