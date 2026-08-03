@@ -8,6 +8,7 @@
   "no_preview": "Seleccione un elemento para visualizar",
   "no_preview_hint": "Haga clic en un elemento de la lista para ver la vista previa aquí.",
   "notes": "Notas",
+  "notes_placeholder": "Escribe tus notas para este culto aquí...",
   "days": {
     "sunday": "Domingo",
     "monday": "Lunes",
@@ -44,7 +45,11 @@
     "book": "Libro",
     "chapter": "Capítulo",
     "verses": "Versículos",
-    "search_music": "Buscar música..."
+    "search_music": "Buscar música...",
+    "click_to_browse": "Haga clic para buscar en la computadora",
+    "select_media": "Seleccionar Medio",
+    "verses_placeholder": "Ej: 1-5, 8",
+    "url_placeholder": "https://..."
   },
   "actions": {
     "save": "Guardar",
@@ -56,17 +61,26 @@
     "project": "Proyectar",
     "play": "Reproducir",
     "open": "Abrir",
-    "new_liturgy": "Nueva Liturgia"
+    "new_liturgy": "Nueva Liturgia",
+    "change": "Cambiar"
   },
   "messages": {
     "confirm_delete": "¿Desea eliminar este elemento de la liturgia?",
     "confirm_clear": "¿Desea limpiar todos los elementos de esta liturgia?",
     "item_added": "¡Elemento agregado con éxito!",
-    "liturgy_saved": "¡Liturgia guardada con éxito!"
+    "liturgy_saved": "¡Liturgia guardada con éxito!",
+    "music_not_found": "Música no encontrada",
+    "book_not_found": "Libro no encontrado",
+    "chapter_not_found": "Capítulo no encontrado",
+    "select_book_first": "Seleccione el libro primero",
+    "invalid_verse": "El capítulo tiene sólo {max} versículos. El versículo {num} no existe."
   },
   "custom_liturgy": {
     "title": "Liturgias Personalizadas",
     "new": "Nueva Liturgia Personalizada",
-    "name_placeholder": "Nombre de la liturgia (ej: Culto Joven 12/07)"
+    "name_placeholder": "Nombre de la liturgia (ej: Culto Joven)",
+    "confirm_delete": "¿Desea eliminar esta liturgia personalizada?",
+    "empty_list": "Ninguna Liturgia Personalizada",
+    "empty_list_hint": "Cree una nueva liturgia personalizada en la barra superior para comenzar."
   }
 }

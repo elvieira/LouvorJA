@@ -8,6 +8,7 @@
   "no_preview": "Selecione um item para visualizar",
   "no_preview_hint": "Clique em um item da lista para ver a pré-visualização aqui.",
   "notes": "Anotações",
+  "notes_placeholder": "Escreva suas anotações para este culto aqui...",
   "days": {
     "sunday": "Domingo",
     "monday": "Segunda",
@@ -44,7 +45,11 @@
     "book": "Livro",
     "chapter": "Capítulo",
     "verses": "Versículos",
-    "search_music": "Buscar música..."
+    "search_music": "Buscar música...",
+    "click_to_browse": "Clique para buscar no computador",
+    "select_media": "Selecionar Mídia",
+    "verses_placeholder": "Ex: 1-5, 8",
+    "url_placeholder": "https://..."
   },
   "actions": {
     "save": "Salvar",
@@ -56,17 +61,26 @@
     "project": "Projetar",
     "play": "Reproduzir",
     "open": "Abrir",
-    "new_liturgy": "Nova Liturgia"
+    "new_liturgy": "Nova Liturgia",
+    "change": "Trocar"
   },
   "messages": {
     "confirm_delete": "Deseja remover este item da liturgia?",
     "confirm_clear": "Deseja limpar todos os itens desta liturgia?",
     "item_added": "Item adicionado com sucesso!",
-    "liturgy_saved": "Liturgia salva com sucesso!"
+    "liturgy_saved": "Liturgia salva com sucesso!",
+    "music_not_found": "Música não encontrada",
+    "book_not_found": "Livro não encontrado",
+    "chapter_not_found": "Capítulo não encontrado",
+    "select_book_first": "Selecione o livro primeiro",
+    "invalid_verse": "O capítulo possui apenas {max} versículos. O versículo {num} não existe."
   },
   "custom_liturgy": {
     "title": "Liturgias Avulsas",
     "new": "Nova Liturgia Avulsa",
-    "name_placeholder": "Nome da liturgia (ex: Culto Jovem 12/07)"
+    "name_placeholder": "Nome da liturgia (ex: Culto Jovem)",
+    "confirm_delete": "Deseja remover esta liturgia avulsa?",
+    "empty_list": "Nenhuma Liturgia Avulsa",
+    "empty_list_hint": "Crie uma nova liturgia avulsa na barra superior para começar."
   }
 }

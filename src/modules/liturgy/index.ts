@@ -1,7 +1,7 @@
 import BaseModule from "../BaseModule";
 import es from "./lang/es.json";
 import pt from "./lang/pt.json";
-import manifest from "./manifest.json";
+import manifest from "./manifest";
 
 export default class extends BaseModule {
   constructor() {
