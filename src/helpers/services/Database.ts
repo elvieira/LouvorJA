@@ -24,7 +24,8 @@ export default {
           $storage.set(cache_name, localData, "session");
           return localData as T;
         }
-        $dev.write("BD local não encontrado, baixando e salvando:", file);
+        $dev.write("BD local não encontrado. Fallback web desabilitado para o desktop:", file);
+        throw new Error(`O arquivo '${file}' não foi encontrado localmente. Sincronize o banco de dados novamente.`);
       }
 
       const date = new Date().toISOString().slice(0, 10).replace(/-/g, "");

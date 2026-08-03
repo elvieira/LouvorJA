@@ -2,6 +2,7 @@
   <v-app id="app-container">
     <AppTitlebar />
     <AppAlert />
+    <AppSnackbar />
     <FirstBootLoader @boot-complete="isAppReady = true" />
     <template v-if="isAppReady">
       <AppLoading />
@@ -20,6 +21,7 @@ import AppLoading from "@/layout/Loading.vue";
 import FirstBootLoader from "@/layout/FirstBootLoader.vue";
 import AppTitlebar from "@/layout/Titlebar.vue";
 import AppAlert from "@/layout/Alert.vue";
+import AppSnackbar from "@/layout/Snackbar.vue";
 import BackgroundSync from "@/helpers/services/BackgroundSync";
 
 export default {
@@ -29,6 +31,7 @@ export default {
     FirstBootLoader,
     AppTitlebar,
     AppAlert,
+    AppSnackbar,
   },
   data() {
     return {
@@ -91,8 +94,37 @@ export default {
       }
       
       // Inicia a sincronização silenciosa em background (se necessária)
-      setTimeout(() => {
+      setTimeout(async () => {
         BackgroundSync.start();
+        
+        // Auto-healing e validação de arquivos ausentes
+        if (window.electronAPI && window.electronAPI.validateInstallation) {
+          const missing = await window.electronAPI.validateInstallation();
+          if (missing && missing.totalMissing > 0) {
+            const { default: $snackbar } = await import("@/helpers/ui/Snackbar");
+            $snackbar.show({ text: `Recuperando ${missing.totalMissing} arquivos ausentes...`, loading: true, timeout: -1, color: "orange-darken-2" });
+            
+            // 1. Repara os .bin primeiro localmente
+            if (missing.missingBins.length > 0) {
+              await window.electronAPI.repairSysdata(missing.missingBins);
+            }
+            
+            // 2. Baixa mídias ausentes via HTTP(S) (com fallback FTP interno)
+            if (missing.missingCovers.length > 0) {
+              for (const file of missing.missingCovers) await window.electronAPI.downloadMedia("", "covers", file);
+            }
+            if (missing.missingMusic.length > 0) {
+              for (const file of missing.missingMusic) await window.electronAPI.downloadMedia("", "music", file);
+            }
+            if (missing.missingImages.length > 0) {
+              for (const file of missing.missingImages) await window.electronAPI.downloadMedia("", "slides", file);
+            }
+            
+            // Adiciona um pequeno atraso para que o usuário consiga ler a mensagem de recuperação
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            $snackbar.show({ text: "Todos os arquivos foram recuperados com sucesso!", color: "success", timeout: 3000 });
+          }
+        }
       }, 5000);
     },
     handleKeydown() {

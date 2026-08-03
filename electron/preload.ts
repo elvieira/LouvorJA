@@ -19,6 +19,9 @@ contextBridge.exposeInMainWorld("electronAPI", {
   checkOldInstallation: () => ipcRenderer.invoke("check-old-installation"),
   importOldInstallation: () => ipcRenderer.invoke("import-old-installation"),
   
+  validateInstallation: () => ipcRenderer.invoke("validate-installation"),
+  repairSysdata: (filenames: string[]) => ipcRenderer.invoke("repair-sysdata", filenames),
+  
   windowControl: (action: string) => ipcRenderer.invoke("window-control", action),
   onWindowMaximizedState: (callback: (isMaximized: boolean) => void) => {
     ipcRenderer.on("window-maximized-state", (_event, isMaximized: boolean) => callback(isMaximized));

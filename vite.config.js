@@ -19,14 +19,33 @@ export default defineConfig(({ mode }) => {
         },
       },
     },
+    build: {
+      rollupOptions: {
+        external: ["sql.js"],
+      },
+    },
     plugins: [
       vue(),
       electron({
         main: {
           entry: "electron/main.ts",
+          vite: {
+            build: {
+              rollupOptions: {
+                external: ["sql.js"],
+              },
+            },
+          },
         },
         preload: {
           input: "electron/preload.ts",
+          vite: {
+            build: {
+              rollupOptions: {
+                external: ["sql.js"],
+              },
+            },
+          },
         },
       }),
       // https://github.com/vuetifyjs/vuetify-loader/tree/next/packages/vite-plugin

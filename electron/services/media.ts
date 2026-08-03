@@ -1,8 +1,28 @@
 import { ipcMain, net } from "electron";
 import * as path from "path";
 import * as fs from "fs-extra";
-import { coversPath, musicPath, slidesPath } from "../config/constants";
+import { coversPath, musicPath, slidesPath, sysDbPath } from "../config/constants";
 import { getFtpParams, useFtpFallback, setUseFtpFallback, resetFtpFallbackTimer, getOrCreateFtpClient, ftpMutex, forceCloseFtpClient } from "../utils/ftp-client";
+import { encryptData, decryptData } from "../utils/crypto";
+
+function registerDownloadedMedia(filename: string) {
+  try {
+    const registryPath = path.join(sysDbPath, "downloaded_media.bin");
+    let downloadedFiles: string[] = [];
+    if (fs.existsSync(registryPath)) {
+      const encryptedContent = fs.readFileSync(registryPath, "utf8");
+      const decryptedString = decryptData(encryptedContent);
+      if (decryptedString) downloadedFiles = JSON.parse(decryptedString);
+    }
+    if (!downloadedFiles.includes(filename)) {
+      downloadedFiles.push(filename);
+      const newEncrypted = encryptData(JSON.stringify(downloadedFiles));
+      if (newEncrypted) fs.writeFileSync(registryPath, newEncrypted, "utf8");
+    }
+  } catch (e) {
+    console.error("Erro ao registrar media baixada:", e);
+  }
+}
 
 function buildApiUrl(destFolderType: string, filename: string): string {
   let urlFolder = "covers";
@@ -62,7 +82,13 @@ export function registerMediaHandlers() {
       if (destFolderType === "music") destFolder = musicPath;
       else if (destFolderType === "slides") destFolder = slidesPath;
 
-      const decodedFilename = decodeURIComponent(filename);
+      let decodedFilename = decodeURIComponent(filename);
+      if (destFolderType === "music" && decodedFilename.startsWith("/musics/")) {
+        decodedFilename = decodedFilename.substring(8); // remove /musics/
+      } else if (destFolderType === "slides" && decodedFilename.startsWith("/images/")) {
+        decodedFilename = decodedFilename.substring(8); // remove /images/
+      }
+      
       const filePath = path.join(destFolder, decodedFilename);
       const fileDir = path.dirname(filePath);
 
@@ -74,6 +100,7 @@ export function registerMediaHandlers() {
         resetFtpFallbackTimer();
         try {
           await downloadMediaViaFtp(destFolderType, decodedFilename, filePath);
+          if (destFolderType !== "covers") registerDownloadedMedia(decodedFilename);
           return true;
         } catch (_ftpError: unknown) {
           console.error("[FTP] Erro no fallback FTP (direto):", (_ftpError as Error).message);
@@ -90,6 +117,7 @@ export function registerMediaHandlers() {
         resetFtpFallbackTimer();
         try {
           await downloadMediaViaFtp(destFolderType, decodedFilename, filePath);
+          if (destFolderType !== "covers") registerDownloadedMedia(decodedFilename);
           return true;
         } catch (_ftpError: unknown) {
           console.error("[FTP] Erro no fallback FTP após 429:", (_ftpError as Error).message);
@@ -102,6 +130,7 @@ export function registerMediaHandlers() {
       const arrayBuffer = await response.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
       fs.writeFileSync(filePath, buffer);
+      if (destFolderType !== "covers") registerDownloadedMedia(decodedFilename);
       return true;
     } catch (_error: unknown) {
       console.error("[Download] Erro baixando mídia:", (_error as Error).message);
@@ -114,7 +143,12 @@ export function registerMediaHandlers() {
     if (destFolderType === "music") destFolder = musicPath;
     else if (destFolderType === "slides") destFolder = slidesPath;
 
-    const decodedFilename = decodeURIComponent(filename);
+    let decodedFilename = decodeURIComponent(filename);
+    if (destFolderType === "music" && decodedFilename.startsWith("/musics/")) {
+      decodedFilename = decodedFilename.substring(8);
+    } else if (destFolderType === "slides" && decodedFilename.startsWith("/images/")) {
+      decodedFilename = decodedFilename.substring(8);
+    }
     const filePath = path.join(destFolder, decodedFilename);
     if (fs.existsSync(filePath)) {
       const cleanFilename = decodedFilename.replace(/\\/g, "/");
@@ -129,7 +163,12 @@ export function registerMediaHandlers() {
     if (destFolderType === "music") destFolder = musicPath;
     else if (destFolderType === "slides") destFolder = slidesPath;
 
-    const decodedFilename = decodeURIComponent(filename);
+    let decodedFilename = decodeURIComponent(filename);
+    if (destFolderType === "music" && decodedFilename.startsWith("/musics/")) {
+      decodedFilename = decodedFilename.substring(8);
+    } else if (destFolderType === "slides" && decodedFilename.startsWith("/images/")) {
+      decodedFilename = decodedFilename.substring(8);
+    }
     const filePath = path.join(destFolder, decodedFilename);
     if (fs.existsSync(filePath)) {
       try {

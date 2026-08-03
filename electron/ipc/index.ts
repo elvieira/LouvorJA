@@ -4,11 +4,13 @@ import { sysDbPath, mediaPath, coversPath, musicPath, slidesPath } from "../conf
 import { registerDatabaseHandlers } from "../services/database";
 import { registerMediaHandlers } from "../services/media";
 import { registerUpdaterHandlers } from "../services/updater";
+import { registerValidatorHandlers } from "../services/validator";
 
 export function registerIpcHandlers() {
   registerDatabaseHandlers();
   registerMediaHandlers();
   registerUpdaterHandlers();
+  registerValidatorHandlers();
 
   ipcMain.handle("open-file-dialog", async (event, options: Electron.OpenDialogOptions) => {
     const win = BrowserWindow.fromWebContents(event.sender);

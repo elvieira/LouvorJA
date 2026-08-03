@@ -5,6 +5,7 @@ import $userdata from "@/helpers/config/UserData";
 import $datetime from "@/helpers/utils/DateTime";
 import $path from "@/helpers/utils/Path";
 import $alert from "@/helpers/ui/Alert";
+import $snackbar from "@/helpers/ui/Snackbar";
 import $modules from "@/helpers/core/Modules";
 import $database from "@/helpers/services/Database";
 import $history from "@/helpers/services/History";
@@ -530,10 +531,29 @@ export default {
       if (callback) callback();
     } else {
       audio.play().catch((e: unknown) => {
+        const errorMsg = e instanceof Error ? e.message : String(e || "");
+        if (errorMsg.includes("NotSupportedError") || errorMsg.includes("network") || errorMsg.includes("failed")) {
+          const currentMode = $appdata.get("modules.media.config.mode");
+          const musicData = $appdata.get("modules.media.data");
+          let file = "";
+          if (currentMode === "audio") file = musicData.url_music;
+          else if (currentMode === "instrumental") file = musicData.url_instrumental_music;
+          
+          if (file) {
+            $snackbar.show({ text: "Aviso: Arquivo ausente. Baixando e recuperando...", color: "warning", timeout: 4000 });
+            if (window.electronAPI && window.electronAPI.downloadMedia) {
+              window.electronAPI.downloadMedia("", "music", file).then(() => {
+                this.open($appdata.get("modules.media.id_music"));
+              });
+              return;
+            }
+          }
+        }
+
         $alert.error(
           {
             text: "modules.media.alerts.not_loaded",
-            error: e instanceof Error ? e.message : String(e || ""),
+            error: errorMsg,
           },
           (a: boolean) => {
             if (a) {

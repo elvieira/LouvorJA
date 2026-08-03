@@ -168,7 +168,7 @@
         </v-list>
       </div>
 
-      <div class="floating-pill-container position-absolute w-100 d-flex justify-center" style="bottom: 40px; z-index: 20; pointer-events: none;">
+      <div v-show="!fullscreen" class="floating-pill-container position-absolute w-100 d-flex justify-center" style="bottom: 40px; z-index: 20; pointer-events: none;">
         <div style="pointer-events: auto;">
           <LPlayer location="window" />
         </div>

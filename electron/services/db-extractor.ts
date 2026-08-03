@@ -1,16 +1,31 @@
-import Database from "better-sqlite3";
 import * as path from "path";
 import * as fs from "fs-extra";
 import { app } from "electron";
 import { encryptData } from "../utils/crypto";
+import { SQLiteHelper } from "../utils/sqlite";
 
 export default class DbExtractor {
   private dbPath: string;
   private sysdataDir: string;
+  private db: SQLiteHelper | null = null;
 
   constructor(dbPath: string) {
     this.dbPath = dbPath;
     this.sysdataDir = path.join(app.getPath("userData"), ".sysdata");
+  }
+
+  async connect() {
+    if (!this.db) {
+      this.db = new SQLiteHelper(this.dbPath);
+      await this.db.connect();
+    }
+  }
+
+  close() {
+    if (this.db) {
+      this.db.close();
+      this.db = null;
+    }
   }
 
   async extract(progressCallback: (data: { text: string; progress: number }) => void = () => {}): Promise<void> {
@@ -19,9 +34,10 @@ export default class DbExtractor {
     }
 
     fs.ensureDirSync(this.sysdataDir);
-    const db = new Database(this.dbPath, { readonly: true });
+    await this.connect();
     
     try {
+      const db = this.db!;
       progressCallback({ text: "Extraindo categorias...", progress: 10 });
       this.extractCategories(db);
 
@@ -36,9 +52,267 @@ export default class DbExtractor {
 
       progressCallback({ text: "Extração concluída", progress: 100 });
     } finally {
-      db.close();
+      this.close();
     }
   }
+
+  public async repairFile(filename: string): Promise<unknown> {
+    if (!fs.existsSync(this.dbPath)) return null;
+    fs.ensureDirSync(this.sysdataDir);
+    
+    const autoClose = !this.db;
+    if (autoClose) {
+      await this.connect();
+    }
+    
+    try {
+      const db = this.db!;
+      if (filename === "pt_categories") {
+        return this.repairCategories(db);
+      } else if (filename === "pt_bible_book") {
+        return this.repairBibleBooks(db);
+      } else if (filename === "pt_bible_version") {
+        return this.repairBibleVersions(db);
+      } else if (filename === "pt_hymnal" || filename === "pt_hymnal_1996") {
+        const hymnalId = filename === "pt_hymnal" ? 712 : 629;
+        return this.repairHymnal(db, hymnalId, filename);
+      } else if (filename.startsWith("bible_")) {
+        const parts = filename.split("_");
+        if (parts.length === 4) {
+          return this.repairBibleChapter(db, parseInt(parts[1]), parseInt(parts[2]), parseInt(parts[3]), filename);
+        }
+      } else if (filename.startsWith("album_")) {
+        const albumId = parseInt(filename.split("_")[1]);
+        if (!isNaN(albumId)) return this.repairAlbum(db, albumId);
+      } else if (filename.startsWith("music_")) {
+        const musicId = parseInt(filename.split("_")[1]);
+        if (!isNaN(musicId)) return this.repairMusic(db, musicId);
+      }
+    } finally {
+      if (autoClose) {
+        this.close();
+      }
+    }
+    return null;
+  }
+
+  private repairCategories(db: SQLiteHelper): unknown {
+    const categoriesRows = db.prepare("SELECT * FROM categories WHERE id_language = 'pt' ORDER BY `order` ASC").all() as Record<string, unknown>[];
+    const categories: Record<string, unknown>[] = [];
+    for (const cat of categoriesRows) {
+      const albumsRows = db.prepare(`
+        SELECT ca.id_album, a.name, a.color, f.dir, f.file_name, ca.name as subtitle, ca.\`order\`
+        FROM categories_albums ca
+        JOIN albums a ON ca.id_album = a.id_album
+        LEFT JOIN files f ON a.id_file_image = f.id_file
+        WHERE ca.id_category = ?
+        ORDER BY ca.\`order\` ASC
+      `).all(cat.id_category) as Record<string, unknown>[];
+
+      const albums = albumsRows.map(row => ({
+        id_album: row.id_album,
+        name: row.name,
+        color: row.color,
+        url_image: (row.dir && row.file_name) ? `${row.dir}/${row.file_name}` : null,
+        subtitle: row.subtitle || "",
+        order: row.order,
+      }));
+
+      categories.push({
+        id_category: cat.id_category,
+        name: cat.name,
+        slug: cat.slug,
+        order: cat.order,
+        albums: albums.length > 0 ? albums : undefined,
+      });
+    }
+    this.saveJson("pt_categories", categories);
+    return categories;
+  }
+
+  private repairBibleBooks(db: SQLiteHelper): unknown {
+    const books = db.prepare("SELECT * FROM bible_book WHERE id_language = 'pt' ORDER BY book_number ASC").all() as Record<string, unknown>[];
+    this.saveJson("pt_bible_book", books);
+    return books;
+  }
+
+  private repairBibleVersions(db: SQLiteHelper): unknown {
+    const versions = db.prepare("SELECT * FROM bible_version WHERE id_language = 'pt'").all() as Record<string, unknown>[];
+    this.saveJson("pt_bible_version", versions);
+    return versions;
+  }
+
+  private repairHymnal(db: SQLiteHelper, albumId: number, filename: string): unknown {
+    const rows = db.prepare(`
+      SELECT am.track, m.id_music, m.name, fim.file_name as im_file, fm.duration
+      FROM albums_musics am
+      JOIN musics m ON am.id_music = m.id_music
+      LEFT JOIN files fm ON m.id_file_music = fm.id_file
+      LEFT JOIN files fim ON m.id_file_instrumental_music = fim.id_file
+      WHERE am.id_album = ?
+      ORDER BY am.track ASC
+    `).all(albumId) as Record<string, unknown>[];
+
+    const data = rows.map(r => {
+      const lyrics = db.prepare("SELECT lyric FROM lyrics WHERE id_music = ? ORDER BY `order` ASC").all(r.id_music) as Record<string, unknown>[];
+      let fullLyric = "";
+      for (const l of lyrics) {
+        if (typeof l.lyric === "string" && l.lyric.trim() !== "") {
+          fullLyric += `${l.lyric} `;
+        }
+      }
+      return {
+        id_music: r.id_music,
+        name: r.name,
+        track: r.track,
+        has_instrumental_music: r.im_file ? 1 : 0,
+        duration: r.duration,
+        lyric: fullLyric,
+      };
+    });
+    this.saveJson(filename, data);
+    return data;
+  }
+
+  private repairBibleChapter(db: SQLiteHelper, version: number, book: number, ch: number, filename: string): unknown {
+    const verses = db.prepare(`
+      SELECT verse, text 
+      FROM bible_verse 
+      WHERE id_bible_version = ? AND id_bible_book = ? AND chapter = ?
+      ORDER BY verse ASC
+    `).all(version, book, ch) as Record<string, unknown>[];
+    
+    const versesObj: Record<string, string> = {};
+    for (const v of verses) {
+      versesObj[v.verse as number] = v.text as string;
+    }
+    this.saveJson(filename, versesObj);
+    return versesObj;
+  }
+
+  private repairAlbum(db: SQLiteHelper, albumId: number): unknown {
+    const albumRow = db.prepare(`
+      SELECT a.id_album, a.name, a.color, f.dir, f.file_name 
+      FROM albums a
+      LEFT JOIN files f ON a.id_file_image = f.id_file
+      WHERE a.id_album = ?
+    `).get(albumId) as Record<string, unknown>;
+    
+    if (!albumRow) return null;
+
+    const categoriesRows = db.prepare(`
+      SELECT c.slug, c.id_category 
+      FROM categories_albums ca
+      JOIN categories c ON ca.id_category = c.id_category
+      WHERE ca.id_album = ?
+    `).all(albumId) as Record<string, unknown>[];
+    
+    const categoriesSlugs = categoriesRows.map(c => c.slug);
+    
+    const albumJson = {
+      id_album: albumRow.id_album,
+      name: albumRow.name,
+      color: albumRow.color || "",
+      url_image: (albumRow.dir && albumRow.file_name) ? `${albumRow.dir}/${albumRow.file_name}` : null,
+      categories: categoriesSlugs.length > 0 ? categoriesSlugs : undefined,
+      musics: [] as Record<string, unknown>[],
+    };
+
+    const musicsRows = db.prepare(`
+      SELECT m.id_music, m.name, am.track, fm.duration
+      FROM albums_musics am
+      JOIN musics m ON am.id_music = m.id_music
+      LEFT JOIN files fm ON m.id_file_music = fm.id_file
+      WHERE am.id_album = ?
+      ORDER BY am.track ASC
+    `).all(albumId) as Record<string, unknown>[];
+
+    for (const m of musicsRows) {
+      albumJson.musics.push({
+        id_music: m.id_music,
+        name: m.name,
+        duration: m.duration,
+        track: m.track,
+      });
+    }
+
+    this.saveJson(`album_${albumId}`, albumJson);
+    return albumJson;
+  }
+
+  private repairMusic(db: SQLiteHelper, musicId: number): unknown {
+    const m = db.prepare(`
+      SELECT m.id_music, m.name, 
+        fm.duration as duration,
+        fim.duration as instrumental_duration,
+        fm.dir as m_dir, fm.file_name as m_file,
+        fim.dir as im_dir, fim.file_name as im_file,
+        fi.dir as i_dir, fi.file_name as i_file
+      FROM musics m
+      LEFT JOIN files fm ON m.id_file_music = fm.id_file
+      LEFT JOIN files fim ON m.id_file_instrumental_music = fim.id_file
+      LEFT JOIN files fi ON m.id_file_image = fi.id_file
+      WHERE m.id_music = ?
+    `).get(musicId) as Record<string, unknown>;
+
+    if (!m) return null;
+
+    const lyricsRows = db.prepare(`
+      SELECT l.id_lyric, l.lyric, l.aux_lyric, l.time, l.instrumental_time, l.show_slide, l.\`order\`,
+              fl.dir, fl.file_name
+      FROM lyrics l
+      LEFT JOIN files fl ON l.id_file_image = fl.id_file
+      WHERE l.id_music = ?
+      ORDER BY l.\`order\` ASC
+    `).all(musicId) as Record<string, unknown>[];
+
+    const lyricArr = lyricsRows.map(l => ({
+      id_lyric: l.id_lyric,
+      id_music: m.id_music,
+      lyric: l.lyric,
+      aux_lyric: l.aux_lyric,
+      url_image: (l.dir && l.file_name) ? `${l.dir}/${l.file_name}` : null,
+      image_position: null,
+      time: l.time,
+      instrumental_time: l.instrumental_time,
+      show_slide: l.show_slide,
+      order: l.order,
+    }));
+
+    const musicAlbumsRows = db.prepare(`
+      SELECT am.id_album, a.name, am.track, f.dir, f.file_name, ca.\`order\`
+      FROM albums_musics am
+      JOIN albums a ON am.id_album = a.id_album
+      LEFT JOIN files f ON a.id_file_image = f.id_file
+      LEFT JOIN categories_albums ca ON ca.id_album = a.id_album
+      WHERE am.id_music = ?
+    `).all(musicId) as Record<string, unknown>[];
+
+    const musicAlbums = musicAlbumsRows.map(a => ({
+      id_album: a.id_album,
+      name: a.name,
+      track: a.track,
+      url_image: (a.dir && a.file_name) ? `${a.dir}/${a.file_name}` : null,
+      order: a.order || 0,
+    }));
+
+    const musicJson = {
+      id_music: m.id_music,
+      name: m.name,
+      duration: m.duration,
+      instrumental_duration: m.instrumental_duration,
+      url_image: (m.i_dir && m.i_file) ? `${m.i_dir}/${m.i_file}` : null,
+      image_position: null,
+      url_music: (m.m_dir && m.m_file) ? `${m.m_dir}/${m.m_file}` : null,
+      url_instrumental_music: (m.im_dir && m.im_file) ? `${m.im_dir}/${m.im_file}` : null,
+      lyric: lyricArr,
+      albums: musicAlbums,
+    };
+
+    this.saveJson(`music_${musicId}`, musicJson);
+    return musicJson;
+  }
+
 
   private saveJson(filename: string, data: unknown): void {
     const filePath = path.join(this.sysdataDir, `${filename}.bin`);
@@ -49,7 +323,7 @@ export default class DbExtractor {
     }
   }
 
-  private extractCategories(db: Database.Database): void {
+  private extractCategories(db: SQLiteHelper): void {
     const categoriesRows = db.prepare("SELECT * FROM categories WHERE id_language = 'pt' ORDER BY `order` ASC").all() as Record<string, unknown>[];
     const categories: Record<string, unknown>[] = [];
 
@@ -84,7 +358,7 @@ export default class DbExtractor {
     this.saveJson("pt_categories", categories);
   }
 
-  private extractAlbumsAndMusics(db: Database.Database, progressCallback: (data: { text: string; progress: number }) => void): void {
+  private extractAlbumsAndMusics(db: SQLiteHelper, progressCallback: (data: { text: string; progress: number }) => void): void {
     const albums = db.prepare(`
       SELECT a.id_album, a.name, a.color, f.dir, f.file_name 
       FROM albums a
@@ -203,7 +477,7 @@ export default class DbExtractor {
     }
   }
 
-  private extractHymnals(db: Database.Database): void {
+  private extractHymnals(db: SQLiteHelper): void {
     const getHymnalData = (albumId: number) => {
       const rows = db.prepare(`
         SELECT am.track, m.id_music, m.name, fim.file_name as im_file, fm.duration
@@ -246,7 +520,7 @@ export default class DbExtractor {
     }
   }
 
-  private extractBibles(db: Database.Database, progressCallback: (data: { text: string; progress: number }) => void): void {
+  private extractBibles(db: SQLiteHelper, progressCallback: (data: { text: string; progress: number }) => void): void {
     const books = db.prepare("SELECT * FROM bible_book WHERE id_language = 'pt' ORDER BY book_number ASC").all() as Record<string, unknown>[];
     this.saveJson("pt_bible_book", books);
 

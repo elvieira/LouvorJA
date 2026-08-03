@@ -39,8 +39,20 @@ export function registerDatabaseHandlers() {
         return data;
       }
       
+      // Self-Healing Fallback: se o arquivo não existir fisicamente, tentamos recriá-lo a partir do database.db
+      if (fs.existsSync(finalDbPath)) {
+        console.log(`[self-healing] Arquivo ${filename} ausente. Tentando restaurar a partir do banco de dados...`);
+        const extractor = new DbExtractor(finalDbPath);
+        const data = await extractor.repairFile(filename);
+        if (data) {
+          console.log(`[self-healing] Arquivo ${filename} restaurado com sucesso.`);
+          return data;
+        }
+      }
+      
       return null;
-    } catch {
+    } catch (error) {
+      console.error(`Erro ao carregar ou reparar o arquivo local ${filename}:`, error);
       return null;
     }
   });
@@ -71,13 +83,7 @@ export function registerDatabaseHandlers() {
         event.sender.send("extract-progress", data);
       });
       
-      // Excluir após extração para economizar espaço
-      try {
-        fs.unlinkSync(finalDbPath);
-        if (fs.existsSync(flagPath)) fs.unlinkSync(flagPath);
-      } catch(e) {
-        console.error("Erro ao excluir database.db após extração:", e);
-      }
+      // Arquivo database.db e flag mantidos como backup permanente para restauração automática (self-healing)
       
       return true;
     } catch (error) {
