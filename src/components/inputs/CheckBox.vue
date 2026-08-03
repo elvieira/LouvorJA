@@ -19,34 +19,31 @@
   />
 </template>
 
-<script>
-export default {
-  name: "CheckBoxComponent",
-  props: {
-    modelValue: {
-      type: Boolean,
-      default: false,
-    },
-    label: {
-      type: String,
-      default: "",
-    },
-    disabled: Boolean,
-    switch: Boolean,
+<script setup lang="ts">
+import { computed } from "vue";
+
+const props = withDefaults(defineProps<{
+  modelValue?: boolean;
+  label?: string;
+  disabled?: boolean;
+  switch?: boolean;
+}>(), {
+  modelValue: false,
+  label: "",
+  disabled: false,
+  switch: false,
+});
+
+const emit = defineEmits(["update:modelValue"]);
+
+const input = computed({
+  get() {
+    return props.modelValue;
   },
-  emits: ["update:modelValue"],
-  computed: {
-    input: {
-      get() {
-        return this.modelValue;
-      },
-      set(value) {
-        this.$emit("update:modelValue", value);
-      },
-    },
-    is_switch() {
-      return this.switch;
-    },
+  set(value: boolean) {
+    emit("update:modelValue", value);
   },
-};
+});
+
+const is_switch = computed(() => props.switch);
 </script>

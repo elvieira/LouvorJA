@@ -20,84 +20,73 @@
   </v-btn>
 </template>
 
-<script>
+<script setup lang="ts">
+import { computed } from "vue";
+import { useAppData, usePopup } from "@/composables/useHelpers";
+
+defineOptions({ name: "ScreenButton" });
 import $userdata from "@/helpers/config/UserData";
 
-export default {
-  name: "ButtonScreenComponent",
-  props: {
-    module: {
-      type: String,
-      required: true,
-    },
-    size: {
-      type: String,
-      default: "small",
-    },
-    variant: {
-      type: String,
-      default: "text",
-    },
-  },
-  emits: ["fullscreen"],
-  computed: {
-    is_mobile() {
-      return this.$appdata.get("is_mobile");
-    },
-    is_popup_opened() {
-      return !!this.$appdata.get("popup");
-    },
-    popup_module() {
-      return this.$appdata.get("popup_module");
-    },
-    is_selected() {
-      return this.is_popup_opened && this.popup_module === this.module;
-    },
-  },
-  methods: {
-    async popup() {
-      if (this.is_selected) {
-        this.$popup.exit();
-      } else {
-        let selectedMonitors = [];
-        if (window.electronAPI && window.electronAPI.getDisplays) {
-          const displays = await window.electronAPI.getDisplays();
-          if (displays && displays.length > 1) {
-            let configMonitors = [];
-            if (this.module === "external_media" && $userdata.get("modules.config.media_sync_projection_settings") === false) {
-              configMonitors = $userdata.get("modules.config.media_slide_monitor");
-            } else {
-              configMonitors = $userdata.get("modules.config.slide_monitor");
-            }
-            if (!Array.isArray(configMonitors)) {
-              configMonitors = configMonitors ? [configMonitors] : [];
-            }
-            const primary = displays.find(d => d.isPrimary) || displays[0];
-            selectedMonitors = configMonitors.filter(m => m !== primary.id);
-          }
-        }
-        
-        if (selectedMonitors.length > 0) {
-          await this.$popup.syncMonitors(selectedMonitors, this.module, true);
-        } else {
-          let fullscreen = true;
-          if (this.module === "external_media" && $userdata.get("modules.config.media_sync_projection_settings") === false) {
-            fullscreen = $userdata.get("modules.config.media_slide_fullscreen") !== false;
-          } else {
-            fullscreen = $userdata.get("modules.config.slide_fullscreen") !== false;
-          }
+const props = withDefaults(defineProps<{
+  module: string;
+  size?: string;
+  variant?: "flat" | "text" | "elevated" | "tonal" | "outlined" | "plain";
+}>(), {
+  size: "small",
+  variant: "text",
+});
 
-          if (this.module === "external_media") {
-            if (fullscreen) {
-              this.$emit("fullscreen");
-            }
-          } else {
-            this.$popup.open({ module: this.module, fullscreen });
-          }
+const emit = defineEmits(["fullscreen"]);
+
+const appdata = useAppData();
+const popupHelper = usePopup();
+
+const is_mobile = computed(() => appdata.get("is_mobile"));
+const is_popup_opened = computed(() => !!appdata.get("popup"));
+const popup_module = computed(() => appdata.get("popup_module"));
+const is_selected = computed(() => is_popup_opened.value && popup_module.value === props.module);
+
+const popup = async () => {
+  if (is_selected.value) {
+    popupHelper.exit();
+  } else {
+    let selectedMonitors: any[] = [];
+    if ((window as any).electronAPI && (window as any).electronAPI.getDisplays) {
+      const displays = await (window as any).electronAPI.getDisplays();
+      if (displays && displays.length > 1) {
+        let configMonitors: any = [];
+        if (props.module === "external_media" && $userdata.get("modules.config.media_sync_projection_settings") === false) {
+          configMonitors = $userdata.get("modules.config.media_slide_monitor");
+        } else {
+          configMonitors = $userdata.get("modules.config.slide_monitor");
         }
+        if (!Array.isArray(configMonitors)) {
+          configMonitors = configMonitors ? [configMonitors] : [];
+        }
+        const primary = displays.find((d: any) => d.isPrimary) || displays[0];
+        selectedMonitors = configMonitors.filter((m: any) => m !== primary.id);
       }
-    },
-  },
+    }
+    
+    if (selectedMonitors.length > 0) {
+      await popupHelper.syncMonitors(selectedMonitors, props.module, true);
+    } else {
+      let fullscreen = true;
+      if (props.module === "external_media" && $userdata.get("modules.config.media_sync_projection_settings") === false) {
+        fullscreen = $userdata.get("modules.config.media_slide_fullscreen") !== false;
+      } else {
+        fullscreen = $userdata.get("modules.config.slide_fullscreen") !== false;
+      }
+
+      if (props.module === "external_media") {
+        if (fullscreen) {
+          emit("fullscreen");
+        }
+      } else {
+        popupHelper.open({ module: props.module, fullscreen });
+      }
+    }
+  }
 };
 </script>
 

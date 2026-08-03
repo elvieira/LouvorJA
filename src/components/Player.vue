@@ -91,13 +91,13 @@
         :open-delay="50"
         :attach="location === 'fullscreen'"
       >
-        <template #activator="{ props }">
+        <template #activator="{ props: activatorProps }">
           <v-btn
             :icon="volume_icon"
             variant="text"
             :color="defaultTextColor"
             size="small"
-            v-bind="props"
+            v-bind="activatorProps"
             class="mx-1 volume-btn"
             @click="toogleVolume"
           />
@@ -129,12 +129,12 @@
 
     <div class="d-flex align-center">
       <v-menu v-if="location !== 'fullscreen' && playerWidth >= 880" :close-on-content-click="true">
-        <template #activator="{ props }">
+        <template #activator="{ props: activatorProps }">
           <v-btn
             variant="text"
             size="small"
             :color="mode.color && mode.color !== 'white' ? mode.color : defaultTextColor"
-            v-bind="props"
+            v-bind="activatorProps"
             icon
             class="mx-1"
           >
@@ -285,200 +285,168 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: "PlayerComponent",
-  props: {
-    location: {
-      type: String,
-      default: "window",
-    },
+<script setup lang="ts">
+import { ref, computed, onMounted, onBeforeUnmount } from "vue";
+import { useTheme } from "vuetify";
+import { useMedia, useAppData, useModules } from "@/composables/useHelpers";
+import { useI18n } from "vue-i18n";
+
+defineOptions({ name: "MediaPlayer" });
+
+const props = withDefaults(defineProps<{
+  location?: string;
+}>(), {
+  location: "window",
+});
+
+const theme = useTheme();
+const mediaHelper = useMedia();
+const appdata = useAppData();
+const modules = useModules();
+// Note: datetime is used in the template via $datetime
+const { t } = useI18n();
+
+const playerWidth = ref(0);
+const playerContainer = ref<HTMLElement | null>(null);
+let resizeObserver: ResizeObserver | null = null;
+
+const isDark = computed(() => theme.name.value === "dark");
+
+const defaultTextColor = computed(() => {
+  if (props.location !== "footer") return "white";
+  return isDark.value ? "white" : "black";
+});
+
+const defaultTextClass = computed(() => {
+  if (props.location !== "footer") return "text-white";
+  return isDark.value ? "text-white" : "text-black";
+});
+
+const secondaryTextClass = computed(() => {
+  if (props.location !== "footer") return "text-grey";
+  return isDark.value ? "text-grey" : "text-grey-darken-1";
+});
+
+const media = computed(() => modules.get("media"));
+
+const showMiniPlayer = computed(() => appdata.get("modules.media.show_mini_player") !== false);
+
+const has_instrumental_music = computed(() => !!media.value.data.url_instrumental_music);
+
+const isPlaylistOpen = computed(() => appdata.get("modules.media.show_playlist") || false);
+
+const menu_modes = computed(() => [
+  {
+    mode: "audio",
+    title: t("modules.media.general.sung"),
+    color: "info",
+    active: media.value.config.mode === "audio",
+    icon: "mdi-play-circle",
+    tray_icon: "mdi-account-voice",
+    click: () => openMedia({
+      id_music: media.value.id_music,
+      mode: "audio",
+      minimized: media.value.minimized,
+    }),
   },
-  data() {
-    return {
-      playerWidth: 0,
-      resizeObserver: null,
-    };
+  {
+    mode: "instrumental",
+    title: t("modules.media.general.instrumental"),
+    color: "success",
+    active: media.value.config.mode === "instrumental",
+    disabled: !has_instrumental_music.value,
+    icon: "mdi-play-circle-outline",
+    tray_icon: "mdi-music-note",
+    click: () => openMedia({
+      id_music: media.value.id_music,
+      mode: "instrumental",
+      minimized: media.value.minimized,
+    }),
   },
-  computed: {
-    isDark() {
-      return this.$vuetify.theme.name === "dark";
-    },
-    defaultTextColor() {
-      if (this.location !== "footer") return "white";
-      return this.isDark ? "white" : "black";
-    },
-    defaultTextClass() {
-      if (this.location !== "footer") return "text-white";
-      return this.isDark ? "text-white" : "text-black";
-    },
-    secondaryTextClass() {
-      if (this.location !== "footer") return "text-grey";
-      return this.isDark ? "text-grey" : "text-grey-darken-1";
-    },
-    timelineBgColor() {
-      if (this.location !== "footer") return "rgba(255,255,255,0.4)";
-      return this.isDark ? "rgba(255,255,255,0.2)" : "#b0b0b0";
-    },
-    media() {
-      return this.$modules.get("media");
-    },
-    showMiniPlayer() {
-      return this.$appdata.get("modules.media.show_mini_player") !== false;
-    },
-    slides() {
-      return this.$media.slides();
-    },
-    has_instrumental_music() {
-      return this.media.data.url_instrumental_music ? true : false;
-    },
-    isPlaylistOpen() {
-      return this.$appdata.get("modules.media.show_playlist") || false;
-    },
-    menu_modes() {
-      return [
-        {
-          mode: "audio",
-          title: this.$t("modules.media.general.sung"),
-          color: "info",
-          active: this.media.config.mode === "audio",
-          icon: "mdi-play-circle",
-          tray_icon: "mdi-account-voice",
-          click: () =>
-            this.open({
-              id_music: this.media.id_music,
-              mode: "audio",
-              minimized: this.media.minimized,
-            }),
-        },
-        {
-          mode: "instrumental",
-          title: this.$t("modules.media.general.instrumental"),
-          color: "success",
-          active: this.media.config.mode === "instrumental",
-          disabled: !this.has_instrumental_music,
-          icon: "mdi-play-circle-outline",
-          tray_icon: "mdi-music-note",
-          click: () =>
-            this.open({
-              id_music: this.media.id_music,
-              mode: "instrumental",
-              minimized: this.media.minimized,
-            }),
-        },
-        {
-          mode: "no_audio",
-          title: this.$t("modules.media.general.no_audio"),
-          color: "error",
-          active: this.media.config.mode === "no_audio",
-          icon: "mdi-monitor",
-          tray_icon: "mdi-music-off",
-          click: () =>
-            this.open({
-              id_music: this.media.id_music,
-              minimized: this.media.minimized,
-            }),
-        },
-        { title: "-" },
-        {
-          title: this.$t("modules.media.general.lyric"),
-          color: "error",
-          icon: "mdi-text-box-outline",
-          click: () => this.openLyric(),
-        },
-      ];
-    },
-    mode() {
-      return this.menu_modes.filter(
-        (item) => item.mode === this.media.config.mode,
-      )[0];
-    },
-    volume_icon() {
-      if (this.media.config.volume <= 0) return "mdi-volume-mute";
-      if (this.media.config.volume <= 20) return "mdi-volume-low";
-      if (this.media.config.volume <= 70) return "mdi-volume-medium";
-      return "mdi-volume-high";
-    },
-    is_mobile() {
-      return this.$appdata.get("is_mobile");
-    },
-    compact() {
-      return this.$vuetify.display.width <= 500;
-    },
+  {
+    mode: "no_audio",
+    title: t("modules.media.general.no_audio"),
+    color: "error",
+    active: media.value.config.mode === "no_audio",
+    icon: "mdi-monitor",
+    tray_icon: "mdi-music-off",
+    click: () => openMedia({
+      id_music: media.value.id_music,
+      minimized: media.value.minimized,
+    }),
   },
-  mounted() {
-    this.resizeObserver = new ResizeObserver(entries => {
-      for (const entry of entries) {
-        this.playerWidth = entry.contentRect.width;
-      }
-    });
-    
-    let target = this.$refs.playerContainer;
-    if (target) {
-      if (this.location === "window") {
-        const vCard = target.closest(".v-card");
-        if (vCard) {
-          target = vCard;
-        } else {
-          target = target.closest(".floating-pill-container")?.parentNode || target.parentNode;
-        }
-      } else if (this.location === "fullscreen") {
-        target = document.body;
-      }
-      this.resizeObserver.observe(target);
-    }
+  { title: "-" },
+  {
+    title: t("modules.media.general.lyric"),
+    color: "error",
+    icon: "mdi-text-box-outline",
+    click: () => openLyric(),
   },
-  beforeUnmount() {
-    if (this.resizeObserver) {
-      this.resizeObserver.disconnect();
-    }
-  },
-  methods: {
-    play() {
-      if (this.media.config.is_paused) {
-        this.$media.play();
-      } else {
-        this.$media.pause();
-      }
-    },
-    prev() {
-      this.$media.prevSlide();
-    },
-    next() {
-      this.$media.nextSlide();
-    },
-    open(data) {
-      this.$media.open(data);
-    },
-    openLyric() {
-      this.$media.openLyric();
-    },
-    maximize() {
-      this.$media.maximize();
-    },
-    close() {
-      this.$media.close();
-    },
-    changeProgress() {
-      const time =
-        (this.media.config.duration * this.media.config.progress) / 100;
-      this.$media.goToTime(time);
-    },
-    fullscreen(value = true) {
-      this.$media.fullscreen(value);
-    },
-    toogleVolume() {
-      this.$media.toogleVolume();
-    },
-    changeVolume() {
-      this.$media.setVolume(this.media.config.volume);
-    },
-    togglePlaylist() {
-      const currentState = this.$appdata.get("modules.media.show_playlist") || false;
-      this.$appdata.set("modules.media.show_playlist", !currentState);
-    },
-  },
+]);
+
+const mode = computed(() => menu_modes.value.filter((item: any) => item.mode === media.value.config.mode)[0]);
+
+const volume_icon = computed(() => {
+  if (media.value.config.volume <= 0) return "mdi-volume-mute";
+  if (media.value.config.volume <= 20) return "mdi-volume-low";
+  if (media.value.config.volume <= 70) return "mdi-volume-medium";
+  return "mdi-volume-high";
+});
+
+const play = () => {
+  if (media.value.config.is_paused) {
+    mediaHelper.play();
+  } else {
+    mediaHelper.pause();
+  }
 };
+
+const prev = () => mediaHelper.prevSlide();
+const next = () => mediaHelper.nextSlide();
+const openMedia = (data: any) => mediaHelper.open(data);
+const openLyric = () => mediaHelper.openLyric();
+const maximize = () => mediaHelper.maximize();
+const close = () => mediaHelper.close();
+const changeProgress = () => {
+  const time = (media.value.config.duration * media.value.config.progress) / 100;
+  mediaHelper.goToTime(time);
+};
+const fullscreen = (value = true) => mediaHelper.fullscreen(value);
+const toogleVolume = () => mediaHelper.toogleVolume();
+const changeVolume = () => mediaHelper.setVolume(media.value.config.volume);
+const togglePlaylist = () => {
+  const currentState = appdata.get("modules.media.show_playlist") || false;
+  appdata.set("modules.media.show_playlist", !currentState);
+};
+
+onMounted(() => {
+  resizeObserver = new ResizeObserver(entries => {
+    for (const entry of entries) {
+      playerWidth.value = entry.contentRect.width;
+    }
+  });
+  
+  let target: any = playerContainer.value;
+  if (target) {
+    if (props.location === "window") {
+      const vCard = target.closest(".v-card");
+      if (vCard) {
+        target = vCard;
+      } else {
+        target = target.closest(".floating-pill-container")?.parentNode || target.parentNode;
+      }
+    } else if (props.location === "fullscreen") {
+      target = document.body;
+    }
+    if (resizeObserver) resizeObserver.observe(target);
+  }
+});
+
+onBeforeUnmount(() => {
+  if (resizeObserver) {
+    resizeObserver.disconnect();
+  }
+});
 </script>
 
 <style lang="scss">

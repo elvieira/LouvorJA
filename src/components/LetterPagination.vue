@@ -31,61 +31,32 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: "LetterPaginationComponent",
-  props: {
-    modelValue: {
-      type: String,
-      default: "",
-    },
+<script setup lang="ts">
+import { computed } from "vue";
+
+const props = withDefaults(defineProps<{
+  modelValue?: string;
+}>(), {
+  modelValue: "",
+});
+
+const emit = defineEmits(["update:modelValue"]);
+
+const letters = [
+  "#", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
+  "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z",
+];
+
+const input = computed({
+  get() {
+    return letters.indexOf(props.modelValue);
   },
-  emits: ["update:modelValue"],
-  computed: {
-    input: {
-      get() {
-        return this.letters.indexOf(this.modelValue);
-      },
-      set(value) {
-        this.$emit("update:modelValue", this.letters[value] ?? "");
-      },
-    },
-    letters() {
-      return [
-        "#",
-        "A",
-        "B",
-        "C",
-        "D",
-        "E",
-        "F",
-        "G",
-        "H",
-        "I",
-        "J",
-        "K",
-        "L",
-        "M",
-        "N",
-        "O",
-        "P",
-        "Q",
-        "R",
-        "S",
-        "T",
-        "U",
-        "V",
-        "W",
-        "X",
-        "Y",
-        "Z",
-      ];
-    },
+  set(value: number) {
+    emit("update:modelValue", letters[value] ?? "");
   },
-  methods: {
-    reset() {
-      this.input = -1;
-    },
-  },
+});
+
+const reset = () => {
+  input.value = -1;
 };
 </script>

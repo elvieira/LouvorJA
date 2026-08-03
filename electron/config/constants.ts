@@ -5,6 +5,8 @@ import * as path from "path";
 export const ENCRYPTION_KEY = Buffer.from("v389s8dkj238910s8a7d3h2j1k9s8d7f", "utf8");
 export const IV_LENGTH = 16;
 
+// Força o nome do app ANTES de pegar o userData, para que o modo dev e o build usem a mesma pasta "Louvor JA"
+app.setName("Louvor JA");
 export const userDataPath = app.getPath("userData");
 export const sysDbPath = path.join(userDataPath, ".sysdata");
 export const oldDbPath = path.join(userDataPath, "database");

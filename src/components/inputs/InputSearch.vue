@@ -17,40 +17,35 @@
   />
 </template>
 
-<script>
-export default {
-  name: "InputSearchComponent",
-  props: {
-    modelValue: {
-      type: String,
-      default: "",
-    },
-    label: {
-      type: String,
-      default: "",
-    },
-    disabled: Boolean,
-    disabledHint: {
-      type: String,
-      default: "",
-    },
-    error: Boolean,
+<script setup lang="ts">
+import { computed } from "vue";
+
+const props = withDefaults(defineProps<{
+  modelValue?: string;
+  label?: string;
+  disabled?: boolean;
+  disabledHint?: string;
+  error?: boolean;
+}>(), {
+  modelValue: "",
+  label: "",
+  disabled: false,
+  disabledHint: "",
+  error: false,
+});
+
+const emit = defineEmits(["update:modelValue"]);
+
+const input = computed({
+  get() {
+    return props.modelValue;
   },
-  emits: ["update:modelValue"],
-  computed: {
-    input: {
-      get() {
-        return this.modelValue;
-      },
-      set(value) {
-        this.$emit("update:modelValue", value);
-      },
-    },
+  set(value: string) {
+    emit("update:modelValue", value);
   },
-  methods: {
-    reset() {
-      this.input = "";
-    },
-  },
+});
+
+const reset = () => {
+  input.value = "";
 };
 </script>

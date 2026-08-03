@@ -17,29 +17,17 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent } from "vue";
+<script setup lang="ts">
 import MenuToggleButton from "@/components/MenuToggleButton.vue";
 
-export default defineComponent({
-  name: "ModuleHeader",
-  components: {
-    MenuToggleButton,
-  },
-  props: {
-    title: {
-      type: String,
-      required: true,
-    },
-    icon: {
-      type: String,
-      default: "mdi-puzzle",
-    },
-  },
-  methods: {
-    toggleSidebar() {
-      document.querySelector(".main-container")?.dispatchEvent(new CustomEvent("toggle-sidebar", { bubbles: true }));
-    },
-  },
+withDefaults(defineProps<{
+  title: string;
+  icon?: string;
+}>(), {
+  icon: "mdi-puzzle",
 });
+
+const toggleSidebar = () => {
+  document.querySelector(".main-container")?.dispatchEvent(new CustomEvent("toggle-sidebar", { bubbles: true }));
+};
 </script>

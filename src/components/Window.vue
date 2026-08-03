@@ -127,157 +127,185 @@
   </v-dialog>
 </template>
 
-<script>
-export default {
-  name: "WindowComponent",
-  props: {
-    modelValue: {
-      type: Boolean,
-      default: false,
-    },
-    scrollPos: { type: Number, default: 0 },
-    title: { type: String, default: "" },
-    subtitle: { type: String, default: "" },
-    icon: { type: String, default: "" },
-    image: { type: String, default: "" },
-    compact: Boolean,
-    /* eslint-disable vue/prop-name-casing */
-    compact_footer: { type: Boolean, default: false },
-    /* eslint-enable vue/prop-name-casing */
-    closable: Boolean,
-    minimizable: Boolean,
-    titleClass: { type: String, default: "" },
-    dark: Boolean,
-    index: { type: [Boolean, Number, String], default: false },
-    size: { type: String, default: "" },
-    imageSize: { type: Number, default: 0 },
-    color: { type: String, default: "" },
-    slotRightClass: { type: String, default: "" },
-    slotLeftStyle: { type: [String, Object], default: "" },
-    slotRightStyle: { type: [String, Object], default: "" },
-    eager: Boolean,
-  },
-  emits: ["update:modelValue", "close", "minimize", "scroll", "hasScroll", "resize"],
+<script setup lang="ts">
+/* eslint-disable vue/prop-name-casing */
+import { ref, computed, watch, onMounted } from "vue";
+import { useDisplay } from "vuetify";
 
-  data: () => ({
-    container_height: 0,
-  }),
-  computed: {
-    visible: {
-      get() {
-        return this.modelValue;
-      },
-      set(value) {
-        this.$emit("update:modelValue", value);
-      },
-    },
-    compact_screen() {
-      return this.$vuetify.display.width <= 600;
-    },
-    compact_height() {
-      return this.$vuetify.display.height <= 600;
-    },
-    w_width() {
-      return this.compact_screen
-        ? "100%"
-        : this.size === "small"
-          ? "500px"
-          : this.size === "large"
-            ? "95%"
-            : "90%";
-    },
-    w_height() {
-      return this.compact_screen || this.compact_height
-        ? "100%"
-        : this.size === "small"
-          ? "550px"
-          : "90%";
-    },
+defineOptions({ name: "DialogWindow" });
+
+const props = withDefaults(defineProps<{
+  modelValue?: boolean;
+  scrollPos?: number;
+  title?: string;
+  subtitle?: string;
+  icon?: string;
+  image?: string;
+  compact?: boolean;
+  compact_footer?: boolean;
+  closable?: boolean;
+  minimizable?: boolean;
+  titleClass?: string;
+  dark?: boolean;
+  index?: boolean | number | string;
+  size?: string;
+  imageSize?: number;
+  color?: string;
+  slotLeftClass?: string;
+  slotRightClass?: string;
+  slotLeftStyle?: string | Record<string, any>;
+  slotRightStyle?: string | Record<string, any>;
+  eager?: boolean;
+}>(), {
+  modelValue: false,
+  scrollPos: 0,
+  title: "",
+  subtitle: "",
+  icon: "",
+  image: "",
+  compact: false,
+  compact_footer: false,
+  closable: false,
+  minimizable: false,
+  titleClass: "",
+  dark: false,
+  index: false,
+  size: "",
+  imageSize: 0,
+  color: "",
+  slotLeftClass: "",
+  slotRightClass: "",
+  slotLeftStyle: "",
+  slotRightStyle: "",
+  eager: false,
+});
+
+const emit = defineEmits(["update:modelValue", "close", "minimize", "scroll", "hasScroll", "resize"]);
+
+const display = useDisplay();
+
+const container_height = ref(0);
+const container = ref<any>(null);
+const main_container = ref<any>(null);
+
+const visible = computed({
+  get() {
+    return props.modelValue;
   },
-  watch: {
-    visible() {
-      this.listenerResize(this.visible);
-    },
-    index() {
-      this.checkScroll();
-      this.windowResize();
-    },
-    scrollPos(value) {
-      const container = this.$refs.main_container;
-      if (container) {
-        container.scrollTo({
-          top: value,
-          behavior: "smooth",
+  set(value) {
+    emit("update:modelValue", value);
+  },
+});
+
+const compact_screen = computed(() => display.width.value <= 600);
+const compact_height = computed(() => display.height.value <= 600);
+
+const w_width = computed(() => {
+  return compact_screen.value
+    ? "100%"
+    : props.size === "small"
+      ? "500px"
+      : props.size === "large"
+        ? "95%"
+        : "90%";
+});
+
+const w_height = computed(() => {
+  return compact_screen.value || compact_height.value
+    ? "100%"
+    : props.size === "small"
+      ? "550px"
+      : "90%";
+});
+
+const close = () => {
+  emit("close");
+};
+
+const minimize = () => {
+  emit("minimize");
+};
+
+const scroll = () => {
+  if (!main_container.value) return;
+  const data: any = {};
+  data.scroll_top = main_container.value.scrollTop;
+  data.client_height = main_container.value.clientHeight;
+  data.scroll_height = main_container.value.scrollHeight;
+  data.scroll_bottom = data.scroll_height - data.scroll_top - data.client_height;
+  emit("scroll", data);
+};
+
+const checkScroll = () => {
+  if (main_container.value) {
+    const div = main_container.value;
+    const hasScroll = div.scrollHeight > div.clientHeight;
+    emit("hasScroll", hasScroll);
+  } else {
+    emit("hasScroll", false);
+  }
+};
+
+const windowResize = () => {
+  const el = container.value?.$el;
+  if (!el) {
+    return;
+  }
+
+  const data = {
+    container_width: el.clientWidth,
+    container_height: el.clientHeight,
+  };
+  container_height.value = el.clientHeight;
+  emit("resize", data);
+};
+
+let resizeObserver: ResizeObserver | null = null;
+
+const listenerResize = (active: boolean) => {
+  if (active && visible.value) {
+    if (container.value) {
+      if (!resizeObserver) {
+        resizeObserver = new ResizeObserver(() => {
+          checkScroll();
         });
       }
-    },
-  },
-  mounted() {
-    this.resizeObserver = new ResizeObserver(() => {
-      this.checkScroll();
-    });
-
-    if (this.visible) {
-      this.listenerResize(this.visible);
+      resizeObserver.observe(container.value.$el);
+      window.addEventListener("resize", windowResize);
+      windowResize();
+    } else {
+      setTimeout(() => {
+        listenerResize(active);
+        checkScroll();
+      }, 10);
     }
-  },
-  methods: {
-    close() {
-      this.$emit("close");
-    },
-    minimize() {
-      this.$emit("minimize");
-    },
-    scroll() {
-      const data = {};
-      data.scroll_top = this.$refs.main_container.scrollTop;
-      data.client_height = this.$refs.main_container.clientHeight;
-      data.scroll_height = this.$refs.main_container.scrollHeight;
-      data.scroll_bottom =
-        data.scroll_height - data.scroll_top - data.client_height;
-      this.$emit("scroll", data);
-    },
-    checkScroll() {
-      if (this.$refs.main_container) {
-        const div = this.$refs.main_container;
-        const hasScroll = div.scrollHeight > div.clientHeight;
-        this.$emit("hasScroll", hasScroll);
-      } else {
-        this.$emit("hasScroll", false);
-      }
-    },
-    windowResize() {
-      const el = this.$refs?.container?.$el;
-      if (!el) {
-        return;
-      }
-
-      const data = {
-        container_width: el.clientWidth,
-        container_height: el.clientHeight,
-      };
-      this.container_height = el.clientHeight;
-      this.$emit("resize", data);
-    },
-
-    listenerResize(active) {
-      if (active && this.visible) {
-        if (this.$refs.container) {
-          this.resizeObserver.observe(this.$refs.container.$el);
-          window.addEventListener("resize", this.windowResize);
-          this.windowResize();
-        } else {
-          const self = this;
-          setTimeout(() => {
-            self.listenerResize(active);
-            self.checkScroll();
-          }, 10);
-        }
-      } else {
-        this.resizeObserver.disconnect();
-        window.removeEventListener("resize", this.windowResize);
-      }
-    },
-  },
+  } else {
+    if (resizeObserver) resizeObserver.disconnect();
+    window.removeEventListener("resize", windowResize);
+  }
 };
+
+watch(visible, () => {
+  listenerResize(visible.value);
+});
+
+watch(() => props.index, () => {
+  checkScroll();
+  windowResize();
+});
+
+watch(() => props.scrollPos, (value) => {
+  if (main_container.value) {
+    main_container.value.scrollTo({
+      top: value,
+      behavior: "smooth",
+    });
+  }
+});
+
+onMounted(() => {
+  if (visible.value) {
+    listenerResize(visible.value);
+  }
+});
 </script>

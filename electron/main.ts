@@ -5,8 +5,6 @@ import { registerIpcHandlers } from "./ipc";
 import { sysDbPath, mediaPath, coversPath, musicPath, slidesPath, oldDbPath } from "./config/constants";
 import { setupUpdater } from "./services/updater";
 
-app.setName("Louvor JA");
-
 // Migração de banco de dados legado
 if (fs.existsSync(oldDbPath)) {
   try {

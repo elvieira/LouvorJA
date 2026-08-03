@@ -24,47 +24,47 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent } from "vue";
+<script setup lang="ts">
+import { computed } from "vue";
+import { useMedia } from "@/composables/useHelpers";
 
-export default defineComponent({
-  name: "MusicMenuTableComponent",
-  props: {
-    idMusic: { type: Number, required: true },
-    hasInstrumentalMusic: { type: [Boolean, Number], default: false },
-    color: { type: String, default: "" },
-  },
-  computed: {
-    buttons(): Array<{ tooltip: string; disabled: boolean; icon: string; click: () => void }> {
-      return [
-        {
-          tooltip: "Cantado",
-          disabled: false,
-          icon: "mdi-play-circle",
-          click: () =>
-            this.$media.open({ id_music: this.idMusic, mode: "audio" }),
-        },
-        {
-          tooltip: "Playback",
-          disabled: !this.hasInstrumentalMusic,
-          icon: "mdi-play-circle-outline",
-          click: () =>
-            this.$media.open({ id_music: this.idMusic, mode: "instrumental" }),
-        },
-        {
-          tooltip: "Sem Áudio",
-          disabled: false,
-          icon: "mdi-monitor",
-          click: () => this.$media.open(this.idMusic as any),
-        },
-        {
-          tooltip: "Letra",
-          disabled: false,
-          icon: "mdi-text-box-outline",
-          click: () => this.$media.openLyric(this.idMusic),
-        },
-      ];
+const props = withDefaults(defineProps<{
+  idMusic: number;
+  hasInstrumentalMusic?: boolean | number;
+  color?: string;
+}>(), {
+  hasInstrumentalMusic: false,
+  color: "",
+});
+
+const media = useMedia();
+
+const buttons = computed(() => {
+  return [
+    {
+      tooltip: "Cantado",
+      disabled: false,
+      icon: "mdi-play-circle",
+      click: () => media.open({ id_music: props.idMusic, mode: "audio" }),
     },
-  },
+    {
+      tooltip: "Playback",
+      disabled: !props.hasInstrumentalMusic,
+      icon: "mdi-play-circle-outline",
+      click: () => media.open({ id_music: props.idMusic, mode: "instrumental" }),
+    },
+    {
+      tooltip: "Sem Áudio",
+      disabled: false,
+      icon: "mdi-monitor",
+      click: () => media.open(props.idMusic as any),
+    },
+    {
+      tooltip: "Letra",
+      disabled: false,
+      icon: "mdi-text-box-outline",
+      click: () => media.openLyric(props.idMusic),
+    },
+  ];
 });
 </script>

@@ -128,142 +128,127 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: "ExternalMediaFooterPlayer",
-  data() {
-    return {
-      playerWidth: 0,
-      resizeObserver: null,
-      volume: 100,
-      savedVolume: 100,
-    };
-  },
-  computed: {
-    isDark() {
-      return this.$vuetify.theme.name === "dark";
-    },
-    textColor() {
-      return this.isDark ? "white" : "black";
-    },
-    rawFilePath() {
-      return this.$appdata.get("modules.external_media.filePath") || "";
-    },
-    filePath() {
-      if (!this.rawFilePath) return "";
-      if (window.electronAPI) {
-        return `local://${this.rawFilePath}`;
-      }
-      return this.rawFilePath;
-    },
-    mediaTitle() {
-      return this.$appdata.get("modules.external_media.title") || "Mídia Externa";
-    },
-    mediaSubtitle() {
-      return this.$appdata.get("modules.external_media.subtitle") || "";
-    },
-    isVideo() {
-      if (!this.rawFilePath) return false;
-      const ext = this.rawFilePath.split(".").pop().toLowerCase();
-      return ["mp4", "mkv", "avi", "mov", "wmv", "webm"].includes(ext);
-    },
-    isPaused() {
-      return this.$appdata.get("modules.external_media.config.is_paused") !== false;
-    },
-    currentTime() {
-      return this.$appdata.get("modules.external_media.config.current_time") || 0;
-    },
-    isMinimized() {
-      return this.$appdata.get("modules.external_media.minimized") === true;
-    },
-    showExternalMiniPlayer() {
-      return this.$appdata.get("modules.external_media.show_mini_player") !== false;
-    },
-    duration() {
-      return this.$appdata.get("modules.external_media.config.duration") || 0;
-    },
-    progress: {
-      get() {
-        return this.$appdata.get("modules.external_media.config.progress") || 0;
-      },
-      set(val) {
-        this.$appdata.set("modules.external_media.config.progress", val);
-      },
-    },
-    volumeIcon() {
-      if (this.volume <= 0) return "mdi-volume-mute";
-      if (this.volume <= 20) return "mdi-volume-low";
-      if (this.volume <= 70) return "mdi-volume-medium";
-      return "mdi-volume-high";
-    },
-  },
-  mounted() {
-    this.resizeObserver = new ResizeObserver(entries => {
-      for (const entry of entries) {
-        this.playerWidth = entry.contentRect.width;
-      }
-    });
-    if (this.$refs.playerContainer) {
-      this.resizeObserver.observe(this.$refs.playerContainer);
-    }
+<script setup lang="ts">
+import { ref, computed, onMounted, onBeforeUnmount } from "vue";
+import { useTheme } from "vuetify";
+import { useAppData } from "@/composables/useHelpers";
 
-    const savedVol = this.$appdata.get("modules.external_media.config.volume");
-    if (savedVol !== undefined && savedVol !== null) {
-      this.volume = savedVol;
-    }
+const theme = useTheme();
+const appdata = useAppData();
+
+const playerWidth = ref(0);
+const playerContainer = ref<HTMLElement | null>(null);
+let resizeObserver: ResizeObserver | null = null;
+const volume = ref(100);
+const savedVolume = ref(100);
+
+const isDark = computed(() => theme.name.value === "dark");
+const textColor = computed(() => isDark.value ? "white" : "black");
+
+const rawFilePath = computed(() => appdata.get("modules.external_media.filePath") || "");
+
+const mediaTitle = computed(() => appdata.get("modules.external_media.title") || "Mídia Externa");
+const mediaSubtitle = computed(() => appdata.get("modules.external_media.subtitle") || "");
+
+const isVideo = computed(() => {
+  if (!rawFilePath.value) return false;
+  const ext = rawFilePath.value.split(".").pop()?.toLowerCase();
+  return ["mp4", "mkv", "avi", "mov", "wmv", "webm"].includes(ext || "");
+});
+
+const isPaused = computed(() => appdata.get("modules.external_media.config.is_paused") !== false);
+const currentTime = computed(() => appdata.get("modules.external_media.config.current_time") || 0);
+const showExternalMiniPlayer = computed(() => appdata.get("modules.external_media.show_mini_player") !== false);
+const duration = computed(() => appdata.get("modules.external_media.config.duration") || 0);
+
+const progress = computed({
+  get() {
+    return appdata.get("modules.external_media.config.progress") || 0;
   },
-  beforeUnmount() {
-    if (this.resizeObserver) {
-      this.resizeObserver.disconnect();
-    }
+  set(val: number) {
+    appdata.set("modules.external_media.config.progress", val);
   },
-  methods: {
-    togglePlay() {
-      this.$appdata.set("modules.external_media.config.request_action", {
-        action: "toggle_play",
-        timestamp: Date.now(),
-      });
-    },
-    seekFromProgress() {
-      this.$appdata.set("modules.external_media.config.request_action", {
-        action: "seek",
-        value: this.progress,
-        timestamp: Date.now(),
-      });
-    },
-    onVolumeChange() {
-      this.$appdata.set("modules.external_media.config.request_action", {
-        action: "set_volume",
-        value: this.volume,
-        timestamp: Date.now(),
-      });
-      this.$appdata.set("modules.external_media.config.volume", this.volume);
-    },
-    toggleMute() {
-      if (this.volume > 0) {
-        this.savedVolume = this.volume;
-        this.volume = 0;
-      } else {
-        this.volume = this.savedVolume || 100;
-      }
-      this.onVolumeChange();
-    },
-    maximize() {
-      this.$appdata.set("modules.external_media.show", true);
-      this.$appdata.set("modules.external_media.minimized", false);
-    },
-    closeMedia() {
-      this.$appdata.set("modules.external_media.config.request_action", {
-        action: "close",
-        timestamp: Date.now(),
-      });
-    },
-    formatTime(seconds) {
-      if (!seconds || isNaN(seconds)) return "0:00";
-      const mins = Math.floor(seconds / 60);
-      const secs = Math.floor(seconds % 60);
-      return `${mins}:${secs.toString().padStart(2, "0")}`;
-    },
-  },
+});
+
+const volumeIcon = computed(() => {
+  if (volume.value <= 0) return "mdi-volume-mute";
+  if (volume.value <= 20) return "mdi-volume-low";
+  if (volume.value <= 70) return "mdi-volume-medium";
+  return "mdi-volume-high";
+});
+
+const formatTime = (seconds: number) => {
+  if (!seconds || isNaN(seconds)) return "0:00";
+  const mins = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60);
+  return `${mins}:${secs.toString().padStart(2, "0")}`;
 };
+
+const togglePlay = () => {
+  appdata.set("modules.external_media.config.request_action", {
+    action: "toggle_play",
+    timestamp: Date.now(),
+  });
+};
+
+const seekFromProgress = () => {
+  appdata.set("modules.external_media.config.request_action", {
+    action: "seek",
+    value: progress.value,
+    timestamp: Date.now(),
+  });
+};
+
+const onVolumeChange = () => {
+  appdata.set("modules.external_media.config.request_action", {
+    action: "set_volume",
+    value: volume.value,
+    timestamp: Date.now(),
+  });
+  appdata.set("modules.external_media.config.volume", volume.value);
+};
+
+const toggleMute = () => {
+  if (volume.value > 0) {
+    savedVolume.value = volume.value;
+    volume.value = 0;
+  } else {
+    volume.value = savedVolume.value || 100;
+  }
+  onVolumeChange();
+};
+
+const maximize = () => {
+  appdata.set("modules.external_media.show", true);
+  appdata.set("modules.external_media.minimized", false);
+};
+
+const closeMedia = () => {
+  appdata.set("modules.external_media.config.request_action", {
+    action: "close",
+    timestamp: Date.now(),
+  });
+};
+
+onMounted(() => {
+  resizeObserver = new ResizeObserver(entries => {
+    for (const entry of entries) {
+      playerWidth.value = entry.contentRect.width;
+    }
+  });
+  if (playerContainer.value) {
+    resizeObserver.observe(playerContainer.value);
+  }
+
+  const savedVol = appdata.get("modules.external_media.config.volume");
+  if (savedVol !== undefined && savedVol !== null) {
+    volume.value = savedVol;
+  }
+});
+
+onBeforeUnmount(() => {
+  if (resizeObserver) {
+    resizeObserver.disconnect();
+  }
+});
 </script>

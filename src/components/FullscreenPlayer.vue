@@ -17,52 +17,47 @@
   </div>
 </template>
 
-<script>
+<script setup lang="ts">
+import { ref, onBeforeUnmount } from "vue";
 import LPlayer from "@/components/Player.vue";
 
-export default {
-  name: "FullscreenPlayerComponent",
-  components: {
-    LPlayer,
-  },
-  data() {
-    return {
-      visible: false,
-      start_timer: true,
-      timeout: null,
-    };
-  },
-  beforeUnmount() {
-    clearTimeout(this.timeout);
-  },
-  methods: {
-    mouseMove() {
-      if (!this.start_timer) {
-        return;
-      }
-      this.showChild();
-      this.startHideTimer();
-    },
-    mouseEnter() {
-      this.start_timer = false;
-      clearTimeout(this.timeout);
-    },
-    mouseLeave() {
-      this.start_timer = true;
-      this.startHideTimer();
-    },
-    showChild() {
-      this.visible = true;
-      clearTimeout(this.timeout);
-    },
-    startHideTimer() {
-      clearTimeout(this.timeout);
-      this.timeout = setTimeout(() => {
-        this.visible = false;
-      }, 1000);
-    },
-  },
+const visible = ref(false);
+const start_timer = ref(true);
+const timeout = ref<ReturnType<typeof setTimeout> | null>(null);
+
+const startHideTimer = () => {
+  if (timeout.value) clearTimeout(timeout.value);
+  timeout.value = setTimeout(() => {
+    visible.value = false;
+  }, 1000);
 };
+
+const showChild = () => {
+  visible.value = true;
+  if (timeout.value) clearTimeout(timeout.value);
+};
+
+const mouseMove = () => {
+  if (!start_timer.value) {
+    return;
+  }
+  showChild();
+  startHideTimer();
+};
+
+const mouseEnter = () => {
+  start_timer.value = false;
+  if (timeout.value) clearTimeout(timeout.value);
+};
+
+const mouseLeave = () => {
+  start_timer.value = true;
+  startHideTimer();
+};
+
+onBeforeUnmount(() => {
+  if (timeout.value) clearTimeout(timeout.value);
+});
 </script>
 
 <style scoped>

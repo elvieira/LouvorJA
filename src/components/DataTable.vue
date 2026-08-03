@@ -24,195 +24,206 @@
   </v-table>
 </template>
 
-<script lang="ts">
-import { defineComponent, PropType } from "vue";
+<script setup lang="ts">
+import { ref, watch, onMounted } from "vue";
+import { useDatabase, useString } from "@/composables/useHelpers";
+import { useI18n } from "vue-i18n";
 
-export default defineComponent({
-  name: "DataTableComponent",
-  props: {
-    modelValue: { type: Object as PropType<Record<string, any>>, default: () => ({}) },
-    file: { type: String, required: true },
-    search: { type: String, default: "" },
-    scroll: { type: Object as PropType<Record<string, any>>, default: () => ({}) },
-    hasScroll: { type: Boolean, default: false },
-    searchableFields: { type: Object as PropType<Record<string, boolean>>, default: () => ({}) },
-    filter: { type: Object as PropType<Record<string, boolean>>, default: () => ({}) },
-    letter: { type: String, default: "" },
-    sortBy: { type: String, default: "" },
-  },
-  emits: ["update:modelValue"],
-  data: () => ({
-    all_data: [] as any[],
-    filter_data: [] as any[],
-    data: [] as any[],
-    limit: 0,
-    error: null as string | null,
-    last_filter: {} as Record<string, any>,
-    loading: true,
-  }),
-  watch: {
-    async file() {
-      await this.loadData();
-    },
-    search() {
-      this.filterData();
-    },
-    searchableFields: {
-      handler() {
-        this.compareFilterData();
-      },
-      deep: true,
-    },
-    filter: {
-      handler() {
-        this.compareFilterData();
-      },
-      deep: true,
-    },
-    letter() {
-      this.compareFilterData();
-    },
-    async data() {
-      this.$emit("update:modelValue", {
-        total_count: this.all_data.length,
-        filter_count: this.filter_data.length,
-        count: this.data.length,
-        data: this.data,
-      });
-    },
-    async scroll() {
-      if (
-        this.scroll && this.scroll.scroll_bottom !== undefined &&
-        this.scroll.scroll_bottom <= 50 &&
-        this.data.length < this.filter_data.length
-      ) {
-        this.paginateData();
-      }
-    },
-  },
-  async mounted() {
-    await this.loadData();
-  },
-  methods: {
-    async loadData() {
-      this.all_data = [];
-      this.filter_data = [];
-      this.data = [];
-      this.loading = true;
+const props = withDefaults(defineProps<{
+  modelValue?: Record<string, any>;
+  file: string;
+  search?: string;
+  scroll?: Record<string, any>;
+  hasScroll?: boolean;
+  searchableFields?: Record<string, boolean>;
+  filter?: Record<string, boolean>;
+  letter?: string;
+  sortBy?: string;
+}>(), {
+  modelValue: () => ({}),
+  search: "",
+  scroll: () => ({}),
+  hasScroll: false,
+  searchableFields: () => ({}),
+  filter: () => ({}),
+  letter: "",
+  sortBy: "",
+});
 
-      this.all_data = await this.$database.get(this.file);
+const emit = defineEmits(["update:modelValue"]);
 
-      if (!this.all_data) {
-        this.error = this.$t("components.datatable.alerts.not_found");
-      }
+const database = useDatabase();
+const stringHelper = useString();
+const { t } = useI18n();
 
-      if (this.sortBy && this.all_data) {
-        this.all_data.sort((a, b) =>
-          this.$string.sort(a[this.sortBy], b[this.sortBy]),
-        );
-      }
-      this.filterData();
-    },
-    filterData() {
-      if (!this.all_data) {
-        this.all_data = [];
-      }
-      this.limit = 0;
-      const value = this.$string.clean(this.search || "");
+const all_data = ref<any[]>([]);
+const filter_data = ref<any[]>([]);
+const data = ref<any[]>([]);
+const limit = ref(0);
+const error = ref<string | null>(null);
+const last_filter = ref<Record<string, any>>({});
+const loading = ref(true);
 
-      const searchable = this.searchableFields
-        ? Object.keys(this.searchableFields).filter(
-          (key) => this.searchableFields[key] === true,
-        )
-        : [];
-      const filter = this.filter
-        ? Object.keys(this.filter).filter((key) => this.filter[key] === true)
-        : [];
+const paginateData = () => {
+  limit.value += 10;
+  data.value = filter_data.value.slice(0, limit.value);
+  loading.value = false;
+
+  setTimeout(() => {
+    if (!props.hasScroll && data.value.length < filter_data.value.length) {
+      paginateData();
+    }
+  }, 100);
+};
+
+const filterData = () => {
+  if (!all_data.value) {
+    all_data.value = [];
+  }
+  limit.value = 0;
+  const value = stringHelper.clean(props.search || "");
+
+  const searchable = props.searchableFields
+    ? Object.keys(props.searchableFields).filter(
+      (key) => props.searchableFields[key] === true,
+    )
+    : [];
+  const filterKeys = props.filter
+    ? Object.keys(props.filter).filter((key) => props.filter[key] === true)
+    : [];
+  
+  filter_data.value = all_data.value
+    .filter((item) => {
+      const isPureNumber = !isNaN(Number(value)) && value !== "";
+      let searchableCondition = false;
       
-      this.filter_data = this.all_data
-        .filter((item) => {
-          const isPureNumber = !isNaN(Number(value)) && value !== "";
-          let searchableCondition = false;
-          
-          if (searchable.length === 0 || value === "") {
-            searchableCondition = true;
-          } else if (isPureNumber) {
-            searchableCondition = searchable.some((key) => {
-              if (!isNaN(Number(item[key])) && item[key] !== null && item[key] !== "") {
-                return Number(item[key]) === Number(value);
-              }
-              return false;
-            }) || (item.albums && item.albums.some((al: any) => al.type === "hymnal" && Number(al.pivot?.track) === Number(value)));
-          } else {
-            searchableCondition = searchable.some((key) => {
-              if (isNaN(Number(item[key])) || item[key] === null) {
-                return this.$string.clean(item[key]).includes(value);
-              }
-              return false;
-            });
+      if (searchable.length === 0 || value === "") {
+        searchableCondition = true;
+      } else if (isPureNumber) {
+        searchableCondition = searchable.some((key) => {
+          if (!isNaN(Number(item[key])) && item[key] !== null && item[key] !== "") {
+            return Number(item[key]) === Number(value);
           }
-          const filterCondition =
-            filter.length === 0 ||
-            filter.some((key) => item[key] === true || item[key] === 1);
-
-          const initialLetter =
-            this.letter === "" ||
-            (this.letter === "#"
-              ? /^[^a-zA-Z]/.test(
-                item.name.normalize("NFD").replace(/[\u0300-\u036f]/g, ""),
-              )
-              : item.name
-                .normalize("NFD")
-                .replace(/[\u0300-\u036f]/g, "")
-                .startsWith(this.letter));
-
-          return searchableCondition && filterCondition && initialLetter;
-        })
-        .slice();
-
-      if (!isNaN(Number(value)) && value !== "") {
-        const numValue = Number(value);
-        this.filter_data.sort((a, b) => {
-          const getScore = (item: any) => {
-            if (item.albums?.some((al: any) => al.type === "hymnal" && al.name === "Hinário Adventista" && Number(al.pivot?.track) === numValue)) return 2;
-            if (item.albums?.some((al: any) => al.type === "hymnal" && al.name === "Hinário Adventista 1996" && Number(al.pivot?.track) === numValue)) return 1;
-            return 0;
-          };
-          return getScore(b) - getScore(a);
+          return false;
+        }) || (item.albums && item.albums.some((al: any) => al.type === "hymnal" && Number(al.pivot?.track) === Number(value)));
+      } else {
+        searchableCondition = searchable.some((key) => {
+          if (isNaN(Number(item[key])) || item[key] === null) {
+            return stringHelper.clean(item[key]).includes(value);
+          }
+          return false;
         });
       }
+      const filterCondition =
+        filterKeys.length === 0 ||
+        filterKeys.some((key) => item[key] === true || item[key] === 1);
 
-      this.paginateData();
-    },
-    paginateData() {
-      this.limit += 10;
-      this.data = this.filter_data.slice(0, this.limit);
-      this.loading = false;
+      const initialLetter =
+        props.letter === "" ||
+        (props.letter === "#"
+          ? /^[^a-zA-Z]/.test(
+            item.name.normalize("NFD").replace(/[\u0300-\u036f]/g, ""),
+          )
+          : item.name
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .startsWith(props.letter));
 
-      const self = this;
-      setTimeout(() => {
-        if (!self.hasScroll && self.data.length < self.filter_data.length) {
-          self.paginateData();
-        }
-      }, 100);
-    },
+      return searchableCondition && filterCondition && initialLetter;
+    })
+    .slice();
 
-    compareFilterData() {
-      const filter = {
-        searchableFields: this.searchableFields,
-        filter: this.filter,
-        letter: this.letter,
+  if (!isNaN(Number(value)) && value !== "") {
+    const numValue = Number(value);
+    filter_data.value.sort((a, b) => {
+      const getScore = (item: any) => {
+        if (item.albums?.some((al: any) => al.type === "hymnal" && al.name === "Hinário Adventista" && Number(al.pivot?.track) === numValue)) return 2;
+        if (item.albums?.some((al: any) => al.type === "hymnal" && al.name === "Hinário Adventista 1996" && Number(al.pivot?.track) === numValue)) return 1;
+        return 0;
       };
+      return getScore(b) - getScore(a);
+    });
+  }
 
-      if (JSON.stringify(filter) === JSON.stringify(this.last_filter)) {
-        return;
-      }
+  paginateData();
+};
 
-      this.last_filter = filter;
+const loadData = async () => {
+  all_data.value = [];
+  filter_data.value = [];
+  data.value = [];
+  loading.value = true;
 
-      this.filterData();
-    },
-  },
+  all_data.value = await database.get(props.file);
+
+  if (!all_data.value) {
+    error.value = t("components.datatable.alerts.not_found");
+  }
+
+  if (props.sortBy && all_data.value) {
+    all_data.value.sort((a, b) =>
+      stringHelper.sort(a[props.sortBy], b[props.sortBy]),
+    );
+  }
+  filterData();
+};
+
+const compareFilterData = () => {
+  const currentFilter = {
+    searchableFields: props.searchableFields,
+    filter: props.filter,
+    letter: props.letter,
+  };
+
+  if (JSON.stringify(currentFilter) === JSON.stringify(last_filter.value)) {
+    return;
+  }
+
+  last_filter.value = currentFilter;
+  filterData();
+};
+
+watch(() => props.file, async () => {
+  await loadData();
+});
+
+watch(() => props.search, () => {
+  filterData();
+});
+
+watch(() => props.searchableFields, () => {
+  compareFilterData();
+}, { deep: true });
+
+watch(() => props.filter, () => {
+  compareFilterData();
+}, { deep: true });
+
+watch(() => props.letter, () => {
+  compareFilterData();
+});
+
+watch(data, () => {
+  emit("update:modelValue", {
+    total_count: all_data.value.length,
+    filter_count: filter_data.value.length,
+    count: data.value.length,
+    data: data.value,
+  });
+});
+
+watch(() => props.scroll, () => {
+  if (
+    props.scroll && props.scroll.scroll_bottom !== undefined &&
+    props.scroll.scroll_bottom <= 50 &&
+    data.value.length < filter_data.value.length
+  ) {
+    paginateData();
+  }
+});
+
+onMounted(async () => {
+  await loadData();
 });
 </script>
 

@@ -13,7 +13,7 @@
       <v-list-item
         v-for="(language, key) in languages"
         :key="key"
-        @click="changeLanguage(key)"
+        @click="changeLanguage(String(key))"
       >
         <template #prepend>
           <CountryFlag
@@ -29,27 +29,21 @@
   </v-menu>
 </template>
 
-<script>
+<script setup lang="ts">
+import { computed } from "vue";
 import CountryFlag from "vue-country-flag-next";
+import { useAppData, useUserData } from "@/composables/useHelpers";
+import { useI18n } from "vue-i18n";
 
-export default {
-  name: "LanguageSelectorComponent",
-  components: {
-    CountryFlag,
-  },
-  computed: {
-    languages() {
-      return this.$appdata.get("languages");
-    },
-    current_language() {
-      return this.$userdata.get("language");
-    },
-  },
-  methods: {
-    changeLanguage(language) {
-      this.$i18n.locale = language;
-      this.$userdata.set("language", language);
-    },
-  },
+const appdata = useAppData();
+const userdata = useUserData();
+const { locale } = useI18n();
+
+const languages = computed(() => appdata.get("languages"));
+const current_language = computed(() => userdata.get("language"));
+
+const changeLanguage = (language: string) => {
+  locale.value = language;
+  userdata.set("language", language);
 };
 </script>

@@ -42,9 +42,9 @@
 
       <template v-else-if="type === 'select'">
         <v-menu :close-on-content-click="true" location="bottom end">
-          <template #activator="{ props }">
+          <template #activator="{ props: activatorProps }">
             <v-btn
-              v-bind="props"
+              v-bind="activatorProps"
               variant="tonal"
               color="primary"
               rounded="lg"
@@ -82,66 +82,57 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, type PropType } from "vue";
+<script setup lang="ts">
+import { computed } from "vue";
 
-export default defineComponent({
-  name: "SettingsActionRow",
-  props: {
-    icon: { type: String, required: true },
-    iconColor: { type: String, default: "primary" },
-    title: { type: String, required: true },
-    subtitle: { type: String, required: true },
-    
-    // Type of control
-    type: {
-      type: String as PropType<"button" | "switch" | "select">,
-      default: "button",
-    },
-    
-    // V-model for switch or select
-    modelValue: { type: [String, Number, Boolean], default: undefined },
-    
-    // Button props
-    buttonText: { type: String, default: "" },
-    buttonColor: { type: String, default: "primary" },
-    buttonVariant: { 
-      type: String as PropType<"flat" | "text" | "elevated" | "tonal" | "outlined" | "plain">, 
-      default: "tonal", 
-    },
-    buttonElevation: { type: [Number, String], default: 0 },
-    
-    // Switch props
-    switchColor: { type: String, default: "primary" },
-    
-    // Select props
-    items: {
-      type: Array as PropType<any[]>,
-      default: () => [],
-    },
-    itemTitle: { type: String, default: "title" },
-    itemValue: { type: String, default: "value" },
-  },
-  emits: ["action", "update:modelValue"],
-  computed: {
-    normalizedItems(): Array<{ title: string; value: any }> {
-      return this.items.map(item => {
-        if (typeof item === "object") {
-          return {
-            title: item[this.itemTitle],
-            value: item[this.itemValue],
-          };
-        }
-        return {
-          title: String(item),
-          value: item,
-        };
-      });
-    },
-    selectedItemLabel(): string {
-      const selected = this.normalizedItems.find(item => item.value === this.modelValue);
-      return selected ? selected.title : String(this.modelValue || "");
-    },
-  },
+const props = withDefaults(defineProps<{
+  icon: string;
+  iconColor?: string;
+  title: string;
+  subtitle: string;
+  type?: "button" | "switch" | "select";
+  modelValue?: string | number | boolean;
+  buttonText?: string;
+  buttonColor?: string;
+  buttonVariant?: "flat" | "text" | "elevated" | "tonal" | "outlined" | "plain";
+  buttonElevation?: number | string;
+  switchColor?: string;
+  items?: any[];
+  itemTitle?: string;
+  itemValue?: string;
+}>(), {
+  iconColor: "primary",
+  type: "button",
+  modelValue: undefined,
+  buttonText: "",
+  buttonColor: "primary",
+  buttonVariant: "tonal",
+  buttonElevation: 0,
+  switchColor: "primary",
+  items: () => [],
+  itemTitle: "title",
+  itemValue: "value",
+});
+
+defineEmits(["action", "update:modelValue"]);
+
+const normalizedItems = computed(() => {
+  return props.items.map(item => {
+    if (typeof item === "object") {
+      return {
+        title: item[props.itemTitle],
+        value: item[props.itemValue],
+      };
+    }
+    return {
+      title: String(item),
+      value: item,
+    };
+  });
+});
+
+const selectedItemLabel = computed(() => {
+  const selected = normalizedItems.value.find(item => item.value === props.modelValue);
+  return selected ? selected.title : String(props.modelValue || "");
 });
 </script>

@@ -5,11 +5,11 @@
     :persistent="true"
     @click:outside="isColorMenuOpen = false"
   >
-    <template #activator="{ props }">
-      <slot name="activator" :props="props">
+    <template #activator="{ props: activatorProps }">
+      <slot name="activator" :props="activatorProps">
         <!-- Default activator: a colored circle showing the current selection -->
         <div
-          v-bind="props"
+          v-bind="activatorProps"
           class="rounded-circle cursor-pointer d-flex align-center justify-center"
           :style="{
             width: '36px', height: '36px',
@@ -52,10 +52,10 @@
 
       <!-- Cor Personalizada -->
       <div>
-        <v-hover v-slot="{ isHovering, props }">
+        <v-hover v-slot="{ isHovering, props: hoverProps }">
           <div
             class="d-flex align-center justify-space-between cursor-pointer pa-2 rounded-lg" 
-            v-bind="props"
+            v-bind="hoverProps"
             :style="{ background: isHovering ? 'var(--hover-bg, rgba(150,150,150,0.1))' : 'transparent', transition: 'background 0.2s', margin: '0 -8px' }"
             @click="showAdvancedColor = !showAdvancedColor"
           >
@@ -89,32 +89,28 @@
   </v-menu>
 </template>
 
-<script>
-export default {
-  name: "ModernColorPicker",
-  props: {
-    modelValue: {
-      type: String,
-      default: "#000000",
-    },
-  },
-  emits: ["update:modelValue"],
-  data() {
-    return {
-      isColorMenuOpen: false,
-      showAdvancedColor: false,
-      standardColors: [
-        "#000000", "#424242", "#757575", "#BDBDBD", "#FFFFFF",
-        "#FF5252", "#FF4081", "#E040FB", "#7C4DFF", "#536DFE",
-        "#448AFF", "#40C4FF", "#18FFFF", "#64FFDA", "#69F0AE",
-        "#B2FF59", "#EEFF41", "#FFFF00", "#FFD740", "#FFAB40",
-      ],
-    };
-  },
-  methods: {
-    selectColor(color) {
-      this.$emit("update:modelValue", color);
-    },
-  },
+<script setup lang="ts">
+import { ref } from "vue";
+
+withDefaults(defineProps<{
+  modelValue?: string;
+}>(), {
+  modelValue: "#000000",
+});
+
+const emit = defineEmits(["update:modelValue"]);
+
+const isColorMenuOpen = ref(false);
+const showAdvancedColor = ref(false);
+
+const standardColors = [
+  "#000000", "#424242", "#757575", "#BDBDBD", "#FFFFFF",
+  "#FF5252", "#FF4081", "#E040FB", "#7C4DFF", "#536DFE",
+  "#448AFF", "#40C4FF", "#18FFFF", "#64FFDA", "#69F0AE",
+  "#B2FF59", "#EEFF41", "#FFFF00", "#FFD740", "#FFAB40",
+];
+
+const selectColor = (color: string) => {
+  emit("update:modelValue", color);
 };
 </script>
