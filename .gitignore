@@ -8,6 +8,7 @@
 node_modules
 /dist
 /dist-electron
+/release
 update.md
 
 # local env files

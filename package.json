@@ -61,6 +61,7 @@
     "eslint": "^8.57.1",
     "eslint-plugin-vue": "^9.31.0",
     "sass": "^1.83.0",
+    "sharp": "^0.35.3",
     "ts-node": "^10.9.2",
     "typescript": "^6.0.3",
     "vite": "^5.4.11",
@@ -80,11 +81,11 @@
     "appId": "com.louvorja.app",
     "productName": "Louvor JA",
     "directories": {
-      "output": "dist-electron"
+      "output": "release"
     },
     "files": [
       "dist/**/*",
-      "dist-electron-ts/**/*"
+      "dist-electron/**/*"
     ],
     "extraResources": [
       "resources/**"
@@ -111,7 +112,7 @@
           ]
         }
       ],
-      "icon": "public/ico/favicon.png"
+      "icon": "public/ico/icon.icns"
     },
     "win": {
       "target": [
