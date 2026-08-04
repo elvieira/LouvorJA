@@ -26,39 +26,40 @@
   </Window>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent, PropType } from "vue";
 import Window from "@/components/Window.vue";
 
-export default {
+export default defineComponent({
   name: "ModuleContainer",
   components: {
     Window,
   },
   props: {
     manifest: {
-      type: Object,
+      type: Object as PropType<Record<string, any>>,
       required: true,
     },
   },
   emits: ["show", "close", "minimize"],
   computed: {
-    module_id() {
+    module_id(): string {
       return this.manifest.id;
     },
-    module() {
+    module(): any {
       return this.$modules.get(this.module_id);
     },
-    show() {
+    show(): boolean {
       return this.module.show;
     },
   },
   watch: {
-    show(value) {
+    show(value: boolean) {
       this.$emit("show", value);
     },
   },
   methods: {
-    t(text) {
+    t(text: string): string {
       return this.$t(`modules.${this.module_id}.${text}`);
     },
     close() {
@@ -70,5 +71,5 @@ export default {
       this.$emit("minimize");
     },
   },
-};
+});
 </script>

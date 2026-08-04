@@ -60,22 +60,23 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from "vue";
 import $appdata from "@/helpers/config/AppData";
 import $alert from "@/helpers/ui/Alert";
 
-export default {
+export default defineComponent({
   name: "AppTitlebar",
   data() {
     return {
-      isMaximized: false,
-      isElectron: false,
-      isMac: false,
-      isFocused: true,
+      isMaximized: false as boolean,
+      isElectron: false as boolean,
+      isMac: false as boolean,
+      isFocused: true as boolean,
     };
   },
   computed: {
-    isMainApp() {
+    isMainApp(): boolean {
       return this.$route.name !== "Popup";
     },
   },
@@ -87,9 +88,9 @@ export default {
 
     if (window.electronAPI && window.electronAPI.isElectron) {
       this.isElectron = true;
-      this.isMaximized = await window.electronAPI.windowControl("is-maximized");
+      this.isMaximized = (await window.electronAPI.windowControl("is-maximized")) as unknown as boolean;
       
-      window.electronAPI.onWindowMaximizedState((state) => {
+      window.electronAPI.onWindowMaximizedState((state: boolean) => {
         this.isMaximized = state;
       });
 
@@ -97,14 +98,14 @@ export default {
       window.electronAPI.onRequestCloseApp(() => {
         const isMediaActive = $appdata.get("modules.media.id_music") !== null || $appdata.get("modules.media.show");
         const popups = $appdata.get("popups") || [];
-        const hasProjector = popups.some(p => !p.closed);
+        const hasProjector = popups.some((p: any) => !p.closed);
 
         if (isMediaActive || hasProjector) {
           $alert.yesno({
             title: "alert.close_app_title",
             text: "alert.close_app_text",
             translate: true,
-          }, (btn) => {
+          }, (btn: string) => {
             if (btn === "yes") {
               this.executeClose();
             }
@@ -117,21 +118,21 @@ export default {
   },
   methods: {
     minimize() {
-      if (this.isElectron) window.electronAPI.windowControl("minimize");
+      if (this.isElectron && window.electronAPI) window.electronAPI.windowControl("minimize");
     },
     maximize() {
-      if (this.isElectron) window.electronAPI.windowControl("maximize");
+      if (this.isElectron && window.electronAPI) window.electronAPI.windowControl("maximize");
     },
     close() {
-      if (this.isElectron) window.electronAPI.windowControl("close");
+      if (this.isElectron && window.electronAPI) window.electronAPI.windowControl("close");
     },
     executeClose() {
-      if (this.isElectron) {
+      if (this.isElectron && window.electronAPI) {
         window.electronAPI.forceQuitApp();
       }
     },
   },
-};
+});
 </script>
 
 <style scoped>

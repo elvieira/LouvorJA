@@ -14,15 +14,16 @@
   </v-app-bar>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from "vue";
 import LanguageSelector from "@/components/LanguageSelector.vue";
 
-export default {
+export default defineComponent({
   name: "HeaderLayout",
   components: {
     LanguageSelector,
   },
-};
+});
 </script>
 
 <style scoped>

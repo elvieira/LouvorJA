@@ -39,23 +39,24 @@
   </v-dialog>
 </template>
 
-<script>
-export default {
+<script lang="ts">
+import { defineComponent } from "vue";
+
+export default defineComponent({
   name: "AlertLayout",
   computed: {
-    alert() {
+    alert(): any {
       return this.$appdata.get("alert");
     },
   },
   methods: {
-    clickBtn(value) {
+    clickBtn(value: any) {
       this.$appdata.set("alert.value", value);
       this.$appdata.set("alert.show", false);
     },
   },
-};
+});
 </script>
-
 <style lang="scss">
 .modern-alert-dialog-wrapper {
   backdrop-filter: blur(5px);

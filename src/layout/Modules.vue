@@ -8,27 +8,27 @@
   </div>
 </template>
 
-<script>
-import { defineAsyncComponent } from "vue";
+<script lang="ts">
+import { defineAsyncComponent, defineComponent } from "vue";
 
-export default {
+export default defineComponent({
   name: "ModulesLayout",
   data() {
     return {
       // Cache de componentes para evitar recriação em cada re-render
-      componentCache: {},
+      componentCache: {} as Record<string, any>,
     };
   },
   computed: {
-    modules() {
+    modules(): Record<string, any> {
       return this.$modules.get();
     },
-    import_modules() {
+    import_modules(): boolean {
       return this.$appdata.get("import_modules");
     },
   },
   methods: {
-    loadModuleComponent(module) {
+    loadModuleComponent(module: any) {
       // Retorna do cache se já foi carregado, evitando remount
       if (this.componentCache[module.id]) {
         return this.componentCache[module.id];
@@ -40,9 +40,9 @@ export default {
         const match = Object.keys(moduleComponents).find(path => path.endsWith(`/${module.id}/interface/Index.vue`));
         
         if (match) {
-          return moduleComponents[match]();
+          return moduleComponents[match]() as Promise<any>;
         } 
-        return Promise.reject(new Error(`Module component ${module.id} not found`)).catch((e) => {
+        return Promise.reject(new Error(`Module component ${module.id} not found`)).catch((e: Error) => {
           this.$alert.error({
             text: "messages.error_import_module",
             error: e,
@@ -56,5 +56,5 @@ export default {
       return comp;
     },
   },
-};
+});
 </script>

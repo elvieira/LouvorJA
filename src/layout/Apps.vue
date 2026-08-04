@@ -66,39 +66,40 @@
   </div>
 </template>
 
-<script>
-export default {
+<script lang="ts">
+import { defineComponent } from "vue";
+
+export default defineComponent({
   name: "AppsLayout",
   data: () => ({
-    panels_active: [],
-
-    selectedTheme: "",
-    themes: [],
+    panels_active: [] as number[],
+    selectedTheme: "" as string,
+    themes: [] as any[],
   }),
   computed: {
-    module_group() {
+    module_group(): Record<string, any> {
       return Object.entries(this.$modules.getGroups())
-        .filter(([, value]) => Object.keys(value.modules).length > 0)
-        .reduce((result, [key, value]) => {
+        .filter(([, value]: [string, any]) => Object.keys(value.modules).length > 0)
+        .reduce((result: Record<string, any>, [key, value]: [string, any]) => {
           result[key] = value;
           return result;
         }, {});
     },
     is_dev: {
-      get() {
+      get(): boolean {
         return this.$appdata.get("is_dev");
       },
-      set(value) {
+      set(value: boolean) {
         if (!value) {
           this.$appdata.set("is_dev", value);
         }
       },
     },
     language: {
-      get() {
+      get(): string {
         return this.$userdata.get("language");
       },
-      set(value) {
+      set(value: string) {
         if (!value) {
           this.$userdata.set("language", value);
         }
@@ -111,10 +112,10 @@ export default {
     },
   },
   methods: {
-    sortModules(modules) {
+    sortModules(modules: Record<string, any>) {
       return this.$modules.sort(modules, this.$t);
     },
-    countModules(modules) {
+    countModules(modules: Record<string, any>) {
       return Object.keys(modules).filter((key) =>
         !this.is_dev
           ? !modules[key].development || modules[key].development === false
@@ -122,7 +123,7 @@ export default {
       ).length;
     },
   },
-};
+});
 </script>
 
 <style scoped>

@@ -28,41 +28,43 @@
   </v-navigation-drawer>
 </template>
 
-<script>
-export default {
+<script lang="ts">
+import { defineComponent } from "vue";
+
+export default defineComponent({
   name: "MenuLayout",
   computed: {
     show: {
-      get() {
+      get(): boolean {
         return this.$appdata.get("menu.show");
       },
-      set(value) {
+      set(value: boolean) {
         if (!value) {
           this.$appdata.toogle("menu.show");
         }
       },
     },
-    menu_modules() {
+    menu_modules(): Record<string, any> {
       return this.$modules.getMenu();
     },
-    modules() {
+    modules(): Record<string, any> {
       return this.$appdata.get("modules");
     },
     is_dev: {
-      get() {
+      get(): boolean {
         return this.$appdata.get("is_dev");
       },
-      set(value) {
+      set(value: boolean) {
         if (!value) {
           this.$appdata.set("is_dev", value);
         }
       },
     },
     language: {
-      get() {
+      get(): string {
         return this.$userdata.get("language");
       },
-      set(value) {
+      set(value: string) {
         if (!value) {
           this.$userdata.set("language", value);
         }
@@ -70,9 +72,9 @@ export default {
     },
   },
   methods: {
-    sortModules(modules) {
+    sortModules(modules: Record<string, any>) {
       return this.$modules.sort(modules, this.$t);
     },
   },
-};
+});
 </script>

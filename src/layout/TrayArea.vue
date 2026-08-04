@@ -31,25 +31,26 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from "vue";
 import Draggable from "vuedraggable";
 
-export default {
+export default defineComponent({
   name: "TrayAreaLayout",
   components: {
     Draggable,
   },
   computed: {
     modules: {
-      get() {
+      get(): any[] {
         return Object.values(this.$modules.getTray());
       },
-      set(value) {
+      set(value: any[]) {
         this.$modules.setTray(value.map((module) => module.id));
       },
     },
   },
-};
+});
 </script>
 
 <style scoped>

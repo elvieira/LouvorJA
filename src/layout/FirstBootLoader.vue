@@ -41,21 +41,22 @@
   </transition>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from "vue";
 import $path from "@/helpers/utils/Path";
 import $alert from "@/helpers/ui/Alert";
 
-export default {
+export default defineComponent({
   name: "FirstBootLoader",
   emits: ["boot-complete"],
   data() {
     return {
-      isOpen: true,
-      showContent: false,
-      progress: 0,
-      statusText: "",
-      isFirstBoot: false,
-      hasError: false,
+      isOpen: true as boolean,
+      showContent: false as boolean,
+      progress: 0 as number,
+      statusText: "" as string,
+      isFirstBoot: false as boolean,
+      hasError: false as boolean,
     };
   },
   mounted() {
@@ -102,7 +103,7 @@ export default {
       
       this.isOpen = true;
       
-      const isComplete = await window.electronAPI.getLocalDb("sfbc");
+      const isComplete: any = await window.electronAPI.getLocalDb("sfbc");
       if (!isComplete || !isComplete.complete) {
         this.isFirstBoot = true;
         
@@ -132,11 +133,11 @@ export default {
         }, 100);
       }
     },
-    async fetchFromApi(file, retries = 5, delayMs = 1000) {
+    async fetchFromApi(file: string, retries = 5, delayMs = 1000): Promise<any> {
       try {
         const date = new Date().toISOString().slice(0, 10).replace(/-/g, "");
         const response = await fetch(`${$path.db(`/${file}`)}?${date}`, {
-          headers: { "Api-Token": import.meta.env.VITE_API_TOKEN },
+          headers: { "Api-Token": import.meta.env.VITE_API_TOKEN as string },
         });
         
         if (response.status === 429 && retries > 0) {
@@ -153,7 +154,7 @@ export default {
           throw new Error(`Servidor retornou erro ${response.status}`);
         }
         return await response.json();
-      } catch (error) {
+      } catch (error: any) {
         if (retries > 0 && (error.message.includes("Failed to fetch") || error.message.includes("NetworkError"))) {
           await new Promise(resolve => setTimeout(resolve, delayMs));
           return this.fetchFromApi(file, retries - 1, delayMs * 1.5);
@@ -161,14 +162,14 @@ export default {
         throw error;
       }
     },
-    async fetchAndSave(file) {
+    async fetchAndSave(file: string) {
       const data = await this.fetchFromApi(file);
       if (data && window.electronAPI) {
         await window.electronAPI.saveLocalDb(file, data);
       }
       return data;
     },
-    async downloadCoverImage(urlPath, filename) {
+    async downloadCoverImage(urlPath: string, filename: string) {
       if (window.electronAPI && urlPath) {
         const fullUrl = `${$path.file(urlPath)}`;
         await window.electronAPI.downloadMedia(fullUrl, "covers", filename);
@@ -180,19 +181,19 @@ export default {
           this.progress = 0;
           this.statusText = this.$t("first_boot.status.preparing");
           
-          window.electronAPI.onExtractProgress((data) => {
+          window.electronAPI.onExtractProgress((data: any) => {
             this.progress = data.progress;
           });
           
           if (window.electronAPI.onDownloadDbProgress) {
-            window.electronAPI.onDownloadDbProgress((data) => {
+            window.electronAPI.onDownloadDbProgress((data: any) => {
               this.progress = data.progress;
             });
           }
           
           try {
             await this.fetchAndSave("config");
-          } catch (e) {
+          } catch (e: any) {
             if (e.message && (e.message.includes("Failed to fetch") || e.message.includes("NetworkError"))) {
               throw new Error(this.$t("first_boot.errors.no_internet"));
             } else if (e.message && e.message.includes("429")) {
@@ -215,7 +216,7 @@ export default {
                   text: this.$t("first_boot.old_version.text"),
                   translate: false,
                   center: true,
-                }, (resp) => {
+                }, (resp: string) => {
                   resolve(resp === "yes");
                 });
               });
@@ -235,7 +236,7 @@ export default {
           if (shouldDownloadDb) {
             try {
               await window.electronAPI.downloadDatabase();
-            } catch (e) {
+            } catch (e: any) {
               throw new Error(this.$t("first_boot.errors.db_download_fail"));
             }
           }
@@ -246,7 +247,7 @@ export default {
           let success = false;
           try {
             success = await window.electronAPI.extractLocalDb();
-          } catch (e) {
+          } catch (e: any) {
             throw new Error(this.$t("first_boot.errors.extraction_fail"));
           }
 
@@ -269,14 +270,14 @@ export default {
           throw new Error("Falha desconhecida ao extrair banco de dados local.");
         }
         throw new Error("Ambiente Electron não disponível.");
-      } catch (err) {
+      } catch (err: any) {
         console.error("Erro na sincronização inicial:", err);
         this.statusText = err.message || "Erro na sincronização. Tente novamente.";
         this.hasError = true;
       }
     },
   },
-};
+});
 </script>
 
 <style scoped>

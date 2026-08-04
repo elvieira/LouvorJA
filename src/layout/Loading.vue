@@ -23,18 +23,20 @@
   </v-dialog>
 </template>
 
-<script>
-export default {
+<script lang="ts">
+import { defineComponent } from "vue";
+
+export default defineComponent({
   name: "LoadingLayout",
   computed: {
     show: {
-      get() {
+      get(): boolean {
         return this.$appdata.get("loading");
       },
-      set(value) {
+      set(value: boolean) {
         this.$appdata.set("loading", value);
       },
     },
   },
-};
+});
 </script>

@@ -20,30 +20,31 @@
   </v-footer>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from "vue";
 import packageJson from "../../package.json";
 
 import LPlayer from "@/components/Player.vue";
 import ExternalMediaFooterPlayer from "@/components/ExternalMediaFooterPlayer.vue";
 
-export default {
+export default defineComponent({
   name: "FooterLayout",
   components: {
     LPlayer,
     ExternalMediaFooterPlayer,
   },
   data: () => ({
-    db_version: 0,
+    db_version: 0 as number,
   }),
   computed: {
-    version() {
+    version(): string {
       return `${packageJson.version}.${this.db_version}`;
     },
-    isMediaMinimized() {
+    isMediaMinimized(): boolean {
       return this.$media.isMinimized();
     },
-    isExternalMediaMinimized() {
-      return this.$appdata.get("modules.external_media.minimized") === true && this.$appdata.get("modules.external_media.filePath");
+    isExternalMediaMinimized(): boolean {
+      return this.$appdata.get("modules.external_media.minimized") === true && !!this.$appdata.get("modules.external_media.filePath");
     },
   },
   async mounted() {
@@ -52,12 +53,11 @@ export default {
   methods: {
     async loadDBVersion() {
       const config = await this.$database.get("config");
-      this.db_version = config.version_number;
+      this.db_version = config?.version_number || 0;
     },
   },
-};
+});
 </script>
-
 <style scoped>
 #footer-bar {
   flex: 0 !important;
