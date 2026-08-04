@@ -255,7 +255,7 @@ export default class DbExtractor {
     `).all() as Record<string, unknown>[];
 
     const data = rows.map(r => {
-      const lyrics = db.prepare("SELECT lyric FROM lyrics WHERE id_music = ? ORDER BY \`order\` ASC").all(r.id_music) as Record<string, unknown>[];
+      const lyrics = db.prepare("SELECT lyric FROM lyrics WHERE id_music = ? ORDER BY `order` ASC").all(r.id_music) as Record<string, unknown>[];
       let fullLyric = "";
       for (const l of lyrics) {
         if (typeof l.lyric === "string" && l.lyric.trim() !== "") {

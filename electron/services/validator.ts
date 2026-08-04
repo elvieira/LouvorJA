@@ -44,7 +44,7 @@ export function registerValidatorHandlers() {
       }
       
       const binFiles = new Set([
-        "pt_categories.bin", "pt_bible_book.bin", "pt_bible_version.bin", "pt_hymnal.bin", "pt_hymnal_1996.bin", "pt_musics.bin"
+        "pt_categories.bin", "pt_bible_book.bin", "pt_bible_version.bin", "pt_hymnal.bin", "pt_hymnal_1996.bin", "pt_musics.bin",
       ]);
       
       const albums = db.prepare("SELECT id_album FROM albums").all() as Record<string, unknown>[];

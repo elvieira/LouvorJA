@@ -10,108 +10,147 @@
       <v-window v-model="addStep">
         <!-- Step 1: Type Selection -->
         <v-window-item :value="1">
-          <v-card-title class="pt-6 px-6 pb-2 d-flex align-center justify-space-between">
-            <span class="font-weight-bold" style="font-size: 1.2rem; color: var(--sidebar-text);">{{ t('add_item') }}</span>
+          <v-card-title class="pt-6 px-6 pb-4 d-flex align-center justify-space-between">
+            <div class="d-flex flex-column">
+              <span class="font-weight-bold" style="font-size: 1.25rem; color: var(--sidebar-text);">{{ t('add_item') }}</span>
+              <span class="text-caption mt-1" style="color: var(--sidebar-text-secondary); opacity: 0.8;">Selecione o tipo de item para adicionar à liturgia</span>
+            </div>
             <v-btn
               icon
               size="small"
-              variant="text"
+              variant="flat"
+              color="rgba(128,128,128,0.1)"
+              class="rounded-lg"
               @click="closeMenu"
             >
-              <v-icon>mdi-close</v-icon>
+              <v-icon size="20">
+                mdi-close
+              </v-icon>
             </v-btn>
           </v-card-title>
-          <v-card-text class="px-6 pb-6 pt-2">
-            <v-row class="mt-1">
-              <v-col
-                v-for="type in itemTypes"
-                :key="type.value"
-                cols="6"
-                sm="4"
-              >
-                <v-hover v-slot="{ isHovering, props }">
-                  <v-card
-                    v-bind="props"
-                    class="d-flex flex-column align-center justify-center rounded-xl pa-3 w-100 cursor-pointer text-center"
-                    :elevation="0"
-                    style="transition: all 0.3s ease; border: 1px solid var(--border-color, rgba(128,128,128,0.15)); aspect-ratio: 1;"
-                    :style="{ background: isHovering ? 'rgba(128,128,128,0.04)' : 'transparent' }"
-                    @click="openAddForm(type.value)"
-                  >
-                    <v-icon
-                      :color="type.color"
-                      size="42"
-                      class="mb-3"
-                      :style="{ transform: isHovering ? 'scale(1.05)' : 'scale(1)', transition: 'transform 0.3s ease' }"
+          
+          <v-card-text class="px-6 pb-6 pt-0">
+            <v-list class="bg-transparent pa-0" lines="two">
+              <v-hover v-for="type in itemTypes" :key="type.value" v-slot="{ isHovering, props }">
+                <v-list-item
+                  v-bind="props"
+                  :class="['rounded-xl mb-2 px-4 py-3', { 'bg-primary-lighten': isHovering }]"
+                  :style="{ 
+                    border: '1px solid',
+                    borderColor: isHovering ? 'rgba(var(--v-theme-primary), 0.3)' : 'rgba(128,128,128,0.1)',
+                    background: isHovering ? 'rgba(var(--v-theme-primary), 0.04)' : 'transparent',
+                    transition: 'all 0.2s ease'
+                  }"
+                  @click="openAddForm(type.value)"
+                >
+                  <template #prepend>
+                    <v-avatar 
+                      :color="isHovering ? 'primary' : 'rgba(128,128,128,0.08)'" 
+                      rounded="lg" 
+                      size="48" 
+                      class="mr-4"
+                      style="transition: all 0.3s ease"
                     >
-                      {{ type.icon }}
+                      <v-icon :color="isHovering ? 'white' : 'rgba(128,128,128,0.7)'" size="24">
+                        {{ type.icon }}
+                      </v-icon>
+                    </v-avatar>
+                  </template>
+                  <v-list-item-title class="font-weight-bold mb-1" style="font-size: 1rem; color: var(--sidebar-text);">
+                    {{ type.label }}
+                  </v-list-item-title>
+                  <v-list-item-subtitle class="text-caption" style="color: var(--sidebar-text-secondary); line-height: 1.3;">
+                    {{ type.description }}
+                  </v-list-item-subtitle>
+                  
+                  <template #append>
+                    <v-icon size="24" :color="isHovering ? 'primary' : 'rgba(128,128,128,0.3)'" :style="{ transition: 'all 0.3s ease', transform: isHovering ? 'translateX(4px)' : 'translateX(0)' }">
+                      mdi-chevron-right
                     </v-icon>
-                    <div class="font-weight-bold mb-1" style="font-size: 0.95rem; color: var(--sidebar-text); line-height: 1.2;">
-                      {{ type.label }}
-                    </div>
-                    <div style="font-size: 0.75rem; color: var(--sidebar-text-secondary); line-height: 1.2; padding: 0 4px;">
-                      {{ type.description }}
-                    </div>
-                  </v-card>
-                </v-hover>
-              </v-col>
-            </v-row>
+                  </template>
+                </v-list-item>
+              </v-hover>
+            </v-list>
           </v-card-text>
         </v-window-item>
 
         <!-- Step 2: Form -->
         <v-window-item :value="2">
-          <v-card-title class="pt-6 px-6 d-flex align-center">
+          <v-card-title class="pt-6 px-6 pb-4 d-flex align-center">
             <v-btn
               icon
               size="small"
-              variant="text"
-              class="mr-3"
-              style="margin-left: -8px;"
+              variant="flat"
+              color="rgba(128,128,128,0.1)"
+              class="rounded-lg mr-4"
               @click="addStep = 1"
             >
-              <v-icon>mdi-arrow-left</v-icon>
+              <v-icon size="20">
+                mdi-arrow-left
+              </v-icon>
             </v-btn>
-            <v-icon :color="getTypeColor(addForm.type)" class="mr-3">
-              {{ getTypeIcon(addForm.type) }}
-            </v-icon>
-            <span class="font-weight-bold" style="font-size: 1.2rem; color: var(--sidebar-text);">{{ t('add_item') }}: {{ getTypeLabel(addForm.type) }}</span>
+            <div class="d-flex align-center">
+              <v-avatar
+                color="rgba(var(--v-theme-primary), 0.1)"
+                size="40"
+                rounded="lg"
+                class="mr-3"
+              >
+                <v-icon color="primary" size="20">
+                  {{ getTypeIcon(addForm.type) }}
+                </v-icon>
+              </v-avatar>
+              <div class="d-flex flex-column">
+                <span class="font-weight-bold" style="font-size: 1.15rem; color: var(--sidebar-text); line-height: 1.2;">{{ getTypeLabel(addForm.type) }}</span>
+                <span class="text-caption" style="color: var(--sidebar-text-secondary); opacity: 0.8; line-height: 1.2;">Configurar detalhes do item</span>
+              </div>
+            </div>
           </v-card-title>
 
           <v-card-text class="px-6 pb-2 pt-4">
             <!-- Name -->
-            <v-text-field
-              v-model="addForm.name"
-              :label="t('fields.name')"
-              variant="solo-filled"
-              flat
-              bg-color="rgba(128,128,128,0.05)"
-              rounded="xl"
-              density="comfortable"
-              hide-details
-              class="modern-input-no-thick mb-4"
-              :placeholder="getNamePlaceholder(addForm.type)"
-              autofocus
-            />
+            <div class="mb-4">
+              <div class="text-caption font-weight-bold mb-1" style="color: var(--sidebar-text-secondary); margin-left: 4px; text-transform: uppercase; font-size: 0.65rem !important; letter-spacing: 0.5px;">
+                {{ t('fields.name') }}
+              </div>
+              <v-text-field
+                v-model="addForm.name"
+                variant="solo-filled"
+                flat
+                bg-color="rgba(128,128,128,0.05)"
+                rounded="xl"
+                density="comfortable"
+                hide-details
+                class="modern-input-no-thick"
+                :placeholder="getNamePlaceholder(addForm.type)"
+                autofocus
+              />
+            </div>
 
             <!-- Description (annotation only) -->
-            <v-textarea
-              v-if="addForm.type === 'annotation'"
-              v-model="addForm.subtitle"
-              :label="t('fields.description')"
-              variant="solo-filled"
-              flat
-              bg-color="rgba(128,128,128,0.05)"
-              rounded="xl"
-              density="comfortable"
-              hide-details
-              rows="2"
-              auto-grow
-              class="modern-input-no-thick mb-4"
-            />
+            <div v-if="addForm.type === 'annotation'" class="mb-4">
+              <div class="text-caption font-weight-bold mb-1" style="color: var(--sidebar-text-secondary); margin-left: 4px; text-transform: uppercase; font-size: 0.65rem !important; letter-spacing: 0.5px;">
+                {{ t('fields.description') }}
+              </div>
+              <v-textarea
+                v-model="addForm.subtitle"
+                variant="solo-filled"
+                flat
+                bg-color="rgba(128,128,128,0.05)"
+                rounded="xl"
+                density="comfortable"
+                hide-details
+                rows="2"
+                auto-grow
+                class="modern-input-no-thick"
+              />
+            </div>
 
             <!-- Music selector -->
             <div v-if="addForm.type === 'music'" class="mb-4">
+              <div class="text-caption font-weight-bold mb-1" style="color: var(--sidebar-text-secondary); margin-left: 4px; text-transform: uppercase; font-size: 0.65rem !important; letter-spacing: 0.5px;">
+                {{ t('fields.search_music') }}
+              </div>
               <v-autocomplete
                 v-model="addForm.musicId"
                 v-model:search="musicSearchQuery"
@@ -119,13 +158,13 @@
                 :custom-filter="() => true"
                 item-title="name"
                 item-value="id_music"
-                :label="t('fields.search_music')"
                 variant="solo-filled"
                 flat
                 bg-color="rgba(128,128,128,0.05)"
                 rounded="xl"
                 density="comfortable"
                 class="modern-input-no-thick"
+                :placeholder="t('fields.search_music')"
                 hide-details
                 clearable
                 :menu-props="{ transition: 'fade-transition' }"
@@ -165,63 +204,26 @@
 
             <!-- Verse selector -->
             <div v-if="addForm.type === 'verse'">
-              <v-autocomplete
-                v-model="addForm.verseBookId"
-                :items="bibleBooks"
-                item-title="name"
-                item-value="id_bible_book"
-                :label="t('fields.book')"
-                variant="solo-filled"
-                flat
-                bg-color="rgba(128,128,128,0.05)"
-                rounded="xl"
-                density="comfortable"
-                class="modern-input-no-thick mb-3"
-                hide-details
-                :menu-props="{ transition: 'fade-transition' }"
-                :list-props="{ style: 'background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border-color, rgba(150, 150, 150, 0.2)); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); padding: 8px 0;' }"
-                @update:model-value="onBookSelect"
-              >
-                <template #item="{ item, props }">
-                  <v-list-item
-                    v-bind="props"
-                    :title="null"
-                    class="mx-2 rounded-lg mb-1"
-                    color="primary"
-                    style="min-height: 40px;"
-                  >
-                    <template #title>
-                      <div class="d-flex align-center">
-                        <span class="text-body-2 font-weight-medium" :class="item.value === addForm.verseBookId ? '' : 'opacity-70'">
-                          {{ item.title }}
-                        </span>
-                      </div>
-                    </template>
-                  </v-list-item>
-                </template>
-                <template #no-data>
-                  <v-list-item>
-                    <v-list-item-title class="text-caption text-center pt-2 pb-2" style="color: var(--sidebar-text-secondary);">
-                      {{ t('messages.book_not_found') }}
-                    </v-list-item-title>
-                  </v-list-item>
-                </template>
-              </v-autocomplete>
-              <div class="d-flex" style="gap: 12px;">
+              <div class="mb-3">
+                <div class="text-caption font-weight-bold mb-1" style="color: var(--sidebar-text-secondary); margin-left: 4px; text-transform: uppercase; font-size: 0.65rem !important; letter-spacing: 0.5px;">
+                  {{ t('fields.book') }}
+                </div>
                 <v-autocomplete
-                  v-model="addForm.verseChapter"
-                  :items="verseChapterList"
-                  :label="t('fields.chapter')"
+                  v-model="addForm.verseBookId"
+                  :items="bibleBooks"
+                  item-title="name"
+                  item-value="id_bible_book"
                   variant="solo-filled"
                   flat
                   bg-color="rgba(128,128,128,0.05)"
                   rounded="xl"
                   density="comfortable"
-                  class="modern-input-no-thick mb-3"
+                  class="modern-input-no-thick"
+                  :placeholder="t('fields.book')"
                   hide-details
-                  style="max-width: 120px;"
                   :menu-props="{ transition: 'fade-transition' }"
                   :list-props="{ style: 'background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border-color, rgba(150, 150, 150, 0.2)); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); padding: 8px 0;' }"
+                  @update:model-value="onBookSelect"
                 >
                   <template #item="{ item, props }">
                     <v-list-item
@@ -233,7 +235,7 @@
                     >
                       <template #title>
                         <div class="d-flex align-center">
-                          <span class="text-body-2 font-weight-medium" :class="item.value === addForm.verseChapter ? '' : 'opacity-70'">
+                          <span class="text-body-2 font-weight-medium" :class="item.value === addForm.verseBookId ? '' : 'opacity-70'">
                             {{ item.title }}
                           </span>
                         </div>
@@ -243,23 +245,74 @@
                   <template #no-data>
                     <v-list-item>
                       <v-list-item-title class="text-caption text-center pt-2 pb-2" style="color: var(--sidebar-text-secondary);">
-                        {{ addForm.verseBookId ? t('messages.chapter_not_found') : t('messages.select_book_first') }}
+                        {{ t('messages.book_not_found') }}
                       </v-list-item-title>
                     </v-list-item>
                   </template>
                 </v-autocomplete>
-                <v-text-field
-                  v-model="addForm.verseNumbers"
-                  :label="t('fields.verses')"
-                  variant="solo-filled"
-                  flat
-                  bg-color="rgba(128,128,128,0.05)"
-                  rounded="xl"
-                  density="comfortable"
-                  class="modern-input-no-thick mb-3"
-                  hide-details
-                  :placeholder="t('fields.verses_placeholder')"
-                />
+              </div>
+              <div class="d-flex mb-2" style="gap: 12px;">
+                <div style="flex: 0 0 120px;">
+                  <div class="text-caption font-weight-bold mb-1" style="color: var(--sidebar-text-secondary); margin-left: 4px; text-transform: uppercase; font-size: 0.65rem !important; letter-spacing: 0.5px;">
+                    {{ t('fields.chapter') }}
+                  </div>
+                  <v-autocomplete
+                    v-model="addForm.verseChapter"
+                    :items="verseChapterList"
+                    variant="solo-filled"
+                    flat
+                    bg-color="rgba(128,128,128,0.05)"
+                    rounded="xl"
+                    density="comfortable"
+                    class="modern-input-no-thick mb-3"
+                    hide-details
+                    style="max-width: 120px;"
+                    :placeholder="t('fields.chapter')"
+                    :menu-props="{ transition: 'fade-transition' }"
+                    :list-props="{ style: 'background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border-color, rgba(150, 150, 150, 0.2)); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); padding: 8px 0;' }"
+                  >
+                    <template #item="{ item, props }">
+                      <v-list-item
+                        v-bind="props"
+                        :title="null"
+                        class="mx-2 rounded-lg mb-1"
+                        color="primary"
+                        style="min-height: 40px;"
+                      >
+                        <template #title>
+                          <div class="d-flex align-center">
+                            <span class="text-body-2 font-weight-medium" :class="item.value === addForm.verseChapter ? '' : 'opacity-70'">
+                              {{ item.title }}
+                            </span>
+                          </div>
+                        </template>
+                      </v-list-item>
+                    </template>
+                    <template #no-data>
+                      <v-list-item>
+                        <v-list-item-title class="text-caption text-center pt-2 pb-2" style="color: var(--sidebar-text-secondary);">
+                          {{ addForm.verseBookId ? t('messages.chapter_not_found') : t('messages.select_book_first') }}
+                        </v-list-item-title>
+                      </v-list-item>
+                    </template>
+                  </v-autocomplete>
+                </div>
+                <div style="flex: 1;">
+                  <div class="text-caption font-weight-bold mb-1" style="color: var(--sidebar-text-secondary); margin-left: 4px; text-transform: uppercase; font-size: 0.65rem !important; letter-spacing: 0.5px;">
+                    {{ t('fields.verses') }}
+                  </div>
+                  <v-text-field
+                    v-model="addForm.verseNumbers"
+                    variant="solo-filled"
+                    flat
+                    bg-color="rgba(128,128,128,0.05)"
+                    rounded="xl"
+                    density="comfortable"
+                    class="modern-input-no-thick mb-3"
+                    hide-details
+                    :placeholder="t('fields.verses_placeholder')"
+                  />
+                </div>
               </div>
             </div>
 
@@ -334,19 +387,22 @@
             </div>
 
             <!-- Link URL -->
-            <v-text-field
-              v-if="addForm.type === 'link'"
-              v-model="addForm.url"
-              :label="t('fields.url')"
-              variant="solo-filled"
-              flat
-              bg-color="rgba(128,128,128,0.05)"
-              rounded="xl"
-              density="comfortable"
-              class="modern-input-no-thick mb-4"
-              hide-details
-              :placeholder="t('fields.url_placeholder')"
-            />
+            <div v-if="addForm.type === 'link'" class="mb-4">
+              <div class="text-caption font-weight-bold mb-1" style="color: var(--sidebar-text-secondary); margin-left: 4px; text-transform: uppercase; font-size: 0.65rem !important; letter-spacing: 0.5px;">
+                {{ t('fields.url') }}
+              </div>
+              <v-text-field
+                v-model="addForm.url"
+                variant="solo-filled"
+                flat
+                bg-color="rgba(128,128,128,0.05)"
+                rounded="xl"
+                density="comfortable"
+                class="modern-input-no-thick"
+                hide-details
+                :placeholder="t('fields.url_placeholder')"
+              />
+            </div>
           </v-card-text>
 
           <v-card-actions class="px-6 pb-6 pt-2 d-flex justify-end" style="gap: 12px;">
