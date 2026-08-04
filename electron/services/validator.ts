@@ -17,21 +17,21 @@ export function registerValidatorHandlers() {
       await db.connect();
       
       let downloadedMedia: string[] = [];
-      const localMediaDbPath = path.join(sysDbPath, "downloaded_media.bin");
+      const localMediaDbPath = path.join(sysDbPath, "dlm.bin");
       if (fs.existsSync(localMediaDbPath)) {
         try {
           const encryptedContent = fs.readFileSync(localMediaDbPath, "utf8");
           const decryptedString = decryptData(encryptedContent);
           if (decryptedString) downloadedMedia = JSON.parse(decryptedString);
         } catch (e) {
-          console.error("Erro lendo downloaded_media.bin:", e);
+          console.error("Erro lendo dlm.bin:", e);
         }
       }
       
       // Valida TODAS as covers (são poucas, ~70, muito rápido)
       const coverFiles = new Set(db.prepare("SELECT file_name FROM files WHERE dir = '/covers'").all().map((r: Record<string, unknown>) => r.file_name as string));
       
-      // Músicas e imagens agora baseiam-se SOMENTE no que o programa realmente baixou (downloaded_media.bin)
+      // Músicas e imagens agora baseiam-se SOMENTE no que o programa realmente baixou (dlm.bin)
       const musicFiles = new Set<string>();
       const imageFiles = new Set<string>();
       
@@ -44,7 +44,7 @@ export function registerValidatorHandlers() {
       }
       
       const binFiles = new Set([
-        "pt_categories.bin", "pt_bible_book.bin", "pt_bible_version.bin", "pt_hymnal.bin", "pt_hymnal_1996.bin",
+        "pt_categories.bin", "pt_bible_book.bin", "pt_bible_version.bin", "pt_hymnal.bin", "pt_hymnal_1996.bin", "pt_musics.bin"
       ]);
       
       const albums = db.prepare("SELECT id_album FROM albums").all() as Record<string, unknown>[];

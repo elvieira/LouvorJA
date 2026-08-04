@@ -22,7 +22,7 @@ import FirstBootLoader from "@/layout/FirstBootLoader.vue";
 import AppTitlebar from "@/layout/Titlebar.vue";
 import AppAlert from "@/layout/Alert.vue";
 import AppSnackbar from "@/layout/Snackbar.vue";
-import BackgroundSync from "@/helpers/services/BackgroundSync";
+
 
 export default {
   name: "App",
@@ -58,7 +58,7 @@ export default {
     const isPopup = window.location.href.includes("popup");
     
     if (!isPopup && window.electronAPI && window.electronAPI.isElectron) {
-      const isComplete = await window.electronAPI.getLocalDb("system_first_boot_complete");
+      const isComplete = await window.electronAPI.getLocalDb("sfbc");
       if (isComplete && isComplete.complete) {
         this.isAppReady = true;
       }
@@ -95,8 +95,6 @@ export default {
       
       // Inicia a sincronização silenciosa em background (se necessária)
       setTimeout(async () => {
-        BackgroundSync.start();
-        
         // Auto-healing e validação de arquivos ausentes
         if (window.electronAPI && window.electronAPI.validateInstallation) {
           const missing = await window.electronAPI.validateInstallation();

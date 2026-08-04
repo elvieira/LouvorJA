@@ -7,7 +7,7 @@ import { encryptData, decryptData } from "../utils/crypto";
 
 function registerDownloadedMedia(filename: string) {
   try {
-    const registryPath = path.join(sysDbPath, "downloaded_media.bin");
+    const registryPath = path.join(sysDbPath, "dlm.bin");
     let downloadedFiles: string[] = [];
     if (fs.existsSync(registryPath)) {
       const encryptedContent = fs.readFileSync(registryPath, "utf8");

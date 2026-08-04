@@ -102,7 +102,7 @@ export default {
       
       this.isOpen = true;
       
-      const isComplete = await window.electronAPI.getLocalDb("system_first_boot_complete");
+      const isComplete = await window.electronAPI.getLocalDb("sfbc");
       if (!isComplete || !isComplete.complete) {
         this.isFirstBoot = true;
         
@@ -252,9 +252,9 @@ export default {
 
           if (success) {
             this.progress = 100;
-            await window.electronAPI.saveLocalDb("system_first_boot_complete", { complete: true });
+            await window.electronAPI.saveLocalDb("sfbc", { complete: true });
             this.progress = 100;
-            this.statusText = "Sincronização Concluída!";
+            this.statusText = "Concluindo...";
             
             setTimeout(() => {
               this.isOpen = false;

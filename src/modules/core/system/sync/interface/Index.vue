@@ -155,7 +155,7 @@ export default defineComponent({
       
       try {
         const categories = (await $db.get("pt_categories")) as any[];
-        const downloadedManifest = ((await window.electronAPI.getLocalDb("downloaded_albums")) as any[]) || [];
+        const downloadedManifest = ((await window.electronAPI.getLocalDb("dla")) as any[]) || [];
         
         if (!categories || !Array.isArray(categories)) {
           this.loadingList = false;
@@ -427,10 +427,10 @@ export default defineComponent({
       }
     },
     async markAlbumDownloaded(albumId: string | number) {
-      const downloadedManifest = (await window.electronAPI.getLocalDb("downloaded_albums")) as any[] || [];
+      const downloadedManifest = (await window.electronAPI.getLocalDb("dla")) as any[] || [];
       if (!downloadedManifest.includes(albumId)) {
         downloadedManifest.push(albumId);
-        await window.electronAPI.saveLocalDb("downloaded_albums", downloadedManifest);
+        await window.electronAPI.saveLocalDb("dla", downloadedManifest);
       }
     },
     async downloadAllAlbums() {
@@ -473,9 +473,9 @@ export default defineComponent({
         translate: false,
       }, async (resp: string) => {
         if (resp === "yes") {
-          let downloadedManifest = (await window.electronAPI.getLocalDb("downloaded_albums")) as any[] || [];
+          let downloadedManifest = (await window.electronAPI.getLocalDb("dla")) as any[] || [];
           downloadedManifest = downloadedManifest.filter((id: string | number) => id !== album.id_album);
-          await window.electronAPI.saveLocalDb("downloaded_albums", downloadedManifest);
+          await window.electronAPI.saveLocalDb("dla", downloadedManifest);
           
           album.status = "idle";
           album.progress = 0;

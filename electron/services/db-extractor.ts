@@ -47,6 +47,9 @@ export default class DbExtractor {
       progressCallback({ text: "Extraindo hinários...", progress: 60 });
       this.extractHymnals(db);
 
+      progressCallback({ text: "Indexando todas as músicas...", progress: 65 });
+      this.repairAllMusics(db);
+
       progressCallback({ text: "Extraindo Bíblias...", progress: 70 });
       this.extractBibles(db, progressCallback);
 
@@ -76,6 +79,8 @@ export default class DbExtractor {
       } else if (filename === "pt_hymnal" || filename === "pt_hymnal_1996") {
         const hymnalId = filename === "pt_hymnal" ? 712 : 629;
         return this.repairHymnal(db, hymnalId, filename);
+      } else if (filename === "pt_musics") {
+        return this.repairAllMusics(db);
       } else if (filename.startsWith("bible_")) {
         const parts = filename.split("_");
         if (parts.length === 4) {
@@ -238,6 +243,35 @@ export default class DbExtractor {
 
     this.saveJson(`album_${albumId}`, albumJson);
     return albumJson;
+  }
+
+  private repairAllMusics(db: SQLiteHelper): unknown {
+    const rows = db.prepare(`
+      SELECT m.id_music, m.name, fim.file_name as im_file, fm.duration
+      FROM musics m
+      LEFT JOIN files fm ON m.id_file_music = fm.id_file
+      LEFT JOIN files fim ON m.id_file_instrumental_music = fim.id_file
+      ORDER BY m.name ASC
+    `).all() as Record<string, unknown>[];
+
+    const data = rows.map(r => {
+      const lyrics = db.prepare("SELECT lyric FROM lyrics WHERE id_music = ? ORDER BY \`order\` ASC").all(r.id_music) as Record<string, unknown>[];
+      let fullLyric = "";
+      for (const l of lyrics) {
+        if (typeof l.lyric === "string" && l.lyric.trim() !== "") {
+          fullLyric += `${l.lyric} `;
+        }
+      }
+      return {
+        id_music: r.id_music,
+        name: r.name,
+        has_instrumental_music: r.im_file ? 1 : 0,
+        duration: r.duration,
+        lyric: fullLyric,
+      };
+    });
+    this.saveJson("pt_musics", data);
+    return data;
   }
 
   private repairMusic(db: SQLiteHelper, musicId: number): unknown {
