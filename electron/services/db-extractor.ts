@@ -254,8 +254,35 @@ export default class DbExtractor {
       ORDER BY m.name ASC
     `).all() as Record<string, unknown>[];
 
+    const albumsRows = db.prepare(`
+      SELECT am.id_music, a.id_album, a.name, am.track, c.slug as type
+      FROM albums_musics am
+      JOIN albums a ON am.id_album = a.id_album
+      LEFT JOIN categories_albums ca ON a.id_album = ca.id_album
+      LEFT JOIN categories c ON ca.id_category = c.id_category
+    `).all() as Record<string, unknown>[];
+
+    const musicAlbumsMap: Record<number, Record<string, unknown>[]> = {};
+    for (const row of albumsRows) {
+      const idMusic = row.id_music as number;
+      if (!musicAlbumsMap[idMusic]) musicAlbumsMap[idMusic] = [];
+      
+      let type = row.type as string;
+      if (type === "hymnal_1996") type = "hymnal";
+
+      musicAlbumsMap[idMusic].push({
+        id_album: row.id_album,
+        name: row.name,
+        type,
+        pivot: {
+          track: row.track,
+        },
+      });
+    }
+
     const data = rows.map(r => {
-      const lyrics = db.prepare("SELECT lyric FROM lyrics WHERE id_music = ? ORDER BY `order` ASC").all(r.id_music) as Record<string, unknown>[];
+      const idMusic = r.id_music as number;
+      const lyrics = db.prepare("SELECT lyric FROM lyrics WHERE id_music = ? ORDER BY `order` ASC").all(idMusic) as Record<string, unknown>[];
       let fullLyric = "";
       for (const l of lyrics) {
         if (typeof l.lyric === "string" && l.lyric.trim() !== "") {
@@ -263,11 +290,12 @@ export default class DbExtractor {
         }
       }
       return {
-        id_music: r.id_music,
+        id_music: idMusic,
         name: r.name,
         has_instrumental_music: r.im_file ? 1 : 0,
         duration: r.duration,
         lyric: fullLyric,
+        albums: musicAlbumsMap[idMusic] || [],
       };
     });
     this.saveJson("pt_musics", data);
