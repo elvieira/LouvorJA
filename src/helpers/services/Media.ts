@@ -144,20 +144,84 @@ export default {
 
       // Interceptação Offline (Desktop)
       if (window.electronAPI && window.electronAPI.isElectron) {
-        const relativePath = urlPath.replace(/^\/(musics|images|covers)\//, "");
-        const localUrl = await window.electronAPI.checkMedia("music", relativePath);
-        if (localUrl) {
-          $dev.write("Mídia carregada do disco local", targetAudioUrl);
-        } else {
-          // Bloqueio Offline Estrito
-          this.close(true);
-          $appdata.set("modules.media.loading", false);
-          $alert.error({
-            text: "Essa coletânea ainda não foi baixada. Acesse a Biblioteca Local para baixá-la.",
-            translate: false,
-          });
-          return; // Interrompe a execução completamente
+        let isDownloadedCollection = false;
+        const dla = ((await window.electronAPI.getLocalDb("dla")) as string[]) || [];
+
+        if (data.albums) {
+          for (const album of data.albums) {
+            if (dla.includes(album.id_album)) {
+              isDownloadedCollection = true;
+              break;
+            }
+          }
         }
+        if (!isDownloadedCollection && data.categories) {
+          const hymnal = data.categories.find((item: string) => item.startsWith("hymnal."));
+          if (hymnal) {
+            const hType = hymnal.split(".")[1] === "1996" ? "hymnal_1996" : "hymnal";
+            if (dla.includes(hType)) {
+              isDownloadedCollection = true;
+            }
+          }
+        }
+
+        const imagesToPreload = new Set<string>();
+        if (data.url_image) imagesToPreload.add(data.url_image);
+        if (data.lyric) {
+          Object.values<any>(data.lyric).forEach((slide) => {
+            if (slide.url_image) imagesToPreload.add(slide.url_image);
+          });
+        }
+
+        const relativeMusicPath = urlPath.replace(/^\/(musics|images|covers)\//, "");
+        const localMusic = await window.electronAPI.checkMedia("music", relativeMusicPath);
+        const missingMusic = !localMusic;
+        
+        const missingImages: { type: string; file: string }[] = [];
+        for (const imgUrl of imagesToPreload) {
+          const type = imgUrl.startsWith("/covers/") ? "covers" : "slides";
+          const relImg = imgUrl.replace(/^\/(musics|images|covers)\//, "");
+          const localImg = await window.electronAPI.checkMedia(type, relImg);
+          if (!localImg) {
+            missingImages.push({ type, file: relImg });
+          }
+        }
+
+        if (missingMusic || missingImages.length > 0) {
+          if (isDownloadedCollection) {
+            const { default: $snackbar } = await import("@/helpers/ui/Snackbar");
+            $snackbar.show({ text: "Aviso: Arquivos ausentes. Baixando e recuperando mídia...", color: "warning", timeout: -1, loading: true });
+            
+            if (missingMusic && window.electronAPI.downloadMedia) {
+              await window.electronAPI.downloadMedia("", "music", relativeMusicPath);
+            }
+            if (missingImages.length > 0 && window.electronAPI.downloadMedia) {
+              for (const missingImg of missingImages) {
+                await window.electronAPI.downloadMedia("", missingImg.type, missingImg.file);
+              }
+            }
+            
+            $snackbar.hide();
+          } else if (missingMusic) {
+            // Bloqueio Offline Estrito apenas se a música faltar e NÃO estiver numa coletânea baixada
+            this.close(true);
+            $appdata.set("modules.media.loading", false);
+            const { default: $alert } = await import("@/helpers/ui/Alert");
+            $alert.error({
+              text: "Essa música ainda não foi baixada. Acesse a Biblioteca Local para baixá-la.",
+              translate: false,
+            });
+            return; // Interrompe a execução completamente
+          }
+        }
+
+        // Pré-carregamento das imagens em memória
+        for (const imgUrl of imagesToPreload) {
+          const img = new Image();
+          img.src = $path.file(imgUrl);
+        }
+
+        $dev.write("Mídia carregada/verificada com sucesso", targetAudioUrl);
       }
 
       $appdata.set("modules.media.config.audio", targetAudioUrl);
@@ -325,7 +389,7 @@ export default {
     $appdata.set("modules.lyric.loading", false);
   },
 
-  async fetchAlbumInfo(id_album: any) {
+  async openAlbum(id_album: any) {
     $dev.write("open album", id_album);
 
     $appdata.set("modules.album.loading", true);
