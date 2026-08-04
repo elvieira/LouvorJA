@@ -224,10 +224,11 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from "vue";
 import ModernColorPicker from "@/components/inputs/ModernColorPicker.vue";
 
-export default {
+export default defineComponent({
   name: "RichTextEditor",
   components: {
     ModernColorPicker,
@@ -241,9 +242,9 @@ export default {
   emits: ["update:modelValue", "blur"],
   data() {
     return {
-      selectedFont: "Arial",
-      fonts: ["Arial", "Verdana", "Helvetica", "Times New Roman", "Courier New", "Georgia", "Impact", "Comic Sans MS"],
-      selectedSize: "3",
+      selectedFont: "Arial" as string,
+      fonts: ["Arial", "Verdana", "Helvetica", "Times New Roman", "Courier New", "Georgia", "Impact", "Comic Sans MS"] as string[],
+      selectedSize: "3" as string,
       sizes: [
         { title: "Pequeno (1)", value: "1" },
         { title: "Normal (3)", value: "3" },
@@ -251,22 +252,22 @@ export default {
         { title: "Grande (5)", value: "5" },
         { title: "Extra (6)", value: "6" },
         { title: "Gigante (7)", value: "7" },
-      ],
-      selectedColor: "#000000",
-      isUpdating: false,
-      savedRange: null,
+      ] as {title: string, value: string}[],
+      selectedColor: "#000000" as string,
+      isUpdating: false as boolean,
+      savedRange: null as Range | null,
     };
   },
   watch: {
     modelValue(val) {
       if (!this.isUpdating && this.$refs.editor) {
-        this.$refs.editor.innerHTML = val || "";
+        (this.$refs.editor as HTMLElement).innerHTML = val || "";
       }
     },
   },
   mounted() {
     if (this.$refs.editor) {
-      this.$refs.editor.innerHTML = this.modelValue || "";
+      (this.$refs.editor as HTMLElement).innerHTML = this.modelValue || "";
     }
     document.addEventListener("selectionchange", this.handleSelectionChange);
   },
@@ -276,9 +277,9 @@ export default {
   methods: {
     handleSelectionChange() {
       const selection = window.getSelection();
-      if (selection.rangeCount > 0) {
+      if (selection && selection.rangeCount > 0) {
         const range = selection.getRangeAt(0);
-        if (this.$refs.editor && this.$refs.editor.contains(range.commonAncestorContainer)) {
+        if (this.$refs.editor && (this.$refs.editor as HTMLElement).contains(range.commonAncestorContainer)) {
           this.savedRange = range;
         }
       }
@@ -286,33 +287,37 @@ export default {
     restoreSelection() {
       if (this.savedRange) {
         const selection = window.getSelection();
-        selection.removeAllRanges();
-        selection.addRange(this.savedRange);
+        if (selection) {
+          selection.removeAllRanges();
+          selection.addRange(this.savedRange);
+        }
       }
     },
-    exec(command, value = null, focusAfter = true) {
+    exec(command: string, value: string | null = null, focusAfter = true) {
       this.restoreSelection();
-      document.execCommand(command, false, value);
-      if (focusAfter) {
-        this.$refs.editor.focus();
+      document.execCommand(command, false, value as string);
+      if (focusAfter && this.$refs.editor) {
+        (this.$refs.editor as HTMLElement).focus();
       }
       this.onInput();
     },
     clearText() {
       if (this.$refs.editor) {
-        this.$refs.editor.innerHTML = "";
+        (this.$refs.editor as HTMLElement).innerHTML = "";
         this.onInput();
       }
     },
     onInput() {
       this.isUpdating = true;
-      this.$emit("update:modelValue", this.$refs.editor.innerHTML);
+      if (this.$refs.editor) {
+        this.$emit("update:modelValue", (this.$refs.editor as HTMLElement).innerHTML);
+      }
       this.$nextTick(() => {
         this.isUpdating = false;
       });
     },
   },
-};
+});
 </script>
 
 <style scoped>

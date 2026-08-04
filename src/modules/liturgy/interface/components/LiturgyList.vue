@@ -215,17 +215,18 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent, PropType } from "vue";
 import draggable from "vuedraggable";
 
-export default {
+export default defineComponent({
   name: "LiturgyList",
   components: {
     draggable,
   },
   props: {
     items: {
-      type: Array,
+      type: Array as PropType<any[]>,
       required: true,
     },
     title: {
@@ -233,7 +234,7 @@ export default {
       default: "",
     },
     selectedItemIndex: {
-      type: Number,
+      type: Number as PropType<number | null>,
       default: null,
     },
     useInternalPlayer: {
@@ -253,10 +254,10 @@ export default {
     "drag-end",
   ],
   methods: {
-    t(text) {
+    t(text: string): string {
       return this.$t(`modules.liturgy.${text}`);
     },
-    getItemNumber(index) {
+    getItemNumber(index: number): number | null {
       if (!this.items[index]) return null;
       if (this.items[index].type === "category") return null;
       let count = 0;
@@ -270,22 +271,22 @@ export default {
       }
       return count;
     },
-    getTypeIcon(type) {
-      const map = { annotation: "mdi-text", category: "mdi-tag", music: "mdi-music-note", verse: "mdi-book-open-variant", media: "mdi-file-video", link: "mdi-link" };
+    getTypeIcon(type: string): string {
+      const map: Record<string, string> = { annotation: "mdi-text", category: "mdi-tag", music: "mdi-music-note", verse: "mdi-book-open-variant", media: "mdi-file-video", link: "mdi-link" };
       return map[type] || "mdi-help";
     },
-    getTypeColor(type) {
-      const map = { annotation: "info", category: "warning", music: "success", verse: "purple", media: "orange", link: "cyan" };
+    getTypeColor(type: string): string {
+      const map: Record<string, string> = { annotation: "info", category: "warning", music: "success", verse: "purple", media: "orange", link: "cyan" };
       return map[type] || "grey";
     },
-    isExecutable(item) {
+    isExecutable(item: any): boolean {
       return ["music", "verse", "link", "media"].includes(item.type);
     },
-    getExecuteIcon(type) {
+    getExecuteIcon(type: string): string {
       if (type === "media" && this.useInternalPlayer) {
         return "mdi-play";
       }
-      const map = {
+      const map: Record<string, string> = {
         music: "mdi-play",
         verse: "mdi-presentation-play",
         link: "mdi-open-in-new",
@@ -293,11 +294,11 @@ export default {
       };
       return map[type] || "mdi-play";
     },
-    getExecuteTooltip(type) {
+    getExecuteTooltip(type: string): string {
       if (type === "media" && this.useInternalPlayer) {
         return this.t("actions.play");
       }
-      const map = {
+      const map: Record<string, string> = {
         music: "actions.play",
         verse: "actions.project",
         link: "actions.open",
@@ -306,7 +307,7 @@ export default {
       return this.t(map[type] || "actions.project");
     },
   },
-};
+});
 </script>
 
 <style lang="scss" scoped>

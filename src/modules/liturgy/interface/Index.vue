@@ -86,7 +86,8 @@
   </v-slide-y-reverse-transition>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from "vue";
 import manifest from "../manifest";
 import ModuleHeader from "@/components/ModuleHeader.vue";
 import DaySelector from "./components/DaySelector.vue";
@@ -96,7 +97,7 @@ import LiturgyNotes from "./components/LiturgyNotes.vue";
 import AddItemDialog from "./components/AddItemDialog.vue";
 import NewCustomDialog from "./components/NewCustomDialog.vue";
 
-export default {
+export default defineComponent({
   name: "LiturgyModuleIndex",
   components: {
     ModuleHeader,
@@ -108,31 +109,32 @@ export default {
     NewCustomDialog,
   },
   data: () => ({
-    isCompactView: false,
-    selectedDay: null,
-    selectedItemIndex: null,
-    selectedCustomIndex: 0,
+    isCompactView: false as boolean,
+    selectedDay: null as string | null,
+    selectedItemIndex: null as number | null,
+    selectedCustomIndex: 0 as number,
 
     // Liturgies storage
     liturgies: {
       sunday: [], monday: [], tuesday: [], wednesday: [], thursday: [], friday: [], saturday: [],
-    },
+    } as Record<string, any[]>,
     dayNotes: {
       sunday: "", monday: "", tuesday: "", wednesday: "", thursday: "", friday: "", saturday: "",
-    },
-    customLiturgies: [],
+    } as Record<string, string>,
+    customLiturgies: [] as any[],
 
     // Dialogs
-    showAddMenu: false,
-    editData: null,
-    editingIndex: null,
-    showNewCustomDialog: false,
+    showAddMenu: false as boolean,
+    editData: null as any,
+    editingIndex: null as number | null,
+    showNewCustomDialog: false as boolean,
+    resizeObserver: null as ResizeObserver | null,
   }),
   computed: {
-    module_id() { return manifest.id; },
-    module() { return this.$modules.get(this.module_id); },
-    show() { return this.module.show; },
-    dayOptions() {
+    module_id(): string { return manifest.id; },
+    module(): any { return this.$modules.get(this.module_id); },
+    show(): boolean { return this.module.show; },
+    dayOptions(): {value: string, label: string}[] {
       const days = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
       return [
         ...days.map(d => ({ value: d, label: this.t(`days.${d}`) })),
@@ -140,47 +142,47 @@ export default {
       ];
     },
     currentItems: {
-      get() {
+      get(): any[] {
         if (this.selectedDay === "custom") {
           const liturgy = this.customLiturgies[this.selectedCustomIndex];
           return liturgy ? liturgy.items : [];
         }
-        return this.liturgies[this.selectedDay] || [];
+        return this.selectedDay ? this.liturgies[this.selectedDay] || [] : [];
       },
-      set(val) {
+      set(val: any[]) {
         if (this.selectedDay === "custom") {
           if (this.customLiturgies[this.selectedCustomIndex]) {
             this.customLiturgies[this.selectedCustomIndex].items = val;
           }
-        } else {
+        } else if (this.selectedDay) {
           this.liturgies[this.selectedDay] = val;
         }
       },
     },
     currentNotes: {
-      get() {
+      get(): string {
         if (this.selectedDay === "custom") {
           const liturgy = this.customLiturgies[this.selectedCustomIndex];
           return liturgy ? (liturgy.notes || "") : "";
         }
-        return this.dayNotes[this.selectedDay] || "";
+        return this.selectedDay ? this.dayNotes[this.selectedDay] || "" : "";
       },
-      set(val) {
+      set(val: string) {
         if (this.selectedDay === "custom") {
           if (this.customLiturgies[this.selectedCustomIndex]) {
             this.customLiturgies[this.selectedCustomIndex].notes = val;
           }
-        } else {
+        } else if (this.selectedDay) {
           this.dayNotes[this.selectedDay] = val;
         }
       },
     },
-    currentLiturgyTitle() {
+    currentLiturgyTitle(): string {
       if (this.selectedDay === "custom") {
         const liturgy = this.customLiturgies[this.selectedCustomIndex];
         return liturgy ? liturgy.name : this.t("custom_liturgy.title");
       }
-      return this.t(`days.${this.selectedDay}`);
+      return this.selectedDay ? this.t(`days.${this.selectedDay}`) : "";
     },
   },
   watch: {
@@ -216,10 +218,10 @@ export default {
             this.isCompactView = entry.contentRect.width < 915;
           }
         });
-        this.resizeObserver.observe(this.$refs.moduleContainer);
+        this.resizeObserver.observe(this.$refs.moduleContainer as Element);
       }
     },
-    t(text) {
+    t(text: string): string {
       return this.$t(`modules.${this.module_id}.${text}`);
     },
     setTodayAsDefault() {
@@ -231,7 +233,7 @@ export default {
     },
 
     // CUSTOM LITURGY
-    createCustomLiturgy(name) {
+    createCustomLiturgy(name: string) {
       this.customLiturgies.push({
         name,
         items: [],
@@ -241,10 +243,10 @@ export default {
       this.selectedDay = "custom";
       this.saveLiturgy();
     },
-    removeCustom(index) {
+    removeCustom(index: number) {
       this.$alert.yesno(
         { text: this.t("custom_liturgy.confirm_delete"), translate: false },
-        (resp) => {
+        (resp: string) => {
           if (resp === "yes") {
             this.customLiturgies.splice(index, 1);
             if (this.customLiturgies.length === 0) {
@@ -266,12 +268,12 @@ export default {
       this.editingIndex = null;
       this.showAddMenu = true;
     },
-    editItem(index) {
+    editItem(index: number) {
       this.editingIndex = index;
       this.editData = { ...this.currentItems[index] };
       this.showAddMenu = true;
     },
-    onSaveItem(item) {
+    onSaveItem(item: any) {
       if (this.editingIndex !== null) {
         this.currentItems.splice(this.editingIndex, 1, item);
       } else {
@@ -282,20 +284,20 @@ export default {
       this.editingIndex = null;
       this.saveLiturgy();
     },
-    removeItem(index) {
+    removeItem(index: number) {
       this.$alert.yesno(
         { text: this.t("messages.confirm_delete"), translate: false },
-        (resp) => {
+        (resp: string) => {
           if (resp === "yes") {
             this.currentItems.splice(index, 1);
             if (this.selectedItemIndex === index) this.selectedItemIndex = null;
-            else if (this.selectedItemIndex > index) this.selectedItemIndex--;
+            else if (this.selectedItemIndex !== null && this.selectedItemIndex > index) this.selectedItemIndex--;
             this.saveLiturgy();
           }
         },
       );
     },
-    toggleItemDone(index) {
+    toggleItemDone(index: number) {
       const item = this.currentItems[index];
       item.done = !item.done;
       this.saveLiturgy();
@@ -303,7 +305,7 @@ export default {
     confirmClearAll() {
       this.$alert.yesno(
         { text: this.t("messages.confirm_clear"), translate: false },
-        (resp) => {
+        (resp: string) => {
           if (resp === "yes") {
             this.currentItems = [];
             this.selectedItemIndex = null;
@@ -312,7 +314,7 @@ export default {
         },
       );
     },
-    selectItem(index) {
+    selectItem(index: number) {
       this.selectedItemIndex = index;
       const item = this.currentItems[index];
 
@@ -330,7 +332,7 @@ export default {
         this.saveLiturgy();
       }
     },
-    async executeItem(item) {
+    async executeItem(item: any) {
       let targetModule = null;
 
       if (item.type === "music") {
@@ -359,7 +361,7 @@ export default {
                 this.$alert.yesno({
                   text: "Uma música está em reprodução no momento. Deseja encerrá-la e reproduzir esta mídia?",
                   translate: false,
-                }, (res) => resolve(res === "yes"));
+                }, (res: string) => resolve(res === "yes"));
               });
               if (!confirmed) return;
               this.$media.close(true);
@@ -379,7 +381,7 @@ export default {
             });
 
             // Check if it's audio-only
-            const ext = item.filePath.split(".").pop().toLowerCase();
+            const ext = item.filePath.split(".").pop()?.toLowerCase() || "";
             const isAudio = ["mp3", "wav", "flac", "aac", "ogg", "wma", "m4a"].includes(ext);
 
             if (isAudio) {
@@ -408,11 +410,11 @@ export default {
 
       if (targetModule) {
         const popups = this.$appdata.get("popups") || [];
-        const isPopupOpened = popups.some(p => !p.closed);
+        const isPopupOpened = popups.some((p: any) => !p.closed);
         const currentModule = this.$appdata.get("popup_module");
 
         if (!isPopupOpened || currentModule !== targetModule) {
-          let selectedMonitors = [];
+          let selectedMonitors: any[] = [];
           if (window.electronAPI && window.electronAPI.getDisplays) {
             const displays = await window.electronAPI.getDisplays();
             if (displays && displays.length > 1) {
@@ -420,8 +422,8 @@ export default {
               if (!Array.isArray(configMonitors)) {
                 configMonitors = configMonitors ? [configMonitors] : [];
               }
-              const primary = displays.find(d => d.isPrimary) || displays[0];
-              selectedMonitors = configMonitors.filter(m => m !== primary.id);
+              const primary = (displays as any[]).find((d: any) => d.isPrimary) || (displays as any[])[0];
+              selectedMonitors = configMonitors.filter((m: any) => m !== (primary as any).id);
             }
           }
           
@@ -461,7 +463,7 @@ export default {
       }
     },
   },
-};
+});
 </script>
 
 <style lang="scss" scoped>

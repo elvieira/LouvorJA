@@ -38,39 +38,41 @@
   </v-expand-transition>
 </template>
 
-<script>
-export default {
+<script lang="ts">
+import { defineComponent, PropType } from "vue";
+
+export default defineComponent({
   name: "CustomLiturgySelector",
   props: {
     customLiturgies: {
-      type: Array,
+      type: Array as PropType<any[]>,
       default: () => [],
     },
     selectedCustomIndex: {
-      type: Number,
+      type: Number as PropType<number>,
       default: 0,
     },
     labelNew: {
-      type: String,
+      type: String as PropType<string>,
       default: "Nova",
     },
   },
   emits: ["update:selectedCustomIndex", "remove-custom", "add-custom"],
   methods: {
-    selectCustom(index) {
+    selectCustom(index: number) {
       this.$emit("update:selectedCustomIndex", index);
     },
-    removeCustom(index) {
+    removeCustom(index: number) {
       this.$emit("remove-custom", index);
     },
     addNew() {
       this.$emit("add-custom");
     },
-    onWheelScroll(e) {
+    onWheelScroll(e: WheelEvent) {
       if (e.deltaY !== 0) {
-        e.currentTarget.scrollLeft += e.deltaY;
+        (e.currentTarget as HTMLElement).scrollLeft += e.deltaY;
       }
     },
   },
-};
+});
 </script>

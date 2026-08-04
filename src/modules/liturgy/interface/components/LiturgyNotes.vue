@@ -19,10 +19,11 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from "vue";
 import RichTextEditor from "../RichTextEditor.vue";
 
-export default {
+export default defineComponent({
   name: "LiturgyNotes",
   components: {
     RichTextEditor,
@@ -35,9 +36,9 @@ export default {
   },
   emits: ["update:modelValue", "blur"],
   methods: {
-    t(text) {
+    t(text: string): string {
       return this.$t(`modules.liturgy.${text}`);
     },
   },
-};
+});
 </script>

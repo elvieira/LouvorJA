@@ -433,8 +433,10 @@
   </v-dialog>
 </template>
 
-<script>
-export default {
+<script lang="ts">
+import { defineComponent, PropType } from "vue";
+
+export default defineComponent({
   name: "AddItemDialog",
   props: {
     modelValue: {
@@ -442,33 +444,33 @@ export default {
       default: false,
     },
     editData: {
-      type: Object,
+      type: Object as PropType<any | null>,
       default: null,
     },
   },
   emits: ["update:modelValue", "save"],
   data: () => ({
-    addStep: 1,
+    addStep: 1 as number,
     addForm: {
       type: "annotation",
       name: "",
       subtitle: "",
-      musicId: null,
+      musicId: null as number | string | null,
       musicMode: "audio",
-      verseBookId: null,
-      verseChapter: null,
+      verseBookId: null as number | null,
+      verseChapter: null as number | null,
       verseNumbers: "",
       filePath: "",
       url: "",
     },
     musicSearchQuery: "",
-    musicList: [],
-    bibleBooks: [],
-    bibleVersions: [],
+    musicList: [] as any[],
+    bibleBooks: [] as any[],
+    bibleVersions: [] as any[],
     dataLoaded: false,
   }),
   computed: {
-    itemTypes() {
+    itemTypes(): any[] {
       return [
         { value: "annotation", icon: "mdi-text", color: "info", label: this.t("types.annotation"), description: this.t("type_descriptions.annotation") },
         { value: "category", icon: "mdi-tag", color: "warning", label: this.t("types.category"), description: this.t("type_descriptions.category") },
@@ -478,7 +480,7 @@ export default {
         { value: "link", icon: "mdi-link", color: "cyan", label: this.t("types.link"), description: this.t("type_descriptions.link") },
       ];
     },
-    isFormValid() {
+    isFormValid(): boolean {
       if (!this.addForm.name.trim()) return false;
       if (this.addForm.type === "music" && !this.addForm.musicId) return false;
       if (this.addForm.type === "verse" && (!this.addForm.verseBookId || !this.addForm.verseChapter)) return false;
@@ -486,7 +488,7 @@ export default {
       if (this.addForm.type === "link" && !this.addForm.url.trim()) return false;
       return true;
     },
-    filteredMusicList() {
+    filteredMusicList(): any[] {
       const selectedMusic = this.musicList.find(m => m.id_music === this.addForm.musicId);
       const query = (this.musicSearchQuery || "").trim().toLowerCase();
       
@@ -494,14 +496,14 @@ export default {
         return selectedMusic ? [selectedMusic] : [];
       }
       
-      const isNum = !isNaN(query) && query !== "";
+      const isNum = !isNaN(Number(query)) && query !== "";
       const numQuery = isNum ? Number(query) : null;
       
       const results = this.musicList.filter(m => {
         const title = (m.name || "").toLowerCase();
         
         if (isNum) {
-          const isHymnalTrack = m.albums?.some(a => a.type === "hymnal" && Number(a.pivot?.track) === numQuery);
+          const isHymnalTrack = m.albums?.some((a: any) => a.type === "hymnal" && Number(a.pivot?.track) === numQuery);
           return title.includes(query) || isHymnalTrack;
         } 
         return title.includes(query);
@@ -509,9 +511,9 @@ export default {
       
       if (isNum) {
         results.sort((a, b) => {
-          const getScore = (item) => {
-            if (item.albums?.some(al => al.type === "hymnal" && al.name === "Hinário Adventista" && Number(al.pivot?.track) === numQuery)) return 2;
-            if (item.albums?.some(al => al.type === "hymnal" && al.name === "Hinário Adventista 1996" && Number(al.pivot?.track) === numQuery)) return 1;
+          const getScore = (item: any) => {
+            if (item.albums?.some((al: any) => al.type === "hymnal" && al.name === "Hinário Adventista" && Number(al.pivot?.track) === numQuery)) return 2;
+            if (item.albums?.some((al: any) => al.type === "hymnal" && al.name === "Hinário Adventista 1996" && Number(al.pivot?.track) === numQuery)) return 1;
             return 0;
           };
           return getScore(b) - getScore(a);
@@ -520,7 +522,7 @@ export default {
       
       return results.slice(0, 50); // limit to 50 results to keep the menu fast
     },
-    verseChapterList() {
+    verseChapterList(): number[] {
       if (!this.addForm.verseBookId) return [];
       const book = this.bibleBooks.find(b => b.id_bible_book === this.addForm.verseBookId);
       if (!book) return [];
@@ -544,10 +546,10 @@ export default {
     },
   },
   methods: {
-    t(text) {
+    t(text: string): string {
       return this.$t(`modules.liturgy.${text}`);
     },
-    updateModelValue(val) {
+    updateModelValue(val: boolean) {
       if (!val) {
         this.addStep = 1;
       }
@@ -570,19 +572,19 @@ export default {
         url: "",
       };
     },
-    getTypeIcon(type) {
-      const map = { annotation: "mdi-text", category: "mdi-tag", music: "mdi-music-note", verse: "mdi-book-open-variant", media: "mdi-file-video", link: "mdi-link" };
+    getTypeIcon(type: string): string {
+      const map: Record<string, string> = { annotation: "mdi-text", category: "mdi-tag", music: "mdi-music-note", verse: "mdi-book-open-variant", media: "mdi-file-video", link: "mdi-link" };
       return map[type] || "mdi-help";
     },
-    getTypeColor(type) {
-      const map = { annotation: "info", category: "warning", music: "success", verse: "purple", media: "orange", link: "cyan" };
+    getTypeColor(type: string): string {
+      const map: Record<string, string> = { annotation: "info", category: "warning", music: "success", verse: "purple", media: "orange", link: "cyan" };
       return map[type] || "grey";
     },
-    getTypeLabel(type) {
+    getTypeLabel(type: string): string {
       return this.t(`types.${type}`);
     },
-    getNamePlaceholder(type) {
-      const map = {
+    getNamePlaceholder(type: string): string {
+      const map: Record<string, string> = {
         annotation: "",
         category: "",
         music: "",
@@ -592,19 +594,19 @@ export default {
       };
       return map[type] || "";
     },
-    openAddForm(type) {
+    openAddForm(type: string) {
       this.resetForm();
       this.addForm.type = type;
       this.addStep = 2;
     },
-    onMusicSelect(musicId) {
+    onMusicSelect(musicId: number | string | null) {
       if (!musicId) return;
       const music = this.musicList.find(m => m.id_music === musicId);
       if (music && !this.addForm.name) {
         this.addForm.name = music.hymnal_track ? `${music.hymnal_track} - ${music.name}` : music.name;
       }
     },
-    onBookSelect(bookId) {
+    onBookSelect(bookId: number | null) {
       if (!bookId) return;
       this.addForm.verseChapter = 1;
       const book = this.bibleBooks.find(b => b.id_bible_book === bookId);
@@ -626,7 +628,7 @@ export default {
         if (filePath) {
           this.addForm.filePath = filePath;
           if (!this.addForm.name) {
-            const fileName = filePath.split(/[\\/]/).pop();
+            const fileName = (filePath as string).split(/[\\/]/).pop() || "";
             this.addForm.name = fileName;
           }
         }
@@ -638,13 +640,13 @@ export default {
         const musicData = await this.$database.get(`${this.$i18n.locale}_musics`);
         if (musicData && Array.isArray(musicData)) {
           this.musicList = musicData.map(m => {
-            const hymnalAlbum = m.albums ? m.albums.find(a => a.type === "hymnal") : null;
+            const hymnalAlbum = m.albums ? m.albums.find((a: any) => a.type === "hymnal") : null;
             const hymnalTrack = hymnalAlbum && hymnalAlbum.pivot ? hymnalAlbum.pivot.track : null;
             return {
               id_music: m.id_music,
               hymnal_track: hymnalTrack,
               name: m.name,
-              album_names: m.albums ? m.albums.map(a => a.name).join(", ") : "",
+              album_names: m.albums ? m.albums.map((a: any) => a.name).join(", ") : "",
               albums: m.albums,
             };
           });
@@ -691,7 +693,7 @@ export default {
               if (!p) continue;
               const num = parseInt(p, 10);
               if (!isNaN(num) && (num < 1 || num > maxVerse)) {
-                this.$alert.error({ text: this.t("messages.invalid_verse").replace("{max}", maxVerse).replace("{num}", num), translate: false });
+                this.$alert.error({ text: this.t("messages.invalid_verse").replace("{max}", maxVerse.toString()).replace("{num}", num.toString()), translate: false });
                 return; // halt save!
               }
             }
@@ -701,7 +703,7 @@ export default {
         }
       }
 
-      const item = {
+      const item: any = {
         id: Date.now() + Math.random(),
         type: this.addForm.type,
         name: this.addForm.name.trim(),
@@ -745,5 +747,5 @@ export default {
       this.$emit("save", item);
     },
   },
-};
+});
 </script>

@@ -49,8 +49,10 @@
   </v-dialog>
 </template>
 
-<script>
-export default {
+<script lang="ts">
+import { defineComponent } from "vue";
+
+export default defineComponent({
   name: "NewCustomDialog",
   props: {
     modelValue: {
@@ -60,7 +62,7 @@ export default {
   },
   emits: ["update:modelValue", "save"],
   data: () => ({
-    newCustomName: "",
+    newCustomName: "" as string,
   }),
   watch: {
     modelValue(val) {
@@ -70,7 +72,7 @@ export default {
     },
   },
   methods: {
-    t(text) {
+    t(text: string): string {
       return this.$t(`modules.liturgy.${text}`);
     },
     save() {
@@ -80,5 +82,5 @@ export default {
       }
     },
   },
-};
+});
 </script>

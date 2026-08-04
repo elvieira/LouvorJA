@@ -32,8 +32,10 @@
   </div>
 </template>
 
-<script>
-export default {
+<script lang="ts">
+import { defineComponent, PropType } from "vue";
+
+export default defineComponent({
   name: "DaySelector",
   props: {
     selectedDay: {
@@ -45,30 +47,30 @@ export default {
       default: false,
     },
     dayOptions: {
-      type: Array,
+      type: Array as PropType<{value: string, label: string}[]>,
       required: true,
     },
   },
   emits: ["update:selectedDay", "change"],
   computed: {
-    regularDays() {
+    regularDays(): {value: string, label: string}[] {
       return this.dayOptions.filter(d => d.value !== "custom");
     },
-    customDayLabel() {
+    customDayLabel(): string {
       const customDay = this.dayOptions.find(d => d.value === "custom");
       return customDay ? customDay.label : "";
     },
   },
   methods: {
-    selectDay(day) {
+    selectDay(day: string) {
       this.$emit("update:selectedDay", day);
       this.$emit("change", day);
     },
-    onWheelScroll(e) {
+    onWheelScroll(e: WheelEvent) {
       if (e.deltaY !== 0) {
-        e.currentTarget.scrollLeft += e.deltaY;
+        (e.currentTarget as HTMLElement).scrollLeft += e.deltaY;
       }
     },
   },
-};
+});
 </script>
