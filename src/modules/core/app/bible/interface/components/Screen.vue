@@ -27,35 +27,36 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent, PropType } from "vue";
 import manifest from "../../manifest";
 
-export default {
+export default defineComponent({
   name: "ScreenBiblePage",
   props: {
     height: {
-      type: Number,
+      type: Number as PropType<number>,
       default: 0,
     },
   },
   data: () => ({
-    s_width: 0,
-    s_height: 0,
+    s_width: 0 as number,
+    s_height: 0 as number,
   }),
   computed: {
     /* COMPUTEDS OBRIGATÓRIAS - INÍCIO */
     /* NÃO MODIFICAR */
-    module_id() {
+    module_id(): string {
       return manifest.id;
     },
-    module() {
+    module(): any {
       return this.$modules.get(this.module_id);
     },
     /* COMPUTEDS OBRIGATÓRIAS - FIM */
-    bible() {
+    bible(): any {
       return this.$appdata.get("modules.bible.data");
     },
-    config() {
+    config(): any {
       return this.$appdata.get("modules.bible.config") || {
         fontSizePc: 15,
         align: "text-center",
@@ -74,24 +75,23 @@ export default {
     window.removeEventListener("resize", this.windowResize);
   },
   methods: {
-    fontSizePc(pc) {
+    fontSizePc(pc: number): number {
       const v = Math.min(this.s_width, this.s_height);
       return (pc * v) / 100 / 2;
     },
     windowResize() {
-      const container = this.$refs.container;
+      const container = this.$refs.container as HTMLElement | undefined;
       if (container) {
         this.s_width = container.offsetWidth;
         this.s_height = container.offsetHeight;
 
-        if (this.width <= 0 || this.height <= 0) {
-          const self = this;
+        if (this.s_width <= 0 || this.s_height <= 0) {
           setTimeout(() => {
-            self.windowResize();
+            this.windowResize();
           }, 100);
         }
       }
     },
   },
-};
+});
 </script>

@@ -352,10 +352,11 @@
   </v-slide-y-reverse-transition>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from "vue";
 import ModernColorPicker from "@/components/inputs/ModernColorPicker.vue";
 
-export default {
+export default defineComponent({
   name: "ConfigModal",
   components: {
     ModernColorPicker,
@@ -375,7 +376,7 @@ export default {
       color: "#ffffff",
       refFontSizePc: 10,
       refColor: "#fb8c00",
-    },
+    } as Record<string, any>,
     defaultConfig: {
       fontSizePc: 15,
       align: "text-center",
@@ -383,26 +384,26 @@ export default {
       color: "#ffffff",
       refFontSizePc: 10,
       refColor: "#fb8c00",
-    },
+    } as Record<string, any>,
   }),
   computed: {
     visible: {
-      get() {
+      get(): boolean {
         return this.modelValue;
       },
-      set(value) {
+      set(value: boolean) {
         this.$emit("update:modelValue", value);
       },
     },
   },
   watch: {
-    visible(val) {
+    visible(val: boolean) {
       if (val) {
         this.loadConfig();
       }
     },
     localConfig: {
-      handler(val) {
+      handler(val: Record<string, any>) {
         this.$appdata.set("modules.bible.config", JSON.parse(JSON.stringify(val)));
       },
       deep: true,
@@ -412,7 +413,7 @@ export default {
     this.loadConfig();
   },
   methods: {
-    t(text) {
+    t(text: string): string {
       return this.$t(`modules.bible.${text}`);
     },
     loadConfig() {
@@ -435,7 +436,7 @@ export default {
       this.visible = false;
     },
   },
-};
+});
 </script>
 
 <style scoped>
