@@ -4,22 +4,22 @@
   </div>
 </template>
 
-<script>
-import { defineAsyncComponent } from "vue";
+<script lang="ts">
+import { defineAsyncComponent, defineComponent } from "vue";
 
-export default {
+export default defineComponent({
   name: "PopupPage",
   data: () => ({
-    message: null,
+    message: null as any,
   }),
   computed: {
-    module() {
+    module(): string {
       return this.$appdata.get("popup_module");
     },
   },
   mounted() {
     this.$appdata.set("is_popup", true);
-    window.addEventListener("message", (event) => {
+    window.addEventListener("message", (event: MessageEvent) => {
       if (event.origin === window.location.origin || event.origin === "file://" || event.origin === "null") {
         this.message = event.data;
         if (event.data.param) {
@@ -28,7 +28,9 @@ export default {
       }
     });
 
-    window.opener.postMessage("mounted", "*");
+    if (window.opener) {
+      window.opener.postMessage("mounted", "*");
+    }
   },
   methods: {
     loadModuleComponent() {
@@ -37,9 +39,9 @@ export default {
         const match = Object.keys(moduleComponents).find(path => path.endsWith(`/${this.module}/interface/Popup.vue`));
         
         if (match) {
-          return moduleComponents[match]();
+          return moduleComponents[match]() as Promise<any>;
         } 
-        return Promise.reject(new Error(`Popup component for ${this.module} not found`)).catch((e) => {
+        return Promise.reject(new Error(`Popup component for ${this.module} not found`)).catch((e: Error) => {
           this.$alert.error({
             text: "messages.error_import_module",
             error: e,
@@ -50,5 +52,5 @@ export default {
       });
     },
   },
-};
+});
 </script>

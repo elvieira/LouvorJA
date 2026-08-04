@@ -142,14 +142,15 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from "vue";
 import AppFooter from "@/layout/Footer.vue";
 import AppSidebar from "@/layout/Sidebar.vue";
 import AppModules from "@/layout/Modules.vue";
 import AppTrayArea from "@/layout/TrayArea.vue";
 import LSlide from "@/components/Slide.vue";
 
-export default {
+export default defineComponent({
   name: "MainPage",
   components: {
     AppFooter,
@@ -165,28 +166,28 @@ export default {
   },
   computed: {
     showMiniPlayer: {
-      get() {
+      get(): boolean {
         return this.$appdata.get("modules.media.show_mini_player") !== false;
       },
-      set(val) {
+      set(val: boolean) {
         this.$appdata.set("modules.media.show_mini_player", val);
       },
     },
     showExternalMiniPlayer: {
-      get() {
+      get(): boolean {
         return this.$appdata.get("modules.external_media.show_mini_player") !== false;
       },
-      set(val) {
+      set(val: boolean) {
         this.$appdata.set("modules.external_media.show_mini_player", val);
       },
     },
-    isMinimized() {
+    isMinimized(): boolean {
       return this.$media.isMinimized();
     },
-    isExternalMediaMinimized() {
-      return this.$appdata.get("modules.external_media.minimized") === true && this.$appdata.get("modules.external_media.filePath");
+    isExternalMediaMinimized(): boolean {
+      return this.$appdata.get("modules.external_media.minimized") === true && !!this.$appdata.get("modules.external_media.filePath");
     },
-    externalFilePath() {
+    externalFilePath(): string {
       const raw = this.$appdata.get("modules.external_media.filePath");
       if (!raw) return "";
       if (window.electronAPI) {
@@ -195,60 +196,62 @@ export default {
       }
       return raw;
     },
-    isExternalVideo() {
+    isExternalVideo(): boolean {
       const raw = this.$appdata.get("modules.external_media.filePath");
       if (!raw) return false;
-      const ext = raw.split(".").pop().toLowerCase();
-      return ["mp4", "mkv", "avi", "mov", "wmv", "webm"].includes(ext);
+      const ext = raw.split(".").pop()?.toLowerCase();
+      return !!ext && ["mp4", "mkv", "avi", "mov", "wmv", "webm"].includes(ext);
     },
-    externalMediaCurrentTime() {
+    externalMediaCurrentTime(): number {
       return this.$appdata.get("modules.external_media.config.current_time");
     },
-    externalMediaIsPaused() {
+    externalMediaIsPaused(): boolean {
       return this.$appdata.get("modules.external_media.config.is_paused");
     },
-    config() {
+    config(): any {
       return this.$media.config();
     },
-    slide() {
+    slide(): any {
       return this.$media.slide();
     },
   },
   watch: {
-    externalMediaCurrentTime(val) {
+    externalMediaCurrentTime(val: number) {
       if (this.showExternalMiniPlayer && this.$refs.externalMiniPlayerVideo) {
-        const video = this.$refs.externalMiniPlayerVideo;
+        const video = this.$refs.externalMiniPlayerVideo as HTMLVideoElement;
         if (!video.seeking && Math.abs(video.currentTime - val) > 0.5) {
           video.currentTime = val;
         }
       }
     },
-    externalMediaIsPaused(val) {
+    externalMediaIsPaused(val: boolean) {
       if (this.showExternalMiniPlayer && this.$refs.externalMiniPlayerVideo) {
-        if (val) this.$refs.externalMiniPlayerVideo.pause();
-        else this.$refs.externalMiniPlayerVideo.play().catch((err) => {
+        const video = this.$refs.externalMiniPlayerVideo as HTMLVideoElement;
+        if (val) video.pause();
+        else video.play().catch((err: any) => {
           console.error("[MiniPlayer] play() failed:", err.message);
         });
       }
     },
-    showExternalMiniPlayer(newVal) {
+    showExternalMiniPlayer(newVal: boolean) {
       if (newVal) {
         this.$nextTick(() => {
           if (!this.externalMediaIsPaused && this.$refs.externalMiniPlayerVideo) {
-            this.$refs.externalMiniPlayerVideo.currentTime = this.externalMediaCurrentTime || 0;
-            this.$refs.externalMiniPlayerVideo.play().catch((err) => {
+            const video = this.$refs.externalMiniPlayerVideo as HTMLVideoElement;
+            video.currentTime = this.externalMediaCurrentTime || 0;
+            video.play().catch((err: any) => {
               console.error("[MiniPlayer] play() failed:", err.message);
             });
           }
         });
       }
     },
-    isMinimized(val) {
+    isMinimized(val: boolean) {
       if (val) {
         this.showMiniPlayer = true;
       }
     },
-    isExternalMediaMinimized(val) {
+    isExternalMediaMinimized(val: boolean) {
       if (val && this.isExternalVideo) {
         this.showExternalMiniPlayer = true;
       }
@@ -290,10 +293,10 @@ export default {
       this.$appdata.set("is_online", true);
     }
 
-    window.addEventListener("message", (event) => {
+    window.addEventListener("message", (event: MessageEvent) => {
       if (event.origin === window.location.origin || event.origin === "file://" || event.origin === "null") {
         if (event.data === "mounted") {
-          const popupSource = event.source;
+          const popupSource = event.source as Window;
           if (popupSource) {
             const data = this.$appdata.getFlatten();
             Object.keys(data).map((item) => {
@@ -323,10 +326,10 @@ export default {
     /*********************************************************************/
 
     if (window.electronAPI && window.electronAPI.isElectron) {
-      window.electronAPI.onNavigateModule((moduleId) => {
+      window.electronAPI.onNavigateModule((moduleId: string) => {
         this.$modules.open(moduleId);
       });
-      window.electronAPI.onNavigateRoute((routeName) => {
+      window.electronAPI.onNavigateRoute((routeName: string) => {
         if (routeName === "help") {
           this.$modules.open("help");
         }
@@ -338,7 +341,7 @@ export default {
       this.sidebarOpen = !this.sidebarOpen;
     },
     syncMiniPlayer() {
-      const video = this.$refs.externalMiniPlayerVideo;
+      const video = this.$refs.externalMiniPlayerVideo as HTMLVideoElement;
       if (video) {
         const currentTime = this.$appdata.get("modules.external_media.config.current_time") || 0;
         video.currentTime = currentTime;
@@ -368,7 +371,7 @@ export default {
       this.showExternalMiniPlayer = false;
     },
   },
-};
+});
 </script>
 
 <style scoped>
