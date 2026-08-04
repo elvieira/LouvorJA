@@ -1,4 +1,6 @@
-export default {
+import type { ModuleManifest } from "@/types/module";
+
+const manifest: ModuleManifest = {
   id: "random",
   name: "Sorteio",
   version: "1.0.0",
@@ -10,3 +12,5 @@ export default {
   dependencies: [],
   permissions: [],
 };
+
+export default manifest;

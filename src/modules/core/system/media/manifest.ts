@@ -1,4 +1,6 @@
-export default {
+import type { ModuleManifest } from "@/types/module";
+
+const manifest: ModuleManifest = {
   id: "media",
   name: "Slide",
   version: "2.0.0",
@@ -11,3 +13,5 @@ export default {
   dependencies: [],
   permissions: [],
 };
+
+export default manifest;

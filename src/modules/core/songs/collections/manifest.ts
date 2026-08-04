@@ -1,4 +1,6 @@
-export default {
+import type { ModuleManifest } from "@/types/module";
+
+const manifest: ModuleManifest = {
   id: "collections",
   name: "Álbuns",
   version: "2.0.0",
@@ -11,3 +13,5 @@ export default {
   dependencies: ["album"],
   permissions: [],
 };
+
+export default manifest;

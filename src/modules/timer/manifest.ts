@@ -1,4 +1,6 @@
-export default {
+import type { ModuleManifest } from "@/types/module";
+
+const manifest: ModuleManifest = {
   active: true,
   development: false,
   id: "timer",
@@ -12,3 +14,5 @@ export default {
   dependencies: [],
   permissions: [],
 };
+
+export default manifest;

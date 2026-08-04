@@ -10,9 +10,9 @@ export interface ModuleManifest {
   showInMainMenu?: boolean;
   development?: boolean;
   language?: string | null;
-  minAppVersion?: string;
-  dependencies?: string[];
-  permissions?: string[];
+  minAppVersion: string;
+  dependencies: string[];
+  permissions: string[];
   translations?: Record<string, unknown>;
   system?: boolean;
   overlay?: boolean;
