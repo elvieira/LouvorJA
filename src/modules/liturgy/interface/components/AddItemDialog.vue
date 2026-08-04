@@ -110,14 +110,14 @@
           <v-card-text class="px-6 pb-2 pt-4">
             <!-- Name -->
             <div class="mb-4">
-              <div class="text-caption font-weight-bold mb-1" style="color: var(--sidebar-text-secondary); margin-left: 4px; text-transform: uppercase; font-size: 0.65rem !important; letter-spacing: 0.5px;">
+              <div class="text-body-2 font-weight-medium mb-1" style="color: var(--sidebar-text-secondary); margin-left: 4px;">
                 {{ t('fields.name') }}
               </div>
               <v-text-field
                 v-model="addForm.name"
-                variant="solo-filled"
+                variant="solo"
                 flat
-                bg-color="rgba(128,128,128,0.05)"
+                bg-color="rgba(var(--v-theme-on-surface), 0.06)"
                 rounded="xl"
                 density="comfortable"
                 hide-details
@@ -129,14 +129,14 @@
 
             <!-- Description (annotation only) -->
             <div v-if="addForm.type === 'annotation'" class="mb-4">
-              <div class="text-caption font-weight-bold mb-1" style="color: var(--sidebar-text-secondary); margin-left: 4px; text-transform: uppercase; font-size: 0.65rem !important; letter-spacing: 0.5px;">
+              <div class="text-body-2 font-weight-medium mb-1" style="color: var(--sidebar-text-secondary); margin-left: 4px;">
                 {{ t('fields.description') }}
               </div>
               <v-textarea
                 v-model="addForm.subtitle"
-                variant="solo-filled"
+                variant="solo"
                 flat
-                bg-color="rgba(128,128,128,0.05)"
+                bg-color="rgba(var(--v-theme-on-surface), 0.06)"
                 rounded="xl"
                 density="comfortable"
                 hide-details
@@ -148,7 +148,7 @@
 
             <!-- Music selector -->
             <div v-if="addForm.type === 'music'" class="mb-4">
-              <div class="text-caption font-weight-bold mb-1" style="color: var(--sidebar-text-secondary); margin-left: 4px; text-transform: uppercase; font-size: 0.65rem !important; letter-spacing: 0.5px;">
+              <div class="text-body-2 font-weight-medium mb-1" style="color: var(--sidebar-text-secondary); margin-left: 4px;">
                 {{ t('fields.search_music') }}
               </div>
               <v-autocomplete
@@ -158,9 +158,9 @@
                 :custom-filter="() => true"
                 item-title="name"
                 item-value="id_music"
-                variant="solo-filled"
+                variant="solo"
                 flat
-                bg-color="rgba(128,128,128,0.05)"
+                bg-color="rgba(var(--v-theme-on-surface), 0.06)"
                 rounded="xl"
                 density="comfortable"
                 class="modern-input-no-thick"
@@ -205,7 +205,7 @@
             <!-- Verse selector -->
             <div v-if="addForm.type === 'verse'">
               <div class="mb-3">
-                <div class="text-caption font-weight-bold mb-1" style="color: var(--sidebar-text-secondary); margin-left: 4px; text-transform: uppercase; font-size: 0.65rem !important; letter-spacing: 0.5px;">
+                <div class="text-body-2 font-weight-medium mb-1" style="color: var(--sidebar-text-secondary); margin-left: 4px;">
                   {{ t('fields.book') }}
                 </div>
                 <v-autocomplete
@@ -213,9 +213,9 @@
                   :items="bibleBooks"
                   item-title="name"
                   item-value="id_bible_book"
-                  variant="solo-filled"
+                  variant="solo"
                   flat
-                  bg-color="rgba(128,128,128,0.05)"
+                  bg-color="rgba(var(--v-theme-on-surface), 0.06)"
                   rounded="xl"
                   density="comfortable"
                   class="modern-input-no-thick"
@@ -253,15 +253,15 @@
               </div>
               <div class="d-flex mb-2" style="gap: 12px;">
                 <div style="flex: 0 0 120px;">
-                  <div class="text-caption font-weight-bold mb-1" style="color: var(--sidebar-text-secondary); margin-left: 4px; text-transform: uppercase; font-size: 0.65rem !important; letter-spacing: 0.5px;">
+                  <div class="text-body-2 font-weight-medium mb-1" style="color: var(--sidebar-text-secondary); margin-left: 4px;">
                     {{ t('fields.chapter') }}
                   </div>
                   <v-autocomplete
                     v-model="addForm.verseChapter"
                     :items="verseChapterList"
-                    variant="solo-filled"
+                    variant="solo"
                     flat
-                    bg-color="rgba(128,128,128,0.05)"
+                    bg-color="rgba(var(--v-theme-on-surface), 0.06)"
                     rounded="xl"
                     density="comfortable"
                     class="modern-input-no-thick mb-3"
@@ -298,14 +298,14 @@
                   </v-autocomplete>
                 </div>
                 <div style="flex: 1;">
-                  <div class="text-caption font-weight-bold mb-1" style="color: var(--sidebar-text-secondary); margin-left: 4px; text-transform: uppercase; font-size: 0.65rem !important; letter-spacing: 0.5px;">
+                  <div class="text-body-2 font-weight-medium mb-1" style="color: var(--sidebar-text-secondary); margin-left: 4px;">
                     {{ t('fields.verses') }}
                   </div>
                   <v-text-field
                     v-model="addForm.verseNumbers"
-                    variant="solo-filled"
+                    variant="solo"
                     flat
-                    bg-color="rgba(128,128,128,0.05)"
+                    bg-color="rgba(var(--v-theme-on-surface), 0.06)"
                     rounded="xl"
                     density="comfortable"
                     class="modern-input-no-thick mb-3"
@@ -321,7 +321,7 @@
               <div
                 v-if="addForm.filePath"
                 class="rounded-xl pa-4 d-flex align-center justify-space-between"
-                style="border: 1px solid var(--border-color, rgba(128,128,128,0.2)); background: rgba(128,128,128,0.05);"
+                style="border: 1px solid var(--border-color, rgba(128,128,128,0.2)); background: rgba(var(--v-theme-on-surface), 0.06);"
               >
                 <div class="d-flex align-center" style="overflow: hidden;">
                   <v-icon color="primary" size="32" class="mr-3">
@@ -388,14 +388,14 @@
 
             <!-- Link URL -->
             <div v-if="addForm.type === 'link'" class="mb-4">
-              <div class="text-caption font-weight-bold mb-1" style="color: var(--sidebar-text-secondary); margin-left: 4px; text-transform: uppercase; font-size: 0.65rem !important; letter-spacing: 0.5px;">
+              <div class="text-body-2 font-weight-medium mb-1" style="color: var(--sidebar-text-secondary); margin-left: 4px;">
                 {{ t('fields.url') }}
               </div>
               <v-text-field
                 v-model="addForm.url"
-                variant="solo-filled"
+                variant="solo"
                 flat
-                bg-color="rgba(128,128,128,0.05)"
+                bg-color="rgba(var(--v-theme-on-surface), 0.06)"
                 rounded="xl"
                 density="comfortable"
                 class="modern-input-no-thick"
