@@ -169,4 +169,4 @@ O app Electron carrega o build Vite em modo de produção, ou o dev server em de
 
 ## Licença
 
-Projeto privado — Louvor JA.
+Este projeto está licenciado sob a licença [MIT](LICENSE).
