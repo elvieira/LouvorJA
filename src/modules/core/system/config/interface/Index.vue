@@ -4,16 +4,16 @@
       <ModuleHeader :title="t('main_title')" :icon="manifest.icon || 'mdi-cog'">
         <div class="d-flex align-center" style="max-width: 100%; overflow-x: auto;">
           <v-tabs v-model="tab" color="var(--accent-blue)">
-            <v-tab :value="1">
+            <v-tab>
               {{ t('tab_general') }}
             </v-tab>
-            <v-tab :value="2">
+            <v-tab>
               {{ t('tab_appearance') }}
             </v-tab>
-            <v-tab :value="3">
+            <v-tab>
               {{ t('tab_media') }}
             </v-tab>
-            <v-tab :value="4">
+            <v-tab>
               {{ t('tab_projection') }}
             </v-tab>
           </v-tabs>
@@ -22,19 +22,19 @@
 
       <div class="content-main flex-grow-1 w-100" style="overflow: hidden; padding-top: 24px; background: var(--main-bg);">
         <v-tabs-window v-model="tab" class="h-100 w-100">
-          <v-tabs-window-item :value="1" class="h-100">
+          <v-tabs-window-item class="h-100">
             <TabGeneral />
           </v-tabs-window-item>
 
-          <v-tabs-window-item :value="2" class="h-100">
+          <v-tabs-window-item class="h-100">
             <TabAppearance />
           </v-tabs-window-item>
 
-          <v-tabs-window-item :value="3" class="h-100">
+          <v-tabs-window-item class="h-100">
             <TabMedia />
           </v-tabs-window-item>
 
-          <v-tabs-window-item :value="4" class="h-100">
+          <v-tabs-window-item class="h-100">
             <TabProjection />
           </v-tabs-window-item>
         </v-tabs-window>
@@ -62,7 +62,7 @@ export default defineComponent({
     TabProjection,
   },
   data: () => ({
-    tab: 1,
+    tab: 0,
     manifest,
   }),
   computed: {

@@ -67,32 +67,33 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from "vue";
 import manifest from "../../manifest";
 
-export default {
+export default defineComponent({
   name: "TabAppearance",
   computed: {
     active_theme_mode: {
-      get() {
-        return this.$vuetify.theme.global.current.dark ? "dark" : "light";
+      get(): string {
+        return (this as any).$vuetify.theme.global.current.dark ? "dark" : "light";
       },
-      set(mode) {
+      set(mode: string) {
         this.setTheme(mode);
       },
     },
   },
   methods: {
-    t(text) {
+    t(text: string): string {
       return this.$t(`modules.${manifest.id}.${text}`);
     },
-    setTheme(theme_id) {
-      this.$vuetify.theme.global.name = theme_id;
+    setTheme(theme_id: string) {
+      (this as any).$vuetify.theme.global.name = theme_id;
       this.$userdata.set("theme", theme_id);
-      this.$appdata.set("is_dark", this.$vuetify.theme.global.current.dark);
+      this.$appdata.set("is_dark", (this as any).$vuetify.theme.global.current.dark);
     },
   },
-};
+});
 </script>
 
 <style scoped>

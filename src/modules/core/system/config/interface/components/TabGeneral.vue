@@ -59,39 +59,40 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from "vue";
 import manifest from "../../manifest";
 import SettingsActionRow from "@/components/SettingsActionRow.vue";
 
-export default {
+export default defineComponent({
   name: "TabGeneral",
   components: {
     SettingsActionRow,
   },
   data: () => ({
-    language: "pt",
-    show_home_history: true,
+    language: "pt" as string,
+    show_home_history: true as boolean,
   }),
   computed: {
-    languagesList() {
+    languagesList(): Array<{ code: string; name: string }> {
       return [
         { code: "pt", name: "Português" },
         { code: "es", name: "Español" },
       ];
     },
-    languageName() {
-      const found = this.languagesList.find(l => l.code === this.language);
+    languageName(): string {
+      const found = this.languagesList.find((l: any) => l.code === this.language);
       return found ? found.name : "Português";
     },
   },
   watch: {
-    language(val) {
+    language(val: string) {
       if (val) {
         this.$userdata.set("language", val);
         this.$i18n.locale = val;
       }
     },
-    show_home_history(val) {
+    show_home_history(val: boolean) {
       this.$userdata.set("show_home_history", val);
     },
   },
@@ -105,13 +106,13 @@ export default {
     }
   },
   methods: {
-    t(text) {
+    t(text: string): string {
       return this.$t(`modules.${manifest.id}.${text}`);
     },
     resetHistory() {
       this.$alert.yesno(
         { text: this.t("msg_reset_history"), translate: false },
-        (resp) => {
+        (resp: string) => {
           if (resp === "yes") {
             this.$history.clearAll();
             this.$alert.info({ text: this.t("msg_reset_success"), translate: false });
@@ -122,17 +123,17 @@ export default {
     async clearAllData() {
       this.$alert.yesno(
         { text: this.t("msg_clear_data"), translate: false },
-        async (resp) => {
+        async (resp: string) => {
           if (resp === "yes") {
             if (window.electronAPI) {
-              const success = await window.electronAPI.clearAllData();
-              if (success) {
+              try {
+                await window.electronAPI.clearAllData();
                 window.localStorage.clear();
                 window.sessionStorage.clear();
                 this.$alert.info({ text: this.t("msg_clear_success"), translate: false }, () => {
                   window.location.reload();
                 });
-              } else {
+              } catch (err) {
                 this.$alert.error({ text: this.t("msg_clear_error"), translate: false });
               }
             } else {
@@ -143,7 +144,7 @@ export default {
       );
     },
   },
-};
+});
 </script>
 
 <style scoped>

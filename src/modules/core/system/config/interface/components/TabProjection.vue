@@ -459,7 +459,7 @@
                           size="small"
                           variant="flat"
                           color="white"
-                          @click="$refs.bgImageInput.click()"
+                          @click="($refs.bgImageInput as any).click()"
                         >
                           <v-icon color="black">
                             mdi-pencil
@@ -475,7 +475,7 @@
                       v-else
                       class="rounded-xl d-flex flex-column align-center justify-center cursor-pointer"
                       style="height: 100px; border: 2px dashed var(--border-color); background: var(--card-bg); transition: all 0.2s;"
-                      @click="$refs.bgImageInput.click()"
+                      @click="($refs.bgImageInput as any).click()"
                     >
                       <v-icon size="32" color="grey-lighten-1" class="mb-2">
                         mdi-cloud-upload-outline
@@ -546,86 +546,87 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from "vue";
 import manifest from "../../manifest";
 import ModernColorPicker from "@/components/inputs/ModernColorPicker.vue";
 import $media from "@/helpers/services/Media";
 
-export default {
+export default defineComponent({
   name: "TabProjection",
   components: {
     ModernColorPicker,
   },
   data: () => ({
-    slide_monitor: [],
-    slide_align: "Centro",
-    slide_fullscreen: true,
-    slide_disable_main_if_extended: true,
-    slide_minimize_player: false,
-    slide_show_title: true,
-    slide_custom_text_format: false,
-    slide_font_size: 100,
-    slide_font_color: "#FFFFFF",
-    slide_font_weight: "700",
-    slide_custom_bg: false,
-    slide_bg_color: "#000000",
-    slide_bg_image: null,
-    slide_bg_opacity: 100,
+    slide_monitor: [] as any[],
+    slide_align: "Centro" as string,
+    slide_fullscreen: true as boolean,
+    slide_disable_main_if_extended: true as boolean,
+    slide_minimize_player: false as boolean,
+    slide_show_title: true as boolean,
+    slide_custom_text_format: false as boolean,
+    slide_font_size: 100 as number,
+    slide_font_color: "#FFFFFF" as string,
+    slide_font_weight: "700" as string,
+    slide_custom_bg: false as boolean,
+    slide_bg_color: "#000000" as string,
+    slide_bg_image: null as string | null,
+    slide_bg_opacity: 100 as number,
   }),
   computed: {
-    rawDisplays() {
+    rawDisplays(): any[] {
       return this.$appdata.get("system_displays") || [];
     },
-    monitorList() {
+    monitorList(): any[] {
       if (this.rawDisplays.length === 0) {
         return [
           { title: this.t("monitor_primary").replace("{0}", "1"), value: "Monitor 1", isPrimary: true },
           { title: this.t("monitor_extended").replace("{0}", "2"), value: "Monitor 2", isPrimary: false },
         ];
       }
-      return this.rawDisplays.map((d, index) => ({
+      return this.rawDisplays.map((d: any, index: number) => ({
         title: d.isPrimary ? this.t("monitor_primary").replace("{0}", String(index + 1)) : this.t("monitor_extended").replace("{0}", String(index + 1)),
         value: d.id,
         isPrimary: d.isPrimary,
       }));
     },
-    slideMonitorList() {
-      return this.monitorList.filter(m => !m.isPrimary);
+    slideMonitorList(): any[] {
+      return this.monitorList.filter((m: any) => !m.isPrimary);
     },
   },
   watch: {
-    slide_monitor(val) {
+    slide_monitor(val: any[]) {
       if (val !== undefined && val !== null) {
         this.$userdata.set("modules.config.slide_monitor", val);
         $media.syncMonitors();
         this.syncExternalMediaMonitors();
       }
     },
-    slide_align(val) {
+    slide_align(val: string) {
       if (val !== undefined && val !== null) {
         this.$userdata.set("modules.config.slide_align", val);
       }
     },
-    slide_fullscreen(val) { this.$userdata.set("modules.config.slide_fullscreen", val); },
-    slide_disable_main_if_extended(val) { this.$userdata.set("modules.config.slide_disable_main_if_extended", val); },
-    slide_minimize_player(val) { this.$userdata.set("modules.config.slide_minimize_player", val); },
-    slide_show_title(val) { this.$userdata.set("modules.config.slide_show_title", val); },
-    slide_custom_text_format(val) { this.$userdata.set("modules.config.slide_custom_text_format", val); },
-    slide_font_size(val) { this.$userdata.set("modules.config.slide_font_size", val); },
-    slide_font_color(val) { this.$userdata.set("modules.config.slide_font_color", val); },
-    slide_font_weight(val) { this.$userdata.set("modules.config.slide_font_weight", val); },
-    slide_custom_bg(val) { this.$userdata.set("modules.config.slide_custom_bg", val); },
-    slide_bg_color(val) { this.$userdata.set("modules.config.slide_bg_color", val); },
-    slide_bg_image(val) { this.$userdata.set("modules.config.slide_bg_image", val); },
-    slide_bg_opacity(val) { this.$userdata.set("modules.config.slide_bg_opacity", val); },
+    slide_fullscreen(val: boolean) { this.$userdata.set("modules.config.slide_fullscreen", val); },
+    slide_disable_main_if_extended(val: boolean) { this.$userdata.set("modules.config.slide_disable_main_if_extended", val); },
+    slide_minimize_player(val: boolean) { this.$userdata.set("modules.config.slide_minimize_player", val); },
+    slide_show_title(val: boolean) { this.$userdata.set("modules.config.slide_show_title", val); },
+    slide_custom_text_format(val: boolean) { this.$userdata.set("modules.config.slide_custom_text_format", val); },
+    slide_font_size(val: number) { this.$userdata.set("modules.config.slide_font_size", val); },
+    slide_font_color(val: string) { this.$userdata.set("modules.config.slide_font_color", val); },
+    slide_font_weight(val: string) { this.$userdata.set("modules.config.slide_font_weight", val); },
+    slide_custom_bg(val: boolean) { this.$userdata.set("modules.config.slide_custom_bg", val); },
+    slide_bg_color(val: string) { this.$userdata.set("modules.config.slide_bg_color", val); },
+    slide_bg_image(val: string | null) { this.$userdata.set("modules.config.slide_bg_image", val); },
+    slide_bg_opacity(val: number) { this.$userdata.set("modules.config.slide_bg_opacity", val); },
     slideMonitorList: {
-      handler(newList) {
+      handler(newList: any[]) {
         if (newList.length > 0 && this.rawDisplays.length > 0) {
           const unselected = this.$userdata.get("modules.config.unselected_slide_monitors") || [];
           let changed = false;
           const currentMonitors = [...this.slide_monitor];
           
-          newList.forEach(m => {
+          newList.forEach((m: any) => {
             if (!currentMonitors.includes(m.value) && !unselected.includes(m.value)) {
               currentMonitors.push(m.value);
               changed = true;
@@ -662,12 +663,12 @@ export default {
     fields.forEach(field => {
       const val = this.$userdata.get(`modules.config.${field}`);
       if (val !== undefined && val !== null) {
-        this[field] = val;
+        (this as any)[field] = val;
       }
     });
   },
   methods: {
-    t(text) {
+    t(text: string): string {
       return this.$t(`modules.${manifest.id}.${text}`);
     },
     identifyMonitors() {
@@ -675,26 +676,27 @@ export default {
         window.electronAPI.identifyDisplays();
       }
     },
-    toggleSlideMonitor(val) {
-      let unselected = this.$userdata.get("modules.config.unselected_slide_monitors") || [];
+    toggleSlideMonitor(val: any) {
+      let unselected: any[] = this.$userdata.get("modules.config.unselected_slide_monitors") || [];
       if (this.slide_monitor.includes(val)) {
-        this.slide_monitor = this.slide_monitor.filter(m => m !== val);
+        this.slide_monitor = this.slide_monitor.filter((m: any) => m !== val);
         if (!unselected.includes(val)) unselected.push(val);
       } else {
         this.slide_monitor = [...this.slide_monitor, val];
-        unselected = unselected.filter(m => m !== val);
+        unselected = unselected.filter((m: any) => m !== val);
       }
       this.$userdata.set("modules.config.unselected_slide_monitors", unselected);
     },
-    onBgImageSelect(event) {
-      const file = event.target.files?.[0];
+    onBgImageSelect(event: Event) {
+      const input = event.target as HTMLInputElement;
+      const file = input.files?.[0];
       if (!file) return;
       const reader = new FileReader();
       reader.onload = (e) => {
-        this.slide_bg_image = e.target.result;
+        this.slide_bg_image = e.target?.result as string;
       };
       reader.readAsDataURL(file);
-      event.target.value = "";
+      input.value = "";
     },
     resetSlideConfigs() {
       this.slide_monitor = [];
@@ -728,8 +730,8 @@ export default {
       if (window.electronAPI && window.electronAPI.getDisplays) {
         const displays = await window.electronAPI.getDisplays();
         if (displays && displays.length > 1) {
-          const primary = displays.find(d => d.isPrimary) || displays[0];
-          selectedMonitors = selectedMonitors.filter(m => m !== primary.id);
+          const primary = (displays as any[]).find((d: any) => d.isPrimary) || (displays as any[])[0];
+          selectedMonitors = selectedMonitors.filter((m: any) => m !== (primary as any).id);
           
           const { default: $popup } = await import("@/helpers/ui/Popup");
           await $popup.syncMonitors(selectedMonitors, "external_media", isExternalMediaActive);
@@ -737,7 +739,7 @@ export default {
       }
     },
   },
-};
+});
 </script>
 
 <style scoped>

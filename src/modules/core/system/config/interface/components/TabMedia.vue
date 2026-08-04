@@ -164,59 +164,60 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from "vue";
 import manifest from "../../manifest";
 
-export default {
+export default defineComponent({
   name: "TabMedia",
   data: () => ({
-    media_use_internal_player: false,
-    media_sync_projection_settings: true,
-    media_auto_project_video: true,
-    media_pause_on_minimize: false,
-    media_slide_monitor: [],
-    media_slide_fullscreen: true,
-    media_slide_disable_main_if_extended: true,
-    media_slide_minimize_player: false,
+    media_use_internal_player: false as boolean,
+    media_sync_projection_settings: true as boolean,
+    media_auto_project_video: true as boolean,
+    media_pause_on_minimize: false as boolean,
+    media_slide_monitor: [] as any[],
+    media_slide_fullscreen: true as boolean,
+    media_slide_disable_main_if_extended: true as boolean,
+    media_slide_minimize_player: false as boolean,
   }),
   computed: {
-    rawDisplays() {
+    rawDisplays(): any[] {
       return this.$appdata.get("system_displays") || [];
     },
-    monitorList() {
+    monitorList(): any[] {
       if (this.rawDisplays.length === 0) {
         return [
           { title: this.t("monitor_primary").replace("{0}", "1"), value: "Monitor 1", isPrimary: true },
           { title: this.t("monitor_extended").replace("{0}", "2"), value: "Monitor 2", isPrimary: false },
         ];
       }
-      return this.rawDisplays.map((d, index) => ({
+      return this.rawDisplays.map((d: any, index: number) => ({
         title: d.isPrimary ? this.t("monitor_primary").replace("{0}", String(index + 1)) : this.t("monitor_extended").replace("{0}", String(index + 1)),
         value: d.id,
         isPrimary: d.isPrimary,
       }));
     },
-    slideMonitorList() {
-      return this.monitorList.filter(m => !m.isPrimary);
+    slideMonitorList(): any[] {
+      return this.monitorList.filter((m: any) => !m.isPrimary);
     },
   },
   watch: {
-    media_use_internal_player(val) { this.$userdata.set("modules.config.media_use_internal_player", val); },
-    media_sync_projection_settings(val) {
+    media_use_internal_player(val: boolean) { this.$userdata.set("modules.config.media_use_internal_player", val); },
+    media_sync_projection_settings(val: boolean) {
       this.$userdata.set("modules.config.media_sync_projection_settings", val);
       this.syncExternalMediaMonitors();
     },
-    media_auto_project_video(val) { this.$userdata.set("modules.config.media_auto_project_video", val); },
-    media_pause_on_minimize(val) { this.$userdata.set("modules.config.media_pause_on_minimize", val); },
-    media_slide_monitor(val) {
+    media_auto_project_video(val: boolean) { this.$userdata.set("modules.config.media_auto_project_video", val); },
+    media_pause_on_minimize(val: boolean) { this.$userdata.set("modules.config.media_pause_on_minimize", val); },
+    media_slide_monitor(val: any[]) {
       if (val !== undefined && val !== null) {
         this.$userdata.set("modules.config.media_slide_monitor", val);
         this.syncExternalMediaMonitors();
       }
     },
-    media_slide_fullscreen(val) { this.$userdata.set("modules.config.media_slide_fullscreen", val); },
-    media_slide_disable_main_if_extended(val) { this.$userdata.set("modules.config.media_slide_disable_main_if_extended", val); },
-    media_slide_minimize_player(val) { this.$userdata.set("modules.config.media_slide_minimize_player", val); },
+    media_slide_fullscreen(val: boolean) { this.$userdata.set("modules.config.media_slide_fullscreen", val); },
+    media_slide_disable_main_if_extended(val: boolean) { this.$userdata.set("modules.config.media_slide_disable_main_if_extended", val); },
+    media_slide_minimize_player(val: boolean) { this.$userdata.set("modules.config.media_slide_minimize_player", val); },
   },
   mounted() {
     const fields = [
@@ -226,17 +227,17 @@ export default {
     fields.forEach(field => {
       const val = this.$userdata.get(`modules.config.${field}`);
       if (val !== undefined && val !== null) {
-        this[field] = val;
+        (this as any)[field] = val;
       }
     });
   },
   methods: {
-    t(text) {
+    t(text: string): string {
       return this.$t(`modules.${manifest.id}.${text}`);
     },
-    toggleMediaSlideMonitor(val) {
+    toggleMediaSlideMonitor(val: any) {
       if (this.media_slide_monitor.includes(val)) {
-        this.media_slide_monitor = this.media_slide_monitor.filter(m => m !== val);
+        this.media_slide_monitor = this.media_slide_monitor.filter((m: any) => m !== val);
       } else {
         this.media_slide_monitor = [...this.media_slide_monitor, val];
       }
@@ -267,8 +268,8 @@ export default {
       if (window.electronAPI && window.electronAPI.getDisplays) {
         const displays = await window.electronAPI.getDisplays();
         if (displays && displays.length > 1) {
-          const primary = displays.find(d => d.isPrimary) || displays[0];
-          selectedMonitors = selectedMonitors.filter(m => m !== primary.id);
+          const primary = (displays as any[]).find((d: any) => d.isPrimary) || (displays as any[])[0];
+          selectedMonitors = selectedMonitors.filter((m: any) => m !== (primary as any).id);
           
           const { default: $popup } = await import("@/helpers/ui/Popup");
           await $popup.syncMonitors(selectedMonitors, "external_media", isExternalMediaActive);
@@ -276,7 +277,7 @@ export default {
       }
     },
   },
-};
+});
 </script>
 
 <style scoped>
