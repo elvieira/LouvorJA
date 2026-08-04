@@ -46,6 +46,13 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: sudo apt-get update && sudo apt-get install -y rpm
 
+      - name: Create .env.production
+        run: |
+          echo "VITE_APP_MODE=production" >> .env.production
+          echo "VITE_URL_FILES=${{ secrets.VITE_URL_FILES }}" >> .env.production
+          echo "VITE_URL_DATABASE=${{ secrets.VITE_URL_DATABASE }}" >> .env.production
+          echo "VITE_API_TOKEN=${{ secrets.VITE_API_TOKEN }}" >> .env.production
+
       - name: Build Vite
         run: npx vite build --base=./
 
