@@ -97,7 +97,7 @@ export default {
       const displays = await window.electronAPI.getDisplays();
       if (displays && displays.length > 1) {
         const primary = displays.find((d: any) => d.isPrimary) || displays[0];
-        const extendedSelected = slideMonitors.filter(m => m !== (primary as any).id);
+        const extendedSelected = slideMonitors.filter((m: any) => m !== (primary as any).id);
         hasExtended = extendedSelected.length > 0;
       }
     }
@@ -132,7 +132,7 @@ export default {
       //Grava os tempos dos slides
       $appdata.set(
         "modules.media.times",
-        this.slides().map((item) =>
+        this.slides().map((item: any) =>
           $datetime.toNumber(
             mode === "audio" ? item.time : item.instrumental_time,
           ),
@@ -187,7 +187,7 @@ export default {
 
     // Registrar reprodução no histórico
     const albumInfo = data.albums && data.albums.length > 0
-      ? (id_album ? data.albums.find(a => a.id_album === id_album) : data.albums[0])
+      ? (id_album ? data.albums.find((a: any) => a.id_album === id_album) : data.albums[0])
       : null;
     $history.addSongPlay({
       id_music,
@@ -200,7 +200,7 @@ export default {
       let collectionId = albumInfo.id_album;
       let collectionType = "album";
 
-      const hymnal = data.categories?.filter((item) => item.startsWith("hymnal."))[0];
+      const hymnal = data.categories?.filter((item: string) => item.startsWith("hymnal."))[0];
       if (hymnal) {
         collectionId = hymnal.split(".")[1];
         collectionType = "module";
@@ -227,7 +227,7 @@ export default {
         const primary = displays.find((d: any) => d.isPrimary) || displays[0];
 
         // Remove primary from selected monitors to avoid covering controls
-        selectedMonitors = selectedMonitors.filter(m => m !== (primary as any).id);
+        selectedMonitors = selectedMonitors.filter((m: any) => m !== (primary as any).id);
 
         if (selectedMonitors.length > 0) {
           const { default: $popup } = await import("@/helpers/ui/Popup");
@@ -247,7 +247,7 @@ export default {
         }
 
         const primary = displays.find((d: any) => d.isPrimary) || displays[0];
-        selectedMonitors = selectedMonitors.filter(m => m !== (primary as any).id);
+        selectedMonitors = selectedMonitors.filter((m: any) => m !== (primary as any).id);
 
         const isMediaActive = $appdata.get("modules.media.id_music") !== null;
 
@@ -260,7 +260,7 @@ export default {
   close(force = false) {
     //Se force for true, fechamento forçado. Sem diálogo de confirmação!
     if (!force) {
-      $alert.yesno("modules.media.alerts.close", (btn: string) => {
+      $alert.yesno("modules.media.alerts.close", (btn: any) => {
         if (btn === "yes") {
           this.close(true);
         }
@@ -281,7 +281,7 @@ export default {
     });
   },
 
-  async openLyric(params) {
+  async openMusic(params: any) {
     if (params === null || params === undefined) {
       params = {
         id_music: $appdata.get("modules.media.id_music"),
@@ -325,7 +325,7 @@ export default {
     $appdata.set("modules.lyric.loading", false);
   },
 
-  async openAlbum(id_album) {
+  async fetchAlbumInfo(id_album: any) {
     $dev.write("open album", id_album);
 
     $appdata.set("modules.album.loading", true);
@@ -338,7 +338,7 @@ export default {
 
     $appdata.set("modules.album.data", data);
 
-    const hymnal = data.categories.filter((item) =>
+    const hymnal = data.categories.filter((item: string) =>
       item.startsWith("hymnal."),
     )[0];
     if (hymnal) {
@@ -359,7 +359,7 @@ export default {
     $appdata.set("modules.album.loading", false);
   },
 
-  async openAudio(params) {
+  async openAudio(params: any) {
     if (typeof params !== "object") {
       params = { id_music: params };
     }
@@ -436,7 +436,7 @@ export default {
     return $appdata.get("modules.media.config");
   },
 
-  slides() {
+  slides(): any[] {
     const data = $appdata.get("modules.media.data");
     const showTitle = $userdata.get("modules.config.slide_show_title") !== false;
 
@@ -479,7 +479,7 @@ export default {
     return slides[index];
   },
 
-  goToSlide(index) {
+  goToSlide(index: number) {
     const last_slide = $appdata.get("modules.media.config.last_slide");
 
     if (index > last_slide - 1) {
@@ -499,7 +499,7 @@ export default {
       $appdata.set("modules.media.config.slide_index", index);
     }
   },
-  goToTime(time) {
+  goToTime(time: number) {
     const audio = this.getElement();
     const duration = $appdata.get("modules.media.config.duration");
     if (time === undefined || time < 0) {
@@ -522,7 +522,7 @@ export default {
   play() {
     this.pause(false);
   },
-  pause(bool = true, callback) {
+  pause(bool = true, callback?: () => void) {
     const audio = this.getElement();
 
     if (bool) {
@@ -555,7 +555,7 @@ export default {
             text: "modules.media.alerts.not_loaded",
             error: errorMsg,
           },
-          (a: boolean) => {
+          (resp: any, a?: any) => {
             if (a) {
               this.open($appdata.get("modules.media.id_music"));
             }
@@ -584,7 +584,7 @@ export default {
     const last_slide = $appdata.get("modules.media.config.last_slide");
     this.goToSlide(last_slide - 1);
   },
-  setVolume(val) {
+  setVolume(val: number) {
     const audio = this.getElement();
     audio.volume = val / 100;
     $appdata.set("modules.media.config.volume", val);
@@ -599,7 +599,7 @@ export default {
     $appdata.set("modules.media.config.fullscreen", value);
   },
 
-  setAlbumInfo(id_album, module = "media") {
+  setAlbumInfo(id_album: any, module = "media") {
     const data = $appdata.get(`modules.${module}.data`);
     if (data.albums.length <= 0) {
       $appdata.set(`modules.${module}.config.subtitle`, "");
@@ -610,11 +610,11 @@ export default {
 
     let album = null;
     if (id_album) {
-      album = data.albums.filter((item) => item.id_album === id_album)[0];
+      album = data.albums.filter((item: any) => item.id_album === id_album)[0];
     } else if (data.albums.length === 1) {
       album = data.albums[0];
     } else {
-      album = data.albums.sort((a, b) => a.order - b.order)[0];
+      album = data.albums.sort((a: any, b: any) => a.order - b.order)[0];
     }
 
     if (!album) {
@@ -649,11 +649,6 @@ export default {
     $appdata.set("modules.media.config.progress", progress);
 
     if (!$appdata.get("modules.media.config.lazy")) {
-      try {
-        audio.buffered = 100;
-      } catch {
-        //
-      }
       buffered = 100;
     } else {
       buffered = 0;
@@ -669,8 +664,8 @@ export default {
 
     const slide_index =
       times && times?.length
-        ? times.filter((time) => time <= current_time).length - 1
-        : 1;
+        ? times.filter((time: number) => time <= current_time).length - 1
+        : 0;
     $appdata.set(
       "modules.media.config.slide_index",
       slide_index <= 0 ? 0 : slide_index,
@@ -693,7 +688,7 @@ export default {
       this.close(true);
     }
   },
-  async fadeOut(audio, durationMs = 1000) {
+  async fadeOut(audio: HTMLAudioElement, durationMs = 1000) {
     return new Promise<void>((resolve) => {
       const startVolume = audio.volume;
       if (startVolume <= 0 || audio.paused) return resolve();
@@ -711,7 +706,7 @@ export default {
       }, 50);
     });
   },
-  async fadeIn(audio, targetVolume, durationMs = 1000) {
+  async fadeIn(audio: HTMLAudioElement, targetVolume: number, durationMs = 1000) {
     return new Promise<void>((resolve) => {
       audio.volume = 0;
       audio.play().catch(() => { });
@@ -733,11 +728,11 @@ export default {
     const active = $appdata.get("modules.media.config.active_audio") || "a";
     $appdata.set("modules.media.config.active_audio", active === "a" ? "b" : "a");
   },
-  getElement(forceId = null) {
+  getElement(forceId: string | null = null): HTMLAudioElement {
     const active = forceId || $appdata.get("modules.media.config.active_audio") || "a";
     const id = `__audio_${active}`;
 
-    let el = document.getElementById(id);
+    let el = document.getElementById(id) as HTMLAudioElement | null;
     if (!el) {
       el = document.createElement("audio");
       el.setAttribute("id", id);
@@ -746,13 +741,13 @@ export default {
 
       el.addEventListener("timeupdate", () => {
         const currentActive = $appdata.get("modules.media.config.active_audio") || "a";
-        if (el.id === `__audio_${currentActive}`) {
+        if (el?.id === `__audio_${currentActive}`) {
           this.timeUpdate();
         }
       });
       el.addEventListener("progress", () => {
         const currentActive = $appdata.get("modules.media.config.active_audio") || "a";
-        if (el.id === `__audio_${currentActive}`) {
+        if (el?.id === `__audio_${currentActive}`) {
           this.timeUpdate();
         }
       });
