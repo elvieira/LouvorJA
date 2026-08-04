@@ -2,6 +2,7 @@
   "name": "louvorja",
   "version": "1.13.0",
   "private": true,
+  "license": "MIT",
   "scripts": {
     "version:major": "npm version major",
     "version:minor": "npm version minor",

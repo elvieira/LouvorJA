@@ -2,8 +2,9 @@
 /tmp/
 /dev-dist
 
-.env.development
-
+.env
+.env.*
+!.env.example
 .DS_Store
 node_modules
 /dist
