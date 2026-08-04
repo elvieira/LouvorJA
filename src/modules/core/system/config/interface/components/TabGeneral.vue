@@ -114,7 +114,7 @@ export default defineComponent({
         { text: this.t("msg_reset_history"), translate: false },
         (resp: string) => {
           if (resp === "yes") {
-            this.$history.clearAll();
+            (this as any).$history.clearAll();
             this.$alert.info({ text: this.t("msg_reset_success"), translate: false });
           }
         },

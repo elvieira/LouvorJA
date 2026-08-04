@@ -10,12 +10,7 @@ module.exports = {
     "eslint:recommended",
   ],
   parserOptions: {
-    parser: {
-      js: "@babel/eslint-parser",
-      jsx: "@babel/eslint-parser",
-      ts: "@typescript-eslint/parser",
-      tsx: "@typescript-eslint/parser",
-    },
+    parser: "@typescript-eslint/parser",
     ecmaVersion: "latest",
     sourceType: "module",
     requireConfigFile: false,
