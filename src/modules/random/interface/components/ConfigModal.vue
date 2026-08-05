@@ -192,11 +192,13 @@
               </div>
               <v-btn-toggle
                 v-model="localConfig.textTransform"
-                mandatory
-                divided
-                variant="outlined"
                 color="primary"
+                variant="tonal"
+                divided
+                mandatory
+                rounded="lg"
                 class="w-100 mb-2 d-flex"
+                style="height: 40px;"
               >
                 <v-btn value="none" class="flex-grow-1 text-none text-caption font-weight-bold px-1">
                   Aa (Normal)
@@ -230,11 +232,13 @@
 
               <v-btn-toggle
                 v-model="localConfig.animationSpeed"
-                mandatory
-                divided
-                variant="outlined"
                 color="primary"
-                class="w-100"
+                variant="tonal"
+                divided
+                mandatory
+                rounded="lg"
+                class="w-100 mb-2 d-flex"
+                style="height: 40px;"
               >
                 <v-btn value="fast" class="flex-grow-1 text-none font-weight-bold">
                   <v-icon start size="18">

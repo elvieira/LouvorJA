@@ -9,25 +9,23 @@
         style="background: var(--card-bg, #ffffff); box-shadow: 0 10px 40px rgba(0,0,0,0.5); border: 1px solid var(--border-color, rgba(0,0,0,0.05)); overflow: hidden;"
       >
         <!-- Header -->
-        <div class="pa-6 pb-4 d-flex align-center justify-space-between flex-shrink-0" style="background: rgba(0,0,0,0.02);">
-          <div class="d-flex align-center">
-            <div class="rounded-circle d-flex align-center justify-center mr-3" style="width: 40px; height: 40px; background: rgba(var(--v-theme-primary), 0.1);">
-              <v-icon color="primary" size="22">
+        <div class="pa-6 pb-4 flex-shrink-0" style="background: rgba(0,0,0,0.02);">
+          <div class="d-flex align-center justify-space-between mb-2">
+            <div class="d-flex align-center">
+              <v-icon color="primary" size="32" class="mr-3">
                 mdi-palette-outline
               </v-icon>
-            </div>
-            <div>
               <h2 class="text-h5 font-weight-bold mb-0" style="color: var(--sidebar-text);">
-                Personalização da Projeção
+                {{ t('proj_customization') }}
               </h2>
-              <p class="text-caption mb-0" style="color: var(--sidebar-text-secondary);">
-                Ajuste o visual do cronômetro na tela
-              </p>
             </div>
+            <v-btn icon variant="text" @click="close">
+              <v-icon>mdi-close</v-icon>
+            </v-btn>
           </div>
-          <v-btn icon variant="text" @click="close">
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
+          <p class="text-caption mb-0" style="color: var(--sidebar-text-secondary);">
+            Ajuste o visual do cronômetro na tela
+          </p>
         </div>
 
         <!-- Scrollable Content -->

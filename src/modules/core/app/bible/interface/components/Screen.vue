@@ -10,19 +10,20 @@
     }"
   >
     <div v-if="bible" class="d-flex flex-column w-100 pa-4" :class="[config.align]">
-      <span
+      <div
         v-if="bible.text"
         :style="{ fontSize: `${fontSizePc(config.fontSizePc)}px` }"
       >
         {{ bible.text }}
-      </span>
-      <span
+      </div>
+      <div
         v-if="bible.scriptural_reference"
         class="mt-4 font-weight-bold"
+        :class="[config.refAlign || 'text-right']"
         :style="{ fontSize: `${fontSizePc(config.refFontSizePc)}px`, color: config.refColor }"
       >
         {{ bible.scriptural_reference }}
-      </span>
+      </div>
     </div>
   </div>
 </template>

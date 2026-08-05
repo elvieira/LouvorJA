@@ -1,5 +1,6 @@
 {
   "title": "Sorteo",
+  "proj_customization": "Personalización de la Proyección",
   "add_name": "Añadir Nombre",
   "import_names": "Importar Lista",
   "import_tooltip": "Importa un archivo .txt con un nombre por línea.",

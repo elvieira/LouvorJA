@@ -17,7 +17,7 @@
               size="small"
               style="width: 36px; height: 36px;"
               class="config-palette-btn"
-              @click="openConfig"
+              @click="showConfig = true"
             >
               <v-icon>mdi-palette</v-icon>
               <v-tooltip
@@ -36,7 +36,7 @@
       </div>
 
       <!-- Config Modal -->
-      <ConfigModal ref="configModal" />
+      <ConfigModal v-model="showConfig" />
     </div>
   </v-slide-y-reverse-transition>
 </template>
@@ -57,6 +57,11 @@ export default defineComponent({
     ConfigModal,
     ModuleHeader,
   },
+  data() {
+    return {
+      showConfig: false,
+    };
+  },
   computed: {
     module_id(): string {
       return manifest.id;
@@ -66,11 +71,8 @@ export default defineComponent({
     },
   },
   methods: {
-    t(text: string): string {
-      return this.$t(`modules.${this.module_id}.${text}`);
-    },
-    openConfig() {
-      (this.$refs.configModal as any).open();
+    t(key: string): string {
+      return this.$t(`modules.${this.module_id}.${key}`);
     },
     toggleSidebar() {
       const mainEl = document.querySelector(".main-container");

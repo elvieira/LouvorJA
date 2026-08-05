@@ -1,5 +1,6 @@
 {
   "title": "Sorteio",
+  "proj_customization": "Personalização da Projeção",
   "add_name": "Adicionar Nome",
   "import_names": "Importar Lista",
   "import_tooltip": "Importe um arquivo .txt com um nome por linha.",

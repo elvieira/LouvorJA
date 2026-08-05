@@ -249,7 +249,7 @@
                   {{ localConfig.refFontSizePc }}
                 </v-chip>
               </div>
-            
+
               <div class="d-flex align-center mb-6" style="gap: 12px;">
                 <v-btn
                   icon
@@ -294,7 +294,7 @@
                 <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text);">{{ t('font_color') }}</span>
               </div>
             
-              <div class="d-flex flex-wrap align-center" style="gap: 10px;">
+              <div class="d-flex flex-wrap align-center mb-6" style="gap: 10px;">
                 <div
                   v-for="color in ['#FFFFFF', '#f6c32a', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD']"
                   :key="color"
@@ -322,6 +322,33 @@
                     </div>
                   </template>
                 </ModernColorPicker>
+              </div>
+
+              <v-divider class="mb-6" style="opacity: 0.1;" />
+            
+              <div class="d-flex align-center justify-space-between">
+                <div class="text-body-2 font-weight-medium" style="color: var(--sidebar-text-secondary);">
+                  {{ t('text_align') }}
+                </div>
+                <v-btn-toggle
+                  v-model="localConfig.refAlign"
+                  color="primary"
+                  variant="tonal"
+                  divided
+                  mandatory
+                  rounded="lg"
+                  style="height: 40px;"
+                >
+                  <v-btn value="text-left" class="px-4">
+                    <v-icon>mdi-format-align-left</v-icon>
+                  </v-btn>
+                  <v-btn value="text-center" class="px-4">
+                    <v-icon>mdi-format-align-center</v-icon>
+                  </v-btn>
+                  <v-btn value="text-right" class="px-4">
+                    <v-icon>mdi-format-align-right</v-icon>
+                  </v-btn>
+                </v-btn-toggle>
               </div>
             </v-card-text>
           </v-card>
@@ -376,6 +403,7 @@ export default defineComponent({
       color: "#ffffff",
       refFontSizePc: 10,
       refColor: "#fb8c00",
+      refAlign: "text-right",
     } as Record<string, any>,
     defaultConfig: {
       fontSizePc: 15,
@@ -384,6 +412,7 @@ export default defineComponent({
       color: "#ffffff",
       refFontSizePc: 10,
       refColor: "#fb8c00",
+      refAlign: "text-right",
     } as Record<string, any>,
   }),
   computed: {

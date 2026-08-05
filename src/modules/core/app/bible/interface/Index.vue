@@ -133,10 +133,9 @@
           </template>
         </BibleVerses>
       </div>
+      <ConfigModal v-if="!loading" v-model="showConfigModal" />
     </div>
   </v-slide-y-reverse-transition>
-
-  <ConfigModal v-if="!loading" v-model="showConfigModal" />
 </template>
 
 <script lang="ts">
@@ -204,9 +203,11 @@ export default defineComponent({
       return manifest.id;
     },
     navigateData() {
+      // @ts-ignore
       return this.$appdata.get("modules.bible.data.navigate");
     },
     module() {
+      // @ts-ignore
       return this.$modules.get(this.module_id);
     },
     /* COMPUTEDS OBRIGATÓRIAS - FIM */
@@ -244,9 +245,11 @@ export default defineComponent({
       }));
     },
     compact() {
+      // @ts-ignore
       return this.$vuetify.display.width <= 750;
     },
     super_compact() {
+      // @ts-ignore
       return this.$vuetify.display.width <= 400;
     },
     filteredVerses() {
@@ -278,6 +281,7 @@ export default defineComponent({
     },
     async show() {
       if (this.show) {
+        // @ts-ignore
         if (this.lang !== this.$i18n.locale) {
           this.versions = [];
           this.books = [];
@@ -332,13 +336,15 @@ export default defineComponent({
   },
   methods: {
 
-    /* METHODS OBRIGATÓRIOS - INÍCIO */
+    /* METHODS OBRIGATÓRIAS - INÍCIO */
     /* NÃO MODIFICAR */
     t(text: string) {
+      // @ts-ignore
       return this.$t(`modules.${this.module_id}.${text}`);
     },
-    /* METHODS OBRIGATÓRIOS - FIM */
+    /* METHODS OBRIGATÓRIAS - FIM */
     send(param: string, value: any) {
+      // @ts-ignore
       this.$appdata.set(`modules.${this.module_id}.data.${param}`, value);
     },
     async loadData() {
@@ -346,7 +352,9 @@ export default defineComponent({
 
       if (this.books.length <= 0) {
         this.loading_book = true;
+        // @ts-ignore
         this.books = await this.$database.get(
+          // @ts-ignore
           `${this.$i18n.locale}_bible_book`,
         );
         if (!this.bible.id_bible_book) {
@@ -356,10 +364,13 @@ export default defineComponent({
       }
 
       if (this.versions.length <= 0) {
+        // @ts-ignore
         this.versions = await this.$database.get(
+          // @ts-ignore
           `${this.$i18n.locale}_bible_version`,
         );
         if (!this.bible.id_bible_version) {
+          // @ts-ignore
           const savedVersion = this.$userdata.get(`modules.${this.module_id}.selected_version`);
           let targetVersion = null;
           
@@ -378,6 +389,7 @@ export default defineComponent({
       if (bible_file !== this.last_bible_file) {
         this.loading_verses = true;
         this.verses = {};
+        // @ts-ignore
         this.verses = await this.$database.get(bible_file);
         this.last_bible_file = bible_file;
         this.loading_verses = false;
@@ -391,6 +403,7 @@ export default defineComponent({
         this.bible.verses = this.select_bible.verses;
       }
 
+      // @ts-ignore
       this.lang = this.$i18n.locale;
       this.loading = false;
     },
@@ -399,9 +412,10 @@ export default defineComponent({
       this.height = data.container_height;
     },
 
-    async selVersion(id_bible_version: any) {
+    async selVersion(id_bible_version?: any) {
       if (id_bible_version) {
         this.bible.id_bible_version = id_bible_version;
+        // @ts-ignore
         this.$userdata.set(`modules.${this.module_id}.selected_version`, id_bible_version);
       }
       this.bible.version = this.version?.abbreviation;
@@ -495,7 +509,7 @@ export default defineComponent({
         this.bible.verses = [num];
       }
       this.last_verse = num;
-      this.bible.verses.sort((a, b) => a - b);
+      this.bible.verses.sort((a: number, b: number) => a - b);
       this.select_bible = Object.assign({}, this.bible);
       this.select_bible.scriptural_reference = this.scripturalReference(
         this.select_bible,
@@ -519,7 +533,7 @@ export default defineComponent({
       }
       if (this.select_bible?.verses && this.select_bible.verses.length > 0) {
         let verse = Math.min(
-          ...this.select_bible.verses.filter((num) => num > 0),
+          ...this.select_bible.verses.filter((num: number) => num > 0),
         );
         if (verse > 1) {
           verse--;
@@ -528,7 +542,7 @@ export default defineComponent({
           verse = Math.max(...Object.keys(this.verses).map(Number));
         } else {
           const bookIndex = this.books.findIndex(
-            (b) => b.id_bible_book === this.bible.id_bible_book,
+            (b: any) => b.id_bible_book === this.bible.id_bible_book,
           );
           const book =
             bookIndex > 0
@@ -562,7 +576,7 @@ export default defineComponent({
           verse = 1;
         } else {
           const bookIndex = this.books.findIndex(
-            (b) => b.id_bible_book === this.bible.id_bible_book,
+            (b: any) => b.id_bible_book === this.bible.id_bible_book,
           );
           const book =
             bookIndex < this.books.length - 1
@@ -575,7 +589,7 @@ export default defineComponent({
         this.selVerse(null, verse);
       }
     },
-    scripturalReference(data) {
+    scripturalReference(data: any) {
       const verses_interval = formatNumbersInterval(data.verses);
 
       if (!data.book || !data.version) {
@@ -591,10 +605,10 @@ export default defineComponent({
       ).trim();
     },
 
-    getSelectedVerses(keys) {
+    getSelectedVerses(keys: any[]) {
       keys.sort((a, b) => a - b);
       let result = "";
-      let previousKey = null;
+      let previousKey: any = null;
 
       keys.forEach((key) => {
         if (previousKey !== null && key - previousKey > 1) {
@@ -623,6 +637,7 @@ export default defineComponent({
     },
 
     close() {
+      // @ts-ignore
       this.$popup.exit();
       this.bible.verses = [];
       this.select_bible = {

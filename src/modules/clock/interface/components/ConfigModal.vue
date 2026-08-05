@@ -1,6 +1,6 @@
 <template>
   <v-slide-y-reverse-transition>
-    <div v-if="visible" class="d-flex align-center justify-center bg-transparent" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 100; background: rgba(0,0,0,0.6) !important; backdrop-filter: blur(2px);">
+    <div v-if="internalValue" class="d-flex align-center justify-center bg-transparent" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 100; background: rgba(0,0,0,0.6) !important; backdrop-filter: blur(2px);">
       <!-- Modal Card -->
 
       <!-- Modal Card -->
@@ -11,25 +11,23 @@
         style="background: var(--card-bg, #ffffff); box-shadow: 0 10px 40px rgba(0,0,0,0.5); border: 1px solid var(--border-color, rgba(0,0,0,0.05)); overflow: hidden;"
       >
         <!-- Header -->
-        <div class="pa-6 pb-4 d-flex align-center justify-space-between flex-shrink-0" style="background: rgba(0,0,0,0.02);">
-          <div class="d-flex align-center">
-            <div class="rounded-circle d-flex align-center justify-center mr-3" style="width: 40px; height: 40px; background: rgba(var(--v-theme-primary), 0.1);">
-              <v-icon color="primary" size="22">
+        <div class="pa-6 pb-4 flex-shrink-0" style="background: rgba(0,0,0,0.02);">
+          <div class="d-flex align-center justify-space-between mb-2">
+            <div class="d-flex align-center">
+              <v-icon color="primary" size="32" class="mr-3">
                 mdi-palette-outline
               </v-icon>
-            </div>
-            <div>
               <h2 class="text-h5 font-weight-bold mb-0" style="color: var(--sidebar-text);">
-                Personalização da Projeção
+                {{ t('proj_customization') }}
               </h2>
-              <p class="text-caption mb-0" style="color: var(--sidebar-text-secondary);">
-                Ajuste o visual do relógio na tela
-              </p>
             </div>
+            <v-btn icon variant="text" @click="close">
+              <v-icon>mdi-close</v-icon>
+            </v-btn>
           </div>
-          <v-btn icon variant="text" @click="close">
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
+          <p class="text-caption mb-0" style="color: var(--sidebar-text-secondary);">
+            Ajuste o visual do relógio na tela
+          </p>
         </div>
 
         <!-- Scrollable Content -->
@@ -146,11 +144,13 @@
               </div>
               <v-btn-toggle
                 v-model="localConfig.style"
-                mandatory
-                divided
-                variant="outlined"
                 color="primary"
+                variant="tonal"
+                divided
+                mandatory
+                rounded="lg"
                 class="w-100 mb-2 d-flex"
+                style="height: 40px;"
               >
                 <v-btn value="digital" class="flex-grow-1 text-none font-weight-bold">
                   <v-icon start size="18">
@@ -234,7 +234,7 @@
             variant="flat"
             color="primary"
             class="rounded-lg text-none px-6 font-weight-bold flex-shrink-0"
-            @click="visible = false"
+            @click="close"
           >
             Aplicar
           </v-btn>
@@ -253,8 +253,14 @@ export default defineComponent({
   components: {
     ModernColorPicker,
   },
+  props: {
+    modelValue: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  emits: ["update:modelValue"],
   data: () => ({
-    visible: false,
     localConfig: {
       style: "digital",
       showSeconds: true,
@@ -270,8 +276,18 @@ export default defineComponent({
       textColor: "#FFFFFF",
     },
   }),
+  computed: {
+    internalValue: {
+      get(): boolean {
+        return this.modelValue;
+      },
+      set(val: boolean) {
+        this.$emit("update:modelValue", val);
+      },
+    },
+  },
   watch: {
-    visible(val: boolean) {
+    internalValue(val: boolean) {
       if (val) this.loadConfig();
     },
     localConfig: {
@@ -298,11 +314,8 @@ export default defineComponent({
     t(key: string): string {
       return this.$t(`modules.clock.${key}`);
     },
-    open() {
-      this.visible = true;
-    },
     close() {
-      this.visible = false;
+      this.internalValue = false;
     },
   },
 });
