@@ -2,7 +2,7 @@ import { contextBridge, ipcRenderer } from "electron";
 
 contextBridge.exposeInMainWorld("electronAPI", {
   isElectron: true,
-  getLocalDb: (filename: string) => ipcRenderer.invoke("get-local-db", filename),
+  getLocalDb: (filename: string, lang?: string) => ipcRenderer.invoke("get-local-db", filename, lang),
   saveLocalDb: (filename: string, data: unknown) => ipcRenderer.invoke("save-local-db", filename, data),
   
   downloadMedia: (url: string, destFolderType: string, filename: string) => ipcRenderer.invoke("download-media", url, destFolderType, filename),
@@ -11,16 +11,18 @@ contextBridge.exposeInMainWorld("electronAPI", {
   
   openFileDialog: (options: Record<string, unknown>) => ipcRenderer.invoke("open-file-dialog", options),
   openExternal: (url: string) => ipcRenderer.invoke("open-external", url),
+  getSysDbInfo: () => ipcRenderer.invoke("get-sysdb-info"),
   openPath: (filePath: string) => ipcRenderer.invoke("open-path", filePath),
   clearAllData: () => ipcRenderer.invoke("clear-all-data"),
   clearSysData: () => ipcRenderer.invoke("clear-sys-data"),
-  extractLocalDb: () => ipcRenderer.invoke("extract-local-db"),
-  downloadDatabase: () => ipcRenderer.invoke("download-database"),
+  extractLocalDb: (lang?: string) => ipcRenderer.invoke("extract-local-db", lang),
+  downloadDatabase: (lang?: string) => ipcRenderer.invoke("download-database", lang),
+  checkDatabaseExists: (lang?: string) => ipcRenderer.invoke("check-database-exists", lang),
   checkOldInstallation: () => ipcRenderer.invoke("check-old-installation"),
   importOldInstallation: () => ipcRenderer.invoke("import-old-installation"),
   
-  validateInstallation: () => ipcRenderer.invoke("validate-installation"),
-  repairSysdata: (filenames: string[]) => ipcRenderer.invoke("repair-sysdata", filenames),
+  validateInstallation: (lang?: string) => ipcRenderer.invoke("validate-installation", lang),
+  repairSysdata: (filenames: string[], lang?: string) => ipcRenderer.invoke("repair-sysdata", filenames, lang),
   
   windowControl: (action: string) => ipcRenderer.invoke("window-control", action),
   onWindowMaximizedState: (callback: (isMaximized: boolean) => void) => {

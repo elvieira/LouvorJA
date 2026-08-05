@@ -10,6 +10,7 @@ const manifest: ModuleManifest = {
   author: "maycorolbuche",
   category: "musics",
   icon: "mdi-music-clef-treble",
+  showInMainMenu: true,
   minAppVersion: "1.0.0",
   dependencies: [
     "media",

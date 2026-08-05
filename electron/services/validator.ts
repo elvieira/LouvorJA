@@ -1,19 +1,20 @@
-import { ipcMain } from "electron";
+import { ipcMain, app } from "electron";
 import * as fs from "fs-extra";
 import * as path from "path";
-import { sysDbPath, finalDbPath, coversPath, musicPath, slidesPath } from "../config/constants";
+import { sysDbPath, coversPath, musicPath, slidesPath } from "../config/constants";
 import DbExtractor from "./db-extractor";
 import { SQLiteHelper } from "../utils/sqlite";
 import { decryptData } from "../utils/crypto";
 
 export function registerValidatorHandlers() {
-  ipcMain.handle("validate-installation", async () => {
+  ipcMain.handle("validate-installation", async (event, lang: string = "pt") => {
     try {
-      if (!fs.existsSync(finalDbPath)) {
+      const dbPath = path.join(app.getPath("userData"), `database_${lang}.db`);
+      if (!fs.existsSync(dbPath)) {
         return { missingCovers: [], missingMusic: [], missingImages: [], missingBins: [], totalMissing: 0 };
       }
 
-      const db = new SQLiteHelper(finalDbPath);
+      const db = new SQLiteHelper(dbPath);
       await db.connect();
       
       let downloadedMedia: string[] = [];
@@ -44,8 +45,14 @@ export function registerValidatorHandlers() {
       }
       
       const binFiles = new Set([
-        "pt_categories.bin", "pt_bible_book.bin", "pt_bible_version.bin", "pt_hymnal.bin", "pt_hymnal_1996.bin", "pt_musics.bin",
+        "pt_categories.bin", "pt_hymnal.bin", "pt_hymnal_1996.bin", "pt_musics.bin",
       ]);
+
+      const langs = db.prepare("SELECT DISTINCT id_language FROM bible_book").all() as Record<string, unknown>[];
+      langs.forEach(l => {
+        binFiles.add(`${l.id_language}_bible_book.bin`);
+        binFiles.add(`${l.id_language}_bible_version.bin`);
+      });
       
       const albums = db.prepare("SELECT id_album FROM albums").all() as Record<string, unknown>[];
       albums.forEach(a => binFiles.add(`album_${a.id_album}.bin`));
@@ -82,10 +89,11 @@ export function registerValidatorHandlers() {
     }
   });
 
-  ipcMain.handle("repair-sysdata", async (event, filenames: string[]) => {
+  ipcMain.handle("repair-sysdata", async (event, filenames: string[], lang: string = "pt") => {
     try {
-      if (!fs.existsSync(finalDbPath)) return false;
-      const extractor = new DbExtractor(finalDbPath);
+      const dbPath = path.join(app.getPath("userData"), `database_${lang}.db`);
+      if (!fs.existsSync(dbPath)) return false;
+      const extractor = new DbExtractor(dbPath);
       await extractor.connect();
       
       for (const file of filenames) {

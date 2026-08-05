@@ -14,20 +14,24 @@ declare module "*.json" {
 // Tipos do electronAPI expostos via preload
 interface ElectronAPI {
   isElectron: boolean
-  getLocalDb: (filename: string) => Promise<unknown>
+
   saveLocalDb: (filename: string, data: unknown) => Promise<void>
   downloadMedia: (url: string, destFolderType: string, filename: string) => Promise<boolean>
-  checkMedia: (destFolderType: string, filename: string) => Promise<boolean>
+  checkMedia: (destFolderType: string, filename: string) => Promise<string | false>
   deleteMedia: (destFolderType: string, filename: string) => Promise<boolean>
   openFileDialog: (options: Record<string, unknown>) => Promise<unknown>
   openExternal: (url: string) => Promise<void>
   openPath: (filePath: string) => Promise<void>
   clearAllData: () => Promise<void>
   clearSysData: () => Promise<void>
-  extractLocalDb: () => Promise<boolean>
-  downloadDatabase: () => Promise<boolean>
+  getLocalDb: (filename: string, lang?: string) => Promise<unknown | null>
+  extractLocalDb: (lang?: string) => Promise<boolean>
+  downloadDatabase: (lang?: string) => Promise<unknown>
+  checkDatabaseExists: (lang?: string) => Promise<boolean>
   checkOldInstallation: () => Promise<boolean>
   importOldInstallation: () => Promise<boolean>
+  validateInstallation: (lang?: string) => Promise<{ missingCovers: string[], missingMusic: string[], missingImages: string[], missingBins: string[], totalMissing: number }>
+  repairSysdata: (filenames: string[], lang?: string) => Promise<boolean>
   windowControl: (action: string) => Promise<void>
   onWindowMaximizedState: (callback: (isMaximized: boolean) => void) => void
   onRequestCloseApp: (callback: () => void) => void
@@ -71,5 +75,7 @@ declare module "@vue/runtime-core" {
     $datetime: any;
     $appdata: any;
     $userdata: any;
+    $string: any;
+    $database: any;
   }
 }

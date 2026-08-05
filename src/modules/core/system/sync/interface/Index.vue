@@ -154,7 +154,7 @@ export default defineComponent({
       this.loadingList = true;
       
       try {
-        const categories = (await $db.get("pt_categories")) as any[];
+        const categories = (await $db.get(`${this.$i18n.locale}_categories`)) as any[];
         const downloadedManifest = ((await window.electronAPI.getLocalDb("dla")) as any[]) || [];
         
         if (!categories || !Array.isArray(categories)) {
@@ -165,15 +165,15 @@ export default defineComponent({
         const result: SyncCategory[] = [];
         
         const hymnalsList: SyncAlbum[] = [];
-        const hymnal = (await $db.get("pt_hymnal")) as any[];
-        const hymnal1996 = (await $db.get("pt_hymnal_1996")) as any[];
+        const hymnal = (await $db.get(`${this.$i18n.locale}_hymnal`)) as any[];
+        const hymnal1996 = (await $db.get(`${this.$i18n.locale}_hymnal_1996`)) as any[];
         
         if (hymnal && hymnal.length > 0) {
           hymnalsList.push({
             id_album: "hymnal",
             name: this.$t("modules.sync.hymnal_name"),
             subtitle: this.$t("modules.sync.hymnal_subtitle", { count: hymnal.length }),
-            coverUrl: this.hymnalImg,
+            coverUrl: this.$i18n.locale === "es" ? this.hymnal1996Img : this.hymnalImg,
             status: downloadedManifest.includes("hymnal") ? "downloaded" : "idle",
             progress: 0,
             totalCount: 0,
@@ -205,17 +205,18 @@ export default defineComponent({
         }
         
         for (const cat of categories) {
+          if (this.$i18n.locale === "es") continue;
           if (!cat.albums || cat.albums.length === 0) continue;
           
           const albumsList: SyncAlbum[] = [];
           for (const a of cat.albums) {
-            if ([712, 629].includes(a.id_album as number)) continue;
+            if ([712, 629, 713].includes(a.id_album as number)) continue;
             
             let coverUrl = null;
             if (a.url_image) {
               const imgRelativePath = (a.url_image as string).replace(/^\/(musics|images|covers)\//, "");
-              const localCheck = await window.electronAPI.checkMedia("covers", imgRelativePath);
-              coverUrl = localCheck || $path.file(a.url_image);
+              const localCheck = await window.electronAPI?.checkMedia("covers", imgRelativePath);
+              coverUrl = (localCheck === false ? null : localCheck) || $path.file(a.url_image);
             }
             
             albumsList.push({
@@ -285,7 +286,7 @@ export default defineComponent({
         let slideFiles: string[] = [];
 
         if (album.isHymnal) {
-          const hymnalData = (await $db.get(`pt_${album.id_album}`)) as any[];
+          const hymnalData = (await $db.get(`${this.$i18n.locale}_${album.id_album}`)) as any[];
           if (!hymnalData || !Array.isArray(hymnalData)) {
             album.status = "idle";
             return;
@@ -377,9 +378,9 @@ export default defineComponent({
             if (consecutiveErrors >= MAX_CONSECUTIVE_ERRORS) return;
             const fullUrl = $path.file(media.url);
             const relativePath = media.url.replace(/^\/(musics|images|covers)\//, "");
-            const exists = await window.electronAPI.checkMedia(media.type, relativePath);
+            const exists = await window.electronAPI?.checkMedia(media.type, relativePath);
             if (!exists) {
-              const success = await window.electronAPI.downloadMedia(fullUrl, media.type, relativePath);
+              const success = await window.electronAPI?.downloadMedia(fullUrl, media.type, relativePath);
               if (!success) {
                 consecutiveErrors++;
                 totalErrors++;
@@ -427,10 +428,10 @@ export default defineComponent({
       }
     },
     async markAlbumDownloaded(albumId: string | number) {
-      const downloadedManifest = (await window.electronAPI.getLocalDb("dla")) as any[] || [];
+      const downloadedManifest = (await window.electronAPI?.getLocalDb("dla")) as any[] || [];
       if (!downloadedManifest.includes(albumId)) {
         downloadedManifest.push(albumId);
-        await window.electronAPI.saveLocalDb("dla", downloadedManifest);
+        await window.electronAPI?.saveLocalDb("dla", downloadedManifest);
       }
     },
     async downloadAllAlbums() {
@@ -443,7 +444,7 @@ export default defineComponent({
           if (this.cancelToken) break;
           if (album.status === "idle") {
             await this.downloadAlbum(album);
-            if (album.status === "error" && !navigator.onLine) {
+            if ((album.status as string) === "error" && !navigator.onLine) {
               this.cancelAll();
               this.$alert.error({
                 title: this.$t("modules.sync.no_connection"),
@@ -473,9 +474,9 @@ export default defineComponent({
         translate: false,
       }, async (resp: string) => {
         if (resp === "yes") {
-          let downloadedManifest = (await window.electronAPI.getLocalDb("dla")) as any[] || [];
+          let downloadedManifest = (await window.electronAPI?.getLocalDb("dla")) as any[] || [];
           downloadedManifest = downloadedManifest.filter((id: string | number) => id !== album.id_album);
-          await window.electronAPI.saveLocalDb("dla", downloadedManifest);
+          await window.electronAPI?.saveLocalDb("dla", downloadedManifest);
           
           album.status = "idle";
           album.progress = 0;
@@ -485,7 +486,7 @@ export default defineComponent({
             let musicFiles: string[] = [];
             let slideFiles: string[] = [];
             if (album.isHymnal) {
-              const hymnalData = (await $db.get(`pt_${album.id_album}`)) as any[];
+              const hymnalData = (await $db.get(`${this.$i18n.locale}_${album.id_album}`)) as any[];
               if (hymnalData) {
                 for (const song of hymnalData) {
                   const musicData = (await $db.get(`music_${song.id_music}`)) as any;
@@ -523,13 +524,13 @@ export default defineComponent({
             musicFiles = [...new Set(musicFiles)];
             for (const urlPath of musicFiles) {
               const relativePath = urlPath.replace(/^\/(musics|images|covers)\//, "");
-              await window.electronAPI.deleteMedia("music", relativePath);
+              await window.electronAPI?.deleteMedia("music", relativePath);
             }
             
             slideFiles = [...new Set(slideFiles)];
             for (const urlPath of slideFiles) {
               const relativePath = urlPath.replace(/^\/(musics|images|covers)\//, "");
-              await window.electronAPI.deleteMedia("slides", relativePath);
+              await window.electronAPI?.deleteMedia("slides", relativePath);
             }
           } catch (e) {
             console.error("Erro ao apagar arquivos:", e);

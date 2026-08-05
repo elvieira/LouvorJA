@@ -72,6 +72,7 @@ export default defineComponent({
   data: () => ({
     language: "pt" as string,
     show_home_history: true as boolean,
+    isInitialized: false,
   }),
   computed: {
     languagesList(): Array<{ code: string; name: string }> {
@@ -86,8 +87,63 @@ export default defineComponent({
     },
   },
   watch: {
-    language(val: string) {
-      if (val) {
+    async language(val: string, oldVal: string) {
+      if (!this.isInitialized) return;
+      
+      if (val && oldVal && val !== oldVal) {
+        if ((window as any).electronAPI && (window as any).electronAPI.isElectron) {
+          try {
+            // Check if the database for the selected language is already downloaded
+            const dbExists = await (window as any).electronAPI.checkDatabaseExists(val);
+            if (dbExists) {
+              this.$alert.yesno(
+                {
+                  title: this.t("msg_lang_title"),
+                  text: this.t("msg_lang_reload"),
+                  translate: false,
+                },
+                (resp: any) => {
+                  if (resp === "yes") {
+                    this.$userdata.set("language", val);
+                    window.location.reload();
+                  } else {
+                    this.isInitialized = false; // Prevent loop
+                    this.language = oldVal;
+                    this.$nextTick(() => { this.isInitialized = true; });
+                  }
+                },
+              );
+              return;
+            }
+          } catch (err) {
+            console.error("Erro ao verificar DB existente", err);
+          }
+
+          this.$alert.yesno(
+            {
+              title: this.t("msg_lang_title"),
+              text: this.t("msg_lang_download"),
+              translate: false,
+            },
+            async (resp: any) => {
+              if (resp === "yes") {
+                window.sessionStorage.setItem("pending_language", val);
+                if ((window as any).electronAPI.clearSysData) {
+                  await (window as any).electronAPI.clearSysData();
+                }
+                window.location.reload();
+              } else {
+                this.isInitialized = false; // Prevent loop
+                this.language = oldVal;
+                this.$nextTick(() => { this.isInitialized = true; });
+              }
+            },
+          );
+        } else {
+          this.$userdata.set("language", val);
+          this.$i18n.locale = val;
+        }
+      } else if (val && !oldVal) {
         this.$userdata.set("language", val);
         this.$i18n.locale = val;
       }
@@ -104,6 +160,11 @@ export default defineComponent({
     if (saved_home_history !== undefined && saved_home_history !== null) {
       this.show_home_history = saved_home_history;
     }
+    
+    // Set isInitialized after mounting so the watcher doesn't trigger on initial load
+    this.$nextTick(() => {
+      this.isInitialized = true;
+    });
   },
   methods: {
     t(text: string): string {

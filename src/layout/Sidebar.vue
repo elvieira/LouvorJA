@@ -33,6 +33,21 @@
           <span class="nav-text">{{ $t("sidebar.home") }}</span>
         </a>
       </div>
+      
+      <!-- In Spanish, Hymnal takes the 2nd place instead of the Musics group -->
+      <template v-if="language === 'es' && individualModules['hymnal'] && shouldShowModule('hymnal')">
+        <div
+          class="nav-item main-item"
+          :class="{ active: currentModule === 'hymnal' }"
+        >
+          <a href="#" class="nav-link" @click.prevent="openModule('hymnal')">
+            <v-icon class="nav-icon">
+              {{ individualModules['hymnal'].icon }}
+            </v-icon>
+            <span class="nav-text">{{ $t(individualModules['hymnal'].title) }}</span>
+          </a>
+        </div>
+      </template>
 
       <template v-for="(group, groupKey) in moduleGroups" :key="groupKey">
         <div
@@ -84,7 +99,7 @@
 
       <template v-for="(module, moduleKey) in individualModules" :key="moduleKey">
         <div
-          v-if="shouldShowModule(moduleKey)"
+          v-if="shouldShowModule(moduleKey) && !(language === 'es' && moduleKey === 'hymnal')"
           class="nav-item main-item"
           :class="{ active: currentModule === moduleKey }"
         >
@@ -230,6 +245,7 @@ export default defineComponent({
       };
 
       for (const [key, group] of Object.entries(groups)) {
+        if (this.language === "es" && key === "musics") continue;
         if ((group as any).modules && (group as any).modules.length > 0) {
           result[key] = {
             ...(group as any),
@@ -245,7 +261,8 @@ export default defineComponent({
       const groups = (this as any).$appdata.get("module_group") || {};
       const groupedModuleIds = new Set<string>();
       
-      Object.values(groups).forEach((group: any) => {
+      Object.entries(groups).forEach(([key, group]: [string, any]) => {
+        if (this.language === "es" && key === "musics") return;
         if (group.modules) {
           group.modules.forEach((id: string) => groupedModuleIds.add(id));
         }

@@ -280,7 +280,7 @@ export default defineComponent({
         if (window.electronAPI) {
           for (const cat of this.categories) {
             if (cat.albums) {
-              cat.albums = cat.albums.filter((a: any) => ![712, 629].includes(a.id_album));
+              cat.albums = cat.albums.filter((a: any) => ![712, 629, 713].includes(a.id_album));
               for (const album of cat.albums) {
                 if (album.url_image) {
                   const imgRelativePath = album.url_image.replace(/^\/(musics|images|covers)\//, "");

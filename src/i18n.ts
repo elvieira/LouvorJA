@@ -15,8 +15,11 @@ const loadLocaleMessages = async (): Promise<Record<string, any>> => {
 
 export const createI18nInstance = async (): Promise<I18n> => {
   const messages = await loadLocaleMessages();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const savedLocale = (window as any).app?.api?.userdata?.get("language") || "pt";
+  let savedLocale: string | undefined = window.sessionStorage.getItem("pending_language") || undefined;
+  if (!savedLocale) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    savedLocale = (window as any).app?.api?.userdata?.get("language") || "pt";
+  }
 
   return createI18n({
     legacy: false,

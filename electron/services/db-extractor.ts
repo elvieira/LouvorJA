@@ -70,17 +70,27 @@ export default class DbExtractor {
     
     try {
       const db = this.db!;
-      if (filename === "pt_categories") {
-        return this.repairCategories(db);
-      } else if (filename === "pt_bible_book") {
-        return this.repairBibleBooks(db);
-      } else if (filename === "pt_bible_version") {
-        return this.repairBibleVersions(db);
-      } else if (filename === "pt_hymnal" || filename === "pt_hymnal_1996") {
-        const hymnalId = filename === "pt_hymnal" ? 712 : 629;
-        return this.repairHymnal(db, hymnalId, filename);
-      } else if (filename === "pt_musics") {
-        return this.repairAllMusics(db);
+      if (filename.endsWith("_categories")) {
+        const lang = filename.split("_")[0];
+        return this.repairCategories(db, lang);
+      } else if (filename.endsWith("_bible_book")) {
+        const lang = filename.split("_")[0];
+        return this.repairBibleBooks(db, lang);
+      } else if (filename.endsWith("_bible_version")) {
+        const lang = filename.split("_")[0];
+        return this.repairBibleVersions(db, lang);
+      } else if (filename.endsWith("_hymnal") || filename.endsWith("_hymnal_1996")) {
+        const lang = filename.split("_")[0];
+        let hymnalId = 712;
+        if (filename.endsWith("_hymnal_1996")) {
+          hymnalId = 629;
+        } else if (lang === "es") {
+          hymnalId = 713;
+        }
+        return this.repairHymnal(db, hymnalId, filename, lang);
+      } else if (filename.endsWith("_musics")) {
+        const lang = filename.split("_")[0];
+        return this.repairAllMusics(db, lang);
       } else if (filename.startsWith("bible_")) {
         const parts = filename.split("_");
         if (parts.length === 4) {
@@ -101,8 +111,10 @@ export default class DbExtractor {
     return null;
   }
 
-  private repairCategories(db: SQLiteHelper): unknown {
-    const categoriesRows = db.prepare("SELECT * FROM categories WHERE id_language = 'pt' ORDER BY `order` ASC").all() as Record<string, unknown>[];
+  private repairCategories(db: SQLiteHelper, requestedLang: string = "pt"): unknown {
+    const hasLang = db.prepare("SELECT 1 FROM categories WHERE id_language = ?").get(requestedLang);
+    const targetLang = hasLang ? requestedLang : "pt";
+    const categoriesRows = db.prepare("SELECT * FROM categories WHERE id_language = ? ORDER BY `order` ASC").all(targetLang) as Record<string, unknown>[];
     const categories: Record<string, unknown>[] = [];
     for (const cat of categoriesRows) {
       const albumsRows = db.prepare(`
@@ -131,23 +143,27 @@ export default class DbExtractor {
         albums: albums.length > 0 ? albums : undefined,
       });
     }
-    this.saveJson("pt_categories", categories);
+    this.saveJson(`${requestedLang}_categories`, categories);
     return categories;
   }
 
-  private repairBibleBooks(db: SQLiteHelper): unknown {
-    const books = db.prepare("SELECT * FROM bible_book WHERE id_language = 'pt' ORDER BY book_number ASC").all() as Record<string, unknown>[];
-    this.saveJson("pt_bible_book", books);
+  private repairBibleBooks(db: SQLiteHelper, requestedLang: string = "pt"): unknown {
+    const hasLang = db.prepare("SELECT 1 FROM bible_book WHERE id_language = ?").get(requestedLang);
+    const targetLang = hasLang ? requestedLang : "pt";
+    const books = db.prepare("SELECT * FROM bible_book WHERE id_language = ? ORDER BY book_number ASC").all(targetLang) as Record<string, unknown>[];
+    this.saveJson(`${requestedLang}_bible_book`, books);
     return books;
   }
 
-  private repairBibleVersions(db: SQLiteHelper): unknown {
-    const versions = db.prepare("SELECT * FROM bible_version WHERE id_language = 'pt'").all() as Record<string, unknown>[];
-    this.saveJson("pt_bible_version", versions);
+  private repairBibleVersions(db: SQLiteHelper, requestedLang: string = "pt"): unknown {
+    const hasLang = db.prepare("SELECT 1 FROM bible_version WHERE id_language = ?").get(requestedLang);
+    const targetLang = hasLang ? requestedLang : "pt";
+    const versions = db.prepare("SELECT * FROM bible_version WHERE id_language = ?").all(targetLang) as Record<string, unknown>[];
+    this.saveJson(`${requestedLang}_bible_version`, versions);
     return versions;
   }
 
-  private repairHymnal(db: SQLiteHelper, albumId: number, filename: string): unknown {
+  private repairHymnal(db: SQLiteHelper, albumId: number, filename: string, _requestedLang: string = "pt"): unknown {
     const rows = db.prepare(`
       SELECT am.track, m.id_music, m.name, fim.file_name as im_file, fm.duration
       FROM albums_musics am
@@ -245,7 +261,8 @@ export default class DbExtractor {
     return albumJson;
   }
 
-  private repairAllMusics(db: SQLiteHelper): unknown {
+  private repairAllMusics(db: SQLiteHelper, requestedLang: string = "pt"): unknown {
+    // Has no language column, fallback to requested name
     const rows = db.prepare(`
       SELECT m.id_music, m.name, fim.file_name as im_file, fm.duration
       FROM musics m
@@ -298,7 +315,8 @@ export default class DbExtractor {
         albums: musicAlbumsMap[idMusic] || [],
       };
     });
-    this.saveJson("pt_musics", data);
+
+    this.saveJson(`${requestedLang}_musics`, data);
     return data;
   }
 
@@ -571,49 +589,53 @@ export default class DbExtractor {
       });
     };
 
-    const hymnalId = 712;
-    const hymnal1996Id = 629;
+    const langRow = db.prepare("SELECT id_language FROM bible_version LIMIT 1").get() as { id_language: string };
+    const lang = langRow?.id_language || "pt";
     
     try {
-      this.saveJson("pt_hymnal", getHymnalData(hymnalId));
-      this.saveJson("pt_hymnal_1996", getHymnalData(hymnal1996Id));
+      if (lang === "pt") {
+        this.saveJson("pt_hymnal", getHymnalData(712));
+        this.saveJson("pt_hymnal_1996", getHymnalData(629));
+      } else if (lang === "es") {
+        this.saveJson("es_hymnal", getHymnalData(713));
+      }
     } catch (e: unknown) {
       console.log("Hinarios ignorados caso não existam:", (e as Error).message);
     }
   }
 
   private extractBibles(db: SQLiteHelper, progressCallback: (data: { text: string; progress: number }) => void): void {
-    const books = db.prepare("SELECT * FROM bible_book WHERE id_language = 'pt' ORDER BY book_number ASC").all() as Record<string, unknown>[];
-    this.saveJson("pt_bible_book", books);
+    const langs = db.prepare("SELECT DISTINCT id_language FROM bible_book").all() as Record<string, unknown>[];
+    const books = db.prepare("SELECT * FROM bible_book ORDER BY book_number ASC").all() as Record<string, unknown>[];
+    const versions = db.prepare("SELECT * FROM bible_version").all() as Record<string, unknown>[];
 
-    const versions = db.prepare("SELECT * FROM bible_version WHERE id_language = 'pt'").all() as Record<string, unknown>[];
-    this.saveJson("pt_bible_version", versions);
+    langs.forEach(l => {
+      this.saveJson(`${l.id_language}_bible_book`, books.filter(b => b.id_language === l.id_language));
+      this.saveJson(`${l.id_language}_bible_version`, versions.filter(v => v.id_language === l.id_language));
+    });
 
+    const bibles = db.prepare("SELECT id_bible_version, id_bible_book, chapter FROM bible_verse GROUP BY id_bible_version, id_bible_book, chapter").all() as Record<string, unknown>[];
+    const totalChapters = bibles.length;
     let processedChapters = 0;
-    const totalChapters = books.reduce((sum, b) => sum + (b.chapters as number), 0) * versions.length;
 
-    for (const version of versions) {
-      for (const book of books) {
-        for (let ch = 1; ch <= (book.chapters as number); ch++) {
-          const verses = db.prepare(`
-            SELECT verse, text 
-            FROM bible_verse 
-            WHERE id_bible_version = ? AND id_bible_book = ? AND chapter = ?
-            ORDER BY verse ASC
-          `).all(version.id_bible_version, book.id_bible_book, ch) as Record<string, unknown>[];
-          
-          const versesObj: Record<string, string> = {};
-          for (const v of verses) {
-            versesObj[v.verse as number] = v.text as string;
-          }
-          
-          this.saveJson(`bible_${version.id_bible_version}_${book.id_bible_book}_${ch}`, versesObj);
-          
-          processedChapters++;
-          if (processedChapters % 100 === 0) {
-            progressCallback({ text: "Extraindo Bíblias...", progress: 70 + Math.floor((processedChapters / totalChapters) * 30) });
-          }
-        }
+    for (const b of bibles) {
+      const verses = db.prepare(`
+        SELECT verse, text 
+        FROM bible_verse 
+        WHERE id_bible_version = ? AND id_bible_book = ? AND chapter = ?
+        ORDER BY verse ASC
+      `).all(b.id_bible_version, b.id_bible_book, b.chapter) as Record<string, unknown>[];
+      
+      const versesObj: Record<string, string> = {};
+      for (const v of verses) {
+        versesObj[v.verse as number] = v.text as string;
+      }
+      
+      this.saveJson(`bible_${b.id_bible_version}_${b.id_bible_book}_${b.chapter}`, versesObj);
+      
+      processedChapters++;
+      if (processedChapters % 100 === 0) {
+        progressCallback({ text: "Extraindo Bíblias...", progress: 70 + Math.floor((processedChapters / totalChapters) * 30) });
       }
     }
   }

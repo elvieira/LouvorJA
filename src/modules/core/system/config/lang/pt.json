@@ -82,5 +82,8 @@
     "sync_proj_settings": "Replicar configurações de Projeção & Telas",
     "auto_project_video": "Projetar vídeos automaticamente ao abrir",
     "pause_on_minimize": "Pausar vídeo ao minimizar",
-    "fullscreen_main_media": "Abrir mídia em tela cheia na tela principal"
+    "fullscreen_main_media": "Abrir mídia em tela cheia na tela principal",
+    "msg_lang_title": "Aviso de Idioma",
+    "msg_lang_download": "Ao alterar o idioma, é necessário baixar o banco de dados e configurações do novo idioma. Deseja prosseguir?",
+    "msg_lang_reload": "Ao alterar o idioma, o programa será recarregado. Deseja prosseguir?"
 }

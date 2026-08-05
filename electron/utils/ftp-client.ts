@@ -1,7 +1,7 @@
 import * as ftp from "basic-ftp";
 import { net } from "electron";
 
-export let globalFtpParams: Record<string, string> | null = null;
+export const globalFtpParams: Record<string, Record<string, string>> = {};
 let ftpClient: ftp.Client | null = null;
 let ftpCloseTimer: NodeJS.Timeout | null = null;
 export let useFtpFallback = false;
@@ -32,8 +32,9 @@ export function scheduleFtpClose() {
   }, 30000);
 }
 
-export async function getFtpParams(): Promise<Record<string, string>> {
-  if (globalFtpParams) return globalFtpParams;
+export async function getFtpParams(lang: string = "pt"): Promise<Record<string, string>> {
+  const langKey = lang.toLowerCase();
+  if (globalFtpParams[langKey]) return globalFtpParams[langKey];
 
   const response = await net.fetch("https://api.louvorja.com.br/params?type=env");
   if (!response.ok) throw new Error("Falha ao buscar parâmetros");
@@ -50,8 +51,9 @@ export async function getFtpParams(): Promise<Record<string, string>> {
   const connFtp = params["conn_ftp"];
   if (!connFtp) throw new Error("conn_ftp não encontrado");
   
-  const payload = Buffer.from("pc_name=Electron&lang=PT").toString("base64");
-  const ftpUrl = `${connFtp + (connFtp.includes("?") ? "&" : "?")}data=${payload}&lang=PT`;
+  const langUpper = langKey.toUpperCase();
+  const payload = Buffer.from(`pc_name=Electron&lang=${langUpper}`).toString("base64");
+  const ftpUrl = `${connFtp + (connFtp.includes("?") ? "&" : "?")}data=${payload}&lang=${langUpper}`;
   
   const ftpResponse = await net.fetch(ftpUrl);
   if (!ftpResponse.ok) throw new Error("Falha ao autorizar FTP");
@@ -66,17 +68,17 @@ export async function getFtpParams(): Promise<Record<string, string>> {
     }
   });
 
-  globalFtpParams = ftpParamsResult;
+  globalFtpParams[langKey] = ftpParamsResult;
   return ftpParamsResult;
 }
 
-export async function getOrCreateFtpClient(): Promise<ftp.Client> {
+export async function getOrCreateFtpClient(lang: string = "pt"): Promise<ftp.Client> {
   if (ftpClient && !ftpClient.closed) {
     scheduleFtpClose();
     return ftpClient;
   }
 
-  const ftpParams = await getFtpParams();
+  const ftpParams = await getFtpParams(lang);
   const client = new ftp.Client();
   client.ftp.verbose = false;
 

@@ -82,5 +82,8 @@
     "sync_proj_settings": "Replicar configuraciones de Proyección y Pantallas",
     "auto_project_video": "Proyectar videos automáticamente al abrir",
     "pause_on_minimize": "Pausar video al minimizar",
-    "fullscreen_main_media": "Abrir medios a pantalla completa en la pantalla principal"
+    "fullscreen_main_media": "Abrir medios a pantalla completa en la pantalla principal",
+    "msg_lang_title": "Aviso de Idioma",
+    "msg_lang_download": "Al cambiar el idioma, es necesario descargar la base de datos y la configuración del nuevo idioma. ¿Deseas continuar?",
+    "msg_lang_reload": "Al cambiar el idioma, el programa se recargará. ¿Deseas continuar?"
 }

@@ -1,8 +1,69 @@
 <template>
   <transition name="fade-transition">
     <div v-if="isOpen" class="first-boot-overlay d-flex flex-column align-center justify-center bg-main">
-      <transition name="fade-transition">
-        <div v-if="showContent" class="text-center" style="max-width: 500px; width: 100%;">
+      <transition name="fade-transition" mode="out-in">
+        <div
+          v-if="showWelcomeScreen"
+          key="welcome"
+          class="text-center"
+          style="max-width: 500px; width: 100%;"
+        >
+          <img src="/ico/favicon.svg" width="80" class="mb-6 pulse-anim" />
+          <h2 class="text-h4 font-weight-bold mb-4" style="color: var(--sidebar-text);">
+            Bem-vindo / Bienvenido
+          </h2>
+          <p class="text-subtitle-1 mb-8" style="color: var(--sidebar-text-secondary);">
+            Escolha o idioma principal do aplicativo.<br />
+            Elige el idioma principal de la aplicación.
+          </p>
+
+          <div class="d-flex w-100 px-4 mt-2" style="gap: 16px;">
+            <v-card
+              flat
+              class="flex-grow-1 rounded-xl cursor-pointer transition-all lang-card"
+              style="background: var(--main-bg); border: 2px solid transparent !important; box-shadow: inset 0 0 0 1px var(--border-color);"
+              @click="selectLanguage('pt')"
+            >
+              <div class="py-6 d-flex flex-column align-center">
+                <div class="position-relative mb-3 transition-all lang-icon d-inline-flex justify-center align-center" style="color: grey; width: 48px; height: 48px;">
+                  <v-icon size="40">
+                    mdi-earth
+                  </v-icon>
+                  <span class="text-caption font-weight-black bg-main lang-badge" style="position: absolute; bottom: 0px; right: -4px; padding: 0 4px; border-radius: 4px; font-size: 0.65rem !important;">PT</span>
+                </div>
+                <span class="text-body-1 font-weight-bold text-center transition-all lang-text" style="color: var(--sidebar-text-secondary)">
+                  Português
+                </span>
+              </div>
+            </v-card>
+
+            <v-card
+              flat
+              class="flex-grow-1 rounded-xl cursor-pointer transition-all lang-card"
+              style="background: var(--main-bg); border: 2px solid transparent !important; box-shadow: inset 0 0 0 1px var(--border-color);"
+              @click="selectLanguage('es')"
+            >
+              <div class="py-6 d-flex flex-column align-center">
+                <div class="position-relative mb-3 transition-all lang-icon d-inline-flex justify-center align-center" style="color: grey; width: 48px; height: 48px;">
+                  <v-icon size="40">
+                    mdi-earth
+                  </v-icon>
+                  <span class="text-caption font-weight-black bg-main lang-badge" style="position: absolute; bottom: 0px; right: -4px; padding: 0 4px; border-radius: 4px; font-size: 0.65rem !important;">ES</span>
+                </div>
+                <span class="text-body-1 font-weight-bold text-center transition-all lang-text" style="color: var(--sidebar-text-secondary)">
+                  Español
+                </span>
+              </div>
+            </v-card>
+          </div>
+        </div>
+
+        <div
+          v-else-if="showContent"
+          key="loader"
+          class="text-center"
+          style="max-width: 500px; width: 100%;"
+        >
           <img src="/ico/favicon.svg" width="80" class="mb-6 pulse-anim" />
           <h2 class="text-h4 font-weight-bold mb-2" style="color: var(--sidebar-text);">
             {{ isFirstBoot ? $t('first_boot.title_prepare') : $t('first_boot.title_start') }}
@@ -53,6 +114,7 @@ export default defineComponent({
     return {
       isOpen: true as boolean,
       showContent: false as boolean,
+      showWelcomeScreen: false as boolean,
       progress: 0 as number,
       statusText: "" as string,
       isFirstBoot: false as boolean,
@@ -112,7 +174,12 @@ export default defineComponent({
           await window.electronAPI.clearSysData();
         }
         
-        await this.runFirstBootSync();
+        const pendingLang = window.sessionStorage.getItem("pending_language");
+        if (!pendingLang) {
+          this.showWelcomeScreen = true;
+        } else {
+          await this.runFirstBootSync();
+        }
       } else {
         this.isFirstBoot = false;
         this.statusText = this.$t("first_boot.status.loading_env");
@@ -132,6 +199,12 @@ export default defineComponent({
           }
         }, 100);
       }
+    },
+    async selectLanguage(lang: string) {
+      this.showWelcomeScreen = false;
+      this.$i18n.locale = lang;
+      window.sessionStorage.setItem("pending_language", lang);
+      await this.runFirstBootSync();
     },
     async fetchFromApi(file: string, retries = 5, delayMs = 1000): Promise<any> {
       try {
@@ -235,7 +308,9 @@ export default defineComponent({
           
           if (shouldDownloadDb) {
             try {
-              await window.electronAPI.downloadDatabase();
+              const currentLang = this.$i18n.locale || "pt";
+              await window.electronAPI.downloadDatabase(currentLang);
+              await window.electronAPI.extractLocalDb(currentLang);
             } catch (e: any) {
               throw new Error(this.$t("first_boot.errors.db_download_fail"));
             }
@@ -246,18 +321,18 @@ export default defineComponent({
           
           let success = false;
           try {
-            success = await window.electronAPI.extractLocalDb();
+            const currentLang = this.$i18n.locale || "pt";
+            success = await window.electronAPI.extractLocalDb(currentLang);
           } catch (e: any) {
             throw new Error(this.$t("first_boot.errors.extraction_fail"));
           }
 
           if (success) {
-            // @ts-ignore
             if (window.electronAPI.validateInstallation) {
               this.statusText = "Baixando capas dos álbuns...";
               this.progress = 0;
-              // @ts-ignore
-              const missing = await window.electronAPI.validateInstallation();
+              const currentLang = this.$i18n.locale || "pt";
+              const missing = await window.electronAPI.validateInstallation(currentLang);
               if (missing && missing.missingCovers.length > 0) {
                 const total = missing.missingCovers.length;
                 let current = 0;
@@ -270,9 +345,15 @@ export default defineComponent({
             }
 
             this.progress = 100;
-            await window.electronAPI.saveLocalDb("sfbc", { complete: true });
-            this.progress = 100;
-            this.statusText = "Concluindo...";
+            await window.electronAPI.saveLocalDb("sfbc", { complete: true, date: new Date().toISOString() });
+            
+            const pendingLang = window.sessionStorage.getItem("pending_language");
+            if (pendingLang) {
+              (this as any).$userdata.set("language", pendingLang);
+              window.sessionStorage.removeItem("pending_language");
+            }
+            
+            this.statusText = this.$t("first_boot.status.complete");
             
             setTimeout(() => {
               this.isOpen = false;
@@ -313,5 +394,26 @@ export default defineComponent({
   0% { transform: scale(1); opacity: 1; }
   50% { transform: scale(1.1); opacity: 0.8; }
   100% { transform: scale(1); opacity: 1; }
+}
+.lang-card {
+  transition: all 0.3s ease;
+}
+.lang-card:hover {
+  background: rgba(0,151,215,0.08) !important;
+  border: 2px solid var(--accent-blue) !important;
+  box-shadow: none !important;
+}
+.lang-card:hover .lang-icon {
+  color: var(--accent-blue) !important;
+}
+.lang-card:hover .lang-text {
+  color: var(--accent-blue) !important;
+}
+.lang-badge {
+  transition: all 0.3s ease;
+}
+.lang-card:hover .lang-badge {
+  background-color: #e5f4fb !important;
+  color: var(--accent-blue) !important;
 }
 </style>

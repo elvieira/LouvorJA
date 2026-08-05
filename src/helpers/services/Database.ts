@@ -18,7 +18,8 @@ export default {
       }
 
       if (isDesktop) {
-        const localData = await window.electronAPI.getLocalDb(file);
+        const lang = ($appdata.get("user_data.language") as string) || "pt";
+        const localData = await window.electronAPI?.getLocalDb(file, lang);
         if (localData) {
           $dev.write("Lendo BD do disco local (Offline)", file);
           $storage.set(cache_name, localData, "session");
@@ -82,7 +83,7 @@ export default {
       $storage.set(cache_name, data, "session");
 
       if (isDesktop) {
-        await window.electronAPI.saveLocalDb(file, data);
+        await window.electronAPI?.saveLocalDb(file, data);
         $dev.write("BD salvo no disco local para acesso offline:", file);
       }
 

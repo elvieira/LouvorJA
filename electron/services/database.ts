@@ -1,14 +1,14 @@
-import { ipcMain } from "electron";
+import { ipcMain, app } from "electron";
 import * as path from "path";
 import * as fs from "fs-extra";
 import DbExtractor from "./db-extractor";
 import { encryptData, decryptData } from "../utils/crypto";
 import { getFtpParams } from "../utils/ftp-client";
-import { sysDbPath, finalDbPath, flagPath } from "../config/constants";
+import { sysDbPath, finalDbPath } from "../config/constants";
 import * as ftp from "basic-ftp";
 
 export function registerDatabaseHandlers() {
-  ipcMain.handle("get-local-db", async (event, filename: string) => {
+  ipcMain.handle("get-local-db", async (event, filename: string, lang: string = "pt") => {
     try {
       const filePath = path.join(sysDbPath, `${filename}.bin`);
       if (fs.existsSync(filePath)) {
@@ -39,10 +39,11 @@ export function registerDatabaseHandlers() {
         return data;
       }
       
-      // Self-Healing Fallback: se o arquivo não existir fisicamente, tentamos recriá-lo a partir do database.db
-      if (fs.existsSync(finalDbPath)) {
-        console.log(`[self-healing] Arquivo ${filename} ausente. Tentando restaurar a partir do banco de dados...`);
-        const extractor = new DbExtractor(finalDbPath);
+      // Self-Healing Fallback: se o arquivo não existir fisicamente, tentamos recriá-lo a partir do database_${lang}.db
+      const dbPath = path.join(app.getPath("userData"), `database_${lang}.db`);
+      if (fs.existsSync(dbPath)) {
+        console.log(`[self-healing] Arquivo ${filename} ausente. Tentando restaurar a partir do banco de dados (${lang})...`);
+        const extractor = new DbExtractor(dbPath);
         const data = await extractor.repairFile(filename);
         if (data) {
           console.log(`[self-healing] Arquivo ${filename} restaurado com sucesso.`);
@@ -72,18 +73,17 @@ export function registerDatabaseHandlers() {
     }
   });
 
-  ipcMain.handle("extract-local-db", async (event) => {
+  ipcMain.handle("extract-local-db", async (event, lang: string = "pt") => {
     try {
-      if (!fs.existsSync(finalDbPath)) {
-        throw new Error(`Arquivo não encontrado em: ${finalDbPath}`);
+      const dbPath = path.join(app.getPath("userData"), `database_${lang}.db`);
+      if (!fs.existsSync(dbPath)) {
+        throw new Error(`Arquivo não encontrado em: ${dbPath}`);
       }
       
-      const extractor = new DbExtractor(finalDbPath);
+      const extractor = new DbExtractor(dbPath);
       await extractor.extract((data) => {
         event.sender.send("extract-progress", data);
       });
-      
-      // Arquivo database.db e flag mantidos como backup permanente para restauração automática (self-healing)
       
       return true;
     } catch (error) {
@@ -92,15 +92,17 @@ export function registerDatabaseHandlers() {
     }
   });
 
-  ipcMain.handle("download-database", async (event) => {
-    if (fs.existsSync(flagPath) && fs.existsSync(finalDbPath)) {
-      console.log("Banco de dados já foi baixado completamente. Pulando FTP.");
+  ipcMain.handle("download-database", async (event, lang: string = "pt") => {
+    const dbPath = path.join(app.getPath("userData"), `database_${lang}.db`);
+    if (fs.existsSync(dbPath)) {
+      console.log(`Banco de dados (${lang}) já existe localmente. Pulando FTP.`);
       return true;
     }
 
-    const ftpParams = await getFtpParams();
-    const langPrefix = (ftpParams["lang"] || "pt").toLowerCase();
-    const remotePath = `${(ftpParams["root"] || "/") + (ftpParams["root"]?.endsWith("/") ? "" : "/")}config/${langPrefix}_database.db`;
+    const ftpParams = await getFtpParams(lang);
+    const langPrefix = (ftpParams["lang"] || lang).toLowerCase();
+    const remoteFilename = `${langPrefix}_database.db`;
+    const remotePath = `${(ftpParams["root"] || "/") + (ftpParams["root"]?.endsWith("/") ? "" : "/")}config/${remoteFilename}`;
     const port = parseInt(ftpParams["port"] || "21");
 
     // Estratégias de conexão: tenta FTP normal primeiro, depois FTPS como fallback
@@ -145,11 +147,10 @@ export function registerDatabaseHandlers() {
         }
         
         // Se já existe localmente com tamanho correto, marca como completo
-        if (size > 0 && fs.existsSync(finalDbPath)) {
-          const localStat = fs.statSync(finalDbPath);
+        if (size > 0 && fs.existsSync(dbPath)) {
+          const localStat = fs.statSync(dbPath);
           if (localStat.size === size) {
-            console.log("Banco de dados local já existe e está completo. Pulando download e definindo flag.");
-            fs.writeFileSync(flagPath, "1");
+            console.log("Banco de dados local já existe e está completo. Pulando download.");
             client.close();
             return true;
           }
@@ -163,16 +164,15 @@ export function registerDatabaseHandlers() {
         });
 
         // Baixar para arquivo temporário para evitar corrupção em caso de falha
-        const tempPath = `${finalDbPath}.downloading`;
+        const tempPath = `${dbPath}.downloading`;
         await client.downloadTo(tempPath, remotePath);
         client.close();
 
         // Download completo: mover temp → final
-        if (fs.existsSync(finalDbPath)) {
-          fs.unlinkSync(finalDbPath);
+        if (fs.existsSync(dbPath)) {
+          fs.unlinkSync(dbPath);
         }
-        fs.renameSync(tempPath, finalDbPath);
-        fs.writeFileSync(flagPath, "1");
+        fs.renameSync(tempPath, dbPath);
         
         console.log(`[download-database] Download concluído com sucesso via ${strategy.name}`);
         return true;
@@ -211,12 +211,16 @@ export function registerDatabaseHandlers() {
   ipcMain.handle("import-old-installation", async () => {
     try {
       const oldPath = "C:\\Program Files (x86)\\Louvor JA\\config\\database.db";
-      fs.copyFileSync(oldPath, finalDbPath);
-      fs.writeFileSync(flagPath, "1");
+      const dbPath = path.join(app.getPath("userData"), "database_pt.db");
+      fs.copyFileSync(oldPath, dbPath);
       return true;
     } catch (error) {
       console.error("Erro ao importar versão antiga:", error);
       return false;
     }
+  });
+  ipcMain.handle("check-database-exists", async (event, lang: string = "pt") => {
+    const dbPath = path.join(app.getPath("userData"), `database_${lang}.db`);
+    return fs.existsSync(dbPath);
   });
 }

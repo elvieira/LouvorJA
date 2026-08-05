@@ -66,7 +66,8 @@
             "downloading_db": "Descargando base de datos...",
             "importing_old": "Importando datos de la versión antigua...",
             "import_failed": "Fallo al importar. Descargando del servidor...",
-            "extracting": "Extrayendo datos locales..."
+            "extracting": "Extrayendo datos locales...",
+            "complete": "Terminando..."
         },
         "errors": {
             "no_internet": "Sin conexión a internet. Verifica tu red e intenta nuevamente.",
