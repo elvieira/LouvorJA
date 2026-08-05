@@ -21,17 +21,31 @@
                 {{ t('proj_customization') }}
               </h2>
             </div>
-            <v-btn icon variant="text" @click="close">
-              <v-icon>mdi-close</v-icon>
-            </v-btn>
           </div>
           <p class="text-caption mb-0" style="color: var(--sidebar-text-secondary);">
             Ajuste o visual do relógio na tela
           </p>
         </div>
 
+        <!-- Preview Box -->
+        <div class="pa-4 flex-shrink-0" style="background: var(--main-bg, #f5f5f5); border-bottom: 1px solid rgba(0,0,0,0.05);">
+          <div
+            class="overflow-hidden rounded-lg mx-auto"
+            :style="{
+              aspectRatio: '16/9',
+              maxHeight: '180px',
+              width: '100%',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+              position: 'relative',
+              background: localConfig.bgColor
+            }"
+          >
+            <ClockScreen :preview="false" :preview-config="localConfig" />
+          </div>
+        </div>
+
         <!-- Scrollable Content -->
-        <div style="background: var(--main-bg, #f5f5f5); padding: 24px; max-height: 60vh; overflow-y: auto;" class="custom-scrollbar">
+        <div style="background: var(--main-bg, #f5f5f5); padding: 24px; max-height: 45vh; overflow-y: auto;" class="custom-scrollbar">
           <!-- Fundo da Projeção -->
           <v-card class="settings-card rounded-xl pa-2 mb-4" flat style="background: var(--card-bg, #ffffff); box-shadow: var(--shadow);">
             <v-card-text class="pa-4">
@@ -230,14 +244,24 @@
           >
             Restaurar Padrão
           </v-btn>
-          <v-btn
-            variant="flat"
-            color="primary"
-            class="rounded-lg text-none px-6 font-weight-bold flex-shrink-0"
-            @click="close"
-          >
-            Aplicar
-          </v-btn>
+          <div class="d-flex" style="gap: 12px;">
+            <v-btn
+              variant="tonal"
+              color="grey-darken-1"
+              class="rounded-lg text-none px-6 font-weight-bold flex-shrink-0"
+              @click="cancel"
+            >
+              Cancelar
+            </v-btn>
+            <v-btn
+              variant="flat"
+              color="primary"
+              class="rounded-lg text-none px-6 font-weight-bold flex-shrink-0"
+              @click="saveAndClose"
+            >
+              Aplicar
+            </v-btn>
+          </div>
         </v-card-actions>
       </v-card>
     </div>
@@ -247,11 +271,13 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import ModernColorPicker from "@/components/inputs/ModernColorPicker.vue";
+import ClockScreen from "./Screen.vue";
 
 export default defineComponent({
   name: "ClockConfigModal",
   components: {
     ModernColorPicker,
+    ClockScreen,
   },
   props: {
     modelValue: {
@@ -275,6 +301,7 @@ export default defineComponent({
       bgColor: "#000000",
       textColor: "#FFFFFF",
     },
+    initialConfig: null as any,
   }),
   computed: {
     internalValue: {
@@ -288,16 +315,11 @@ export default defineComponent({
   },
   watch: {
     internalValue(val: boolean) {
-      if (val) this.loadConfig();
+      if (val) {
+        this.loadConfig();
+      }
     },
-    localConfig: {
-      handler(val: any) {
-        const cloned = JSON.parse(JSON.stringify(val));
-        this.$userdata.set("clock_config", cloned);
-        this.$appdata.set("clock_config", cloned);
-      },
-      deep: true,
-    },
+    // We don't watch localConfig anymore to avoid changing the real background
   },
   methods: {
     loadConfig() {
@@ -313,6 +335,15 @@ export default defineComponent({
     },
     t(key: string): string {
       return this.$t(`modules.clock.${key}`);
+    },
+    saveAndClose() {
+      const cloned = JSON.parse(JSON.stringify(this.localConfig));
+      this.$appdata.set("clock_config", cloned);
+      this.$userdata.set("clock_config", cloned);
+      this.close();
+    },
+    cancel() {
+      this.close();
     },
     close() {
       this.internalValue = false;

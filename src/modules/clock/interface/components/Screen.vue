@@ -159,6 +159,10 @@ export default defineComponent({
       type: Boolean as PropType<boolean>,
       default: false,
     },
+    previewConfig: {
+      type: Object as PropType<any>,
+      default: null,
+    },
   },
   data: () => ({
     s_width: 0,
@@ -175,6 +179,7 @@ export default defineComponent({
   }),
   computed: {
     config(): any {
+      if (this.previewConfig) return this.previewConfig;
       // Allow receiving config from appdata directly
       const appConfig = this.$appdata ? this.$appdata.get("clock_config") : null;
       return appConfig || this.defaultConfig;

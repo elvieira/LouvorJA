@@ -3,10 +3,10 @@
     ref="container"
     class="d-flex align-center justify-center overflow-hidden"
     :style="{
-      background: config.background,
+      background: forceStandardColors ? '#000000' : config.background,
       width: '100%',
       height: height ? height + 'px' : '100%',
-      color: config.color,
+      color: forceStandardColors ? '#ffffff' : config.color,
     }"
   >
     <div v-if="bible" class="d-flex flex-column w-100 pa-4" :class="[config.align]">
@@ -20,7 +20,7 @@
         v-if="bible.scriptural_reference"
         class="mt-4 font-weight-bold"
         :class="[config.refAlign || 'text-right']"
-        :style="{ fontSize: `${fontSizePc(config.refFontSizePc)}px`, color: config.refColor }"
+        :style="{ fontSize: `${fontSizePc(config.refFontSizePc)}px`, color: forceStandardColors ? '#fb8c00' : config.refColor }"
       >
         {{ bible.scriptural_reference }}
       </div>
@@ -38,6 +38,10 @@ export default defineComponent({
     height: {
       type: Number as PropType<number>,
       default: 0,
+    },
+    forceStandardColors: {
+      type: Boolean as PropType<boolean>,
+      default: false,
     },
   },
   data: () => ({

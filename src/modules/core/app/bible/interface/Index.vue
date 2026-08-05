@@ -128,7 +128,7 @@
                   class="text-white"
                 />
               </div>
-              <Screen />
+              <Screen :force-standard-colors="true" />
             </div>
           </template>
         </BibleVerses>

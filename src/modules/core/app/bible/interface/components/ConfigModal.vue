@@ -18,15 +18,42 @@
                 {{ t('proj_customization') }}
               </h2>
             </div>
-            <v-btn icon variant="text" @click="close">
-              <v-icon>mdi-close</v-icon>
-            </v-btn>
           </div>
           <p class="text-caption mb-0" style="color: var(--sidebar-text-secondary);">
             Ajuste o visual da bíblia na tela
           </p>
         </div>
-        <div style="background: var(--main-bg, #f5f5f5); padding: 24px; max-height: 60vh; overflow-y: auto;">
+
+        <!-- Preview Box -->
+        <div class="pa-4 flex-shrink-0" style="background: var(--main-bg, #f5f5f5); border-bottom: 1px solid rgba(0,0,0,0.05);">
+          <div
+            class="d-flex flex-column align-center justify-center overflow-hidden rounded-lg mx-auto"
+            :style="{
+              background: localConfig.background,
+              color: localConfig.color,
+              aspectRatio: '16/9',
+              maxHeight: '180px',
+              width: '100%',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+            }"
+          >
+            <div class="d-flex flex-column w-100 pa-4" :class="[localConfig.align]">
+              <div :style="{ fontSize: `${localConfig.fontSizePc * 0.9}px`, lineHeight: '1.4' }">
+                No princípio criou Deus os céus e a terra.
+              </div>
+              <div
+                class="mt-2 font-weight-bold"
+                :class="[localConfig.refAlign || 'text-right']"
+                :style="{ fontSize: `${localConfig.refFontSizePc * 0.9}px`, color: localConfig.refColor }"
+              >
+                Gênesis 1:1
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Scrollable Content -->
+        <div style="background: var(--main-bg, #f5f5f5); padding: 24px; max-height: 45vh; overflow-y: auto;">
           <!-- Fundo da Projeção -->
           <v-card class="settings-card rounded-xl pa-2 mb-6" flat style="background: var(--card-bg, #ffffff); box-shadow: var(--shadow);">
             <v-card-text class="pa-4">
@@ -365,14 +392,24 @@
           >
             Restaurar Padrão
           </v-btn>
-          <v-btn
-            variant="flat"
-            color="primary"
-            class="rounded-lg text-none px-6 font-weight-bold flex-shrink-0"
-            @click="saveAndClose"
-          >
-            Aplicar
-          </v-btn>
+          <div class="d-flex" style="gap: 12px;">
+            <v-btn
+              variant="tonal"
+              color="grey-darken-1"
+              class="rounded-lg text-none px-6 font-weight-bold flex-shrink-0"
+              @click="cancel"
+            >
+              Cancelar
+            </v-btn>
+            <v-btn
+              variant="flat"
+              color="primary"
+              class="rounded-lg text-none px-6 font-weight-bold flex-shrink-0"
+              @click="saveAndClose"
+            >
+              Aplicar
+            </v-btn>
+          </div>
         </v-card-actions>
       </v-card>
     </div>
@@ -414,6 +451,7 @@ export default defineComponent({
       refColor: "#fb8c00",
       refAlign: "text-right",
     } as Record<string, any>,
+    initialConfig: null as Record<string, any> | null,
   }),
   computed: {
     visible: {
@@ -431,12 +469,7 @@ export default defineComponent({
         this.loadConfig();
       }
     },
-    localConfig: {
-      handler(val: Record<string, any>) {
-        this.$appdata.set("modules.bible.config", JSON.parse(JSON.stringify(val)));
-      },
-      deep: true,
-    },
+    // We don't watch localConfig anymore to avoid changing the real background
   },
   mounted() {
     this.loadConfig();
@@ -457,8 +490,11 @@ export default defineComponent({
       this.localConfig = { ...this.defaultConfig };
     },
     saveAndClose() {
-      this.$appdata.set("modules.bible.config", this.localConfig);
-      this.$userdata.set("bible_config", this.localConfig);
+      this.$appdata.set("modules.bible.config", JSON.parse(JSON.stringify(this.localConfig)));
+      this.$userdata.set("bible_config", JSON.parse(JSON.stringify(this.localConfig)));
+      this.close();
+    },
+    cancel() {
       this.close();
     },
     close() {
