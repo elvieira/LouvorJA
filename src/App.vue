@@ -1,8 +1,8 @@
 <template>
   <v-app id="app-container">
     <AppTitlebar />
-    <AppAlert />
-    <AppSnackbar />
+    <AppAlert v-if="!isPopupWindow" />
+    <AppSnackbar v-if="!isPopupWindow" />
     <FirstBootLoader @boot-complete="isAppReady = true" />
     <template v-if="isAppReady">
       <AppLoading />
@@ -36,6 +36,7 @@ export default {
   data() {
     return {
       isAppReady: false,
+      isPopupWindow: false,
     };
   },
   watch: {
@@ -55,9 +56,9 @@ export default {
   async mounted() {
     window.addEventListener("keydown", this.handleGlobalKeydown);
     
-    const isPopup = window.location.href.includes("popup");
+    this.isPopupWindow = window.location.href.includes("popup");
     
-    if (!isPopup && window.electronAPI && window.electronAPI.isElectron) {
+    if (!this.isPopupWindow && window.electronAPI && window.electronAPI.isElectron) {
       const isComplete = await window.electronAPI.getLocalDb("sfbc");
       if (isComplete && isComplete.complete) {
         this.isAppReady = true;

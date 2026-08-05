@@ -149,6 +149,7 @@ export function createWindow(): void {
     const windowConfig: BrowserWindowConstructorOptions = {
       width: 800,
       height: 600,
+      backgroundColor: "#000000",
       webPreferences: {
         preload: path.join(__dirname, "preload.js"),
         contextIsolation: true,
@@ -194,6 +195,8 @@ export function createWindow(): void {
 
   mainWindow.webContents.on("did-create-window", (childWindow) => {
     if (!childWindow.isResizable()) {
+      childWindow.setOpacity(0);
+      
       childWindow.once("ready-to-show", () => {
         if (process.platform === "win32") {
           const bounds = childWindow.getBounds();
@@ -204,6 +207,34 @@ export function createWindow(): void {
           childWindow.setAlwaysOnTop(true, "screen-saver");
         } else {
           childWindow.setFullScreen(true);
+        }
+
+        let opacity = 0;
+        const fadeIn = setInterval(() => {
+          if (opacity >= 1) {
+            clearInterval(fadeIn);
+            childWindow.setOpacity(1);
+          } else {
+            opacity += 0.05;
+            childWindow.setOpacity(opacity);
+          }
+        }, 16);
+      });
+
+      childWindow.on("close", (e) => {
+        if (childWindow.getOpacity() > 0) {
+          e.preventDefault();
+          let opacity = 1;
+          const fadeOut = setInterval(() => {
+            if (opacity <= 0) {
+              clearInterval(fadeOut);
+              childWindow.setOpacity(0);
+              childWindow.destroy();
+            } else {
+              opacity -= 0.1;
+              childWindow.setOpacity(opacity);
+            }
+          }, 16);
         }
       });
     }
