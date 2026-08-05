@@ -216,7 +216,7 @@ export default defineComponent({
                   text: this.$t("first_boot.old_version.text"),
                   translate: false,
                   center: true,
-                }, (resp: string) => {
+                }, (resp: any) => {
                   resolve(resp === "yes");
                 });
               });
@@ -252,6 +252,23 @@ export default defineComponent({
           }
 
           if (success) {
+            // @ts-ignore
+            if (window.electronAPI.validateInstallation) {
+              this.statusText = "Baixando capas dos álbuns...";
+              this.progress = 0;
+              // @ts-ignore
+              const missing = await window.electronAPI.validateInstallation();
+              if (missing && missing.missingCovers.length > 0) {
+                const total = missing.missingCovers.length;
+                let current = 0;
+                for (const file of missing.missingCovers) {
+                  await window.electronAPI.downloadMedia("", "covers", file);
+                  current++;
+                  this.progress = Math.round((current / total) * 100);
+                }
+              }
+            }
+
             this.progress = 100;
             await window.electronAPI.saveLocalDb("sfbc", { complete: true });
             this.progress = 100;
