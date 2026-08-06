@@ -32,14 +32,19 @@
                       mdi-cloud-download
                     </v-icon> {{ $t('modules.sync.download_all') }}
                   </v-btn>
-                  <div 
+                  <v-btn 
                     v-else-if="categoriesWithAlbums.length > 0 && !isDownloadingAll && hasNoIdleAlbums"
-                    class="d-flex align-center text-success font-weight-medium text-body-2 mr-4"
+                    color="success" 
+                    variant="tonal" 
+                    height="36"
+                    class="text-none font-weight-bold rounded-lg px-4 mr-3"
+                    style="opacity: 0.9; pointer-events: none;"
+                    :ripple="false"
                   >
-                    <v-icon start size="18" class="mr-1">
+                    <v-icon start size="18">
                       mdi-check-all
                     </v-icon> {{ $t('modules.sync.all_downloaded') }}
-                  </div>
+                  </v-btn>
                   <v-btn 
                     v-else-if="categoriesWithAlbums.length > 0 && isDownloadingAll"
                     color="error" 

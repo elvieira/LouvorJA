@@ -1,7 +1,6 @@
 import $alert from "@/helpers/ui/Alert";
 import $path from "@/helpers/utils/Path";
 import $dev from "@/helpers/config/Dev";
-import $storage from "@/helpers/services/Storage";
 import $appdata from "@/helpers/config/AppData";
 
 const isDesktop = !!(window.electronAPI && window.electronAPI.isElectron);
