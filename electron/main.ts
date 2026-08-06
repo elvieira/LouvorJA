@@ -1,5 +1,6 @@
 import { app } from "electron";
 import * as fs from "fs-extra";
+import * as path from "path";
 import { setupLifecycle } from "./core/lifecycle";
 import { registerIpcHandlers } from "./ipc";
 import { sysDbPath, mediaPath, coversPath, musicPath, slidesPath, oldDbPath } from "./config/constants";
@@ -13,11 +14,18 @@ if (fs.existsSync(oldDbPath)) {
 }
 
 // Migração da pasta antiga 'music' para 'musics'
-const oldMusicPath = require("path").join(mediaPath, "music");
-if (fs.existsSync(oldMusicPath) && !fs.existsSync(musicPath)) {
+const oldMusicPath = path.join(mediaPath, "music");
+if (fs.existsSync(oldMusicPath)) {
   try {
-    fs.renameSync(oldMusicPath, musicPath);
-  } catch (_e) { console.error("Rename old music folder error:", _e); }
+    if (!fs.existsSync(musicPath)) {
+      // Se a nova não existir, apenas renomeia (instantâneo)
+      fs.renameSync(oldMusicPath, musicPath);
+    } else {
+      // Se ambas existirem, mescla os arquivos e remove a antiga
+      fs.copySync(oldMusicPath, musicPath, { overwrite: false });
+      fs.removeSync(oldMusicPath);
+    }
+  } catch (_e) { console.error("Migrate old music folder error:", _e); }
 }
 
 // Garante que todas as pastas essenciais existam ao inicializar
