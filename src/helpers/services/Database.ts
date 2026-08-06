@@ -9,20 +9,12 @@ const isDesktop = !!(window.electronAPI && window.electronAPI.isElectron);
 export default {
   async get<T = unknown>(file: string): Promise<T | null> {
     try {
-      const cache_name = `db:${file}`;
-      const cache = $storage.get(cache_name, null, "session");
-
-      if (cache) {
-        $dev.write("Lendo BD do cache", file);
-        return cache as T;
-      }
 
       if (isDesktop) {
         const lang = ($appdata.get("user_data.language") as string) || "pt";
         const localData = await window.electronAPI?.getLocalDb(file, lang);
         if (localData) {
           $dev.write("Lendo BD do disco local (Offline)", file);
-          $storage.set(cache_name, localData, "session");
           return localData as T;
         }
         $dev.write("BD local não encontrado. Fallback web desabilitado para o desktop:", file);
@@ -79,8 +71,7 @@ export default {
 
       if (!data) throw new Error("Falha ao baixar dados após várias tentativas");
 
-      $dev.write("Salvando BD em cache", file);
-      $storage.set(cache_name, data, "session");
+
 
       if (isDesktop) {
         await window.electronAPI?.saveLocalDb(file, data);

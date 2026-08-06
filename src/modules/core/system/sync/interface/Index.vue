@@ -18,54 +18,64 @@
                   {{ $t('modules.sync.title') }}
                 </h2>
               </div>
-              <v-btn icon variant="text" @click="closeModule">
-                <v-icon>mdi-close</v-icon>
-                <v-tooltip
-                  activator="parent"
-                  location="bottom"
-                  open-delay="300"
-                  content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+              <div class="d-flex align-center">
+                <transition name="fade" mode="out-in">
+                  <v-btn 
+                    v-if="categoriesWithAlbums.length > 0 && !isDownloadingAll && !hasNoIdleAlbums"
+                    color="primary" 
+                    variant="flat" 
+                    height="36"
+                    class="text-none font-weight-bold rounded-lg px-4 mr-3"
+                    @click="downloadAllAlbums"
+                  >
+                    <v-icon start size="18">
+                      mdi-cloud-download
+                    </v-icon> {{ $t('modules.sync.download_all') }}
+                  </v-btn>
+                  <div 
+                    v-else-if="categoriesWithAlbums.length > 0 && !isDownloadingAll && hasNoIdleAlbums"
+                    class="d-flex align-center text-success font-weight-medium text-body-2 mr-4"
+                  >
+                    <v-icon start size="18" class="mr-1">
+                      mdi-check-all
+                    </v-icon> {{ $t('modules.sync.all_downloaded') }}
+                  </div>
+                  <v-btn 
+                    v-else-if="categoriesWithAlbums.length > 0 && isDownloadingAll"
+                    color="error" 
+                    variant="flat" 
+                    height="36"
+                    class="text-none font-weight-bold rounded-lg px-4 mr-3"
+                    @click="cancelAll"
+                  >
+                    <v-icon start size="18">
+                      mdi-close-circle-multiple
+                    </v-icon> {{ $t('modules.sync.cancel_all') }}
+                  </v-btn>
+                </transition>
+                <v-btn
+                  icon
+                  variant="text"
+                  size="small"
+                  @click="closeModule"
                 >
-                  {{ $t('modules.sync.close') }}
-                </v-tooltip>
-              </v-btn>
+                  <v-icon>mdi-close</v-icon>
+                  <v-tooltip
+                    activator="parent"
+                    location="bottom"
+                    open-delay="300"
+                    content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+                  >
+                    {{ $t('modules.sync.close') }}
+                  </v-tooltip>
+                </v-btn>
+              </div>
             </div>
             <p class="text-caption mb-0" style="color: var(--sidebar-text-secondary);">
               {{ $t('modules.sync.description') }}
             </p>
           </div>
-          
-          <div v-if="categoriesWithAlbums.length > 0" class="px-6 pb-2 pt-2 d-flex w-100" style="gap: 16px;">
-            <v-btn 
-              v-if="!isDownloadingAll"
-              color="primary" 
-              variant="flat" 
-              class="text-none font-weight-bold flex-grow-1 rounded-lg"
-              height="44"
-              elevation="2"
-              :disabled="hasNoIdleAlbums"
-              @click="downloadAllAlbums"
-            >
-              <v-icon start>
-                mdi-download-multiple
-              </v-icon> {{ $t('modules.sync.download_all') }}
-            </v-btn>
-            <v-btn 
-              v-else
-              color="error" 
-              variant="flat" 
-              class="text-none font-weight-bold flex-grow-1 rounded-lg"
-              height="44"
-              elevation="2"
-              @click="cancelAll"
-            >
-              <v-icon start>
-                mdi-close-circle-multiple
-              </v-icon> {{ $t('modules.sync.cancel_all') }}
-            </v-btn>
-          </div>
-
-          <v-divider style="opacity: 0.1;" class="mx-6 mb-2" />
+          <v-divider style="opacity: 0.1;" class="mx-6 mt-3 mb-1" />
 
           <div class="pa-6 pt-2 flex-grow-1" style="overflow-y: auto;">
             <div v-for="cat in categoriesWithAlbums" :key="cat.id_category" class="mb-4">
@@ -174,7 +184,7 @@ export default defineComponent({
             name: this.$t("modules.sync.hymnal_name"),
             subtitle: this.$t("modules.sync.hymnal_subtitle", { count: hymnal.length }),
             coverUrl: this.$i18n.locale === "es" ? this.hymnal1996Img : this.hymnalImg,
-            status: downloadedManifest.includes("hymnal") ? "downloaded" : "idle",
+            status: downloadedManifest.includes(`hymnal_${this.$i18n.locale}`) || (this.$i18n.locale === "pt" && downloadedManifest.includes("hymnal")) ? "downloaded" : "idle",
             progress: 0,
             totalCount: 0,
             downloadedCount: 0,
@@ -188,7 +198,7 @@ export default defineComponent({
             name: this.$t("modules.sync.hymnal_1996_name"),
             subtitle: this.$t("modules.sync.hymnal_1996_subtitle", { count: hymnal1996.length }),
             coverUrl: this.hymnal1996Img,
-            status: downloadedManifest.includes("hymnal_1996") ? "downloaded" : "idle",
+            status: downloadedManifest.includes(`hymnal_1996_${this.$i18n.locale}`) || (this.$i18n.locale === "pt" && downloadedManifest.includes("hymnal_1996")) ? "downloaded" : "idle",
             progress: 0,
             totalCount: 0,
             downloadedCount: 0,
@@ -354,7 +364,7 @@ export default defineComponent({
         album.totalCount = allMediaFiles.length;
         if (album.totalCount === 0) {
           album.status = "downloaded";
-          await this.markAlbumDownloaded(album.id_album);
+          await this.markAlbumDownloaded(album.id_album, album.isHymnal);
           return;
         }
         
@@ -392,6 +402,7 @@ export default defineComponent({
             downloaded++;
             album.downloadedCount = downloaded;
             album.progress = 10 + Math.floor((downloaded / album.totalCount) * 90);
+            album.progressText = `${this.$t("modules.sync.downloading")} (${downloaded}/${album.totalCount})`;
           }));
         }
         
@@ -417,7 +428,7 @@ export default defineComponent({
             console.warn(`[Sync] Coletânea baixada com ${totalErrors} arquivo(s) faltando.`);
           }
           album.status = "downloaded";
-          await this.markAlbumDownloaded(album.id_album);
+          await this.markAlbumDownloaded(album.id_album, album.isHymnal);
         }
       } catch (error) {
         console.error("Erro ao baixar album:", error);
@@ -427,15 +438,17 @@ export default defineComponent({
         this.checkGlobalDownloadState();
       }
     },
-    async markAlbumDownloaded(albumId: string | number) {
+    async markAlbumDownloaded(albumId: string | number, isHymnal = false) {
       const downloadedManifest = (await window.electronAPI?.getLocalDb("dla")) as any[] || [];
-      if (!downloadedManifest.includes(albumId)) {
-        downloadedManifest.push(albumId);
+      const idToSave = isHymnal ? `${albumId}_${this.$i18n.locale}` : albumId;
+      if (!downloadedManifest.includes(idToSave)) {
+        downloadedManifest.push(idToSave);
         await window.electronAPI?.saveLocalDb("dla", downloadedManifest);
       }
     },
     async downloadAllAlbums() {
       if (this.hasNoIdleAlbums) return;
+      this.cancelToken = false;
       this.isDownloadingAll = true;
       this.$appdata.set("sync_is_downloading", true);
       
@@ -475,7 +488,17 @@ export default defineComponent({
       }, async (resp: string) => {
         if (resp === "yes") {
           let downloadedManifest = (await window.electronAPI?.getLocalDb("dla")) as any[] || [];
-          downloadedManifest = downloadedManifest.filter((id: string | number) => id !== album.id_album);
+          
+          if (album.isHymnal) {
+            const specificId = `${album.id_album}_${this.$i18n.locale}`;
+            downloadedManifest = downloadedManifest.filter((id: string | number) => id !== specificId);
+            if (this.$i18n.locale === "pt") {
+              downloadedManifest = downloadedManifest.filter((id: string | number) => id !== album.id_album);
+            }
+          } else {
+            downloadedManifest = downloadedManifest.filter((id: string | number) => id !== album.id_album);
+          }
+          
           await window.electronAPI?.saveLocalDb("dla", downloadedManifest);
           
           album.status = "idle";

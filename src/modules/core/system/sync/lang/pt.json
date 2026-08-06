@@ -4,6 +4,7 @@
   "description": "Baixe as coletâneas para poder reproduzir as músicas.",
   "download_all": "Baixar Todas",
   "cancel_all": "Cancelar Todas",
+  "all_downloaded": "Todas as coletâneas foram baixadas",
   "downloading": "Baixando...",
   "download": "Baixar",
   "cancel": "Cancelar",

@@ -46,23 +46,30 @@
       <v-btn
         v-if="album.status === 'idle'"
         color="primary"
-        variant="tonal"
+        variant="text"
         size="small"
-        class="text-none font-weight-bold rounded-lg px-4"
+        icon
+        class="rounded-lg"
         @click="$emit('download', album)"
       >
-        <v-icon start size="16">
-          mdi-download
-        </v-icon> {{ $t('modules.sync.download') }}
+        <v-icon>mdi-download</v-icon>
+        <v-tooltip
+          activator="parent"
+          location="top"
+          open-delay="300"
+          content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+        >
+          {{ $t('modules.sync.download') }}
+        </v-tooltip>
       </v-btn>
     
       <v-btn
         v-else-if="album.status === 'downloading'"
         color="error"
-        variant="tonal"
+        variant="text"
         size="small"
-        class="rounded-lg ml-2"
         icon
+        class="rounded-lg ml-2"
         @click="$emit('cancel', album)"
       >
         <v-icon>mdi-close</v-icon>
@@ -77,21 +84,17 @@
       </v-btn>
 
       <div v-else-if="album.status === 'downloaded'" class="d-flex align-center">
-        <v-chip
-          color="success"
-          variant="tonal"
-          size="small"
-          class="font-weight-bold mr-2"
-        >
-          <v-icon start size="14">
+        <div class="text-success font-weight-medium text-caption mr-3 d-flex align-center">
+          <v-icon start size="14" class="mr-1">
             mdi-check-circle
           </v-icon> {{ $t('modules.sync.downloaded') }}
-        </v-chip>
+        </div>
         <v-btn
           color="error"
           variant="text"
           size="small"
           icon
+          class="rounded-lg"
           @click="$emit('delete', album)"
         >
           <v-icon>mdi-delete</v-icon>

@@ -5,12 +5,17 @@ autoUpdater.autoDownload = false;
 autoUpdater.autoInstallOnAppQuit = true;
 
 export function setupUpdater() {
-  const mainWin = BrowserWindow.getAllWindows()[0];
-  if (!mainWin) return;
+  const notifyWindows = (channel: string, data: unknown) => {
+    BrowserWindow.getAllWindows().forEach((win) => {
+      if (!win.isDestroyed()) {
+        win.webContents.send(channel, data);
+      }
+    });
+  };
 
   autoUpdater.on("update-available", (info) => {
     console.log("Update available:", info.version);
-    mainWin.webContents.send("update-available", {
+    notifyWindows("update-available", {
       version: info.version,
       releaseDate: info.releaseDate,
       releaseNotes: info.releaseNotes,
@@ -19,13 +24,13 @@ export function setupUpdater() {
 
   autoUpdater.on("update-not-available", (info) => {
     console.log("No update available. Current version is up-to-date.");
-    mainWin.webContents.send("update-not-available", {
+    notifyWindows("update-not-available", {
       version: info.version,
     });
   });
 
   autoUpdater.on("download-progress", (progress) => {
-    mainWin.webContents.send("update-download-progress", {
+    notifyWindows("update-download-progress", {
       percent: Math.round(progress.percent),
       bytesPerSecond: progress.bytesPerSecond,
       transferred: progress.transferred,
@@ -35,14 +40,14 @@ export function setupUpdater() {
 
   autoUpdater.on("update-downloaded", (info) => {
     console.log("Update downloaded:", info.version);
-    mainWin.webContents.send("update-downloaded", {
+    notifyWindows("update-downloaded", {
       version: info.version,
     });
   });
 
   autoUpdater.on("error", (error) => {
     console.error("Auto-updater error:", error.message);
-    mainWin.webContents.send("update-error", {
+    notifyWindows("update-error", {
       message: error.message,
     });
   });
@@ -62,7 +67,7 @@ export function registerUpdaterHandlers() {
       return result;
     } catch (error: unknown) {
       console.error("Check for updates error:", (error as Error).message);
-      return null;
+      throw error;
     }
   });
 

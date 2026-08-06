@@ -1,5 +1,6 @@
 import $storage from "@/helpers/services/Storage";
 import $appdata from "@/helpers/config/AppData";
+import $userdata from "@/helpers/config/UserData";
 
 const RECENT_COLLECTIONS_KEY = "history_recent_collections";
 const TOP_SONGS_KEY = "history_top_songs";
@@ -24,12 +25,19 @@ export interface SongPlay {
   last_played?: number;
 }
 
+const getHistoryKey = (base: string) => {
+  const loc = $userdata.get("language") || "pt";
+  return loc === "pt" ? base : `${base}_${loc}`;
+};
+
 setTimeout(() => {
-  if (!$appdata.exists(RECENT_COLLECTIONS_KEY)) {
-    $appdata.set(RECENT_COLLECTIONS_KEY, $storage.get(RECENT_COLLECTIONS_KEY, []));
+  const recentKey = getHistoryKey(RECENT_COLLECTIONS_KEY);
+  const topKey = getHistoryKey(TOP_SONGS_KEY);
+  if (!$appdata.exists(recentKey)) {
+    $appdata.set(recentKey, $storage.get(recentKey, []));
   }
-  if (!$appdata.exists(TOP_SONGS_KEY)) {
-    $appdata.set(TOP_SONGS_KEY, $storage.get(TOP_SONGS_KEY, {}));
+  if (!$appdata.exists(topKey)) {
+    $appdata.set(topKey, $storage.get(topKey, {}));
   }
 }, 0);
 
@@ -40,7 +48,8 @@ export default {
   addRecentCollection(data: RecentCollection) {
     if (!data || !data.id) return;
 
-    const collections = $storage.get(RECENT_COLLECTIONS_KEY, []) as RecentCollection[];
+    const recentKey = getHistoryKey(RECENT_COLLECTIONS_KEY);
+    const collections = $storage.get(recentKey, []) as RecentCollection[];
 
     const filtered = collections.filter(
       (item) => !(item.id === data.id && item.type === data.type),
@@ -57,15 +66,16 @@ export default {
 
     const trimmed = filtered.slice(0, MAX_RECENT_COLLECTIONS);
 
-    $storage.set(RECENT_COLLECTIONS_KEY, trimmed);
-    $appdata.set(RECENT_COLLECTIONS_KEY, trimmed);
+    $storage.set(recentKey, trimmed);
+    $appdata.set(recentKey, trimmed);
   },
 
   /**
    * Retorna as últimas coletâneas/módulos abertos (reativo).
    */
   getRecentCollections(): RecentCollection[] {
-    return $appdata.get(RECENT_COLLECTIONS_KEY, $storage.get(RECENT_COLLECTIONS_KEY, [])) as RecentCollection[];
+    const recentKey = getHistoryKey(RECENT_COLLECTIONS_KEY);
+    return $appdata.get(recentKey, $storage.get(recentKey, [])) as RecentCollection[];
   },
 
   addSongPlay(data: SongPlay) {
@@ -91,25 +101,30 @@ export default {
       };
     }
 
-    $storage.set(TOP_SONGS_KEY, songs);
-    $appdata.set(TOP_SONGS_KEY, songs);
+    const topKey = getHistoryKey(TOP_SONGS_KEY);
+    $storage.set(topKey, songs);
+    $appdata.set(topKey, songs);
   },
 
   getTopSongs(limit = MAX_TOP_SONGS): SongPlay[] {
-    const songs = $appdata.get(TOP_SONGS_KEY, $storage.get(TOP_SONGS_KEY, {}));
+    const topKey = getHistoryKey(TOP_SONGS_KEY);
+    const songs = $appdata.get(topKey, $storage.get(topKey, {}));
     return Object.values(songs as Record<string, SongPlay>)
       .sort((a, b) => (b.play_count || 0) - (a.play_count || 0))
       .slice(0, limit);
   },
 
   _getAllSongPlays(): Record<string, SongPlay> {
-    return $storage.get(TOP_SONGS_KEY, {}) as Record<string, SongPlay>;
+    const topKey = getHistoryKey(TOP_SONGS_KEY);
+    return $storage.get(topKey, {}) as Record<string, SongPlay>;
   },
 
   clearAll() {
-    $storage.set(RECENT_COLLECTIONS_KEY, []);
-    $storage.set(TOP_SONGS_KEY, {});
-    $appdata.set(RECENT_COLLECTIONS_KEY, []);
-    $appdata.set(TOP_SONGS_KEY, {});
+    const recentKey = getHistoryKey(RECENT_COLLECTIONS_KEY);
+    const topKey = getHistoryKey(TOP_SONGS_KEY);
+    $storage.set(recentKey, []);
+    $storage.set(topKey, {});
+    $appdata.set(recentKey, []);
+    $appdata.set(topKey, {});
   },
 };

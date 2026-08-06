@@ -1,7 +1,7 @@
 <template>
   <v-slide-y-reverse-transition>
     <div v-if="module?.show" class="module-full-page dashboard-home d-flex flex-column">
-      <ModuleHeader :title="t('title')" :icon="module.icon">
+      <ModuleHeader :title="t('title')" :image="headerImage">
         <div class="search-bar ml-4" style="max-width: 400px; flex: 1;">
           <v-text-field
             v-model="search"
@@ -86,6 +86,8 @@ import manifest from "../manifest";
 import LTable from "@/components/DataTable.vue";
 import LMusicMenuTable from "@/components/MusicMenuTable.vue";
 import ModuleHeader from "@/components/ModuleHeader.vue";
+import hymnalImg from "@/assets/images/hymnal.jpeg";
+import hymnal1996Img from "@/assets/images/hymnal_1996.jpeg";
 
 export default defineComponent({
   name: "ModuleView",
@@ -101,6 +103,8 @@ export default defineComponent({
       data: { filter_count: 0, data: [] } as any,
       scroll: {} as any,
       has_scroll: false,
+      hymnalImg,
+      hymnal1996Img,
     };
   },
   computed: {
@@ -113,6 +117,13 @@ export default defineComponent({
       return this.$modules.get(this.module_id);
     },
     /* COMPUTEDS OBRIGATÓRIAS - FIM */
+
+    headerImage() {
+      if (this.$i18n.locale === "es") {
+        return this.hymnal1996Img;
+      }
+      return this.hymnalImg;
+    },
 
     classform() {
       return {

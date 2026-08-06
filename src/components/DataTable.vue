@@ -25,7 +25,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted } from "vue";
+import { ref, shallowRef, watch, onMounted } from "vue";
 import { useDatabase, useString } from "@/composables/useHelpers";
 import { useI18n } from "vue-i18n";
 
@@ -56,9 +56,9 @@ const database = useDatabase();
 const stringHelper = useString();
 const { t } = useI18n();
 
-const all_data = ref<any[]>([]);
-const filter_data = ref<any[]>([]);
-const data = ref<any[]>([]);
+const all_data = shallowRef<any[]>([]);
+const filter_data = shallowRef<any[]>([]);
+const data = shallowRef<any[]>([]);
 const limit = ref(0);
 const error = ref<string | null>(null);
 const last_filter = ref<Record<string, any>>({});
@@ -223,6 +223,8 @@ watch(() => props.scroll, () => {
 });
 
 onMounted(async () => {
+  // Yield thread to allow entry transitions to play smoothly before parsing large datasets
+  await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
   await loadData();
 });
 </script>

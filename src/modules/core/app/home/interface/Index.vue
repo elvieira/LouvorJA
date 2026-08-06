@@ -71,7 +71,7 @@
                       {{ item.name }}
                     </h4>
                     <p class="music-artist" style="margin-top: 4px;">
-                      {{ item.albums ? item.albums.map(a => a.name).join(', ') : '' }}
+                      {{ item.albums ? item.albums.map((a: any) => a.name).join(', ') : '' }}
                     </p>
                   </td>
                   <td class="music-duration pr-4" style="border-bottom: none;">
@@ -239,7 +239,7 @@ export default defineComponent({
     },
     
     displayCollections(): any[] {
-      const recentCollections = this.$history.getRecentCollections();
+      const recentCollections = (this as any).$history.getRecentCollections();
       
       return recentCollections.map((item: any) => {
         const dynInfo = this.dynamicCollectionInfo[item.id] || {};
@@ -253,7 +253,7 @@ export default defineComponent({
     },
     
     topSongs(): any[] {
-      return this.$history.getTopSongs(20);
+      return (this as any).$history.getTopSongs(20);
     },
     
     compact(): boolean {
@@ -373,9 +373,10 @@ export default defineComponent({
         collection.module === "hymnal" || 
         collection.id === "hasd" ||
         name.includes("Hinário") ||
+        name.includes("Himnario") ||
         collection.url_image === "/covers/hasd.bmp"
       ) {
-        return this.hymnalImg;
+        return this.$i18n.locale === "es" ? this.hymnal1996Img : this.hymnalImg;
       }
       
       if (collection.local_url_image) {
@@ -411,6 +412,34 @@ export default defineComponent({
     },
     
     openCollection(collection: any) {
+      const name = (this.getCollectionName(collection) || "").toLowerCase();
+      const id = String(collection.id).toLowerCase();
+      const module = String(collection.module || "").toLowerCase();
+      const img = String(collection.url_image || "").toLowerCase();
+
+      const is1996 = id === "hymnal_1996" || 
+        module === "hymnal_1996" || 
+        id === "ha1996" ||
+        name.includes("1996") ||
+        img.includes("1996");
+
+      const isNormal = id === "hymnal" || 
+        module === "hymnal" || 
+        id === "hasd" ||
+        name.includes("hinário") ||
+        name.includes("hinario") ||
+        img.includes("hasd");
+
+      if (is1996) {
+        this.$modules.open("hymnal_1996");
+        return;
+      }
+      
+      if (isNormal) {
+        this.$modules.open("hymnal");
+        return;
+      }
+      
       if (collection.type === "album") {
         this.$media.openAlbum(collection.id);
       } else {
