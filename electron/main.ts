@@ -12,6 +12,14 @@ if (fs.existsSync(oldDbPath)) {
   } catch (_e) { console.error("Remove old db legacy error:", _e); }
 }
 
+// Migração da pasta antiga 'music' para 'musics'
+const oldMusicPath = require("path").join(mediaPath, "music");
+if (fs.existsSync(oldMusicPath) && !fs.existsSync(musicPath)) {
+  try {
+    fs.renameSync(oldMusicPath, musicPath);
+  } catch (_e) { console.error("Rename old music folder error:", _e); }
+}
+
 // Garante que todas as pastas essenciais existam ao inicializar
 [sysDbPath, mediaPath, coversPath, musicPath, slidesPath].forEach(dir => {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
