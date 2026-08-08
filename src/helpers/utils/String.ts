@@ -6,7 +6,9 @@ export default {
       .toLowerCase()
       .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "")
-      .replace(/[^a-z0-9*]/g, "");
+      .replace(/[^a-z0-9* ]/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
   },
   matchesSearch(text: string | null | undefined, search: string | null | undefined): boolean {
     const cleanText = this.clean(text);
@@ -22,7 +24,7 @@ export default {
       }
     }
 
-    return cleanText.includes(cleanSearch);
+    return cleanText.startsWith(cleanSearch) || cleanText.includes(` ${cleanSearch}`);
   },
   sort(a: string | number | null | undefined, b: string | number | null | undefined): number {
     if (typeof a === "number" && typeof b === "number") {

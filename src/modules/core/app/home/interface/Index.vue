@@ -15,6 +15,7 @@
         
         <div class="search-bar" :style="(searchQuery || shouldShowHistory) ? 'flex: 2; display: flex; justify-content: center; transition: all 0.5s ease;' : 'width: 100%; max-width: 650px; transition: all 0.5s ease;'">
           <v-text-field
+            ref="searchInput"
             v-model="searchQuery"
             :placeholder="t('search_placeholder')"
             prepend-inner-icon="mdi-magnify"
@@ -268,11 +269,26 @@ export default defineComponent({
       deep: true,
       immediate: true,
     },
+    searchQuery(newVal: string) {
+      if (!newVal) {
+        this.$nextTick(() => {
+          if (this.$refs.searchInput) {
+            (this.$refs.searchInput as any).focus();
+          }
+        });
+      }
+    },
     "module.show": {
       handler(newVal: boolean) {
         if (newVal) {
           const setting = this.$userdata.get("show_home_history");
           this.show_home_history = setting !== false;
+          
+          this.$nextTick(() => {
+            if (this.$refs.searchInput) {
+              (this.$refs.searchInput as any).focus();
+            }
+          });
         }
       },
       immediate: true,

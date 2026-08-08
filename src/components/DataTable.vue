@@ -133,15 +133,49 @@ const filterData = () => {
     })
     .slice();
 
-  if (!isNaN(Number(value)) && value !== "") {
+  if (value !== "") {
+    const isNumeric = !isNaN(Number(value));
     const numValue = Number(value);
+    const searchable = props.searchableFields
+      ? Object.keys(props.searchableFields).filter(
+        (key) => props.searchableFields[key] === true,
+      )
+      : ["name"];
+
     filter_data.value.sort((a, b) => {
-      const getScore = (item: any) => {
-        if (item.albums?.some((al: any) => al.type === "hymnal" && al.name === "Hinário Adventista" && Number(al.pivot?.track) === numValue)) return 2;
-        if (item.albums?.some((al: any) => al.type === "hymnal" && al.name === "Hinário Adventista 1996" && Number(al.pivot?.track) === numValue)) return 1;
-        return 0;
+      if (isNumeric) {
+        const getNumScore = (item: any) => {
+          if (item.albums?.some((al: any) => al.type === "hymnal" && al.name === "Hinário Adventista" && Number(al.pivot?.track) === numValue)) return 2;
+          if (item.albums?.some((al: any) => al.type === "hymnal" && al.name === "Hinário Adventista 1996" && Number(al.pivot?.track) === numValue)) return 1;
+          return 0;
+        };
+        const numScoreA = getNumScore(a);
+        const numScoreB = getNumScore(b);
+        if (numScoreA !== numScoreB) return numScoreB - numScoreA;
+      }
+
+      const getTextScore = (item: any) => {
+        let maxScore = 0;
+        for (const key of searchable) {
+          if (!item[key]) continue;
+          const cleanItem = stringHelper.clean(String(item[key]));
+          if (cleanItem.startsWith(value)) {
+            maxScore = Math.max(maxScore, 2);
+          } else if (cleanItem.includes(` ${value}`)) {
+            maxScore = Math.max(maxScore, 1);
+          }
+        }
+        return maxScore;
       };
-      return getScore(b) - getScore(a);
+
+      const scoreA = getTextScore(a);
+      const scoreB = getTextScore(b);
+
+      if (scoreA !== scoreB) {
+        return scoreB - scoreA;
+      }
+
+      return stringHelper.sort(a[props.sortBy || "name"], b[props.sortBy || "name"]);
     });
   }
 
