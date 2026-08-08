@@ -135,4 +135,13 @@ export function registerIpcHandlers() {
     (global as unknown as Record<string, boolean>).isQuitting = true;
     app.quit();
   });
+
+  ipcMain.handle("get-login-item-settings", () => {
+    return app.getLoginItemSettings();
+  });
+
+  ipcMain.handle("set-login-item-settings", (event, settings: Electron.Settings) => {
+    app.setLoginItemSettings(settings);
+    return app.getLoginItemSettings();
+  });
 }

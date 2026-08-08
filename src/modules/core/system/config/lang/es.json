@@ -52,6 +52,8 @@
     "bg_opacity": "Opacidad del fondo",
     "config_monitors": "Configurar Monitores",
     "home_history_desc": "Activar modo historial (muestra elementos recientes)",
+    "start_on_login": "Iniciar con el Sistema",
+    "start_on_login_desc": "Abrir Louvor JA automáticamente al encender el equipo",
     "reset_history_desc": "Borra las colecciones recientes y las canciones más tocadas.",
     "reset_btn": "Borrar",
     "clear_data_desc": "Elimina bases de datos y archivos descargados.",

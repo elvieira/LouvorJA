@@ -18,6 +18,18 @@
           <v-divider class="mb-8" style="opacity: 0.1;" />
 
           <SettingsActionRow
+            v-if="isDesktop"
+            v-model="start_on_login"
+            icon="mdi-power"
+            :title="t('start_on_login')"
+            :subtitle="t('start_on_login_desc')"
+            type="switch"
+            class="mb-8"
+          />
+
+          <v-divider v-if="isDesktop" class="mb-8" style="opacity: 0.1;" />
+
+          <SettingsActionRow
             v-model="show_home_history"
             icon="mdi-view-dashboard"
             :title="t('home_layout')"
@@ -70,8 +82,10 @@ export default defineComponent({
     SettingsActionRow,
   },
   data: () => ({
-    language: "pt" as string,
+    language: "pt" as "pt" | "es",
     show_home_history: true as boolean,
+    start_on_login: false as boolean,
+    isDesktop: !!(window as any).electronAPI,
     isInitialized: false,
   }),
   computed: {
@@ -87,7 +101,7 @@ export default defineComponent({
     },
   },
   watch: {
-    async language(val: string, oldVal: string) {
+    async language(val: "pt" | "es", oldVal: "pt" | "es") {
       if (!this.isInitialized) return;
       
       if (val && oldVal && val !== oldVal) {
@@ -151,6 +165,14 @@ export default defineComponent({
     show_home_history(val: boolean) {
       this.$userdata.set("show_home_history", val);
     },
+    start_on_login(val: boolean) {
+      if (!this.isInitialized) return;
+      if ((window as any).electronAPI && (window as any).electronAPI.setLoginItemSettings) {
+        (window as any).electronAPI.setLoginItemSettings({
+          openAtLogin: val,
+        });
+      }
+    },
   },
   mounted() {
     if(this.$userdata.get("language")){
@@ -161,6 +183,12 @@ export default defineComponent({
       this.show_home_history = saved_home_history;
     }
     
+    if (this.isDesktop && (window as any).electronAPI.getLoginItemSettings) {
+      (window as any).electronAPI.getLoginItemSettings().then((settings: any) => {
+        this.start_on_login = settings.openAtLogin;
+      });
+    }
+
     // Set isInitialized after mounting so the watcher doesn't trigger on initial load
     this.$nextTick(() => {
       this.isInitialized = true;

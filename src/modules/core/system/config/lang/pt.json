@@ -52,6 +52,8 @@
     "bg_opacity": "Opacidade do fundo",
     "config_monitors": "Configurar Monitores",
     "home_history_desc": "Exibe itens recentes (Desative para usar o Modo Foco em Busca)",
+    "start_on_login": "Iniciar com o Sistema",
+    "start_on_login_desc": "Abrir o Louvor JA automaticamente ao iniciar o computador",
     "reset_history_desc": "Limpa as coletâneas recentes e as músicas mais tocadas.",
     "reset_btn": "Limpar",
     "clear_data_desc": "Exclui banco de dados e arquivos baixados.",

@@ -24,6 +24,9 @@ contextBridge.exposeInMainWorld("electronAPI", {
   validateInstallation: (lang?: string) => ipcRenderer.invoke("validate-installation", lang),
   repairSysdata: (filenames: string[], lang?: string) => ipcRenderer.invoke("repair-sysdata", filenames, lang),
   
+  getLoginItemSettings: () => ipcRenderer.invoke("get-login-item-settings"),
+  setLoginItemSettings: (settings: Record<string, unknown>) => ipcRenderer.invoke("set-login-item-settings", settings),
+  
   windowControl: (action: string) => ipcRenderer.invoke("window-control", action),
   onWindowMaximizedState: (callback: (isMaximized: boolean) => void) => {
     ipcRenderer.on("window-maximized-state", (_event, isMaximized: boolean) => callback(isMaximized));
