@@ -135,9 +135,9 @@ export default defineComponent({
         { id: "songs", title: "Músicas e Hinos", icon: "mdi-music-note" },
         { id: "bible", title: "Bíblia Sagrada", icon: "mdi-book-cross" },
         { id: "liturgy", title: "Liturgia", icon: "mdi-hands-pray" },
-        { id: "sync", title: "Sincronização e Download", icon: "mdi-cloud-sync" },
-        { id: "displays", title: "Telas de Projeção", icon: "mdi-monitor-multiple" },
-        { id: "settings", title: "Configurações", icon: "mdi-cog" },
+        // { id: "sync", title: "Sincronização e Download", icon: "mdi-cloud-sync" },
+        // { id: "displays", title: "Telas de Projeção", icon: "mdi-monitor-multiple" },
+        // { id: "settings", title: "Configurações", icon: "mdi-cog" },
       ];
     },
     currentSectionTitle(): string {

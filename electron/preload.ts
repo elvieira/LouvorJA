@@ -12,6 +12,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
   openFileDialog: (options: Record<string, unknown>) => ipcRenderer.invoke("open-file-dialog", options),
   openExternal: (url: string) => ipcRenderer.invoke("open-external", url),
   getSysDbInfo: () => ipcRenderer.invoke("get-sysdb-info"),
+  getAppDataSize: () => ipcRenderer.invoke("get-app-data-size"),
   openPath: (filePath: string) => ipcRenderer.invoke("open-path", filePath),
   clearAllData: () => ipcRenderer.invoke("clear-all-data"),
   clearSysData: () => ipcRenderer.invoke("clear-sys-data"),

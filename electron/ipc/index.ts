@@ -1,6 +1,6 @@
 import { ipcMain, BrowserWindow, dialog, shell, app, screen, Display } from "electron";
 import * as fs from "fs-extra";
-import { sysDbPath, mediaPath, coversPath, musicPath, slidesPath } from "../config/constants";
+import { sysDbPath, mediaPath, coversPath, musicPath, slidesPath, userDataPath } from "../config/constants";
 import { registerDatabaseHandlers } from "../services/database";
 import { registerMediaHandlers } from "../services/media";
 import { registerUpdaterHandlers } from "../services/updater";
@@ -11,6 +11,37 @@ export function registerIpcHandlers() {
   registerMediaHandlers();
   registerUpdaterHandlers();
   registerValidatorHandlers();
+
+  const getFolderSize = async (dirPath: string): Promise<number> => {
+    let totalSize = 0;
+    try {
+      if (!fs.existsSync(dirPath)) return 0;
+      const stats = await fs.stat(dirPath);
+      if (stats.isFile()) return stats.size;
+      
+      const files = await fs.readdir(dirPath);
+      const sizes = await Promise.all(
+        files.map(async file => {
+          const fullPath = require("path").join(dirPath, file);
+          const stat = await fs.stat(fullPath);
+          return stat.isDirectory() ? await getFolderSize(fullPath) : stat.size;
+        })
+      );
+      totalSize = sizes.reduce((acc, size) => acc + size, 0);
+    } catch (e) {
+      console.error(e);
+    }
+    return totalSize;
+  };
+
+  ipcMain.handle("get-app-data-size", async () => {
+    try {
+      const bytes = await getFolderSize(userDataPath);
+      return bytes;
+    } catch (e) {
+      return 0;
+    }
+  });
 
   ipcMain.handle("open-file-dialog", async (event, options: Electron.OpenDialogOptions) => {
     const win = BrowserWindow.fromWebContents(event.sender);

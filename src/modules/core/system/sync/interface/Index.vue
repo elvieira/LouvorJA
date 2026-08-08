@@ -79,6 +79,12 @@
             <p class="text-caption mb-0" style="color: var(--sidebar-text-secondary);">
               {{ $t('modules.sync.description') }}
             </p>
+            <div v-if="appDataSize !== null" class="d-flex align-center mt-3">
+              <v-icon size="small" color="primary" class="mr-2">mdi-harddisk</v-icon>
+              <span class="text-caption font-weight-medium" style="color: var(--sidebar-text-secondary);">
+                Ocupando {{ formattedAppDataSize }} no disco
+              </span>
+            </div>
           </div>
           <v-divider style="opacity: 0.1;" class="mx-6 mt-3 mb-1" />
 
@@ -144,6 +150,7 @@ export default defineComponent({
       isDownloadingAll: false,
       hymnalImg,
       hymnal1996Img,
+      appDataSize: null as number | null,
     };
   },
   computed: {
@@ -156,11 +163,25 @@ export default defineComponent({
     hasNoIdleAlbums(): boolean {
       return !this.categoriesWithAlbums.some((cat: SyncCategory) => cat.albums.some((a: SyncAlbum) => a.status === "idle"));
     },
+    formattedAppDataSize(): string {
+      if (this.appDataSize === null) return "";
+      if (this.appDataSize === 0) return "0 B";
+      const k = 1024;
+      const sizes = ["B", "KB", "MB", "GB", "TB"];
+      const i = Math.floor(Math.log(this.appDataSize) / Math.log(k));
+      return parseFloat((this.appDataSize / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+    },
   },
   async mounted() {
+    this.loadAppDataSize();
     await this.loadCollections();
   },
   methods: {
+    async loadAppDataSize() {
+      if (window.electronAPI && window.electronAPI.getAppDataSize) {
+        this.appDataSize = await window.electronAPI.getAppDataSize();
+      }
+    },
     closeModule() {
       this.$modules.close(this.module_id);
     },

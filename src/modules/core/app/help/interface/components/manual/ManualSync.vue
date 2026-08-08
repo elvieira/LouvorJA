@@ -15,12 +15,6 @@
       <li class="mb-2">
         Através dessa tela, você pode visualizar quanto espaço em disco o programa e as mídias estão utilizando.
       </li>
-      <li class="mb-2">
-        Você pode abrir a pasta raiz da biblioteca diretamente no explorador de arquivos do seu sistema operacional.
-      </li>
-      <li class="mb-2">
-        Em caso de necessidade de espaço, você pode limpar os arquivos de áudio, vídeo ou banco de dados que estão armazenados em cache.
-      </li>
     </ul>
 
     <v-divider class="my-6 border-opacity-25" />
