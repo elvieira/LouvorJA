@@ -7,6 +7,7 @@
       
       <AppTrayArea />
       <QuickSearchModal v-model="showQuickSearch" />
+      <BibleQuickSearchModal v-model="showBibleSearch" />
 
       <transition name="fade-slide">
         <div v-if="isMinimized && showMiniPlayer" class="mini-player-popup elevation-12">
@@ -151,6 +152,7 @@ import AppModules from "@/layout/Modules.vue";
 import AppTrayArea from "@/layout/TrayArea.vue";
 import LSlide from "@/components/Slide.vue";
 import QuickSearchModal from "@/components/QuickSearchModal.vue";
+import BibleQuickSearchModal from "@/components/BibleQuickSearchModal.vue";
 
 export default defineComponent({
   name: "MainPage",
@@ -161,11 +163,13 @@ export default defineComponent({
     AppTrayArea,
     LSlide,
     QuickSearchModal,
+    BibleQuickSearchModal,
   },
   data() {
     return {
       sidebarOpen: false,
       showQuickSearch: false,
+      showBibleSearch: false,
     };
   },
   computed: {
@@ -350,6 +354,9 @@ export default defineComponent({
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "f") {
         e.preventDefault();
         this.showQuickSearch = true;
+      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "b") {
+        e.preventDefault();
+        this.showBibleSearch = true;
       } else if (e.key === "F1") {
         e.preventDefault();
         this.$modules.open("help");
