@@ -27,6 +27,7 @@
           :subtitle="$t('modules.help.manual_desc')"
           :button-text="$t('modules.help.manual_btn')"
           class="mb-8"
+          @action="$emit('open-manual')"
         />
     
         <v-divider class="mb-8" style="opacity: 0.1;" />
@@ -84,6 +85,6 @@ export default defineComponent({
       required: true,
     },
   },
-  emits: ["open-update"],
+  emits: ["open-update", "open-manual"],
 });
 </script>

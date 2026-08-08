@@ -22,7 +22,7 @@
             density="comfortable"
             hide-details
             clearable
-            rounded
+            rounded="xl"
             :style="(searchQuery || shouldShowHistory) ? 'width: 100%; max-width: 600px;' : 'width: 100%;'"
             class="search-input-hero"
             @keydown.enter="playFirstResult"
@@ -499,6 +499,8 @@ export default defineComponent({
   .v-field {
     background: var(--card-bg) !important;
     box-shadow: var(--shadow) !important;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
     border-radius: 25px !important;
     
     .v-field__input {
@@ -520,6 +522,8 @@ export default defineComponent({
     }
     
     &.v-field--focused {
+      border-color: var(--accent-blue);
+      background: rgba(0, 151, 215, 0.05) !important;
       box-shadow: 0 4px 20px rgba(0, 151, 215, 0.15) !important;
     }
   }

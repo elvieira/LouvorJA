@@ -11,7 +11,7 @@
             density="comfortable"
             hide-details
             clearable
-            rounded
+            rounded="xl"
             @keydown.enter="playFirstResult"
           />
           <v-menu :close-on-content-click="true" location="bottom end">
@@ -226,11 +226,10 @@ export default defineComponent({
       }
       const term = this.$string.clean(this.search);
       return this.all_musics.filter((m: any) => {
-        const name = this.$string.clean(m.name);
         if (!isNaN(m.track) && !isNaN(term as any)) {
-          return Number(m.track) === Number(term) || name.includes(term);
+          return Number(m.track) === Number(term) || this.$string.matchesSearch(m.name, this.search);
         }
-        return name.includes(term);
+        return this.$string.matchesSearch(m.name, this.search);
       });
     },
     compact(): boolean {

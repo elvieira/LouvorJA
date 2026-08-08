@@ -4,6 +4,7 @@
     max-width="600"
     :theme="$theme.primary()"
     content-class="modern-alert-dialog-wrapper"
+    attach="true"
     @update:model-value="updateModelValue"
   >
     <v-card class="modern-alert-card rounded-xl">
@@ -174,7 +175,7 @@
                 <template #item="{ item, props }">
                   <v-list-item
                     v-bind="props"
-                    :title="null"
+                    :title="undefined"
                     class="mx-2 rounded-lg mb-1"
                     color="primary"
                     style="min-height: 40px;"
@@ -228,7 +229,7 @@
                   <template #item="{ item, props }">
                     <v-list-item
                       v-bind="props"
-                      :title="null"
+                      :title="undefined"
                       class="mx-2 rounded-lg mb-1"
                       color="primary"
                       style="min-height: 40px;"
@@ -274,7 +275,7 @@
                     <template #item="{ item, props }">
                       <v-list-item
                         v-bind="props"
-                        :title="null"
+                        :title="undefined"
                         class="mx-2 rounded-lg mb-1"
                         color="primary"
                         style="min-height: 40px;"
@@ -500,13 +501,11 @@ export default defineComponent({
       const numQuery = isNum ? Number(query) : null;
       
       const results = this.musicList.filter(m => {
-        const title = (m.name || "").toLowerCase();
-        
         if (isNum) {
           const isHymnalTrack = m.albums?.some((a: any) => a.type === "hymnal" && Number(a.pivot?.track) === numQuery);
-          return title.includes(query) || isHymnalTrack;
+          return this.$string.matchesSearch(m.name, this.musicSearchQuery) || isHymnalTrack;
         } 
-        return title.includes(query);
+        return this.$string.matchesSearch(m.name, this.musicSearchQuery);
       });
       
       if (isNum) {
@@ -626,7 +625,7 @@ export default defineComponent({
           ],
         });
         if (filePath) {
-          this.addForm.filePath = filePath;
+          this.addForm.filePath = filePath as string;
           if (!this.addForm.name) {
             const fileName = (filePath as string).split(/[\\/]/).pop() || "";
             this.addForm.name = fileName;

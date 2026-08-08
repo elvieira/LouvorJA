@@ -1,6 +1,7 @@
 {
   "title": "Ajuda e sobre",
   "tab_about": "Sobre",
+  "tab_manual": "Manual de Uso",
   "tab_developers": "Desenvolvedores",
   "version": "Versão {version} (Beta)",
   "app_desc": "Aplicativo desktop para gerenciamento e apresentação de músicas, hinos, letras e recursos multimídia para igrejas. Feito com amor e tecnologia para tornar a adoração ainda mais fluida.",

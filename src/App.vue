@@ -147,10 +147,10 @@ export default {
         e.preventDefault();
         const isPaused = this.$appdata.get("modules.media.config.is_paused");
         this.$media.pause(!isPaused);
-      } else if (e.code === "ArrowRight") {
+      } else if (e.code === "ArrowRight" || e.code === "ArrowDown" || e.code === "PageDown") {
         e.preventDefault();
         this.$media.nextSlide();
-      } else if (e.code === "ArrowLeft") {
+      } else if (e.code === "ArrowLeft" || e.code === "ArrowUp" || e.code === "PageUp") {
         e.preventDefault();
         this.$media.prevSlide();
       } else if (e.code === "Escape") {

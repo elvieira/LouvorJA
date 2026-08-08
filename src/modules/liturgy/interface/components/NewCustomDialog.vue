@@ -4,6 +4,7 @@
     max-width="420"
     :theme="$theme.primary()"
     content-class="modern-alert-dialog-wrapper"
+    attach="true"
     @update:model-value="$emit('update:modelValue', $event)"
   >
     <v-card class="modern-alert-card rounded-xl">

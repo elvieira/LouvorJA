@@ -109,7 +109,7 @@ const filterData = () => {
       } else {
         searchableCondition = searchable.some((key) => {
           if (isNaN(Number(item[key])) || item[key] === null) {
-            return stringHelper.clean(item[key]).includes(value);
+            return stringHelper.matchesSearch(item[key], props.search || "");
           }
           return false;
         });

@@ -11,7 +11,7 @@
             density="comfortable"
             hide-details
             clearable
-            rounded
+            rounded="xl"
             :error="search !== '' && data.filter_count <= 0"
             @keydown.enter="playFirstResult"
           />

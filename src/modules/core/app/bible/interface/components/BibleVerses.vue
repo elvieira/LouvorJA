@@ -42,7 +42,7 @@
           </v-tooltip>
         </v-btn>
         <v-btn
-          v-shortkey="['arrowleft']"
+          v-shortkey="{ left: ['arrowleft'], up: ['arrowup'], pgup: ['pageup'] }"
           :disabled="!hasSelectedVerses"
           variant="tonal"
           size="small"
@@ -61,7 +61,7 @@
           </v-tooltip>
         </v-btn>
         <v-btn
-          v-shortkey="['arrowright']"
+          v-shortkey="{ right: ['arrowright'], down: ['arrowdown'], pgdn: ['pagedown'] }"
           :disabled="!hasSelectedVerses"
           variant="tonal"
           size="small"

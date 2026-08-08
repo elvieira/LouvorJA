@@ -9,7 +9,7 @@
       <ModuleHeader 
         :title="t('title')" 
         :subtitle="t('description')"
-        icon="mdi-format-list-checks"
+        icon="mdi-hands-pray"
         @close="module.show = false"
       />
 
@@ -60,7 +60,7 @@
         <template v-else>
           <div class="d-flex flex-column align-center justify-center w-100 h-100" style="opacity: 0.6; min-height: 300px;">
             <v-icon size="64" class="mb-4" color="var(--sidebar-text-secondary)">
-              mdi-format-list-checks
+              mdi-hands-pray
             </v-icon>
             <h3 class="text-h6 font-weight-bold" style="color: var(--sidebar-text);">
               {{ t('custom_liturgy.empty_list') }}
@@ -110,7 +110,7 @@ export default defineComponent({
   },
   data: () => ({
     isCompactView: false as boolean,
-    selectedDay: null as string | null,
+    selectedDay: undefined as string | undefined,
     selectedItemIndex: null as number | null,
     selectedCustomIndex: 0 as number,
 
@@ -191,6 +191,8 @@ export default defineComponent({
         this.loadSavedLiturgies();
         this.$nextTick(() => { this.setupResizeObserver(); });
       } else {
+        this.showAddMenu = false;
+        this.showNewCustomDialog = false;
         if (this.resizeObserver) {
           this.resizeObserver.disconnect();
           this.resizeObserver = null;
@@ -428,9 +430,9 @@ export default defineComponent({
           }
           
           if (selectedMonitors.length > 0) {
-            await this.$popup.syncMonitors(selectedMonitors, targetModule, true);
+            await (this as any).$popup.syncMonitors(selectedMonitors, targetModule, true);
           } else {
-            this.$popup.open({ module: targetModule, fullscreen: true });
+            (this as any).$popup.open({ module: targetModule, fullscreen: true });
           }
         }
       }

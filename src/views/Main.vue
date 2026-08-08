@@ -6,6 +6,7 @@
       <AppModules />
       
       <AppTrayArea />
+      <QuickSearchModal v-model="showQuickSearch" />
 
       <transition name="fade-slide">
         <div v-if="isMinimized && showMiniPlayer" class="mini-player-popup elevation-12">
@@ -149,6 +150,7 @@ import AppSidebar from "@/layout/Sidebar.vue";
 import AppModules from "@/layout/Modules.vue";
 import AppTrayArea from "@/layout/TrayArea.vue";
 import LSlide from "@/components/Slide.vue";
+import QuickSearchModal from "@/components/QuickSearchModal.vue";
 
 export default defineComponent({
   name: "MainPage",
@@ -158,10 +160,12 @@ export default defineComponent({
     AppModules,
     AppTrayArea,
     LSlide,
+    QuickSearchModal,
   },
   data() {
     return {
       sidebarOpen: false,
+      showQuickSearch: false,
     };
   },
   computed: {
@@ -258,13 +262,15 @@ export default defineComponent({
     },
   },
   mounted() {
+    window.addEventListener("keydown", this.onGlobalSearchShortcut);
+
     this.closeAllModules();
 
     this.$userdata.load();
 
     const theme = this.$userdata.get("theme");
     if (theme !== "") {
-      this.$vuetify.theme.global.name = theme;
+      (this as any).$vuetify.theme.global.name = theme;
     }
     this.$appdata.set("is_dark", this.$vuetify.theme.global.current.dark);
 
@@ -336,7 +342,20 @@ export default defineComponent({
       });
     }
   },
+  unmounted() {
+    window.removeEventListener("keydown", this.onGlobalSearchShortcut);
+  },
   methods: {
+    onGlobalSearchShortcut(e: KeyboardEvent) {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "f") {
+        e.preventDefault();
+        this.showQuickSearch = true;
+      } else if (e.key === "F1") {
+        e.preventDefault();
+        this.$modules.open("help");
+        this.$appdata.set("modules.help.action", "open-manual");
+      }
+    },
     toggleSidebar() {
       this.sidebarOpen = !this.sidebarOpen;
     },

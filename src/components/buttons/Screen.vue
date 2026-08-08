@@ -21,7 +21,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, onMounted, onUnmounted } from "vue";
 import { useAppData, usePopup } from "@/composables/useHelpers";
 
 defineOptions({ name: "ScreenButton" });
@@ -88,6 +88,25 @@ const popup = async () => {
     }
   }
 };
+
+const handleGlobalKeydown = (e: KeyboardEvent) => {
+  if (e.key === "F5" || e.key === "F9") {
+    // Only trigger if this specific module is the one currently open on screen
+    const isModuleActive = appdata.get(`modules.${props.module}.show`);
+    if (isModuleActive) {
+      e.preventDefault();
+      popup();
+    }
+  }
+};
+
+onMounted(() => {
+  window.addEventListener("keydown", handleGlobalKeydown);
+});
+
+onUnmounted(() => {
+  window.removeEventListener("keydown", handleGlobalKeydown);
+});
 </script>
 
 <style scoped>
