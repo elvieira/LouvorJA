@@ -80,7 +80,9 @@
               {{ $t('modules.sync.description') }}
             </p>
             <div v-if="appDataSize !== null" class="d-flex align-center mt-3">
-              <v-icon size="small" color="primary" class="mr-2">mdi-harddisk</v-icon>
+              <v-icon size="small" color="primary" class="mr-2">
+                mdi-harddisk
+              </v-icon>
               <span class="text-caption font-weight-medium" style="color: var(--sidebar-text-secondary);">
                 Ocupando {{ formattedAppDataSize }} no disco
               </span>
@@ -169,7 +171,7 @@ export default defineComponent({
       const k = 1024;
       const sizes = ["B", "KB", "MB", "GB", "TB"];
       const i = Math.floor(Math.log(this.appDataSize) / Math.log(k));
-      return parseFloat((this.appDataSize / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+      return `${parseFloat((this.appDataSize / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
     },
   },
   async mounted() {

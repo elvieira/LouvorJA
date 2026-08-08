@@ -315,18 +315,16 @@ export default defineComponent({
             } catch (e: any) {
               throw new Error(this.$t("first_boot.errors.db_download_fail"));
             }
+          }
             
-            this.statusText = this.$t("first_boot.status.extracting");
-            this.progress = 0;
-            
-            try {
-              const currentLang = this.$i18n.locale || "pt";
-              success = await window.electronAPI.extractLocalDb(currentLang);
-            } catch (e: any) {
-              throw new Error(this.$t("first_boot.errors.extraction_fail"));
-            }
-          } else {
-            success = true;
+          this.statusText = this.$t("first_boot.status.extracting");
+          this.progress = 0;
+          
+          try {
+            const currentLang = this.$i18n.locale || "pt";
+            success = await window.electronAPI.extractLocalDb(currentLang);
+          } catch (e: any) {
+            throw new Error(this.$t("first_boot.errors.extraction_fail"));
           }
 
           if (success) {

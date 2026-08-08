@@ -112,9 +112,17 @@ export default class DbExtractor {
   }
 
   private repairCategories(db: SQLiteHelper, requestedLang: string = "pt"): unknown {
-    const hasLang = db.prepare("SELECT 1 FROM categories WHERE id_language = ?").get(requestedLang);
-    const targetLang = hasLang ? requestedLang : "pt";
-    const categoriesRows = db.prepare("SELECT * FROM categories WHERE id_language = ? ORDER BY `order` ASC").all(targetLang) as Record<string, unknown>[];
+    const hasLangCol = this.hasLanguageColumn(db, "categories");
+    let targetLang = "pt";
+    if (hasLangCol) {
+      const hasLang = db.prepare("SELECT 1 FROM categories WHERE id_language = ?").get(requestedLang);
+      targetLang = hasLang ? requestedLang : "pt";
+    }
+    const query = hasLangCol 
+      ? "SELECT * FROM categories WHERE id_language = ? ORDER BY `order` ASC"
+      : "SELECT * FROM categories ORDER BY `order` ASC";
+    
+    const categoriesRows = db.prepare(query).all(hasLangCol ? targetLang : []) as Record<string, unknown>[];
     const categories: Record<string, unknown>[] = [];
     for (const cat of categoriesRows) {
       const albumsRows = db.prepare(`
@@ -403,8 +411,19 @@ export default class DbExtractor {
     }
   }
 
+  private hasLanguageColumn(db: SQLiteHelper, table: string): boolean {
+    try {
+      db.prepare(`SELECT id_language FROM ${table} LIMIT 1`).get();
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   private extractCategories(db: SQLiteHelper): void {
-    const categoriesRows = db.prepare("SELECT * FROM categories WHERE id_language = 'pt' ORDER BY `order` ASC").all() as Record<string, unknown>[];
+    const hasLang = this.hasLanguageColumn(db, "categories");
+    const query = hasLang ? "SELECT * FROM categories WHERE id_language = 'pt' ORDER BY `order` ASC" : "SELECT * FROM categories ORDER BY `order` ASC";
+    const categoriesRows = db.prepare(query).all() as Record<string, unknown>[];
     const categories: Record<string, unknown>[] = [];
 
     for (const cat of categoriesRows) {
@@ -439,12 +458,21 @@ export default class DbExtractor {
   }
 
   private extractAlbumsAndMusics(db: SQLiteHelper, progressCallback: (data: { text: string; progress: number }) => void): void {
-    const albums = db.prepare(`
+    const hasLang = this.hasLanguageColumn(db, "albums");
+    const albumsQuery = hasLang 
+      ? `
       SELECT a.id_album, a.name, a.color, f.dir, f.file_name 
       FROM albums a
       LEFT JOIN files f ON a.id_file_image = f.id_file
       WHERE a.id_language = 'pt'
-    `).all() as Record<string, unknown>[];
+      `
+      : `
+      SELECT a.id_album, a.name, a.color, f.dir, f.file_name 
+      FROM albums a
+      LEFT JOIN files f ON a.id_file_image = f.id_file
+      `;
+
+    const albums = db.prepare(albumsQuery).all() as Record<string, unknown>[];
 
     let processedAlbums = 0;
     const totalAlbums = albums.length;

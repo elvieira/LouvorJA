@@ -24,6 +24,7 @@ interface ElectronAPI {
   openPath: (filePath: string) => Promise<void>
   clearAllData: () => Promise<void>
   clearSysData: () => Promise<void>
+  getAppDataSize: () => Promise<number>
   getLocalDb: (filename: string, lang?: string) => Promise<unknown | null>
   extractLocalDb: (lang?: string) => Promise<boolean>
   downloadDatabase: (lang?: string) => Promise<unknown>
