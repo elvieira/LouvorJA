@@ -501,11 +501,14 @@ export default defineComponent({
       const numQuery = isNum ? Number(query) : null;
       
       const results = this.musicList.filter(m => {
+        const matchesName = this.$string.matchesSearch(m.name, this.musicSearchQuery);
+        const matchesAlbum = m.albums ? this.$string.matchesSearch(m.albums.map((a: any) => a.name).join(" "), this.musicSearchQuery) : false;
+        
         if (isNum) {
           const isHymnalTrack = m.albums?.some((a: any) => a.type === "hymnal" && Number(a.pivot?.track) === numQuery);
-          return this.$string.matchesSearch(m.name, this.musicSearchQuery) || isHymnalTrack;
+          return matchesName || matchesAlbum || isHymnalTrack;
         } 
-        return this.$string.matchesSearch(m.name, this.musicSearchQuery);
+        return matchesName || matchesAlbum;
       });
       
       if (isNum) {
@@ -516,6 +519,28 @@ export default defineComponent({
             return 0;
           };
           return getScore(b) - getScore(a);
+        });
+      } else if (query) {
+        const cleanQuery = this.$string.clean(query);
+        results.sort((a, b) => {
+          const getTextScore = (item: any) => {
+            let maxScore = 0;
+            const cleanName = this.$string.clean(item.name);
+            if (cleanName.startsWith(cleanQuery)) maxScore = Math.max(maxScore, 4);
+            else if (cleanName.includes(` ${cleanQuery}`)) maxScore = Math.max(maxScore, 3);
+            
+            if (item.albums) {
+              const cleanAlbums = this.$string.clean(item.albums.map((al: any) => al.name).join(" "));
+              if (cleanAlbums.startsWith(cleanQuery)) maxScore = Math.max(maxScore, 2);
+              else if (cleanAlbums.includes(` ${cleanQuery}`)) maxScore = Math.max(maxScore, 1);
+            }
+            return maxScore;
+          };
+          
+          const scoreA = getTextScore(a);
+          const scoreB = getTextScore(b);
+          if (scoreA !== scoreB) return scoreB - scoreA;
+          return this.$string.sort(a.name, b.name);
         });
       }
       

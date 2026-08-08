@@ -92,6 +92,15 @@ const filterData = () => {
     ? Object.keys(props.filter).filter((key) => props.filter[key] === true)
     : [];
   
+  const getFieldValueAsString = (rawValue: any): string => {
+    if (Array.isArray(rawValue)) {
+      return rawValue.map((v: any) => v.name || v.id || String(v)).join(" ");
+    } else if (typeof rawValue === "object" && rawValue !== null) {
+      return rawValue.name || rawValue.id || String(rawValue);
+    }
+    return String(rawValue || "");
+  };
+  
   filter_data.value = all_data.value
     .filter((item) => {
       const isPureNumber = !isNaN(Number(value)) && value !== "";
@@ -108,10 +117,8 @@ const filterData = () => {
         }) || (item.albums && item.albums.some((al: any) => al.type === "hymnal" && Number(al.pivot?.track) === Number(value)));
       } else {
         searchableCondition = searchable.some((key) => {
-          if (isNaN(Number(item[key])) || item[key] === null) {
-            return stringHelper.matchesSearch(item[key], props.search || "");
-          }
-          return false;
+          const strVal = getFieldValueAsString(item[key]);
+          return stringHelper.matchesSearch(strVal, props.search || "");
         });
       }
       const filterCondition =
@@ -136,11 +143,7 @@ const filterData = () => {
   if (value !== "") {
     const isNumeric = !isNaN(Number(value));
     const numValue = Number(value);
-    const searchable = props.searchableFields
-      ? Object.keys(props.searchableFields).filter(
-        (key) => props.searchableFields[key] === true,
-      )
-      : ["name"];
+    const currentSearchable = searchable.length > 0 ? searchable : ["name"];
 
     filter_data.value.sort((a, b) => {
       if (isNumeric) {
@@ -156,13 +159,17 @@ const filterData = () => {
 
       const getTextScore = (item: any) => {
         let maxScore = 0;
-        for (const key of searchable) {
+        for (const key of currentSearchable) {
           if (!item[key]) continue;
-          const cleanItem = stringHelper.clean(String(item[key]));
+          const strVal = getFieldValueAsString(item[key]);
+          const cleanItem = stringHelper.clean(strVal);
+          
+          const baseScore = key === "name" ? 2 : 0;
+          
           if (cleanItem.startsWith(value)) {
-            maxScore = Math.max(maxScore, 2);
+            maxScore = Math.max(maxScore, baseScore + 2);
           } else if (cleanItem.includes(` ${value}`)) {
-            maxScore = Math.max(maxScore, 1);
+            maxScore = Math.max(maxScore, baseScore + 1);
           }
         }
         return maxScore;

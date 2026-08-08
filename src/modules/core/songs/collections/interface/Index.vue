@@ -13,7 +13,63 @@
             clearable
             rounded="xl"
             @keydown.enter="playFirstResult"
-          />
+          >
+            <template #append-inner>
+              <v-menu :close-on-content-click="false" location="bottom end">
+                <template #activator="{ props }">
+                  <v-btn
+                    icon="mdi-filter-variant"
+                    size="small"
+                    variant="text"
+                    v-bind="props"
+                    color="var(--sidebar-text-secondary)"
+                  />
+                </template>
+                <v-card
+                  class="pa-2"
+                  rounded="lg"
+                  min-width="200"
+                  style="background: var(--card-bg); box-shadow: var(--shadow); border: 1px solid var(--border-color, rgba(150, 150, 150, 0.2));"
+                >
+                  <div
+                    class="text-caption font-weight-bold mb-2 mx-2 mt-1"
+                    style="color: var(--sidebar-text-secondary);"
+                  >
+                    Filtrar pesquisa por:
+                  </div>
+                  <v-list density="compact" bg-color="transparent" class="pa-0">
+                    <v-checkbox
+                      v-model="searchFilters"
+                      value="name"
+                      label="Nome da música"
+                      hide-details
+                      density="compact"
+                      color="primary"
+                      class="mb-1"
+                    />
+                    <v-checkbox
+                      v-model="searchFilters"
+                      value="albums"
+                      label="Álbum/Coletânea"
+                      hide-details
+                      density="compact"
+                      color="primary"
+                      class="mb-1"
+                    />
+                    <v-checkbox
+                      v-model="searchFilters"
+                      value="lyrics"
+                      label="Letra da música (em breve)"
+                      hide-details
+                      density="compact"
+                      color="primary"
+                      disabled
+                    />
+                  </v-list>
+                </v-card>
+              </v-menu>
+            </template>
+          </v-text-field>
           <v-menu :close-on-content-click="true" location="bottom end">
             <template #activator="{ props }">
               <v-btn
@@ -185,6 +241,7 @@ export default defineComponent({
     id_category: 0,
     loading: false,
     error: null as string | null,
+    searchFilters: ["name"] as string[],
   }),
   computed: {
     /* COMPUTEDS OBRIGATÓRIAS - INÍCIO */
@@ -225,18 +282,69 @@ export default defineComponent({
         return [];
       }
       const term = this.$string.clean(this.search);
-      return this.all_musics.filter((m: any) => {
-        if (!isNaN(m.track) && !isNaN(term as any)) {
-          return Number(m.track) === Number(term) || this.$string.matchesSearch(m.name, this.search);
+      const isNum = !isNaN(Number(term)) && term !== "";
+
+      const results = this.all_musics.filter((m: any) => {
+        const matchesName = this.searchFilters.includes("name") ? this.$string.matchesSearch(m.name, this.search) : false;
+        const matchesAlbum = (this.searchFilters.includes("albums") && m.album_name) ? this.$string.matchesSearch(m.album_name, this.search) : false;
+
+        if (isNum && !isNaN(m.track)) {
+          return Number(m.track) === Number(term) || matchesName || matchesAlbum;
         }
-        return this.$string.matchesSearch(m.name, this.search);
+        return matchesName || matchesAlbum;
       });
+
+      const cleanQuery = term;
+      
+      results.sort((a: any, b: any) => {
+        if (isNum) {
+          const isA = !isNaN(a.track) && Number(a.track) === Number(term);
+          const isB = !isNaN(b.track) && Number(b.track) === Number(term);
+          if (isA && !isB) return -1;
+          if (isB && !isA) return 1;
+        }
+        
+        const getScore = (item: any) => {
+          let maxScore = 0;
+          
+          if (this.searchFilters.includes("name")) {
+            const cleanName = this.$string.clean(item.name);
+            if (cleanName.startsWith(cleanQuery)) maxScore = Math.max(maxScore, 4);
+            else if (cleanName.includes(` ${cleanQuery}`)) maxScore = Math.max(maxScore, 3);
+          }
+          
+          if (this.searchFilters.includes("albums") && item.album_name) {
+            const cleanAlbum = this.$string.clean(item.album_name);
+            if (cleanAlbum.startsWith(cleanQuery)) maxScore = Math.max(maxScore, 2);
+            else if (cleanAlbum.includes(` ${cleanQuery}`)) maxScore = Math.max(maxScore, 1);
+          }
+          
+          return maxScore;
+        };
+        
+        const scoreA = getScore(a);
+        const scoreB = getScore(b);
+        if (scoreA !== scoreB) return scoreB - scoreA;
+        return this.$string.sort(a.name, b.name);
+      });
+
+      return results;
     },
     compact(): boolean {
       return this.$vuetify.display.width <= 600;
     },
   },
   watch: {
+    searchFilters: {
+      handler(val) {
+        if (val.length === 0) {
+          this.$nextTick(() => { this.searchFilters = ["name"]; });
+        } else {
+          this.$userdata.set("search_filters", val);
+        }
+      },
+      deep: true,
+    },
     search(val: string) {
       if (val && val.length > 1 && !this.indexed) {
         this.buildSearchIndex();
@@ -244,6 +352,10 @@ export default defineComponent({
     },
   },
   async mounted() {
+    const savedFilters = this.$userdata.get("search_filters");
+    if (savedFilters && Array.isArray(savedFilters) && savedFilters.length > 0) {
+      this.searchFilters = savedFilters;
+    }
     await this.loadData();
   },
   methods: {

@@ -27,7 +27,63 @@
             :style="(searchQuery || shouldShowHistory) ? 'width: 100%; max-width: 600px;' : 'width: 100%;'"
             class="search-input-hero"
             @keydown.enter="playFirstResult"
-          />
+          >
+            <template #append-inner>
+              <v-menu :close-on-content-click="false" location="bottom end">
+                <template #activator="{ props }">
+                  <v-btn
+                    icon="mdi-filter-variant"
+                    size="small"
+                    variant="text"
+                    v-bind="props"
+                    color="var(--sidebar-text-secondary)"
+                  />
+                </template>
+                <v-card
+                  class="pa-2"
+                  rounded="lg"
+                  min-width="200"
+                  style="background: var(--card-bg); box-shadow: var(--shadow); border: 1px solid var(--border-color, rgba(150, 150, 150, 0.2));"
+                >
+                  <div
+                    class="text-caption font-weight-bold mb-2 mx-2 mt-1"
+                    style="color: var(--sidebar-text-secondary);"
+                  >
+                    Filtrar pesquisa por:
+                  </div>
+                  <v-list density="compact" bg-color="transparent" class="pa-0">
+                    <v-checkbox
+                      v-model="searchFilters"
+                      value="name"
+                      label="Nome da música"
+                      hide-details
+                      density="compact"
+                      color="primary"
+                      class="mb-1"
+                    />
+                    <v-checkbox
+                      v-model="searchFilters"
+                      value="albums"
+                      label="Álbum/Coletânea"
+                      hide-details
+                      density="compact"
+                      color="primary"
+                      class="mb-1"
+                    />
+                    <v-checkbox
+                      v-model="searchFilters"
+                      value="lyrics"
+                      label="Letra da música (em breve)"
+                      hide-details
+                      density="compact"
+                      color="primary"
+                      disabled
+                    />
+                  </v-list>
+                </v-card>
+              </v-menu>
+            </template>
+          </v-text-field>
         </div>
 
         <div v-if="(searchQuery || shouldShowHistory)" style="flex: 1;" />
@@ -42,9 +98,7 @@
             <LTable
               v-model="searchData"
               :search="searchQuery"
-              :searchable-fields="{
-                name: true,
-              }"
+              :searchable-fields="searchableFields"
               sort-by="name"
               :file="`${$i18n.locale}_musics`"
               class="flex-grow-1 d-flex flex-column"
@@ -205,6 +259,7 @@ export default defineComponent({
     show_home_history: true,
     hymnalImg,
     hymnal1996Img,
+    searchFilters: ["name"] as string[],
   }),
   computed: {
     /* COMPUTEDS OBRIGATÓRIAS - INÍCIO */
@@ -260,6 +315,11 @@ export default defineComponent({
     compact(): boolean {
       return this.$vuetify.display.width <= 800;
     },
+    searchableFields(): any {
+      const fields: any = {};
+      this.searchFilters.forEach(f => { fields[f] = true; });
+      return fields;
+    },
   },
   watch: {
     displayCollections: {
@@ -268,6 +328,16 @@ export default defineComponent({
       },
       deep: true,
       immediate: true,
+    },
+    searchFilters: {
+      handler(val) {
+        if (val.length === 0) {
+          this.$nextTick(() => { this.searchFilters = ["name"]; });
+        } else {
+          this.$userdata.set("search_filters", val);
+        }
+      },
+      deep: true,
     },
     searchQuery(newVal: string) {
       if (!newVal) {
@@ -295,6 +365,11 @@ export default defineComponent({
     },
   },
   mounted() {
+    const savedFilters = this.$userdata.get("search_filters");
+    if (savedFilters && Array.isArray(savedFilters) && savedFilters.length > 0) {
+      this.searchFilters = savedFilters;
+    }
+    
     this.fetchCollectionInfo();
     const setting = this.$userdata.get("show_home_history");
     this.show_home_history = setting !== false;
