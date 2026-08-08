@@ -25,7 +25,7 @@
       Adicionando Arquivo / Álbum:
     </p>
     <p class="mb-4 text-body-2" style="color: var(--sidebar-text-secondary);">
-      Copie o arquivo ou o diretório com <kbd>CTRL+C</kbd> e cole nesta tela com <kbd>CTRL+V</kbd>. Ou, clique no botão "Adicionar" para adicionar uma nova coletânea/arquivo. Um painel se abrirá, permitindo escolher uma imagem como capa. Para criar uma playlist, basta colocar o diretório da pasta ao invés do caminho do arquivo.
+      Copie o arquivo ou o diretório com <kbd>CTRL / ⌘</kbd> + <kbd>C</kbd> e cole nesta tela com <kbd>CTRL / ⌘</kbd> + <kbd>V</kbd>. Ou, clique no botão "Adicionar" para adicionar uma nova coletânea/arquivo. Um painel se abrirá, permitindo escolher uma imagem como capa. Para criar uma playlist, basta colocar o diretório da pasta ao invés do caminho do arquivo.
     </p>
 
     <p class="font-weight-medium mb-1">
@@ -58,7 +58,7 @@
       Tela para organização da sequência da programação, detalhando as respectivas músicas e arquivos que serão executados no culto.
     </p>
     <p class="mb-4 text-body-2">
-      Você pode colar arquivos com <kbd>CTRL+V</kbd> ou usar o botão "Adicionar Item" para incluir:
+      Você pode colar arquivos com <kbd>CTRL / ⌘</kbd> + <kbd>V</kbd> ou usar o botão "Adicionar Item" para incluir:
     </p>
     <ul class="mb-4 pl-6 text-body-2" style="color: var(--sidebar-text-secondary);">
       <li class="mb-1">

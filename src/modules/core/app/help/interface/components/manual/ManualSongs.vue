@@ -53,7 +53,7 @@
       Busca Rápida (Localizar Músicas)
     </h3>
     <p class="mb-4">
-      O programa conta com um atalho global de Busca Rápida. Pressionando as teclas <kbd>CTRL+F</kbd> (ou <kbd>⌘+F</kbd> no Mac) a qualquer momento e em qualquer lugar do programa, um pop-up de pesquisa será aberto na tela.
+      O programa conta com um atalho global de Busca Rápida. Pressionando as teclas <kbd>CTRL / ⌘</kbd> + <kbd>F</kbd> a qualquer momento e em qualquer lugar do programa, um pop-up de pesquisa será aberto na tela.
     </p>
     <p class="mb-4">
       Essa busca funciona exatamente com o mesmo poder e comportamento da pesquisa da Página Inicial (permitindo buscar por número, nome ou trecho da letra), garantindo que você consiga encontrar e abrir uma música instantaneamente, sem precisar sair da tela ou do módulo em que você está trabalhando.

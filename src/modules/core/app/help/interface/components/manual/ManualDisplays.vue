@@ -95,7 +95,7 @@
       Gravando intervalos (Para automação sem clique):
     </p>
     <p class="text-body-2 mb-4" style="color: var(--sidebar-text-secondary);">
-      Na aba "Áudio/Gravação", você reproduz o áudio da música (quando houver). Use o botão <strong>Gravar e Avançar</strong> (<kbd>CTRL</kbd> + <kbd>→</kbd>) no ritmo da música para registrar os tempos exatos em que cada slide deve passar automaticamente. Use <strong>Gravar Retroativo</strong> para corrigir pequenos atrasos de 1 segundo.
+      Na aba "Áudio/Gravação", você reproduz o áudio da música (quando houver). Use o botão <strong>Gravar e Avançar</strong> (<kbd>CTRL / ⌘</kbd> + <kbd>→</kbd>) no ritmo da música para registrar os tempos exatos em que cada slide deve passar automaticamente. Use <strong>Gravar Retroativo</strong> para corrigir pequenos atrasos de 1 segundo.
     </p>
   </div>
 </template>

@@ -47,6 +47,14 @@
     >
       <strong>Busca por Palavras:</strong> O campo de busca também serve para pesquisar termos. Utilize um asterisco (<strong>*</strong>) para representar qualquer letra ou palavra entre os termos. Exemplo: Ao buscar por "<strong>Deus*terra</strong>", o programa listará passagens contendo as palavras Deus e terra na mesma frase.
     </v-alert>
+    <v-alert
+      type="success"
+      variant="tonal"
+      class="mb-6 rounded-lg"
+      density="comfortable"
+    >
+      <strong>Busca Rápida da Bíblia:</strong> Você pode pesquisar e projetar passagens rapidamente de qualquer lugar do programa! Pressione <kbd>CTRL / ⌘</kbd> + <kbd>B</kbd> e siga os passos na tela (Livro > Capítulo > Versículo).
+    </v-alert>
 
     <v-divider class="my-6 border-opacity-25" />
 

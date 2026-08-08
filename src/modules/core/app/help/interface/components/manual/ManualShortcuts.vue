@@ -27,9 +27,15 @@
               </td>
             </tr>
             <tr>
-              <td><kbd>CTRL</kbd> + <kbd>F</kbd></td>
+              <td><kbd>CTRL / ⌘</kbd> + <kbd>F</kbd></td>
               <td style="color: var(--sidebar-text-secondary);">
-                Abre a busca de músicas
+                Abre a busca rápida de músicas
+              </td>
+            </tr>
+            <tr>
+              <td><kbd>CTRL / ⌘</kbd> + <kbd>B</kbd></td>
+              <td style="color: var(--sidebar-text-secondary);">
+                Abre a busca rápida da bíblia
               </td>
             </tr>
             <tr>
@@ -128,7 +134,7 @@
             </tr>
             <tr>
               <td>
-                <kbd>CTRL</kbd> + <kbd>P</kbd> / <kbd>Espaço</kbd>
+                <kbd>CTRL / ⌘</kbd> + <kbd>P</kbd> / <kbd>Espaço</kbd>
               </td>
               <td style="color: var(--sidebar-text-secondary);">
                 Pausa a música, ou continua, caso já esteja pausada
