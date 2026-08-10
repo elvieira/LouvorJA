@@ -246,13 +246,12 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
+import { defineComponent, computed } from "vue";
 import manifest from "../manifest";
 import MenuToggleButton from "@/components/MenuToggleButton.vue";
 import LTable from "@/components/DataTable.vue";
 import LMusicMenuTable from "@/components/MusicMenuTable.vue";
 import { useTheme } from "vuetify";
-import { computed } from "vue";
 
 import hymnalImg from "@/assets/images/hymnal.jpeg";
 import hymnal1996Img from "@/assets/images/hymnal_1996.jpeg";
