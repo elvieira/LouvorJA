@@ -98,9 +98,11 @@
             <p v-else-if="suggestedBooks.length > 0" class="text-body-1 font-weight-medium" style="color: var(--sidebar-text);">
               {{ suggestedBooks.map(b => b.abbreviation).join(', ') }}
             </p>
-            <p class="text-caption text-grey mt-2">
-              Ex: gn para Gênesis
-            </p>
+            <div class="text-caption text-grey mt-6 d-flex align-center justify-center flex-wrap">
+              <span class="kbd-key mx-1">ESC</span> para sair
+              <span class="mx-2 opacity-50">|</span>
+              <span class="kbd-key mx-1">ESPAÇO/ENTER</span> para confirmar
+            </div>
           </template>
           <template v-else-if="step === 2">
             <h2 v-if="book" class="text-h5 font-weight-bold text-primary mb-1">
@@ -108,9 +110,13 @@
                 mdi-arrow-right
               </v-icon> cap. {{ inputValue || '?' }}
             </h2>
-            <p class="text-caption text-grey mt-2">
-              Espaço ou Enter confirmam • Backspace volta
-            </p>
+            <div class="text-caption text-grey mt-6 d-flex align-center justify-center flex-wrap">
+              <span class="kbd-key mx-1">ESC</span> para sair
+              <span class="mx-2 opacity-50">|</span>
+              <span class="kbd-key mx-1">ESPAÇO/ENTER</span> para confirmar
+              <span class="mx-2 opacity-50">|</span>
+              <span class="kbd-key mx-1">BACKSPACE</span> para voltar
+            </div>
           </template>
           <template v-else-if="step === 3">
             <h2 v-if="book && chapter" class="text-h5 font-weight-bold text-primary mb-1">
@@ -119,9 +125,13 @@
             <p v-if="verseError" class="text-caption font-weight-bold mt-2" style="color: #ff5252;">
               {{ verseError }}
             </p>
-            <p v-else class="text-caption text-grey mt-2">
-              Enter projeta • Backspace volta
-            </p>
+            <div v-else class="text-caption text-grey mt-6 d-flex align-center justify-center flex-wrap">
+              <span class="kbd-key mx-1">ESC</span> para sair
+              <span class="mx-2 opacity-50">|</span>
+              <span class="kbd-key mx-1">ESPAÇO/ENTER</span> para projetar
+              <span class="mx-2 opacity-50">|</span>
+              <span class="kbd-key mx-1">BACKSPACE</span> para voltar
+            </div>
           </template>
         </div>
       </div>
@@ -163,7 +173,7 @@ export default defineComponent({
     const chapterVerses = ref<any>(null);
 
     const instructionText = computed(() => {
-      if (step.value === 1) return "Digite a abreviação do livro";
+      if (step.value === 1) return "Digite o nome ou a abreviação do livro";
       if (step.value === 2) return "Digite o número do capítulo";
       if (step.value === 3) return "Digite o número do versículo";
       return "";
@@ -171,7 +181,21 @@ export default defineComponent({
 
     const getCleanString = (str: string) => {
       if (!str) return "";
-      return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
+      let clean = str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+      
+      clean = clean.replace(/^iii\s+/, "3").replace(/^ii\s+/, "2").replace(/^i\s+/, "1");
+      
+      clean = clean
+        .replace(/^isam/, "1sam")
+        .replace(/^ire/, "1re")
+        .replace(/^icr/, "1cr")
+        .replace(/^ico/, "1co")
+        .replace(/^ite/, "1te")
+        .replace(/^iti/, "1ti")
+        .replace(/^ipe/, "1pe")
+        .replace(/^ijo/, "1jo");
+
+      return clean.replace(/[^a-z0-9]/g, "");
     };
 
     const suggestedBooks = computed(() => {
@@ -415,5 +439,19 @@ export default defineComponent({
   cursor: text;
   display: inline-block;
   min-width: 50px;
+}
+
+.kbd-key {
+  display: inline-block;
+  padding: 3px 6px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--sidebar-text-secondary);
+  background-color: rgba(150, 150, 150, 0.1);
+  border: 1px solid rgba(150, 150, 150, 0.2);
+  border-radius: 4px;
+  vertical-align: middle;
+  text-transform: uppercase;
 }
 </style>

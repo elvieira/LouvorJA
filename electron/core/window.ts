@@ -147,9 +147,11 @@ export function createWindow(): void {
     const displays = screen.getAllDisplays();
 
     const windowConfig: BrowserWindowConstructorOptions = {
+      title: "LouvorJA",
       width: 800,
       height: 600,
       backgroundColor: "#000000",
+      show: false,
       webPreferences: {
         preload: path.join(__dirname, "preload.js"),
         contextIsolation: true,
@@ -185,6 +187,7 @@ export function createWindow(): void {
       windowConfig.hasShadow = false;
       windowConfig.autoHideMenuBar = true;
       windowConfig.skipTaskbar = true;
+      windowConfig.focusable = false;
     }
 
     return {
@@ -198,19 +201,30 @@ export function createWindow(): void {
       childWindow.setOpacity(0);
       
       childWindow.once("ready-to-show", () => {
-        if (process.platform === "win32") {
-          const bounds = childWindow.getBounds();
-          const display = screen.getDisplayMatching(bounds);
+        const bounds = childWindow.getBounds();
+        const display = screen.getDisplayMatching(bounds);
 
-          childWindow.setFullScreen(false);
-          childWindow.setBounds(display.bounds);
+        childWindow.setFullScreen(false);
+        childWindow.setBounds(display.bounds);
+        
+        if (process.platform === "darwin" || process.platform === "win32") {
           childWindow.setAlwaysOnTop(true, "screen-saver");
         } else {
-          childWindow.setFullScreen(true);
+          childWindow.setAlwaysOnTop(true, "normal");
+        }
+
+        if (childWindow.showInactive) {
+          childWindow.showInactive();
+        } else {
+          childWindow.show();
         }
 
         let opacity = 0;
         const fadeIn = setInterval(() => {
+          if (childWindow.isDestroyed()) {
+            clearInterval(fadeIn);
+            return;
+          }
           if (opacity >= 1) {
             clearInterval(fadeIn);
             childWindow.setOpacity(1);
@@ -222,16 +236,20 @@ export function createWindow(): void {
       });
 
       childWindow.on("close", (e) => {
-        if (childWindow.getOpacity() > 0) {
+        if (!childWindow.isDestroyed() && childWindow.getOpacity() > 0) {
           e.preventDefault();
           let opacity = 1;
           const fadeOut = setInterval(() => {
+            if (childWindow.isDestroyed()) {
+              clearInterval(fadeOut);
+              return;
+            }
             if (opacity <= 0) {
               clearInterval(fadeOut);
               childWindow.setOpacity(0);
               childWindow.destroy();
             } else {
-              opacity -= 0.1;
+              opacity -= 0.05;
               childWindow.setOpacity(opacity);
             }
           }, 16);

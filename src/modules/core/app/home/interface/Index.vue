@@ -40,45 +40,55 @@
                   />
                 </template>
                 <v-card
-                  class="pa-2"
+                  class="modern-glass-menu elevation-0"
                   rounded="lg"
-                  min-width="200"
-                  style="background: var(--card-bg); box-shadow: var(--shadow); border: 1px solid var(--border-color, rgba(150, 150, 150, 0.2));"
+                  min-width="220"
+                  style="overflow: hidden; border: 1px solid rgba(150, 150, 150, 0.1);"
                 >
-                  <div
-                    class="text-caption font-weight-bold mb-2 mx-2 mt-1"
-                    style="color: var(--sidebar-text-secondary);"
+                  <v-list
+                    class="py-2"
+                    bg-color="transparent"
                   >
-                    Filtrar pesquisa por:
-                  </div>
-                  <v-list density="compact" bg-color="transparent" class="pa-0">
-                    <v-checkbox
-                      v-model="searchFilters"
-                      value="name"
-                      label="Nome da música"
-                      hide-details
-                      density="compact"
-                      color="primary"
-                      class="mb-1"
-                    />
-                    <v-checkbox
-                      v-model="searchFilters"
-                      value="albums"
-                      label="Álbum/Coletânea"
-                      hide-details
-                      density="compact"
-                      color="primary"
-                      class="mb-1"
-                    />
-                    <v-checkbox
-                      v-model="searchFilters"
-                      value="lyrics"
-                      label="Letra da música (em breve)"
-                      hide-details
-                      density="compact"
-                      color="primary"
+                    <div
+                      class="text-caption font-weight-bold mb-2 mx-4 mt-1"
+                      style="color: var(--sidebar-text-secondary);"
+                    >
+                      Filtrar pesquisa por:
+                    </div>
+                    <v-list-item
+                      :active="searchFilters.includes('name')"
+                      active-color="var(--accent-blue)"
+                      class="mx-2 rounded-lg mb-1"
+                      style="min-height: 40px;"
+                      @click="toggleSearchFilter('name')"
+                    >
+                      <div class="d-flex align-center">
+                        <v-icon :icon="searchFilters.includes('name') ? 'mdi-check-circle' : 'mdi-circle-outline'" size="small" class="mr-3" />
+                        <span class="text-body-2 font-weight-medium">Nome da música</span>
+                      </div>
+                    </v-list-item>
+                    <v-list-item
+                      :active="searchFilters.includes('albums')"
+                      active-color="var(--accent-blue)"
+                      class="mx-2 rounded-lg mb-1"
+                      style="min-height: 40px;"
+                      @click="toggleSearchFilter('albums')"
+                    >
+                      <div class="d-flex align-center">
+                        <v-icon :icon="searchFilters.includes('albums') ? 'mdi-check-circle' : 'mdi-circle-outline'" size="small" class="mr-3" />
+                        <span class="text-body-2 font-weight-medium">Álbum/Coletânea</span>
+                      </div>
+                    </v-list-item>
+                    <v-list-item
                       disabled
-                    />
+                      class="mx-2 rounded-lg mb-1"
+                      style="min-height: 40px;"
+                    >
+                      <div class="d-flex align-center">
+                        <v-icon icon="mdi-circle-outline" size="small" class="mr-3" />
+                        <span class="text-body-2 font-weight-medium">Letra da música (em breve)</span>
+                      </div>
+                    </v-list-item>
                   </v-list>
                 </v-card>
               </v-menu>
@@ -569,6 +579,14 @@ export default defineComponent({
     
     openAlbum(id_album: string) {
       this.$media.openAlbum(id_album);
+    },
+    
+    toggleSearchFilter(filter: string) {
+      if (this.searchFilters.includes(filter)) {
+        this.searchFilters = this.searchFilters.filter((f: string) => f !== filter);
+      } else {
+        this.searchFilters.push(filter);
+      }
     },
   },
 });

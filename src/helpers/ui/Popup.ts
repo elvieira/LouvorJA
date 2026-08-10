@@ -62,7 +62,7 @@ export default {
     const popups: CustomWindow[] = $appdata.get("popups") || [];
     popups.forEach((popup) => {
       if (popup && !popup.closed) {
-        popup.close();
+        popup.postMessage("close", "*");
       }
     });
     $appdata.set("popup_module", "");
@@ -75,7 +75,7 @@ export default {
 
     popups.forEach((popup) => {
       if (popup.monitorId && !monitors.includes(popup.monitorId)) {
-        popup.close();
+        popup.postMessage("close", "*");
       }
     });
 

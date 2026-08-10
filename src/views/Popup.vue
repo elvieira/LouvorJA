@@ -1,6 +1,6 @@
 <template>
   <div class="w-100 h-100" style="background: #000">
-    <component :is="loadModuleComponent()" v-if="module" />
+    <component :is="loadModuleComponent()" v-if="activeModule" />
   </div>
 </template>
 
@@ -11,16 +11,36 @@ export default defineComponent({
   name: "PopupPage",
   data: () => ({
     message: null as any,
+    activeModule: "" as string,
   }),
   computed: {
     module(): string {
       return this.$appdata.get("popup_module");
     },
   },
+  watch: {
+    module: {
+      immediate: true,
+      handler(newVal) {
+        if (newVal) {
+          this.activeModule = newVal;
+        }
+      },
+    },
+  },
   mounted() {
     this.$appdata.set("is_popup", true);
     window.addEventListener("message", (event: MessageEvent) => {
       if (event.origin === window.location.origin || event.origin === "file://" || event.origin === "null") {
+        if (event.data === "close") {
+          if (window.electronAPI) {
+            window.electronAPI.windowControl("close");
+          } else {
+            window.close();
+          }
+          return;
+        }
+
         this.message = event.data;
         if (event.data.param) {
           this.$appdata.set(event.data.param, event.data.value);
@@ -36,12 +56,12 @@ export default defineComponent({
     loadModuleComponent() {
       return defineAsyncComponent(() => {
         const moduleComponents = import.meta.glob("@/modules/**/interface/Popup.vue");
-        const match = Object.keys(moduleComponents).find(path => path.endsWith(`/${this.module}/interface/Popup.vue`));
+        const match = Object.keys(moduleComponents).find(path => path.endsWith(`/${this.activeModule}/interface/Popup.vue`));
         
         if (match) {
           return moduleComponents[match]() as Promise<any>;
         } 
-        return Promise.reject(new Error(`Popup component for ${this.module} not found`)).catch((e: Error) => {
+        return Promise.reject(new Error(`Popup component for ${this.activeModule} not found`)).catch((e: Error) => {
           this.$alert.error({
             text: "messages.error_import_module",
             error: e,

@@ -1,5 +1,6 @@
 import { ipcMain, BrowserWindow, dialog, shell, app, screen, Display } from "electron";
 import * as fs from "fs-extra";
+import * as path from "path";
 import { sysDbPath, mediaPath, coversPath, musicPath, slidesPath, userDataPath } from "../config/constants";
 import { registerDatabaseHandlers } from "../services/database";
 import { registerMediaHandlers } from "../services/media";
@@ -22,10 +23,10 @@ export function registerIpcHandlers() {
       const files = await fs.readdir(dirPath);
       const sizes = await Promise.all(
         files.map(async file => {
-          const fullPath = require("path").join(dirPath, file);
+          const fullPath = path.join(dirPath, file);
           const stat = await fs.stat(fullPath);
           return stat.isDirectory() ? await getFolderSize(fullPath) : stat.size;
-        })
+        }),
       );
       totalSize = sizes.reduce((acc, size) => acc + size, 0);
     } catch (e) {
@@ -38,7 +39,7 @@ export function registerIpcHandlers() {
     try {
       const bytes = await getFolderSize(userDataPath);
       return bytes;
-    } catch (e) {
+    } catch {
       return 0;
     }
   });
@@ -152,7 +153,7 @@ export function registerIpcHandlers() {
         win.maximize();
       }
     } else if (action === "close") {
-      if (win === BrowserWindow.getAllWindows()[0] || win.id === 1) { 
+      if (win.id === 1) { 
         win.webContents.send("request-close-app");
       } else {
         win.close();
