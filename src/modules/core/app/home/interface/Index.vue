@@ -40,14 +40,15 @@
                   />
                 </template>
                 <v-card
-                  class="modern-glass-menu elevation-0"
+                  :class="isDark ? 'modern-glass-menu elevation-0' : 'elevation-3'"
+                  :color="isDark ? '' : '#ffffff'"
                   rounded="lg"
                   min-width="220"
                   style="overflow: hidden; border: 1px solid rgba(150, 150, 150, 0.1);"
                 >
                   <v-list
                     class="py-2"
-                    bg-color="transparent"
+                    :bg-color="isDark ? 'transparent' : '#ffffff'"
                   >
                     <div
                       class="text-caption font-weight-bold mb-2 mx-4 mt-1"
@@ -250,6 +251,8 @@ import manifest from "../manifest";
 import MenuToggleButton from "@/components/MenuToggleButton.vue";
 import LTable from "@/components/DataTable.vue";
 import LMusicMenuTable from "@/components/MusicMenuTable.vue";
+import { useTheme } from "vuetify";
+import { computed } from "vue";
 
 import hymnalImg from "@/assets/images/hymnal.jpeg";
 import hymnal1996Img from "@/assets/images/hymnal_1996.jpeg";
@@ -260,6 +263,11 @@ export default defineComponent({
     MenuToggleButton,
     LTable,
     LMusicMenuTable,
+  },
+  setup() {
+    const theme = useTheme();
+    const isDark = computed(() => theme.name.value === "dark");
+    return { isDark };
   },
   data: () => ({
     searchQuery: "",
