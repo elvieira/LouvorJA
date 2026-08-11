@@ -31,6 +31,7 @@ interface ElectronAPI {
   checkDatabaseExists: (lang?: string) => Promise<boolean>
   checkOldInstallation: () => Promise<boolean>
   importOldInstallation: () => Promise<boolean>
+  searchBible: (versionId: number, query: string, mode: string, lang?: string) => Promise<Record<string, unknown>[]>
   validateInstallation: (lang?: string) => Promise<{ missingCovers: string[], missingMusic: string[], missingImages: string[], missingBins: string[], totalMissing: number }>
   repairSysdata: (filenames: string[], lang?: string) => Promise<boolean>
   windowControl: (action: string) => Promise<void>

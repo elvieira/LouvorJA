@@ -4,6 +4,7 @@ import * as fs from "fs-extra";
 import DbExtractor from "./db-extractor";
 import { encryptData, decryptData } from "../utils/crypto";
 import { getFtpParams } from "../utils/ftp-client";
+import { SQLiteHelper } from "../utils/sqlite";
 import { sysDbPath, finalDbPath } from "../config/constants";
 import * as ftp from "basic-ftp";
 
@@ -55,6 +56,52 @@ export function registerDatabaseHandlers() {
     } catch (error) {
       console.error(`Erro ao carregar ou reparar o arquivo local ${filename}:`, error);
       return null;
+    }
+  });
+
+  ipcMain.handle("search-bible", async (event, versionId: number, query: string, mode: "text" | "reference", lang: string = "pt") => {
+    try {
+      const dbPath = path.join(app.getPath("userData"), `database_${lang}.db`);
+      if (!fs.existsSync(dbPath)) return [];
+
+      const db = new SQLiteHelper(dbPath);
+      await db.connect();
+
+      try {
+        if (mode === "text") {
+          // Busca textual simples com LIKE (sql.js não suporta MATCH facilmente sem FTS configurado no banco original)
+          // Mas podemos dividir as palavras da query
+          const cleanQuery = query.trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+          if (!cleanQuery) return [];
+          
+          db.create_function("remove_diacritics", (str: unknown) => {
+            if (typeof str !== "string") return str;
+            return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+          });
+
+          let sqlQuery = `
+            SELECT v.id_bible_book, v.chapter, v.verse, v.text, b.name as book_name, b.abbreviation as book_abbrev
+            FROM bible_verse v
+            JOIN bible_book b ON v.id_bible_book = b.id_bible_book
+            WHERE v.id_bible_version = ?
+          `;
+          const params: unknown[] = [versionId];
+          
+          sqlQuery += " AND remove_diacritics(v.text) LIKE ?";
+          params.push(`%${cleanQuery}%`);
+          
+          sqlQuery += " LIMIT 100"; // Limitar resultados para não travar
+          
+          const results = db.prepare(sqlQuery).all(...params);
+          return results;
+        }
+      } finally {
+        db.close();
+      }
+      return [];
+    } catch (error) {
+      console.error("Erro ao buscar na bíblia:", error);
+      return [];
     }
   });
 

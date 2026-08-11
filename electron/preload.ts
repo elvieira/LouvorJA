@@ -21,6 +21,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
   checkDatabaseExists: (lang?: string) => ipcRenderer.invoke("check-database-exists", lang),
   checkOldInstallation: () => ipcRenderer.invoke("check-old-installation"),
   importOldInstallation: () => ipcRenderer.invoke("import-old-installation"),
+  searchBible: (versionId: number, query: string, mode: string, lang?: string) => ipcRenderer.invoke("search-bible", versionId, query, mode, lang),
   
   validateInstallation: (lang?: string) => ipcRenderer.invoke("validate-installation", lang),
   repairSysdata: (filenames: string[], lang?: string) => ipcRenderer.invoke("repair-sysdata", filenames, lang),

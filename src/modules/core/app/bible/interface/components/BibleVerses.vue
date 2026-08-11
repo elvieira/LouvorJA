@@ -17,7 +17,7 @@
           autofocus
           clearable
           rounded
-          @update:model-value="$emit('update:searchQuery', $event)"
+          @update:model-value="onUpdateSearchQuery"
           @keydown.enter="$emit('apply-search')"
           @keydown.esc="$emit('toggle-search')"
         />
@@ -179,6 +179,39 @@ export default defineComponent({
     "update:searchQuery",
     "apply-search",
   ],
+  methods: {
+    onUpdateSearchQuery(val: string) {
+      if (!val) {
+        this.$emit("update:searchQuery", val);
+        return;
+      }
+
+      const keys = Object.keys(this.verses).map(Number);
+      const maxVerse = keys.length > 0 ? Math.max(...keys) : 176;
+
+      const checkValid = (str: string) => {
+        const parts = str.split(/[-,\s]/);
+        for (const part of parts) {
+          if (part) {
+            const num = parseInt(part);
+            if (!isNaN(num) && num > maxVerse) {
+              return false;
+            }
+          }
+        }
+        return true;
+      };
+
+      let newVal = val;
+      while (newVal.length > 0 && !checkValid(newVal)) {
+        newVal = newVal.slice(0, -1);
+      }
+
+      // Se o Vue não atualizar a tela porque o newVal é igual ao antigo, 
+      // forçamos emitindo e voltando. Mas na maioria das vezes só emitir resolve.
+      this.$emit("update:searchQuery", newVal);
+    },
+  },
 });
 </script>
 

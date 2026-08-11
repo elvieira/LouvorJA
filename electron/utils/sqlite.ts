@@ -19,6 +19,13 @@ export class SQLiteHelper {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  create_function(name: string, func: (...args: any[]) => any) {
+    if (this.db) {
+      this.db.create_function(name, func);
+    }
+  }
+
   prepare(query: string) {
     if (!this.db) throw new Error("DB not connected");
     const db = this.db;

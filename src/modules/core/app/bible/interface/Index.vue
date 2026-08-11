@@ -23,6 +23,16 @@
             rounded
             style="max-width: 100px;"
           />
+          <!-- Search Bar & Toggle -->
+          <BibleSearchBar
+            :books="books"
+            @select-book="selBook"
+            @select-chapter="selChapter"
+            @search-verse="(v) => { verseSearchQuery = v; applyVerseSearch(); }"
+            @search-text="executeSearchText"
+            @execute-fallback="executeSearchFallback"
+          />
+
           <v-menu :close-on-content-click="true" location="bottom end">
             <template #activator="{ props }">
               <v-btn
@@ -30,16 +40,16 @@
                 variant="flat"
                 rounded="xl"
                 class="text-none px-4"
-                style="height: 44px; max-width: 350px; background: var(--card-bg); box-shadow: var(--shadow);"
+                style="height: 44px; min-width: 90px; background: var(--card-bg); box-shadow: var(--shadow);"
               >
-                <div class="d-flex align-center text-truncate w-100" style="color: var(--sidebar-text);">
-                  <v-icon size="small" class="mr-3 opacity-70">
+                <div class="d-flex align-center justify-center w-100" style="color: var(--sidebar-text);">
+                  <v-icon size="small" class="mr-2 opacity-70">
                     mdi-book-open-page-variant
                   </v-icon>
-                  <span class="text-truncate font-weight-medium text-body-2">
-                    {{ versions_list.find(v => v.value === bible.id_bible_version)?.title || t('select_version') }}
+                  <span class="font-weight-medium text-body-2">
+                    {{ versions_list.find(v => v.value === bible.id_bible_version)?.abbreviation || t('select_version') }}
                   </span>
-                  <v-icon size="small" class="ml-3 opacity-50">
+                  <v-icon size="small" class="ml-2 opacity-50">
                     mdi-menu-down
                   </v-icon>
                 </div>
@@ -134,6 +144,15 @@
         </BibleVerses>
       </div>
       <ConfigModal v-if="!loading" v-model="showConfigModal" />
+
+      <!-- Search Results Dialog -->
+      <BibleSearchResults
+        v-model="showSearchResults"
+        :is-searching="isSearching"
+        :search-results="searchResults"
+        :search-query="lastSearchQuery"
+        @open-result="openSearchResult"
+      />
     </div>
   </v-slide-y-reverse-transition>
 </template>
@@ -147,6 +166,8 @@ import ConfigModal from "./components/ConfigModal.vue";
 import ModuleHeader from "@/components/ModuleHeader.vue";
 import BibleNavigation from "./components/BibleNavigation.vue";
 import BibleVerses from "./components/BibleVerses.vue";
+import BibleSearchBar from "./components/BibleSearchBar.vue";
+import BibleSearchResults from "./components/BibleSearchResults.vue";
 import { parseVerseSearchQuery, formatNumbersInterval } from "./bibleHelpers";
 
 export default defineComponent({
@@ -158,6 +179,8 @@ export default defineComponent({
     Screen,
     LScreenBtn,
     ConfigModal,
+    BibleSearchBar,
+    BibleSearchResults,
   },
   data() {
     return {
@@ -194,6 +217,12 @@ export default defineComponent({
       showConfigModal: false,
       showVerseSearch: false,
       verseSearchQuery: "",
+      
+      // New search features
+      isSearching: false,
+      showSearchResults: false,
+      searchResults: [] as any[],
+      lastSearchQuery: "",
     };
   },
   computed: {
@@ -240,7 +269,8 @@ export default defineComponent({
     },
     versions_list() {
       return this.versions.map((version) => ({
-        title: `${version.abbreviation  } - ${  version.name}`,
+        abbreviation: version.abbreviation,
+        title: `${version.abbreviation} - ${version.name}`,
         value: version.id_bible_version,
       }));
     },
@@ -479,6 +509,64 @@ export default defineComponent({
       
       this.verseSearchQuery = "";
       this.showVerseSearch = false;
+    },
+    async executeSearchFallback(searchQuery: string) {
+      if (!searchQuery.trim()) return;
+      
+      const match = searchQuery.trim().match(/^(\d?\s*[a-zA-Záéíóúçãõ]+)\s+(\d+)(?::(\d+(?:-\d+)?(?:,\d+(?:-\d+)?)*))?$/i);
+      if (match) {
+        const abbrev = match[1].replace(/\s+/g, "").toLowerCase();
+        const chapter = parseInt(match[2]);
+        const versesStr = match[3];
+        
+        const book = this.books.find(b => b.abbreviation.toLowerCase() === abbrev || b.name.toLowerCase() === match[1].toLowerCase());
+        
+        if (book) {
+          await this.selBook(book.id_bible_book);
+          await this.selChapter(chapter);
+          if (versesStr) {
+            this.verseSearchQuery = versesStr;
+            this.applyVerseSearch();
+          }
+        } else {
+          // @ts-ignore
+          this.$alert.error({ text: "Livro não encontrado." });
+        }
+      }
+    },
+    async executeSearchText(searchQuery: string) {
+      if (!searchQuery.trim()) return;
+      
+      this.lastSearchQuery = searchQuery;
+      this.isSearching = true;
+      this.showSearchResults = true;
+      try {
+        // @ts-ignore
+        this.searchResults = await window.electronAPI.searchBible(this.bible.id_bible_version, searchQuery, "text", this.lang || "pt");
+      } catch (error) {
+        console.error(error);
+        this.searchResults = [];
+      } finally {
+        this.isSearching = false;
+      }
+    },
+    async openSearchResult(res: any) {
+      this.showSearchResults = false;
+      await this.selBook(res.id_bible_book);
+      await this.selChapter(res.chapter);
+      
+      this.bible.verses = [res.verse];
+      this.last_verse = res.verse;
+      this.select_bible = Object.assign({}, this.bible);
+      this.select_bible.scriptural_reference = this.scripturalReference(this.select_bible);
+      this.select_bible.text = this.getSelectedVerses(this.select_bible.verses);
+      
+      this.$nextTick(() => {
+        const element = document.getElementById(`listVerse_${res.verse}`);
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      });
     },
     async selVerse(event: any, num: any) {
       if (event) {
