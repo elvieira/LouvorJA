@@ -30,6 +30,20 @@ export default defineComponent({
   },
   mounted() {
     this.$appdata.set("is_popup", true);
+
+    window.addEventListener("keydown", (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable)) return;
+
+      if (e.key === "Escape" || e.key === "F5") {
+        if (window.electronAPI) {
+          window.electronAPI.windowControl("close");
+        } else {
+          window.close();
+        }
+      }
+    });
+
     window.addEventListener("message", (event: MessageEvent) => {
       if (event.origin === window.location.origin || event.origin === "file://" || event.origin === "null") {
         if (event.data === "close") {

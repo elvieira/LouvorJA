@@ -815,6 +815,18 @@ export default {
           this.timeUpdate();
         }
       });
+      el.addEventListener("ended", () => {
+        const currentActive = $appdata.get("modules.media.config.active_audio") || "a";
+        if (el?.id === `__audio_${currentActive}`) {
+          const isLoop = $appdata.get("modules.media.config.loop") === true;
+          if (isLoop) {
+            this.goToTime(0);
+            this.play();
+          } else {
+            this.close(true);
+          }
+        }
+      });
     }
     el.setAttribute("autoplay", "true");
     return el;
