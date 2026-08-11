@@ -558,6 +558,7 @@ export default defineComponent({
     ModernColorPicker,
   },
   data: () => ({
+    isInitializing: true as boolean,
     slide_monitor: [] as any[],
     slide_align: "Centro" as string,
     slide_fullscreen: true as boolean,
@@ -598,8 +599,10 @@ export default defineComponent({
     slide_monitor(val: any[]) {
       if (val !== undefined && val !== null) {
         this.$userdata.set("modules.config.slide_monitor", val);
-        $media.syncMonitors();
-        this.syncExternalMediaMonitors();
+        if (!this.isInitializing) {
+          $media.syncMonitors();
+          this.syncExternalMediaMonitors();
+        }
       }
     },
     slide_align(val: string) {
@@ -666,6 +669,10 @@ export default defineComponent({
         (this as any)[field] = val;
       }
     });
+
+    setTimeout(() => {
+      this.isInitializing = false;
+    }, 100);
   },
   methods: {
     t(text: string, params?: any[]): string {

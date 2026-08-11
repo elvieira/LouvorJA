@@ -171,6 +171,7 @@ import manifest from "../../manifest";
 export default defineComponent({
   name: "TabMedia",
   data: () => ({
+    isInitializing: true as boolean,
     media_use_internal_player: false as boolean,
     media_sync_projection_settings: true as boolean,
     media_auto_project_video: true as boolean,
@@ -187,12 +188,12 @@ export default defineComponent({
     monitorList(): any[] {
       if (this.rawDisplays.length === 0) {
         return [
-          { title: this.t("monitor_primary").replace("{0}", "1"), value: "Monitor 1", isPrimary: true },
-          { title: this.t("monitor_extended").replace("{0}", "2"), value: "Monitor 2", isPrimary: false },
+          { title: this.t("monitor_primary", ["1"]), value: "Monitor 1", isPrimary: true },
+          { title: this.t("monitor_extended", ["2"]), value: "Monitor 2", isPrimary: false },
         ];
       }
       return this.rawDisplays.map((d: any, index: number) => ({
-        title: d.isPrimary ? this.t("monitor_primary").replace("{0}", String(index + 1)) : this.t("monitor_extended").replace("{0}", String(index + 1)),
+        title: d.isPrimary ? this.t("monitor_primary", [String(index + 1)]) : this.t("monitor_extended", [String(index + 1)]),
         value: d.id,
         isPrimary: d.isPrimary,
       }));
@@ -205,14 +206,18 @@ export default defineComponent({
     media_use_internal_player(val: boolean) { this.$userdata.set("modules.config.media_use_internal_player", val); },
     media_sync_projection_settings(val: boolean) {
       this.$userdata.set("modules.config.media_sync_projection_settings", val);
-      this.syncExternalMediaMonitors();
+      if (!this.isInitializing) {
+        this.syncExternalMediaMonitors();
+      }
     },
     media_auto_project_video(val: boolean) { this.$userdata.set("modules.config.media_auto_project_video", val); },
     media_pause_on_minimize(val: boolean) { this.$userdata.set("modules.config.media_pause_on_minimize", val); },
     media_slide_monitor(val: any[]) {
       if (val !== undefined && val !== null) {
         this.$userdata.set("modules.config.media_slide_monitor", val);
-        this.syncExternalMediaMonitors();
+        if (!this.isInitializing) {
+          this.syncExternalMediaMonitors();
+        }
       }
     },
     media_slide_fullscreen(val: boolean) { this.$userdata.set("modules.config.media_slide_fullscreen", val); },
@@ -230,10 +235,14 @@ export default defineComponent({
         (this as any)[field] = val;
       }
     });
+
+    setTimeout(() => {
+      this.isInitializing = false;
+    }, 100);
   },
   methods: {
-    t(text: string): string {
-      return this.$t(`modules.${manifest.id}.${text}`);
+    t(text: string, params?: any[]): string {
+      return this.$t(`modules.${manifest.id}.${text}`, params || []);
     },
     toggleMediaSlideMonitor(val: any) {
       if (this.media_slide_monitor.includes(val)) {
