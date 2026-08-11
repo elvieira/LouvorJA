@@ -91,7 +91,8 @@
           <v-btn
             icon
             size="x-small"
-            variant="text"
+            :variant="activeFormats.bold ? 'tonal' : 'text'"
+            :color="activeFormats.bold ? 'primary' : undefined"
             @click="exec('bold')"
           >
             <v-icon size="16">
@@ -104,7 +105,8 @@
           <v-btn
             icon
             size="x-small"
-            variant="text"
+            :variant="activeFormats.italic ? 'tonal' : 'text'"
+            :color="activeFormats.italic ? 'primary' : undefined"
             @click="exec('italic')"
           >
             <v-icon size="16">
@@ -117,7 +119,8 @@
           <v-btn
             icon
             size="x-small"
-            variant="text"
+            :variant="activeFormats.underline ? 'tonal' : 'text'"
+            :color="activeFormats.underline ? 'primary' : undefined"
             @click="exec('underline')"
           >
             <v-icon size="16">
@@ -130,7 +133,8 @@
           <v-btn
             icon
             size="x-small"
-            variant="text"
+            :variant="activeFormats.strikeThrough ? 'tonal' : 'text'"
+            :color="activeFormats.strikeThrough ? 'primary' : undefined"
             @click="exec('strikeThrough')"
           >
             <v-icon size="16">
@@ -148,7 +152,8 @@
           <v-btn
             icon
             size="x-small"
-            variant="text"
+            :variant="activeFormats.justifyLeft ? 'tonal' : 'text'"
+            :color="activeFormats.justifyLeft ? 'primary' : undefined"
             @click="exec('justifyLeft')"
           >
             <v-icon size="16">
@@ -161,7 +166,8 @@
           <v-btn
             icon
             size="x-small"
-            variant="text"
+            :variant="activeFormats.justifyCenter ? 'tonal' : 'text'"
+            :color="activeFormats.justifyCenter ? 'primary' : undefined"
             @click="exec('justifyCenter')"
           >
             <v-icon size="16">
@@ -174,7 +180,8 @@
           <v-btn
             icon
             size="x-small"
-            variant="text"
+            :variant="activeFormats.justifyRight ? 'tonal' : 'text'"
+            :color="activeFormats.justifyRight ? 'primary' : undefined"
             @click="exec('justifyRight')"
           >
             <v-icon size="16">
@@ -256,6 +263,15 @@ export default defineComponent({
       selectedColor: "#000000" as string,
       isUpdating: false as boolean,
       savedRange: null as Range | null,
+      activeFormats: {
+        bold: false,
+        italic: false,
+        underline: false,
+        strikeThrough: false,
+        justifyLeft: false,
+        justifyCenter: false,
+        justifyRight: false,
+      } as Record<string, boolean>,
     };
   },
   watch: {
@@ -281,6 +297,26 @@ export default defineComponent({
         const range = selection.getRangeAt(0);
         if (this.$refs.editor && (this.$refs.editor as HTMLElement).contains(range.commonAncestorContainer)) {
           this.savedRange = range;
+          
+          try {
+            this.activeFormats.bold = document.queryCommandState("bold");
+            this.activeFormats.italic = document.queryCommandState("italic");
+            this.activeFormats.underline = document.queryCommandState("underline");
+            this.activeFormats.strikeThrough = document.queryCommandState("strikeThrough");
+            this.activeFormats.justifyLeft = document.queryCommandState("justifyLeft");
+            this.activeFormats.justifyCenter = document.queryCommandState("justifyCenter");
+            this.activeFormats.justifyRight = document.queryCommandState("justifyRight");
+            
+            const font = document.queryCommandValue("fontName");
+            if (font) this.selectedFont = font.replace(/['"]/g, "");
+            
+            const size = document.queryCommandValue("fontSize");
+            if (size) this.selectedSize = size;
+          } catch (e) {
+            // queryCommandState pode falhar em alguns contextos, ignora
+          }
+        } else {
+          Object.keys(this.activeFormats).forEach(k => this.activeFormats[k] = false);
         }
       }
     },
@@ -337,6 +373,9 @@ export default defineComponent({
   overflow-y: auto;
   outline: none;
   min-height: 100px;
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  cursor: text;
 }
 
 .editor-content:empty:before {

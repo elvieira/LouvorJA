@@ -142,6 +142,24 @@ export function createWindow(): void {
   const menu = Menu.buildFromTemplate(menuTemplate);
   Menu.setApplicationMenu(menu);
 
+  mainWindow.webContents.on("context-menu", (event: Electron.Event, params: Electron.ContextMenuParams) => {
+    const template: MenuItemConstructorOptions[] = [];
+    if (params.isEditable) {
+      template.push({ role: "undo", label: "Desfazer" });
+      template.push({ role: "redo", label: "Refazer" });
+      template.push({ type: "separator" });
+      template.push({ role: "cut", label: "Recortar" });
+      template.push({ role: "copy", label: "Copiar" });
+      template.push({ role: "paste", label: "Colar" });
+      template.push({ role: "selectAll", label: "Selecionar Tudo" });
+    } else if (params.selectionText) {
+      template.push({ role: "copy", label: "Copiar" });
+    }
+    if (template.length > 0) {
+      Menu.buildFromTemplate(template).popup({ window: mainWindow });
+    }
+  });
+
   mainWindow.webContents.setWindowOpenHandler(({ features }) => {
     const isFullscreen = features.includes("fullscreen=yes");
     const displays = screen.getAllDisplays();
