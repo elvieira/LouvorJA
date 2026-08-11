@@ -129,14 +129,23 @@ export default {
         audio.currentTime = 0;
       }
 
+      const slides = this.slides();
+      let useInstrumental = mode === "instrumental";
+      
+      if (useInstrumental) {
+        const hasInstrumentalTiming = slides.some((item: any) => $datetime.toNumber(item.instrumental_time) > 0);
+        if (!hasInstrumentalTiming) {
+          useInstrumental = false;
+        }
+      }
+
       //Grava os tempos dos slides
       $appdata.set(
         "modules.media.times",
-        this.slides().map((item: any) =>
-          $datetime.toNumber(
-            mode === "audio" ? item.time : item.instrumental_time,
-          ),
-        ),
+        slides.map((item: any) => {
+          const t = useInstrumental ? item.instrumental_time : item.time;
+          return $datetime.toNumber(t);
+        }),
       );
 
       const urlPath = mode === "audio" ? data.url_music : data.url_instrumental_music;
