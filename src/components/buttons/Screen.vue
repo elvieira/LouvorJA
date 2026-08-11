@@ -90,12 +90,24 @@ const popup = async () => {
 };
 
 const handleGlobalKeydown = (e: KeyboardEvent) => {
-  if (e.key === "F5" || e.key === "F9") {
+  // Ignorar se estiver focando em algum input/textarea
+  const target = e.target as HTMLElement;
+  if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable)) {
+    // Só ignora F5/ESC se for realmente num campo de input
+    // Mas F5 e ESC costumam ser globais mesmo dentro de input, vou deixar passar ESC e F5
+  }
+
+  if (e.key === "F5") {
     // Only trigger if this specific module is the one currently open on screen
     const isModuleActive = appdata.get(`modules.${props.module}.show`);
     if (isModuleActive) {
       e.preventDefault();
       popup();
+    }
+  } else if (e.key === "Escape") {
+    if (is_selected.value) {
+      e.preventDefault();
+      popupHelper.exit();
     }
   }
 };

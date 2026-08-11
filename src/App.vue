@@ -156,7 +156,7 @@ export default {
       } else if (e.code === "Escape") {
         e.preventDefault();
         this.$media.close();
-      } else if (e.code === "KeyF") {
+      } else if (e.code === "KeyF" || e.code === "F5") {
         e.preventDefault();
         this.$media.fullscreen(!isFullscreen);
       } else if (e.code === "KeyM") {

@@ -22,7 +22,7 @@
       Busca e Seleção Múltipla
     </h3>
     <p class="mb-4">
-      Para exibir a passagem no telão, clique sobre o versículo na lista. Você pode projetar a Bíblia clicando no ícone do monitor na área de pré-visualização ou pressionando as teclas <kbd>F5</kbd> / <kbd>F9</kbd>. 
+      Para exibir a passagem no telão, clique sobre o versículo na lista. Você pode projetar a Bíblia clicando no ícone do monitor na área de pré-visualização ou pressionando a tecla <kbd>F5</kbd>. 
       Você pode selecionar mais de um verso simultaneamente utilizando o campo de <strong>Busca</strong> localizado acima da lista de versículos, digitando a sequência desejada:
     </p>
     <ul class="mb-4 pl-6 text-body-2" style="color: var(--sidebar-text-secondary);">

@@ -580,12 +580,12 @@ export default defineComponent({
     monitorList(): any[] {
       if (this.rawDisplays.length === 0) {
         return [
-          { title: this.t("monitor_primary").replace("{0}", "1"), value: "Monitor 1", isPrimary: true },
-          { title: this.t("monitor_extended").replace("{0}", "2"), value: "Monitor 2", isPrimary: false },
+          { title: this.t("monitor_primary", [1]), value: "Monitor 1", isPrimary: true },
+          { title: this.t("monitor_extended", [2]), value: "Monitor 2", isPrimary: false },
         ];
       }
       return this.rawDisplays.map((d: any, index: number) => ({
-        title: d.isPrimary ? this.t("monitor_primary").replace("{0}", String(index + 1)) : this.t("monitor_extended").replace("{0}", String(index + 1)),
+        title: d.isPrimary ? this.t("monitor_primary", [index + 1]) : this.t("monitor_extended", [index + 1]),
         value: d.id,
         isPrimary: d.isPrimary,
       }));
@@ -668,8 +668,8 @@ export default defineComponent({
     });
   },
   methods: {
-    t(text: string): string {
-      return this.$t(`modules.${manifest.id}.${text}`);
+    t(text: string, params?: any[]): string {
+      return this.$t(`modules.${manifest.id}.${text}`, params || []);
     },
     identifyMonitors() {
       if (window.electronAPI && window.electronAPI.identifyDisplays) {

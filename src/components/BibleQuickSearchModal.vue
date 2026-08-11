@@ -388,8 +388,26 @@ export default defineComponent({
       emit("update:modelValue", newVal);
     });
 
-    watch(inputValue, () => {
+    watch(inputValue, (newVal) => {
       if (verseError.value) verseError.value = "";
+
+      if (!newVal) return;
+
+      if (step.value === 1) {
+        // Passo 1: Apenas letras, e números 1, 2, 3 apenas no primeiro caractere.
+        // Bloqueia espaços, símbolos e números no meio da string.
+        let cleanVal = newVal.replace(/[^1-3A-Za-zÀ-ÖØ-öø-ÿ]/g, "");
+        cleanVal = cleanVal.replace(/(?!^)[1-3]/g, "");
+        if (newVal !== cleanVal) {
+          inputValue.value = cleanVal;
+        }
+      } else {
+        // Passos 2 e 3: Apenas números
+        const cleanVal = newVal.replace(/[^0-9]/g, "");
+        if (newVal !== cleanVal) {
+          inputValue.value = cleanVal;
+        }
+      }
     });
 
     return {

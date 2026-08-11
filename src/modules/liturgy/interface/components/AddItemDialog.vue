@@ -739,7 +739,12 @@ export default defineComponent({
         item.musicMode = this.addForm.musicMode;
         const music = this.musicList.find(m => m.id_music === this.addForm.musicId);
         if (music) {
-          item.subtitle = music.album_names || "";
+          const originalName = music.hymnal_track ? `${music.hymnal_track} - ${music.name}` : music.name;
+          if (item.name !== originalName && item.name !== music.name) {
+            item.subtitle = `${originalName}${music.album_names ? ` - ${music.album_names}` : ""}`;
+          } else {
+            item.subtitle = music.album_names || "";
+          }
         }
       }
 

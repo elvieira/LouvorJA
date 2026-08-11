@@ -45,10 +45,16 @@
               </td>
             </tr>
             <tr>
-              <td><kbd>F5</kbd> / <kbd>F9</kbd></td>
+              <td><kbd>F5</kbd></td>
               <td style="color: var(--sidebar-text-secondary);">
                 Projeta a janela atual (quando disponível o recurso)
               </td>
+            </tr>
+            <tr>
+              <td class="font-weight-medium">
+                Sair da projeção
+              </td>
+              <td><kbd>ESC</kbd></td>
             </tr>
           </tbody>
         </v-table>
