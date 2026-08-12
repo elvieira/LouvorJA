@@ -316,6 +316,10 @@ export default defineComponent({
               );
             });
           }
+        } else if (event.data === "escape-pressed") {
+          import("@/helpers/ui/Popup").then(({ default: $popup }) => {
+            $popup.exit();
+          });
         }
       }
     });

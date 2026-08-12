@@ -135,6 +135,30 @@ export default {
         return;
       }
 
+      if (e.code === "Escape") {
+        const popupModule = this.$appdata.get("popup_module");
+        const externalMediaOpen = this.$appdata.get("modules.external_media.show");
+        const isMediaActive = this.$appdata.get("modules.media.show") && !this.$appdata.get("modules.media.minimized");
+        
+        // Se a mídia estiver ativa (música tocando), não interceptamos o Esc aqui.
+        // Deixamos cair para o handler de mídia abaixo que chama this.$media.close()
+        // com a caixa de confirmação.
+        if (!isMediaActive && (externalMediaOpen || popupModule)) {
+          e.preventDefault();
+          if (externalMediaOpen) {
+            this.$appdata.set("modules.external_media.show", false);
+            this.$appdata.set("modules.external_media.minimized", false);
+            this.$appdata.set("modules.external_media.filePath", null);
+          }
+          if (popupModule) {
+            import("@/helpers/ui/Popup").then(({ default: $popup }) => {
+              $popup.exit();
+            });
+          }
+          return;
+        }
+      }
+
       const isFullscreen = this.$appdata.get("modules.media.config.fullscreen");
       const isMediaModuleOpen = this.$appdata.get("modules.media.show");
       const isMinimized = this.$appdata.get("modules.media.minimized");

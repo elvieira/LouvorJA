@@ -343,6 +343,9 @@ export default defineComponent({
           verses: verse.value,
         });
         
+        // Evita que a barra de pesquisa roube o foco 300ms após o componente montar
+        appdata.set("prevent_bible_focus", true);
+        
         modules.open("bible");
 
         setTimeout(() => {

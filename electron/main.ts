@@ -6,6 +6,13 @@ import { registerIpcHandlers } from "./ipc";
 import { sysDbPath, mediaPath, coversPath, musicPath, slidesPath, oldDbPath } from "./config/constants";
 import { setupUpdater } from "./services/updater";
 
+// Otimizações de GPU (Hardware Acceleration) para evitar travamentos em vídeos pesados e projetor
+app.commandLine.appendSwitch("ignore-gpu-blocklist");
+app.commandLine.appendSwitch("enable-gpu-rasterization");
+app.commandLine.appendSwitch("enable-zero-copy");
+app.commandLine.appendSwitch("disable-software-rasterizer");
+app.commandLine.appendSwitch("enable-hardware-overlays");
+
 // Migração de banco de dados legado
 if (fs.existsSync(oldDbPath)) {
   try {

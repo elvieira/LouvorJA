@@ -36,6 +36,9 @@ export default defineComponent({
       if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable)) return;
 
       if (e.key === "Escape" || e.key === "F5") {
+        if (window.opener) {
+          window.opener.postMessage("escape-pressed", "*");
+        }
         if (window.electronAPI) {
           window.electronAPI.windowControl("close");
         } else {

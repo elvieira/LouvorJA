@@ -335,6 +335,11 @@ export default defineComponent({
       }
     },
     async executeItem(item: any) {
+      if (this.isItemProjecting(item)) {
+        this.closeProjection(item.type);
+        return;
+      }
+
       let targetModule = null;
 
       if (item.type === "music") {
@@ -443,6 +448,9 @@ export default defineComponent({
           
           if (selectedMonitors.length > 0) {
             await (this as any).$popup.syncMonitors(selectedMonitors, targetModule, true);
+          } else if (targetModule !== "external_media") {
+            const fullscreen = this.$userdata.get("modules.config.slide_fullscreen") !== false;
+            await (this as any).$popup.open({ module: targetModule, fullscreen });
           }
         }
       }
@@ -473,6 +481,41 @@ export default defineComponent({
       } catch (e) {
         console.error("Failed to load liturgies:", e);
       }
+    },
+    isItemProjecting(item: any) {
+      const currentModule = this.$appdata.get("popup_module");
+      if (!currentModule) return false;
+      
+      if (item.type === "lyric" && currentModule === "lyric") {
+        return this.$appdata.get("modules.lyric.id_music") === item.id_music && this.$appdata.get("modules.lyric.show") === true;
+      }
+      if (item.type === "bible" && currentModule === "bible") {
+        return this.$appdata.get("modules.bible.id_bible_book") === item.id_bible_book && 
+          this.$appdata.get("modules.bible.chapter") === item.chapter && 
+          JSON.stringify(this.$appdata.get("modules.bible.verses")) === JSON.stringify(item.verses) &&
+          this.$appdata.get("modules.bible.show") === true;
+      }
+      if (item.type === "media" && currentModule === "external_media") {
+        return this.$appdata.get("modules.external_media.filePath") === item.filePath && 
+          this.$appdata.get("modules.external_media.show") === true;
+      }
+      return false;
+    },
+    closeProjection(type: string) {
+      if (type === "lyric") {
+        this.$appdata.set("modules.lyric.show", false);
+      } else if (type === "bible") {
+        this.$appdata.set("modules.bible.show", false);
+      } else if (type === "media") {
+        this.$appdata.set("modules.external_media.show", false);
+        this.$appdata.set("modules.external_media.minimized", false);
+        this.$appdata.set("modules.external_media.filePath", null);
+      }
+      
+      // Fecha a janela de projeção caso esteja aberta
+      import("@/helpers/ui/Popup").then(({ default: $popup }) => {
+        $popup.exit();
+      });
     },
   },
 });

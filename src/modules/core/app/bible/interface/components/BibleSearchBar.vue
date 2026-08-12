@@ -6,17 +6,16 @@
       v-model="searchQuery"
       :placeholder="searchMode === 'reference' ? 'Selecione um verso bíblico...' : 'Procure um texto bíblico...'"
       prepend-inner-icon="mdi-magnify"
+      clearable
       variant="solo"
       density="comfortable"
       hide-details
       rounded="xl"
       class="search-input-hero w-100"
-      autofocus
+      @click:clear="clearSearch"
       @keydown="onSearchKeyDown"
       @input="updateAutocompleteHint"
       @focus="onSearchFocus"
-      @click="onSearchClick"
-      @blur="onSearchBlur"
     >
       <template #append-inner>
         <div class="d-flex align-center ml-2" style="margin-right: -4px;">
@@ -46,7 +45,7 @@
     <div 
       v-if="searchMode === 'reference' && autocompleteHint && searchQuery" 
       class="autocomplete-hint d-flex align-center justify-end"
-      style="position: absolute; right: 130px; top: 0; bottom: 0; pointer-events: none; z-index: 2;"
+      style="position: absolute; right: 150px; top: 0; bottom: 0; pointer-events: none; z-index: 2;"
     >
       <span :style="matchedBook ? 'color: var(--accent-blue); opacity: 0.9; font-weight: 600;' : 'color: var(--sidebar-text-secondary); opacity: 0.6; font-weight: 500;'" style="font-size: 0.85rem;">
         {{ autocompleteHint }} <v-icon v-if="matchedBook" size="small" class="ml-1 opacity-50">{{ autocompleteHint === 'Versículo' ? 'mdi-keyboard-return' : 'mdi-keyboard-space' }}</v-icon>
@@ -80,17 +79,56 @@ export default defineComponent({
       autocompleteHint: "",
       matchedBook: null as any,
       justFocused: false,
+      nativeInput: null as HTMLInputElement | null,
+      mouseupHandler: null as ((_e: MouseEvent) => void) | null,
     };
   },
   mounted() {
     this.$nextTick(() => {
-      // Pequeno atraso para garantir que a transição do módulo terminou antes de focar
+      // Localiza o input nativo dentro do v-text-field
+      const component = this.$refs.searchInput as any;
+      let inputEl: HTMLInputElement | null = null;
+      if (component?.$el) {
+        inputEl = component.$el.querySelector("input") as HTMLInputElement;
+      } else if (component?.input) {
+        inputEl = component.input as HTMLInputElement;
+      }
+
+      if (inputEl) {
+        (this as any).nativeInput = inputEl;
+
+        // Intercepta o mouseup para evitar que o browser desfaça a seleção
+        const handler = (e: MouseEvent) => {
+          if (document.activeElement === inputEl) {
+            // Já está focado: prevent cancela reposicionamento do cursor
+            e.preventDefault();
+          }
+          // Seleciona tudo
+          inputEl!.select();
+        };
+        (this as any).mouseupHandler = handler;
+        inputEl.addEventListener("mouseup", handler);
+      }
+
+      // Foco inicial
       setTimeout(() => {
-        if (this.$refs.searchInput) {
-          (this.$refs.searchInput as any).focus();
+        if (this.$appdata.get("prevent_bible_focus")) {
+          this.$appdata.set("prevent_bible_focus", false);
+          return;
+        }
+        if (inputEl) {
+          inputEl.focus();
+          inputEl.select();
         }
       }, 300);
     });
+  },
+  beforeUnmount() {
+    const inputEl = (this as any).nativeInput as HTMLInputElement | null;
+    const handler = (this as any).mouseupHandler;
+    if (inputEl && handler) {
+      inputEl.removeEventListener("mouseup", handler);
+    }
   },
   methods: {
     setMode(mode: "reference" | "text") {
@@ -261,7 +299,7 @@ export default defineComponent({
         e.preventDefault();
         this.$emit("search-text", this.searchQuery);
         const inputEl = e.target as HTMLInputElement;
-        if (inputEl && inputEl.select) inputEl.select();
+        if (inputEl && inputEl.blur) inputEl.blur();
         return;
       }
 
@@ -301,10 +339,10 @@ export default defineComponent({
               this.$emit("select-chapter", parseInt(chapterStr));
               this.$emit("search-verse", verseStr);
               
-              // Select all text when final search is executed
+              // Remove focus so keyboard shortcuts can take over
               const inputEl = e.target as HTMLInputElement;
-              if (inputEl && inputEl.select) {
-                inputEl.select();
+              if (inputEl && inputEl.blur) {
+                inputEl.blur();
               }
             } else {
               this.$emit("execute-fallback", this.searchQuery);
@@ -314,19 +352,16 @@ export default defineComponent({
       }
     },
     onSearchFocus() {
-      this.justFocused = true;
-    },
-    onSearchClick(e: MouseEvent) {
-      if (this.justFocused && this.searchMode === "reference") {
-        const inputEl = e.target as HTMLInputElement;
-        if (inputEl && inputEl.select) {
-          inputEl.select();
-        }
-        this.justFocused = false;
+      const inputEl = (this as any).nativeInput as HTMLInputElement | null;
+      if (inputEl) {
+        inputEl.select();
       }
     },
-    onSearchBlur() {
-      this.justFocused = false;
+    selectAllText() {
+      const inputEl = (this as any).nativeInput as HTMLInputElement | null;
+      if (inputEl) {
+        inputEl.select();
+      }
     },
   },
 });
