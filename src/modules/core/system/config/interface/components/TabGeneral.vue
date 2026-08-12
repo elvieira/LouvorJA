@@ -56,6 +56,20 @@
           <v-divider class="mb-8" style="opacity: 0.1;" />
 
           <SettingsActionRow
+            icon="mdi-sync-alert"
+            icon-color="warning"
+            :title="t('resync_data')"
+            :subtitle="t('resync_data_desc')"
+            :button-text="t('resync_btn')"
+            button-color="warning"
+            button-variant="tonal"
+            class="mb-8"
+            @action="resyncData"
+          />
+
+          <v-divider class="mb-8" style="opacity: 0.1;" />
+
+          <SettingsActionRow
             icon="mdi-delete-alert"
             icon-color="error"
             :title="t('clear_data')"
@@ -205,6 +219,27 @@ export default defineComponent({
           if (resp === "yes") {
             (this as any).$history.clearAll();
             this.$alert.info({ text: this.t("msg_reset_success"), translate: false });
+          }
+        },
+      );
+    },
+    async resyncData() {
+      this.$alert.yesno(
+        { text: this.t("msg_resync_data"), translate: false },
+        async (resp: string) => {
+          if (resp === "yes") {
+            if ((window as any).electronAPI && (window as any).electronAPI.clearSysData) {
+              try {
+                await (window as any).electronAPI.clearSysData();
+                this.$alert.info({ text: this.t("msg_resync_success"), translate: false }, () => {
+                  window.location.reload();
+                });
+              } catch (err) {
+                this.$alert.error({ text: this.t("msg_resync_error"), translate: false });
+              }
+            } else {
+              this.$alert.error({ text: this.t("msg_desktop_only"), translate: false });
+            }
           }
         },
       );

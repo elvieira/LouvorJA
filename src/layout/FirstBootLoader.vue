@@ -267,13 +267,7 @@ export default defineComponent({
           try {
             await this.fetchAndSave("config");
           } catch (e: any) {
-            if (e.message && (e.message.includes("Failed to fetch") || e.message.includes("NetworkError"))) {
-              throw new Error(this.$t("first_boot.errors.no_internet"));
-            } else if (e.message && e.message.includes("429")) {
-              throw new Error(this.$t("first_boot.errors.rate_limit"));
-            } else {
-              throw new Error(this.$t("first_boot.errors.server_fail").replace("{0}", e.message));
-            }
+            console.warn("Non-fatal error: Failed to fetch config from server. Proceeding with local extraction if available.", e);
           }
           
           this.statusText = this.$t("first_boot.status.downloading_db");
