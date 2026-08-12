@@ -14,6 +14,7 @@ export function createWindow(): void {
       preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,
       nodeIntegration: false,
+      backgroundThrottling: false,
     },
     frame: false,
   });
@@ -174,6 +175,7 @@ export function createWindow(): void {
         preload: path.join(__dirname, "preload.js"),
         contextIsolation: true,
         nodeIntegration: false,
+        backgroundThrottling: false,
       },
     };
 
