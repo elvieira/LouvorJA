@@ -280,7 +280,7 @@ export function createWindow(): void {
 
   if (process.env.VITE_DEV_SERVER_URL) {
     mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL);
-    mainWindow.webContents.openDevTools();
+    // mainWindow.webContents.openDevTools();
   } else if (isDev) {
     mainWindow.loadURL("http://localhost:5173");
   } else {
