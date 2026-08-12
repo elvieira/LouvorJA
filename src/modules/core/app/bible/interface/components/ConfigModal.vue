@@ -5,7 +5,7 @@
         class="bible-config-modal rounded-xl"
         width="100%"
         max-width="520"
-        style="background: var(--card-bg, #ffffff); box-shadow: 0 10px 40px rgba(0,0,0,0.5); overflow: hidden;"
+        style="background: var(--card-bg, #ffffff); box-shadow: 0 10px 40px rgba(0,0,0,0.5); overflow: hidden; display: flex; flex-direction: column; max-height: 90%;"
       >
         <!-- Header -->
         <div class="pa-6 pb-4 flex-shrink-0" style="background: rgba(0,0,0,0.02);">
@@ -53,7 +53,7 @@
         </div>
 
         <!-- Scrollable Content -->
-        <div style="background: var(--main-bg, #f5f5f5); padding: 24px; max-height: 45vh; overflow-y: auto;">
+        <div style="background: var(--main-bg, #f5f5f5); padding: 24px; flex: 1; min-height: 0; overflow-y: auto;">
           <!-- Fundo da Projeção -->
           <v-card class="settings-card rounded-xl pa-2 mb-6" flat style="background: var(--card-bg, #ffffff); box-shadow: var(--shadow);">
             <v-card-text class="pa-4">

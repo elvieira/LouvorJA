@@ -1,12 +1,11 @@
 <template>
   <v-slide-y-reverse-transition>
     <div v-if="internalValue" class="d-flex align-center justify-center bg-transparent" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 100; background: rgba(0,0,0,0.6) !important; backdrop-filter: blur(2px);">
-      <!-- Modal Card -->
       <v-card
-        class="elevation-24 rounded-xl d-flex flex-column"
+        class="timer-config-modal rounded-xl"
         width="100%"
         max-width="520"
-        style="background: var(--card-bg, #ffffff); box-shadow: 0 10px 40px rgba(0,0,0,0.5); border: 1px solid var(--border-color, rgba(0,0,0,0.05)); overflow: hidden;"
+        style="background: var(--card-bg, #ffffff); box-shadow: 0 10px 40px rgba(0,0,0,0.5); overflow: hidden; display: flex; flex-direction: column; max-height: 90%;"
       >
         <!-- Header -->
         <div class="pa-6 pb-4 flex-shrink-0" style="background: rgba(0,0,0,0.02);">
@@ -45,7 +44,7 @@
         </div>
 
         <!-- Scrollable Content -->
-        <div style="background: var(--main-bg, #f5f5f5); padding: 24px; max-height: 45vh; overflow-y: auto;" class="custom-scrollbar">
+        <div style="background: var(--main-bg, #f5f5f5); padding: 24px; flex: 1; min-height: 0; overflow-y: auto;" class="custom-scrollbar">
           <!-- Fundo da Projeção -->
           <v-card class="settings-card rounded-xl pa-2 mb-4" flat style="background: var(--card-bg, #ffffff); box-shadow: var(--shadow);">
             <v-card-text class="pa-4">

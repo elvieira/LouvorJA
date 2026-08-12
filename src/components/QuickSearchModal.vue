@@ -8,7 +8,7 @@
     transition="fade-transition"
     @keydown.esc="internalValue = false"
   >
-    <v-card class="modern-alert-card rounded-xl overflow-hidden" style="display: flex; flex-direction: column; max-height: 85vh; background: var(--card-bg);">
+    <v-card class="modern-alert-card rounded-xl overflow-hidden" style="display: flex; flex-direction: column; max-height: 90%; background: var(--card-bg);">
       <!-- Barra de Pesquisa Fixa -->
       <div class="pa-4 flex-shrink-0" style="background: rgba(0,0,0,0.02); border-bottom: 1px solid rgba(128,128,128,0.1); z-index: 2;">
         <div class="d-flex align-center mb-3 px-1">

@@ -5,7 +5,7 @@
         class="rounded-xl overflow-hidden elevation-24"
         width="100%"
         max-width="450"
-        style="background: var(--card-bg); max-height: 75vh; display: flex; flex-direction: column;"
+        style="background: var(--card-bg); max-height: 90%; display: flex; flex-direction: column;"
       >
         <v-card-text class="pa-0 d-flex flex-column" style="height: 100%; min-height: 0; overflow: hidden;">
           <div class="pa-6 pb-4 flex-shrink-0" style="background: rgba(0,0,0,0.02);">
