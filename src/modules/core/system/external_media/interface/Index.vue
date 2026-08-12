@@ -192,6 +192,7 @@ export default defineComponent({
     mediaReady: false,
     userPaused: false,
     fullscreenTimer: null as any,
+    lastTimeUpdate: 0,
   }),
   computed: {
     requestAction(): string {
@@ -473,8 +474,13 @@ export default defineComponent({
       if (this.duration > 0) {
         this.progress = (el.currentTime / this.duration) * 100;
       }
-      this.$appdata.set("modules.external_media.config.current_time", this.currentTime);
-      this.$appdata.set("modules.external_media.config.progress", this.progress);
+      
+      const now = Date.now();
+      if (!this.lastTimeUpdate || now - this.lastTimeUpdate > 200) {
+        this.$appdata.set("modules.external_media.config.current_time", this.currentTime);
+        this.$appdata.set("modules.external_media.config.progress", this.progress);
+        this.lastTimeUpdate = now;
+      }
     },
 
     onLoadedMetadata() {
@@ -509,6 +515,9 @@ export default defineComponent({
       if (!el || !this.duration) return;
       const time = (this.duration * val) / 100;
       el.currentTime = time;
+      this.currentTime = time;
+      this.$appdata.set("modules.external_media.config.current_time", time);
+      this.$appdata.set("modules.external_media.config.force_sync_time", time);
     },
 
     setVolume(val: number) {

@@ -53,14 +53,31 @@ export default defineComponent({
     currentTime(): number {
       return this.$appdata.get("modules.external_media.config.current_time");
     },
+    forceSyncTime(): number {
+      return this.$appdata.get("modules.external_media.config.force_sync_time");
+    },
   },
   watch: {
     currentTime(val: number) {
       const video = this.$refs.popupVideo as HTMLVideoElement;
-      if (video && !video.seeking) {
-        if (Math.abs(video.currentTime - val) > 0.5) {
+      if (video && !video.seeking && !video.paused) {
+        const diff = val - video.currentTime;
+        if (Math.abs(diff) > 0.8) {
           video.currentTime = val;
+          video.playbackRate = 1.0;
+        } else if (diff > 0.05) {
+          video.playbackRate = 1.05;
+        } else if (diff < -0.05) {
+          video.playbackRate = 0.95;
+        } else {
+          video.playbackRate = 1.0;
         }
+      }
+    },
+    forceSyncTime(val: number) {
+      const video = this.$refs.popupVideo as HTMLVideoElement;
+      if (video) {
+        video.currentTime = val;
       }
     },
     isPaused(val: boolean) {
@@ -71,8 +88,11 @@ export default defineComponent({
         if (val) {
           video.pause();
         } else {
-          video.play().catch(() => {
-          });
+          // Sync na hora do play se estiver muito dessincronizado
+          if (Math.abs(video.currentTime - this.currentTime) > 0.3) {
+            video.currentTime = this.currentTime;
+          }
+          video.play().catch(() => {});
         }
       });
     },
