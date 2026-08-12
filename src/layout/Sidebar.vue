@@ -240,7 +240,7 @@ export default defineComponent({
       
       const groupIcons: Record<string, string> = {
         musics: "mdi-play",
-        bible: "mdi-book",
+        bible: "mdi-book-cross",
         utilities: "mdi-plus-circle",
       };
 
