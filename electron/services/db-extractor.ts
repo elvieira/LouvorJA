@@ -270,14 +270,19 @@ export default class DbExtractor {
   }
 
   private repairAllMusics(db: SQLiteHelper, requestedLang: string = "pt"): unknown {
-    // Has no language column, fallback to requested name
+    const hasLang = db.prepare("SELECT 1 FROM albums WHERE id_language = ? LIMIT 1").get(requestedLang);
+    const targetLang = hasLang ? requestedLang : "pt";
+
     const rows = db.prepare(`
-      SELECT m.id_music, m.name, fim.file_name as im_file, fm.duration
+      SELECT DISTINCT m.id_music, m.name, fim.file_name as im_file, fm.duration
       FROM musics m
+      JOIN albums_musics am ON m.id_music = am.id_music
+      JOIN albums a ON am.id_album = a.id_album
       LEFT JOIN files fm ON m.id_file_music = fm.id_file
       LEFT JOIN files fim ON m.id_file_instrumental_music = fim.id_file
+      WHERE a.id_language = ?
       ORDER BY m.name ASC
-    `).all() as Record<string, unknown>[];
+    `).all(targetLang) as Record<string, unknown>[];
 
     const albumsRows = db.prepare(`
       SELECT am.id_music, a.id_album, a.name, am.track, c.slug as type
@@ -285,7 +290,8 @@ export default class DbExtractor {
       JOIN albums a ON am.id_album = a.id_album
       LEFT JOIN categories_albums ca ON a.id_album = ca.id_album
       LEFT JOIN categories c ON ca.id_category = c.id_category
-    `).all() as Record<string, unknown>[];
+      WHERE a.id_language = ?
+    `).all(targetLang) as Record<string, unknown>[];
 
     const musicAlbumsMap: Record<number, Record<string, unknown>[]> = {};
     for (const row of albumsRows) {

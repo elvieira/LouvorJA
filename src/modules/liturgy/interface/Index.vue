@@ -392,6 +392,7 @@ export default defineComponent({
             } else {
               // Video opens the full module
               this.$appdata.set("modules.external_media.show", true);
+              targetModule = "external_media";
             }
           } else {
             // Reproduz no reprodutor padrão do sistema operacional
@@ -420,7 +421,16 @@ export default defineComponent({
           if (window.electronAPI && window.electronAPI.getDisplays) {
             const displays = await window.electronAPI.getDisplays();
             if (displays && displays.length > 1) {
-              let configMonitors = this.$userdata.get("modules.config.slide_monitor");
+              let configMonitors = [];
+              if (targetModule === "external_media") {
+                const syncSettings = this.$userdata.get("modules.config.media_sync_projection_settings") !== false;
+                configMonitors = syncSettings
+                  ? this.$userdata.get("modules.config.slide_monitor") || []
+                  : this.$userdata.get("modules.config.media_slide_monitor") || [];
+              } else {
+                configMonitors = this.$userdata.get("modules.config.slide_monitor") || [];
+              }
+              
               if (!Array.isArray(configMonitors)) {
                 configMonitors = configMonitors ? [configMonitors] : [];
               }

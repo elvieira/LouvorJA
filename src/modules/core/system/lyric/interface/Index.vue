@@ -70,9 +70,44 @@ export default defineComponent({
       return this.module?.config;
     },
     lyric(): any[] {
-      return this.module?.data?.lyric
-        ?.slice()
-        .sort((a: any, b: any) => a.order - b.order) || [];
+      const rawLyric = this.module?.data?.lyric || [];
+      const raw = (Array.isArray(rawLyric) ? rawLyric : Object.values(rawLyric))
+        .slice()
+        .sort((a: any, b: any) => a.order - b.order);
+
+      const grouped: any[] = [];
+      let currentGroup: any = null;
+
+      for (const item of raw) {
+        const text = (item.lyric || "").replace(/[\r\n]+/g, " ").trim();
+        
+        if (!text) {
+          currentGroup = null;
+          continue;
+        }
+
+        if (item.show_slide === 0) continue;
+        
+        const aux = item.aux_lyric || "";
+        
+        if (!currentGroup || currentGroup.aux !== aux) {
+          currentGroup = {
+            id_lyric: item.id_lyric,
+            aux_lyric: item.aux_lyric,
+            aux,
+            lines: [text],
+          };
+          grouped.push(currentGroup);
+        } else {
+          currentGroup.lines.push(text);
+        }
+      }
+
+      return grouped.map(g => ({
+        id_lyric: g.id_lyric,
+        aux_lyric: g.aux_lyric,
+        lyric: g.lines.join("\n"),
+      }));
     },
   },
   methods: {
@@ -94,5 +129,7 @@ export default defineComponent({
 
 .lyric-text {
   font-weight: 500;
+  white-space: pre-wrap;
+  display: block;
 }
 </style>

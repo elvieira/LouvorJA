@@ -354,7 +354,7 @@ export default {
     });
   },
 
-  async openMusic(params: any) {
+  async openLyric(params: any) {
     if (params === null || params === undefined) {
       params = {
         id_music: $appdata.get("modules.media.id_music"),

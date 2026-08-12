@@ -262,7 +262,7 @@ export default defineComponent({
       this.media_slide_minimize_player = false;
     },
     async syncExternalMediaMonitors() {
-      const isExternalMediaActive = this.$appdata.get("modules.external_media.filePath") !== null;
+      const isExternalMediaActive = this.$appdata.get("modules.external_media.filePath") !== null && this.$appdata.get("modules.external_media.show") === true;
       if (!isExternalMediaActive) return;
 
       const syncSettings = this.$userdata.get("modules.config.media_sync_projection_settings") !== false;
