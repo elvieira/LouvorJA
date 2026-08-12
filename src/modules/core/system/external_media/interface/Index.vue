@@ -191,6 +191,7 @@ export default defineComponent({
     pillResizeObserver: null as ResizeObserver | null,
     mediaReady: false,
     userPaused: false,
+    fullscreenTimer: null as any,
   }),
   computed: {
     requestAction(): string {
@@ -225,7 +226,7 @@ export default defineComponent({
     },
     isVideo() {
       if (!this.rawFilePath) return false;
-      const ext = this.rawFilePath.split(".").pop().toLowerCase();
+      const ext = this.rawFilePath.split(".").pop()?.toLowerCase() || "";
       return ["mp4", "mkv", "avi", "mov", "wmv", "webm"].includes(ext);
     },
     volumeIcon() {
@@ -318,16 +319,16 @@ export default defineComponent({
     clearTimeout(this.fullscreenTimer);
   },
   methods: {
-    t(text) {
+    t(text: string) {
       return this.$t(`modules.${this.module_id}.${text}`);
     },
 
     // Returns the active media element (video or audio)
-    getMediaEl() {
+    getMediaEl(): HTMLVideoElement | HTMLAudioElement | null {
       if (this.isVideo) {
-        return this.$refs.videoEl;
+        return (this.$refs.videoEl as HTMLVideoElement) || null;
       }
-      return this.$refs.audioEl;
+      return (this.$refs.audioEl as HTMLAudioElement) || null;
     },
 
     setupPillObserver() {
@@ -353,10 +354,11 @@ export default defineComponent({
       el.volume = this.volume / 100;
       
       if (this.autoProject && this.$refs.btnScreen) {
-        if (this.isVideo && !this.$refs.btnScreen.is_selected) {
-          this.$refs.btnScreen.popup();
-        } else if (!this.isVideo && this.$refs.btnScreen.is_selected) {
-          this.$refs.btnScreen.popup();
+        const btn = this.$refs.btnScreen as any;
+        if (this.isVideo && !btn.is_selected) {
+          btn.popup();
+        } else if (!this.isVideo && btn.is_selected) {
+          btn.popup();
         }
       }
       
@@ -386,7 +388,7 @@ export default defineComponent({
         window.electronAPI.getDisplays().then((displays: any[]) => {
           if (displays && displays.length > 1) {
             const primary = displays.find((d: any) => d.isPrimary) || displays[0];
-            const extendedSelected = slideMonitors.filter(m => m !== primary.id);
+            const extendedSelected = slideMonitors.filter((m: any) => m !== primary.id);
             hasExtended = extendedSelected.length > 0;
           }
           
@@ -424,7 +426,7 @@ export default defineComponent({
       if (el.paused) {
         this.userPaused = false;
         el.play().then(() => {
-        }).catch((_err) => {
+        }).catch((_err: any) => {
         });
       } else {
         this.userPaused = true;
@@ -442,7 +444,7 @@ export default defineComponent({
           el.volume = this.volume / 100;
           if (!this.userPaused) {
             el.play().then(() => {
-            }).catch((_err) => {
+            }).catch((_err: any) => {
             });
           }
         }
@@ -455,7 +457,7 @@ export default defineComponent({
     onStalled() {
     },
 
-    onMediaError(event) {
+    onMediaError(event: any) {
       const el = event.target;
       const error = el?.error;
       if (error) {
@@ -547,7 +549,7 @@ export default defineComponent({
       if (!force) {
         this.$alert.yesno(
           { text: this.t("alerts.close"), translate: false },
-          (btn) => {
+          (btn: string) => {
             if (btn === "yes") {
               this.closeMedia(true);
             }
