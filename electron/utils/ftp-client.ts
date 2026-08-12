@@ -82,6 +82,12 @@ export async function getOrCreateFtpClient(lang: string = "pt"): Promise<ftp.Cli
   const client = new ftp.Client();
   client.ftp.verbose = false;
 
+  // Força PASV tradicional (driblando firewalls/NATs que falham no EPSV)
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const transfer = require("basic-ftp/dist/transfer");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (client as any).prepareTransfer = transfer.enterPassiveModeIPv4;
+
   const host = ftpParams["host"];
   const user = ftpParams["username"];
   const port = parseInt(ftpParams["port"] || "21");

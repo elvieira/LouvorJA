@@ -166,6 +166,12 @@ export function registerDatabaseHandlers() {
       const client = new ftp.Client();
       client.ftp.verbose = false;
 
+      // Força PASV tradicional (driblando firewalls/NATs que falham no EPSV)
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const transfer = require("basic-ftp/dist/transfer");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (client as any).prepareTransfer = transfer.enterPassiveModeIPv4;
+
       try {
         console.log(`[download-database] Tentativa ${i + 1}/${strategies.length} via ${strategy.name}...`);
 
