@@ -558,10 +558,11 @@ export default defineComponent({
       this.stopPlayback();
       this.$appdata.set("modules.external_media.show", false);
       this.$appdata.set("modules.external_media.minimized", false);
-      this.$appdata.set("modules.external_media.filePath", "");
+      this.$appdata.set("modules.external_media.filePath", null);
       this.$appdata.set("modules.external_media.title", "");
+      this.$appdata.set("modules.external_media.subtitle", "");
 
-      // Close projection if open
+      // Fechar a projeção se estiver aberta
       import("@/helpers/ui/Popup").then(({ default: $popup }) => {
         if (this.$appdata.get("popup_module") === "external_media") {
           $popup.exit();
