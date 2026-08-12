@@ -24,7 +24,7 @@ export default {
           translate: false,
         }, (res) => resolve(res === "yes"));
       });
-      if (!confirmed) return;
+      if (!confirmed) return false;
       
       $appdata.set("modules.external_media.filePath", "");
       $appdata.set("modules.external_media.show", false);
@@ -36,7 +36,7 @@ export default {
 
     if (isSameSong && mode === currentMode) {
       this.maximize();
-      return;
+      return true;
     }
 
     let savedTime = 0;
@@ -71,7 +71,7 @@ export default {
     const data = await $database.get<any>(`music_${id_music}`);
     if (data === null) {
       this.close(true);
-      return;
+      return false;
     }
 
     if (!isSameSong) {
@@ -220,7 +220,7 @@ export default {
               text: "Essa música ainda não foi baixada. Acesse a Biblioteca Local para baixá-la.",
               translate: false,
             });
-            return; // Interrompe a execução completamente
+            return false; // Interrompe a execução completamente
           }
         }
 
@@ -308,6 +308,8 @@ export default {
         }
       }
     }
+    
+    return true;
   },
 
   async syncMonitors() {

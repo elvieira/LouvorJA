@@ -339,8 +339,10 @@ export default defineComponent({
 
       if (item.type === "music") {
         if (item.musicId) {
-          this.$media.open({ id_music: item.musicId, mode: "audio" });
-          targetModule = "media";
+          const success = await this.$media.open({ id_music: item.musicId, mode: "audio" });
+          if (success !== false) {
+            targetModule = "media";
+          }
         }
       } else if (item.type === "verse") {
         if (item.verseBookId && item.verseChapter) {
@@ -441,8 +443,6 @@ export default defineComponent({
           
           if (selectedMonitors.length > 0) {
             await (this as any).$popup.syncMonitors(selectedMonitors, targetModule, true);
-          } else {
-            (this as any).$popup.open({ module: targetModule, fullscreen: true });
           }
         }
       }
