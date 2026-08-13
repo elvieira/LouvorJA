@@ -301,6 +301,8 @@ export default defineComponent({
     this.loadAppDataSize();
     this.checkDatabaseVersion();
     await this.loadCollections();
+    // Verifica em background se álbuns "idle" já possuem todos os arquivos no disco
+    this.verifyIdleAlbumsOnDisk();
   },
   methods: {
     async loadAppDataSize() {
@@ -494,6 +496,99 @@ export default defineComponent({
       }
       
       this.loadingList = false;
+    },
+    async verifyIdleAlbumsOnDisk() {
+      if (!window.electronAPI || !window.electronAPI.checkMedia) return;
+
+      const idleAlbums: SyncAlbum[] = [];
+      for (const cat of this.categoriesWithAlbums) {
+        for (const album of cat.albums) {
+          if (album.status === "idle") {
+            idleAlbums.push(album);
+          }
+        }
+      }
+
+      if (idleAlbums.length === 0) return;
+
+      for (const album of idleAlbums) {
+        try {
+          let musicFiles: string[] = [];
+          let slideFiles: string[] = [];
+
+          if (album.isHymnal) {
+            const hymnalData = (await $db.get(`${this.$i18n.locale}_${album.id_album}`)) as any[];
+            if (!hymnalData || !Array.isArray(hymnalData)) continue;
+
+            for (const song of hymnalData) {
+              const musicData = (await $db.get(`music_${song.id_music}`)) as any;
+              if (musicData) {
+                if (musicData.url_music) musicFiles.push(musicData.url_music);
+                if (musicData.url_instrumental_music) musicFiles.push(musicData.url_instrumental_music);
+                if (musicData.url_image) slideFiles.push(musicData.url_image);
+                if (musicData.lyric) {
+                  musicData.lyric.forEach((l: any) => {
+                    if (l.url_image) slideFiles.push(l.url_image);
+                  });
+                }
+              }
+            }
+          } else {
+            const albumData = (await $db.get(`album_${album.id_album}`)) as any;
+            if (!albumData || !albumData.musics || !Array.isArray(albumData.musics)) continue;
+
+            for (const song of albumData.musics) {
+              const musicData = (await $db.get(`music_${song.id_music}`)) as any;
+              if (musicData) {
+                if (musicData.url_music) musicFiles.push(musicData.url_music);
+                if (musicData.url_instrumental_music) musicFiles.push(musicData.url_instrumental_music);
+                if (musicData.url_image) slideFiles.push(musicData.url_image);
+                if (musicData.lyric) {
+                  musicData.lyric.forEach((l: any) => {
+                    if (l.url_image) slideFiles.push(l.url_image);
+                  });
+                }
+              }
+            }
+          }
+
+          musicFiles = [...new Set(musicFiles)];
+          slideFiles = [...new Set(slideFiles)];
+
+          const allMediaFiles = [
+            ...musicFiles.map(url => ({ url, type: "music" })),
+            ...slideFiles.map(url => ({ url, type: "slides" })),
+          ];
+
+          if (album.rawCoverUrl) {
+            allMediaFiles.push({ url: album.rawCoverUrl, type: "covers" });
+          }
+
+          if (allMediaFiles.length === 0) {
+            album.status = "downloaded";
+            await this.markAlbumDownloaded(album.id_album, album.isHymnal);
+            continue;
+          }
+
+          // Verifica se todos os arquivos existem no disco
+          let allExist = true;
+          for (const media of allMediaFiles) {
+            const relativePath = media.url.replace(/^\/(musics|images|covers)\//, "");
+            const exists = await window.electronAPI.checkMedia(media.type, relativePath);
+            if (!exists) {
+              allExist = false;
+              break; // Um faltou, não precisa continuar
+            }
+          }
+
+          if (allExist) {
+            album.status = "downloaded";
+            await this.markAlbumDownloaded(album.id_album, album.isHymnal);
+          }
+        } catch (e) {
+          console.warn(`[Sync] Erro ao verificar álbum ${album.id_album}:`, e);
+        }
+      }
     },
     checkGlobalDownloadState() {
       const isDownloading = this.categoriesWithAlbums.some(cat => cat.albums.some(a => a.status === "downloading"));
