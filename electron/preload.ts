@@ -17,7 +17,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
   clearAllData: () => ipcRenderer.invoke("clear-all-data"),
   clearSysData: () => ipcRenderer.invoke("clear-sys-data"),
   extractLocalDb: (lang?: string) => ipcRenderer.invoke("extract-local-db", lang),
-  downloadDatabase: (lang?: string) => ipcRenderer.invoke("download-database", lang),
+  downloadDatabase: (lang?: string, force?: boolean) => ipcRenderer.invoke("download-database", lang, force),
   checkDatabaseExists: (lang?: string) => ipcRenderer.invoke("check-database-exists", lang),
   checkOldInstallation: () => ipcRenderer.invoke("check-old-installation"),
   importOldInstallation: () => ipcRenderer.invoke("import-old-installation"),

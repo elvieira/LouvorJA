@@ -1,26 +1,51 @@
 import { ipcMain, net } from "electron";
 import * as path from "path";
 import * as fs from "fs-extra";
-import { coversPath, musicPath, slidesPath, sysDbPath } from "../config/constants";
+import { coversPath, musicPath, slidesPath, sysConfigPath } from "../config/constants";
 import { getFtpParams, useFtpFallback, setUseFtpFallback, resetFtpFallbackTimer, getOrCreateFtpClient, ftpMutex, forceCloseFtpClient } from "../utils/ftp-client";
 import { encryptData, decryptData } from "../utils/crypto";
 
 function registerDownloadedMedia(filename: string) {
   try {
-    const registryPath = path.join(sysDbPath, "dlm.bin");
-    let downloadedFiles: string[] = [];
-    if (fs.existsSync(registryPath)) {
-      const encryptedContent = fs.readFileSync(registryPath, "utf8");
-      const decryptedString = decryptData(encryptedContent);
-      if (decryptedString) downloadedFiles = JSON.parse(decryptedString);
+    let sysConfig: Record<string, unknown> = {};
+    if (fs.existsSync(sysConfigPath)) {
+      const configEncrypted = fs.readFileSync(sysConfigPath, "utf8");
+      const configDecrypted = decryptData(configEncrypted);
+      if (configDecrypted) sysConfig = JSON.parse(configDecrypted);
     }
+    
+    const downloadedFiles = (sysConfig["dlm"] as string[]) || [];
     if (!downloadedFiles.includes(filename)) {
       downloadedFiles.push(filename);
-      const newEncrypted = encryptData(JSON.stringify(downloadedFiles));
-      if (newEncrypted) fs.writeFileSync(registryPath, newEncrypted, "utf8");
+      sysConfig["dlm"] = downloadedFiles;
+      
+      const newEncrypted = encryptData(JSON.stringify(sysConfig));
+      if (newEncrypted) fs.writeFileSync(sysConfigPath, newEncrypted, "utf8");
     }
   } catch (e) {
     console.error("Erro ao registrar media baixada:", e);
+  }
+}
+
+function unregisterDownloadedMedia(filename: string) {
+  try {
+    let sysConfig: Record<string, unknown> = {};
+    if (fs.existsSync(sysConfigPath)) {
+      const configEncrypted = fs.readFileSync(sysConfigPath, "utf8");
+      const configDecrypted = decryptData(configEncrypted);
+      if (configDecrypted) sysConfig = JSON.parse(configDecrypted);
+    }
+    
+    let downloadedFiles = (sysConfig["dlm"] as string[]) || [];
+    if (downloadedFiles.includes(filename)) {
+      downloadedFiles = downloadedFiles.filter(f => f !== filename);
+      sysConfig["dlm"] = downloadedFiles;
+      
+      const newEncrypted = encryptData(JSON.stringify(sysConfig));
+      if (newEncrypted) fs.writeFileSync(sysConfigPath, newEncrypted, "utf8");
+    }
+  } catch (e) {
+    console.error("Erro ao remover media do registro:", e);
   }
 }
 
@@ -173,6 +198,9 @@ export function registerMediaHandlers() {
     if (fs.existsSync(filePath)) {
       try {
         fs.unlinkSync(filePath);
+        if (destFolderType !== "covers") {
+          unregisterDownloadedMedia(decodedFilename);
+        }
         return true;
       } catch (_e) {
         console.error("Erro ao deletar mídia:", _e);

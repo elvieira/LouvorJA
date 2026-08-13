@@ -5,12 +5,25 @@ import DbExtractor from "./db-extractor";
 import { encryptData, decryptData } from "../utils/crypto";
 import { getFtpParams } from "../utils/ftp-client";
 import { SQLiteHelper } from "../utils/sqlite";
-import { sysDbPath, finalDbPath } from "../config/constants";
+import { sysDbPath, sysConfigPath, finalDbPath } from "../config/constants";
 import * as ftp from "basic-ftp";
 
 export function registerDatabaseHandlers() {
   ipcMain.handle("get-local-db", async (event, filename: string, lang: string = "pt") => {
     try {
+      // 1. Tenta ler do cofre unificado (.sysconfig.bin)
+      if (fs.existsSync(sysConfigPath)) {
+        const configEncrypted = fs.readFileSync(sysConfigPath, "utf8");
+        const configDecrypted = decryptData(configEncrypted);
+        if (configDecrypted) {
+          const sysConfig = JSON.parse(configDecrypted);
+          if (sysConfig[filename] !== undefined) {
+            return sysConfig[filename];
+          }
+        }
+      }
+
+      // 2. Fallback: procura em arquivos individuais na sysDbPath (extraídos do BD)
       const filePath = path.join(sysDbPath, `${filename}.bin`);
       if (fs.existsSync(filePath)) {
         const encryptedContent = fs.readFileSync(filePath, "utf8");
@@ -41,14 +54,26 @@ export function registerDatabaseHandlers() {
       }
       
       // Self-Healing Fallback: se o arquivo não existir fisicamente, tentamos recriá-lo a partir do database_${lang}.db
-      const dbPath = path.join(app.getPath("userData"), `database_${lang}.db`);
-      if (fs.existsSync(dbPath)) {
-        console.log(`[self-healing] Arquivo ${filename} ausente. Tentando restaurar a partir do banco de dados (${lang})...`);
-        const extractor = new DbExtractor(dbPath);
-        const data = await extractor.repairFile(filename);
-        if (data) {
-          console.log(`[self-healing] Arquivo ${filename} restaurado com sucesso.`);
-          return data;
+      const canSelfHeal = filename.endsWith("_categories") || 
+                          filename.endsWith("_bible_book") || 
+                          filename.endsWith("_bible_version") || 
+                          filename.endsWith("_hymnal") || 
+                          filename.endsWith("_hymnal_1996") || 
+                          filename.endsWith("_musics") || 
+                          filename.startsWith("bible_") || 
+                          filename.startsWith("album_") || 
+                          filename.startsWith("music_");
+
+      if (canSelfHeal) {
+        const dbPath = path.join(app.getPath("userData"), `database_${lang}.db`);
+        if (fs.existsSync(dbPath)) {
+          console.log(`[self-healing] Arquivo ${filename} ausente. Tentando restaurar a partir do banco de dados (${lang})...`);
+          const extractor = new DbExtractor(dbPath);
+          const data = await extractor.repairFile(filename);
+          if (data) {
+            console.log(`[self-healing] Arquivo ${filename} restaurado com sucesso.`);
+            return data;
+          }
         }
       }
       
@@ -107,11 +132,30 @@ export function registerDatabaseHandlers() {
 
   ipcMain.handle("save-local-db", async (event, filename: string, data: unknown) => {
     try {
-      const filePath = path.join(sysDbPath, `${filename}.bin`);
-      const jsonString = JSON.stringify(data);
+      let sysConfig: Record<string, unknown> = {};
+      
+      // Lê o cofre unificado se existir
+      if (fs.existsSync(sysConfigPath)) {
+        const configEncrypted = fs.readFileSync(sysConfigPath, "utf8");
+        const configDecrypted = decryptData(configEncrypted);
+        if (configDecrypted) {
+          sysConfig = JSON.parse(configDecrypted);
+        }
+      }
+
+      // Atualiza a chave solicitada
+      sysConfig[filename] = data;
+
+      // Salva de volta
+      const jsonString = JSON.stringify(sysConfig);
       const encryptedContent = encryptData(jsonString);
       if (encryptedContent) {
-        fs.writeFileSync(filePath, encryptedContent, "utf8");
+        fs.writeFileSync(sysConfigPath, encryptedContent, "utf8");
+        
+        // Remove a versão antiga avulsa se existir, para limpar o disco
+        const legacyPath = path.join(sysDbPath, `${filename}.bin`);
+        if (fs.existsSync(legacyPath)) fs.unlinkSync(legacyPath);
+        
         return true;
       }
       return false;
@@ -139,11 +183,14 @@ export function registerDatabaseHandlers() {
     }
   });
 
-  ipcMain.handle("download-database", async (event, lang: string = "pt") => {
+  ipcMain.handle("download-database", async (event, lang: string = "pt", force: boolean = false) => {
     const dbPath = path.join(app.getPath("userData"), `database_${lang}.db`);
-    if (fs.existsSync(dbPath)) {
-      console.log(`Banco de dados (${lang}) já existe localmente. Pulando FTP.`);
-      return true;
+    if (fs.existsSync(dbPath) && force) {
+      try { 
+        fs.unlinkSync(dbPath); 
+      } catch (e) { 
+        console.error("Erro ao deletar banco de dados local:", e); 
+      }
     }
 
     const ftpParams = await getFtpParams(lang);
@@ -199,8 +246,8 @@ export function registerDatabaseHandlers() {
           console.warn("Não foi possível obter o tamanho do arquivo via FTP:", (e as Error).message);
         }
         
-        // Se já existe localmente com tamanho correto, marca como completo
-        if (size > 0 && fs.existsSync(dbPath)) {
+        // Se já existe localmente com tamanho correto (e não forçamos), marca como completo
+        if (size > 0 && fs.existsSync(dbPath) && !force) {
           const localStat = fs.statSync(dbPath);
           if (localStat.size === size) {
             console.log("Banco de dados local já existe e está completo. Pulando download.");

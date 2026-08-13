@@ -1,9 +1,9 @@
-import { ipcMain, app } from "electron";
-import * as fs from "fs-extra";
+import { app, ipcMain } from "electron";
 import * as path from "path";
-import { sysDbPath, coversPath, musicPath, slidesPath } from "../config/constants";
-import DbExtractor from "./db-extractor";
+import * as fs from "fs-extra";
+import { coversPath, musicPath, slidesPath, sysDbPath, sysConfigPath } from "../config/constants";
 import { SQLiteHelper } from "../utils/sqlite";
+import DbExtractor from "./db-extractor";
 import { decryptData } from "../utils/crypto";
 
 export function registerValidatorHandlers() {
@@ -18,19 +18,31 @@ export function registerValidatorHandlers() {
       await db.connect();
       
       let downloadedMedia: string[] = [];
-      const localMediaDbPath = path.join(sysDbPath, "dlm.bin");
-      if (fs.existsSync(localMediaDbPath)) {
+      if (fs.existsSync(sysConfigPath)) {
         try {
-          const encryptedContent = fs.readFileSync(localMediaDbPath, "utf8");
+          const encryptedContent = fs.readFileSync(sysConfigPath, "utf8");
           const decryptedString = decryptData(encryptedContent);
-          if (decryptedString) downloadedMedia = JSON.parse(decryptedString);
+          if (decryptedString) {
+            const sysConfig = JSON.parse(decryptedString);
+            downloadedMedia = (sysConfig["dlm"] as string[]) || [];
+          }
         } catch (e) {
-          console.error("Erro lendo dlm.bin:", e);
+          console.error("Erro lendo sysconfig para dlm:", e);
+        }
+      }
+      
+      // Limpa dlm.bin legado se existir
+      const legacyDlm = path.join(sysDbPath, "dlm.bin");
+      if (fs.existsSync(legacyDlm)) {
+        try {
+          fs.unlinkSync(legacyDlm);
+        } catch {
+          // ignore
         }
       }
       
       // Valida TODAS as covers (são poucas, ~70, muito rápido)
-      const coverFiles = new Set(db.prepare("SELECT file_name FROM files WHERE dir = '/covers'").all().map((r: Record<string, unknown>) => r.file_name as string));
+      const coverFiles = new Set<string>(db.prepare("SELECT file_name FROM files WHERE dir = '/covers'").all().map((r: Record<string, unknown>) => r.file_name as string));
       
       // Músicas e imagens agora baseiam-se SOMENTE no que o programa realmente baixou (dlm.bin)
       const musicFiles = new Set<string>();
@@ -65,8 +77,8 @@ export function registerValidatorHandlers() {
       
       db.close();
 
-      const actualCovers = new Set(fs.existsSync(coversPath) ? fs.readdirSync(coversPath) : []);
-      const actualBins = new Set(fs.existsSync(sysDbPath) ? fs.readdirSync(sysDbPath) : []);
+      const actualCovers = new Set<string>(fs.existsSync(coversPath) ? fs.readdirSync(coversPath) : []);
+      const actualBins = new Set<string>(fs.existsSync(sysDbPath) ? fs.readdirSync(sysDbPath) : []);
 
       const missingCovers = [...coverFiles].filter(x => x && !actualCovers.has(x));
       

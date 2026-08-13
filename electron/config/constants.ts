@@ -9,6 +9,7 @@ export const IV_LENGTH = 16;
 app.setName("Louvor JA");
 export const userDataPath = app.getPath("userData");
 export const sysDbPath = path.join(userDataPath, ".sysdata");
+export const sysConfigPath = path.join(userDataPath, ".sysconfig.bin");
 export const oldDbPath = path.join(userDataPath, "database");
 export const mediaPath = path.join(userDataPath, "Media");
 export const coversPath = path.join(mediaPath, "covers");

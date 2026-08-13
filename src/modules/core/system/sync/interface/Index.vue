@@ -1,11 +1,115 @@
 <template>
   <v-slide-y-reverse-transition>
     <div v-if="module?.show" class="module-full-page d-flex align-center justify-center bg-transparent" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 100; background: rgba(0,0,0,0.4) !important; backdrop-filter: blur(2px);">
+      <!-- Layout Modal para Atualização de Banco de Dados -->
       <v-card
+        v-if="isDbUpdateView"
+        rounded="xl"
+        width="100%"
+        max-width="520"
+        style="background: var(--card-bg); overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.5);"
+      >
+        <div style="background: linear-gradient(135deg, rgba(0,151,215,0.15) 0%, rgba(0,151,215,0.05) 100%); padding: 24px 24px 20px;">
+          <div class="d-flex align-center justify-space-between">
+            <div class="d-flex align-center" style="gap: 12px;">
+              <div>
+                <div class="text-h6 font-weight-bold" style="color: var(--sidebar-text); line-height: 1.2;">
+                  Atualização de Banco de Dados
+                </div>
+                <div class="text-caption mt-1" style="color: var(--sidebar-text-secondary);">
+                  {{ dbUpdateAvailable ? 'Nova versão disponível' : 'Atualizado' }}
+                </div>
+              </div>
+            </div>
+            <v-btn 
+              icon 
+              variant="text" 
+              size="small" 
+              @click="closeModule"
+            >
+              <v-icon>mdi-close</v-icon>
+            </v-btn>
+          </div>
+        </div>
+
+        <v-card-text class="pa-0">
+          <div v-if="dbUpdateAvailable" style="padding: 40px 24px; text-align: center;">
+            <v-icon color="primary" size="64" class="mb-4">
+              mdi-database-refresh
+            </v-icon>
+            <div class="text-h6 font-weight-bold" style="color: var(--sidebar-text);">
+              Nova versão disponível
+            </div>
+            <div class="text-body-2" style="color: var(--sidebar-text-secondary); max-width: 340px; margin: 0 auto 20px;">
+              Uma nova versão do banco de dados oficial foi encontrada. Recomendamos atualizar para obter as últimas correções e novos conteúdos.
+            </div>
+            
+            <div class="text-caption mb-6 d-flex align-center justify-center font-weight-medium" style="color: var(--sidebar-text-secondary); gap: 12px; background: rgba(0,0,0,0.02); padding: 8px 16px; border-radius: 8px; width: fit-content; margin: 0 auto; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05);">
+              <div class="d-flex align-center">
+                <v-icon size="small" class="mr-1">
+                  mdi-database-outline
+                </v-icon>
+                Atual: v{{ dbVersionLocal }}
+              </div>
+              <v-icon size="small" color="primary">
+                mdi-arrow-right
+              </v-icon>
+              <div class="d-flex align-center" style="color: var(--accent-blue);">
+                <v-icon size="small" class="mr-1" color="primary">
+                  mdi-database-arrow-up
+                </v-icon>
+                Nova: v{{ dbVersionRemote }}
+              </div>
+            </div>
+            <v-btn
+              color="primary"
+              variant="flat"
+              rounded="lg"
+              class="text-none px-6 font-weight-bold"
+              height="44"
+              elevation="2"
+              prepend-icon="mdi-download"
+              :loading="isUpdatingDb"
+              @click="updateDatabase"
+            >
+              Atualizar Banco de Dados
+            </v-btn>
+            
+            <div v-if="isUpdatingDb" class="mt-6 mx-auto w-100" style="max-width: 340px;">
+              <div class="d-flex justify-space-between text-caption mb-2">
+                <span style="color: var(--sidebar-text-secondary);">{{ dbUpdateStatus }}</span>
+              </div>
+              <v-progress-linear
+                v-model="dbUpdateProgress"
+                :indeterminate="dbUpdateProgress === 0"
+                color="primary"
+                height="6"
+                rounded
+              />
+            </div>
+          </div>
+          
+          <div v-else style="padding: 40px 24px; text-align: center;">
+            <v-icon color="success" size="64" class="mb-4">
+              mdi-check-circle-outline
+            </v-icon>
+            <div class="text-h6 font-weight-bold" style="color: var(--sidebar-text);">
+              Tudo atualizado!
+            </div>
+            <div class="text-body-2" style="color: var(--sidebar-text-secondary); max-width: 300px; margin: 0 auto;">
+              Seu banco de dados já está na versão mais recente.
+            </div>
+          </div>
+        </v-card-text>
+      </v-card>
+
+      <!-- Layout Normal da Biblioteca Local -->
+      <v-card
+        v-else
         class="rounded-xl overflow-hidden elevation-24"
         width="100%"
         max-width="600"
-        style="background: var(--card-bg); max-height: 90%; display: flex; flex-direction: column;"
+        style="background: var(--card-bg); max-height: 90%; display: flex; flex-direction: column; height: 100%;"
       >
         <v-card-text class="pa-0 d-flex flex-column" style="height: 100%; min-height: 0; overflow: hidden;">
           <div class="pa-6 pb-4 flex-shrink-0" style="background: rgba(0,0,0,0.02);">
@@ -88,6 +192,7 @@
               </span>
             </div>
           </div>
+          
           <v-divider style="opacity: 0.1;" class="mx-6 mt-3 mb-1" />
 
           <div class="pa-6 pt-2 flex-grow-1" style="overflow-y: auto;">
@@ -153,9 +258,27 @@ export default defineComponent({
       hymnalImg,
       hymnal1996Img,
       appDataSize: null as number | null,
+      isUpdatingDb: false,
+      dbUpdateStatus: "Conectando ao servidor...",
+      dbUpdateProgress: 0,
     };
   },
   computed: {
+    dbUpdateAvailable(): boolean {
+      return (this as any).$appdata.get("modules.sync.db_update_available") === true;
+    },
+    dbVersionLocal(): number {
+      return (this as any).$appdata.get("modules.sync.db_version_local") || 0;
+    },
+    dbVersionRemote(): number {
+      return (this as any).$appdata.get("modules.sync.db_version_remote") || 0;
+    },
+    syncView(): string {
+      return (this as any).$appdata.get("modules.sync.view") || "library";
+    },
+    isDbUpdateView(): boolean {
+      return this.syncView === "db_update";
+    },
     module_id(): string {
       return manifest.id;
     },
@@ -176,12 +299,82 @@ export default defineComponent({
   },
   async mounted() {
     this.loadAppDataSize();
+    this.checkDatabaseVersion();
     await this.loadCollections();
   },
   methods: {
     async loadAppDataSize() {
       if (window.electronAPI && window.electronAPI.getAppDataSize) {
         this.appDataSize = await window.electronAPI.getAppDataSize();
+      }
+    },
+    async checkDatabaseVersion() {
+      if (!window.electronAPI) return;
+      try {
+        const response = await fetch("https://api.louvorja.com.br/params?type=env");
+        const text = await response.text();
+        const dbVersionMatch = text.match(/db_version=(\d+)/);
+        if (dbVersionMatch && dbVersionMatch[1]) {
+          const remoteVersion = parseInt(dbVersionMatch[1], 10);
+          const localConfig = await window.electronAPI.getLocalDb("config") as any;
+          const localVersion = (localConfig?.data?.version_number || localConfig?.version_number) ? parseInt(localConfig?.data?.version_number || localConfig?.version_number, 10) : 0;
+          
+          if (remoteVersion > localVersion) {
+            (this as any).$appdata.set("modules.sync.db_update_available", true);
+            (this as any).$appdata.set("modules.sync.db_version_local", localVersion);
+            (this as any).$appdata.set("modules.sync.db_version_remote", remoteVersion);
+          } else {
+            (this as any).$appdata.set("modules.sync.db_update_available", false);
+          }
+        }
+      } catch (e) {
+        console.error("Erro ao verificar versão do banco:", e);
+      }
+    },
+    async updateDatabase() {
+      if (!window.electronAPI) return;
+      this.isUpdatingDb = true;
+      this.dbUpdateProgress = 0;
+      
+      window.electronAPI.onExtractProgress((data: any) => {
+        this.dbUpdateProgress = data.progress;
+      });
+      
+      if (window.electronAPI.onDownloadDbProgress) {
+        window.electronAPI.onDownloadDbProgress((data: any) => {
+          this.dbUpdateProgress = data.progress;
+        });
+      }
+
+      try {
+        this.dbUpdateStatus = "Atualizando configurações...";
+        const date = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+        const response = await fetch(`${$path.db("/config")}?${date}`, {
+          headers: { "Api-Token": import.meta.env.VITE_API_TOKEN as string },
+        });
+        if (response.ok) {
+          const configData = await response.json();
+          await window.electronAPI.saveLocalDb("config", configData);
+        }
+
+        this.dbUpdateStatus = "Baixando banco de dados...";
+        this.dbUpdateProgress = 0;
+        await window.electronAPI.downloadDatabase(this.$i18n.locale, true);
+        
+        this.dbUpdateStatus = "Extraindo arquivos (isso pode levar um minuto)...";
+        this.dbUpdateProgress = 0;
+        await window.electronAPI.extractLocalDb(this.$i18n.locale);
+        
+        this.dbUpdateStatus = "Concluído! Reiniciando...";
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
+      } catch (e) {
+        console.error("Erro na atualização do banco:", e);
+        this.dbUpdateStatus = "Falha na atualização. Tente novamente mais tarde.";
+        setTimeout(() => {
+          this.isUpdatingDb = false;
+        }, 3000);
       }
     },
     closeModule() {
@@ -519,12 +712,12 @@ export default defineComponent({
           
           if (album.isHymnal) {
             const specificId = `${album.id_album}_${this.$i18n.locale}`;
-            downloadedManifest = downloadedManifest.filter((id: string | number) => id !== specificId);
+            downloadedManifest = downloadedManifest.filter((id: string | number) => String(id) !== specificId);
             if (this.$i18n.locale === "pt") {
-              downloadedManifest = downloadedManifest.filter((id: string | number) => id !== album.id_album);
+              downloadedManifest = downloadedManifest.filter((id: string | number) => String(id) !== String(album.id_album));
             }
           } else {
-            downloadedManifest = downloadedManifest.filter((id: string | number) => id !== album.id_album);
+            downloadedManifest = downloadedManifest.filter((id: string | number) => String(id) !== String(album.id_album));
           }
           
           await window.electronAPI?.saveLocalDb("dla", downloadedManifest);

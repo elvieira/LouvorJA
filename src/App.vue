@@ -96,6 +96,28 @@ export default {
       
       // Inicia a sincronização silenciosa em background (se necessária)
       setTimeout(async () => {
+        // Verificação de atualização do Banco de Dados
+        if (window.electronAPI) {
+          try {
+            const response = await fetch("https://api.louvorja.com.br/params?type=env");
+            const text = await response.text();
+            const dbVersionMatch = text.match(/db_version=(\d+)/);
+            if (dbVersionMatch && dbVersionMatch[1]) {
+              const remoteVersion = parseInt(dbVersionMatch[1], 10);
+              const localConfig = await window.electronAPI.getLocalDb("config");
+              const localVersion = (localConfig?.data?.version_number || localConfig?.version_number) ? parseInt(localConfig?.data?.version_number || localConfig?.version_number, 10) : 0;
+              
+              if (remoteVersion > localVersion) {
+                this.$appdata.set("modules.sync.db_update_available", true);
+                this.$appdata.set("modules.sync.db_version_local", localVersion);
+                this.$appdata.set("modules.sync.db_version_remote", remoteVersion);
+              }
+            }
+          } catch (e) {
+            console.error("Erro ao verificar versão do banco em background:", e);
+          }
+        }
+
         // Auto-healing e validação de arquivos ausentes
         if (window.electronAPI && window.electronAPI.validateInstallation) {
           const missing = await window.electronAPI.validateInstallation();

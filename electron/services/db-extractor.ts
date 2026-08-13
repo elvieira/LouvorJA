@@ -33,6 +33,9 @@ export default class DbExtractor {
       throw new Error(`Database file not found at ${this.dbPath}`);
     }
 
+    if (fs.existsSync(this.sysdataDir)) {
+      fs.emptyDirSync(this.sysdataDir);
+    }
     fs.ensureDirSync(this.sysdataDir);
     await this.connect();
     

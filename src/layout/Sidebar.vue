@@ -114,15 +114,15 @@
     </nav>
 
     <div class="sidebar-footer">
-      <div v-if="isDesktop" class="nav-item" :class="{ active: currentModule === 'sync' }">
-        <a href="#" class="nav-link" @click.prevent="openModule('sync')">
+      <div v-if="isDesktop" class="nav-item" :class="{ active: currentModule === 'sync' && syncView !== 'db_update' }">
+        <a href="#" class="nav-link" @click.prevent="openLocalLibrary">
           <v-icon 
             class="nav-icon" 
-            :color="currentModule === 'sync' ? '' : 'primary'"
+            :color="currentModule === 'sync' && syncView !== 'db_update' ? '' : 'primary'"
           >
             mdi-library
           </v-icon>
-          <span class="nav-text font-weight-bold" :style="{ color: currentModule === 'sync' ? '' : 'var(--accent-blue)' }">{{ $t("sidebar.local_library") }}</span>
+          <span class="nav-text font-weight-bold" :style="{ color: currentModule === 'sync' && syncView !== 'db_update' ? '' : 'var(--accent-blue)' }">{{ $t("sidebar.local_library") }}</span>
           
           <div 
             v-if="isDownloading"
@@ -131,13 +131,13 @@
           >
             <v-icon 
               class="mdi-spin" 
-              :color="currentModule === 'sync' ? '' : 'primary'"
+              :color="currentModule === 'sync' && syncView !== 'db_update' ? '' : 'primary'"
               style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"
             >
               mdi-loading
             </v-icon>
             <v-icon 
-              :color="currentModule === 'sync' ? '' : 'primary'"
+              :color="currentModule === 'sync' && syncView !== 'db_update' ? '' : 'primary'"
               size="12"
               style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); margin: 0;"
             >
@@ -156,6 +156,18 @@
         >
           <v-icon class="nav-icon" color="primary">mdi-cloud-download</v-icon>
           <span class="nav-text font-weight-bold" style="color: var(--accent-blue);">{{ $t("sidebar.update_available") }}</span>
+        </a>
+      </div>
+      
+      <div v-if="dbUpdateAvailable" class="nav-item update-item" :class="{ 'pulse-animation': true, active: currentModule === 'sync' && syncView === 'db_update' }">
+        <a 
+          href="#" 
+          class="nav-link" 
+          style="background: rgba(var(--v-theme-primary), 0.1); border-radius: 8px;"
+          @click.prevent="openDbUpdate"
+        >
+          <v-icon class="nav-icon" :color="currentModule === 'sync' && syncView === 'db_update' ? '' : 'primary'">mdi-database-refresh</v-icon>
+          <span class="nav-text font-weight-bold" :style="{ color: currentModule === 'sync' && syncView === 'db_update' ? '' : 'var(--accent-blue)' }">Atualização Disponível</span>
         </a>
       </div>
       
@@ -209,6 +221,12 @@ export default defineComponent({
     },
     updateStatus(): string {
       return (this as any).$appdata.get("modules.update.status") || "idle";
+    },
+    syncView(): string {
+      return (this as any).$appdata.get("modules.sync.view") || "library";
+    },
+    dbUpdateAvailable(): boolean {
+      return (this as any).$appdata.get("modules.sync.db_update_available") === true;
     },
     isMobile(): boolean {
       return this.windowWidth <= 1024;
@@ -323,6 +341,14 @@ export default defineComponent({
       if (this.isMobile) {
         this.closeSidebar();
       }
+    },
+    openLocalLibrary() {
+      (this as any).$appdata.set("modules.sync.view", "library");
+      this.openModule("sync");
+    },
+    openDbUpdate() {
+      (this as any).$appdata.set("modules.sync.view", "db_update");
+      this.openModule("sync");
     },
     toggleSubmenu(submenu: string) {
       const isCurrentlyOpen = this.submenuOpen[submenu];

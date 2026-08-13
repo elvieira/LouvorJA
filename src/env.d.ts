@@ -27,7 +27,7 @@ interface ElectronAPI {
   getAppDataSize: () => Promise<number>
   getLocalDb: (filename: string, lang?: string) => Promise<unknown | null>
   extractLocalDb: (lang?: string) => Promise<boolean>
-  downloadDatabase: (lang?: string) => Promise<unknown>
+  downloadDatabase: (lang?: string, force?: boolean) => Promise<unknown>
   checkDatabaseExists: (lang?: string) => Promise<boolean>
   checkOldInstallation: () => Promise<boolean>
   importOldInstallation: () => Promise<boolean>

@@ -79,6 +79,7 @@ export default defineComponent({
       if (val) {
         if (this.updateStatus === "idle" || this.updateStatus === "not-available" || this.updateStatus === "error") {
           this.$appdata.set("modules.update.status", "checking");
+          this.checkDbUpdate();
           if (window.electronAPI) {
             window.electronAPI.checkForUpdates().then((result: any) => {
               if (!result) {
@@ -142,6 +143,7 @@ export default defineComponent({
     },
     retryUpdate() {
       this.$appdata.set("modules.update.status", "checking");
+      this.checkDbUpdate();
       if (window.electronAPI) {
         window.electronAPI.checkForUpdates().then((result: any) => {
           if (!result) {
@@ -150,6 +152,30 @@ export default defineComponent({
         }).catch(() => {
           this.$appdata.set("modules.update.status", "error");
         });
+      }
+    },
+    async checkDbUpdate() {
+      if (window.electronAPI) {
+        try {
+          const response = await fetch("https://api.louvorja.com.br/params?type=env");
+          const text = await response.text();
+          const dbVersionMatch = text.match(/db_version=(\d+)/);
+          if (dbVersionMatch && dbVersionMatch[1]) {
+            const remoteVersion = parseInt(dbVersionMatch[1], 10);
+            const localConfig = await window.electronAPI.getLocalDb("config") as any;
+            const localVersion = (localConfig?.data?.version_number || localConfig?.version_number) ? parseInt(localConfig?.data?.version_number || localConfig?.version_number, 10) : 0;
+            
+            if (remoteVersion > localVersion) {
+              this.$appdata.set("modules.sync.db_update_available", true);
+              this.$appdata.set("modules.sync.db_version_local", localVersion);
+              this.$appdata.set("modules.sync.db_version_remote", remoteVersion);
+            } else {
+              this.$appdata.set("modules.sync.db_update_available", false);
+            }
+          }
+        } catch (e) {
+          console.error("Erro ao verificar versão do banco:", e);
+        }
       }
     },
   },
