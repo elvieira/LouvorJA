@@ -16,6 +16,8 @@ interface ElectronAPI {
   isElectron: boolean
 
   saveLocalDb: (filename: string, data: unknown) => Promise<void>
+  getLiturgyData: () => Promise<unknown | null>
+  saveLiturgyData: (data: unknown) => Promise<boolean>
   downloadMedia: (url: string, destFolderType: string, filename: string) => Promise<boolean>
   checkMedia: (destFolderType: string, filename: string) => Promise<string | false>
   deleteMedia: (destFolderType: string, filename: string) => Promise<boolean>

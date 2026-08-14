@@ -164,6 +164,32 @@ export function registerDatabaseHandlers() {
     }
   });
 
+  ipcMain.handle("get-liturgy-data", async () => {
+    try {
+      const liturgyPath = path.join(app.getPath("userData"), "liturgy.json");
+      if (fs.existsSync(liturgyPath)) {
+        const content = fs.readFileSync(liturgyPath, "utf8");
+        return JSON.parse(content);
+      }
+      return null;
+    } catch (error) {
+      console.error("Erro ao ler liturgy.json:", error);
+      return null;
+    }
+  });
+
+  ipcMain.handle("save-liturgy-data", async (event, data: unknown) => {
+    try {
+      const liturgyPath = path.join(app.getPath("userData"), "liturgy.json");
+      const jsonString = JSON.stringify(data, null, 2);
+      fs.writeFileSync(liturgyPath, jsonString, "utf8");
+      return true;
+    } catch (error) {
+      console.error("Erro ao salvar liturgy.json:", error);
+      return false;
+    }
+  });
+
   ipcMain.handle("extract-local-db", async (event, lang: string = "pt") => {
     try {
       const dbPath = path.join(app.getPath("userData"), `database_${lang}.db`);

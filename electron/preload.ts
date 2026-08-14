@@ -4,6 +4,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
   isElectron: true,
   getLocalDb: (filename: string, lang?: string) => ipcRenderer.invoke("get-local-db", filename, lang),
   saveLocalDb: (filename: string, data: unknown) => ipcRenderer.invoke("save-local-db", filename, data),
+  getLiturgyData: () => ipcRenderer.invoke("get-liturgy-data"),
+  saveLiturgyData: (data: unknown) => ipcRenderer.invoke("save-liturgy-data", data),
   
   downloadMedia: (url: string, destFolderType: string, filename: string) => ipcRenderer.invoke("download-media", url, destFolderType, filename),
   checkMedia: (destFolderType: string, filename: string) => ipcRenderer.invoke("check-media", destFolderType, filename),

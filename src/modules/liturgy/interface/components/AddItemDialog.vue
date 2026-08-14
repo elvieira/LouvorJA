@@ -406,6 +406,38 @@
             </div>
           </v-card-text>
 
+          <v-card-text v-if="addForm.type === 'scheduled_item'" class="px-6 pb-2 pt-0">
+            <div class="mb-4">
+              <div class="text-body-2 font-weight-medium mb-1" style="color: var(--sidebar-text-secondary); margin-left: 4px;">
+                Categoria Agendada
+              </div>
+              <v-select
+                v-model="addForm.categoryId"
+                :items="categories"
+                item-title="name"
+                item-value="id"
+                variant="solo"
+                flat
+                bg-color="rgba(var(--v-theme-on-surface), 0.06)"
+                rounded="xl"
+                density="comfortable"
+                hide-details
+                class="modern-input-no-thick"
+                placeholder="Selecione a categoria"
+                no-data-text="Nenhuma categoria criada. Crie uma no botão de Itens Agendados."
+              >
+                <template #item="{ props }">
+                  <v-list-item v-bind="props">
+                    <template #prepend>
+                      <v-icon color="primary" class="mr-2">
+                        mdi-folder
+                      </v-icon>
+                    </template>
+                  </v-list-item>
+                </template>
+              </v-select>
+            </div>
+          </v-card-text>
           <v-card-actions class="px-6 pb-6 pt-2 d-flex justify-end" style="gap: 12px;">
             <v-spacer />
             <v-btn
@@ -448,6 +480,10 @@ export default defineComponent({
       type: Object as PropType<any | null>,
       default: null,
     },
+    categories: {
+      type: Array as PropType<any[]>,
+      default: () => [],
+    },
   },
   emits: ["update:modelValue", "save"],
   data: () => ({
@@ -463,6 +499,7 @@ export default defineComponent({
       verseNumbers: "",
       filePath: "",
       url: "",
+      categoryId: null as string | null,
     },
     musicSearchQuery: "",
     musicList: [] as any[],
@@ -479,6 +516,7 @@ export default defineComponent({
         { value: "verse", icon: "mdi-book-open-variant", color: "purple", label: this.t("types.verse"), description: this.t("type_descriptions.verse") },
         { value: "media", icon: "mdi-file-video", color: "orange", label: this.t("types.media"), description: this.t("type_descriptions.media") },
         { value: "link", icon: "mdi-link", color: "cyan", label: this.t("types.link"), description: this.t("type_descriptions.link") },
+        { value: "scheduled_item", icon: "mdi-calendar-clock", color: "pink", label: "Item Agendado", description: "Selecione uma categoria de agendamento" },
       ];
     },
     isFormValid(): boolean {
@@ -487,6 +525,7 @@ export default defineComponent({
       if (this.addForm.type === "verse" && (!this.addForm.verseBookId || !this.addForm.verseChapter)) return false;
       if (this.addForm.type === "media" && !this.addForm.filePath) return false;
       if (this.addForm.type === "link" && !this.addForm.url.trim()) return false;
+      if (this.addForm.type === "scheduled_item" && !this.addForm.categoryId) return false;
       return true;
     },
     filteredMusicList(): any[] {
@@ -594,10 +633,11 @@ export default defineComponent({
         verseNumbers: "",
         filePath: "",
         url: "",
+        categoryId: null,
       };
     },
     getTypeIcon(type: string): string {
-      const map: Record<string, string> = { annotation: "mdi-text", category: "mdi-tag", music: "mdi-music-note", verse: "mdi-book-open-variant", media: "mdi-file-video", link: "mdi-link" };
+      const map: Record<string, string> = { annotation: "mdi-text", category: "mdi-tag", music: "mdi-music-note", verse: "mdi-book-open-variant", media: "mdi-file-video", link: "mdi-link", scheduled_item: "mdi-calendar-clock" };
       return map[type] || "mdi-help";
     },
     getTypeColor(type: string): string {
@@ -755,6 +795,15 @@ export default defineComponent({
         const book = this.bibleBooks.find(b => b.id_bible_book === this.addForm.verseBookId);
         if (book) {
           item.subtitle = `${book.name} ${this.addForm.verseChapter}${this.addForm.verseNumbers ? `:${  this.addForm.verseNumbers}` : ""}`;
+        }
+      }
+
+      if (this.addForm.type === "scheduled_item") {
+        item.categoryId = this.addForm.categoryId;
+        const category = this.categories.find(c => c.id === this.addForm.categoryId);
+        if (category) {
+          item.subtitle = `Categoria: ${category.name}`;
+          if (!item.name) item.name = "Item Agendado";
         }
       }
 

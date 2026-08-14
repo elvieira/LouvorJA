@@ -11,7 +11,15 @@
         :subtitle="t('description')"
         icon="mdi-hands-pray"
         @close="module.show = false"
-      />
+      >
+        <v-btn
+          v-tooltip="'Itens Agendados'"
+          variant="text"
+          color="var(--sidebar-text)"
+          icon="mdi-calendar-clock"
+          @click="showScheduledItems = true"
+        />
+      </ModuleHeader>
 
       <!-- Segmented Control for Days -->
       <DaySelector 
@@ -74,6 +82,7 @@
       <AddItemDialog 
         v-model="showAddMenu"
         :edit-data="editData"
+        :categories="extraData.scheduled_items || []"
         @save="onSaveItem"
       />
 
@@ -81,6 +90,14 @@
       <NewCustomDialog 
         v-model="showNewCustomDialog"
         @save="createCustomLiturgy"
+      />
+
+      <!-- Scheduled Items Dialog -->
+      <ScheduledItemsDialog 
+        v-if="showScheduledItems"
+        v-model="showScheduledItems"
+        v-model:extra-data="extraData"
+        @save="saveLiturgy"
       />
     </div>
   </v-slide-y-reverse-transition>
@@ -96,6 +113,7 @@ import LiturgyList from "./components/LiturgyList.vue";
 import LiturgyNotes from "./components/LiturgyNotes.vue";
 import AddItemDialog from "./components/AddItemDialog.vue";
 import NewCustomDialog from "./components/NewCustomDialog.vue";
+import ScheduledItemsDialog from "./components/ScheduledItemsDialog.vue";
 
 export default defineComponent({
   name: "LiturgyModuleIndex",
@@ -107,6 +125,7 @@ export default defineComponent({
     LiturgyNotes,
     AddItemDialog,
     NewCustomDialog,
+    ScheduledItemsDialog,
   },
   data: () => ({
     isCompactView: false as boolean,
@@ -123,11 +142,17 @@ export default defineComponent({
     } as Record<string, string>,
     customLiturgies: [] as any[],
 
+    extraData: {
+      scheduled_items: [],
+      templates: [],
+    } as any,
+
     // Dialogs
     showAddMenu: false as boolean,
     editData: null as any,
     editingIndex: null as number | null,
     showNewCustomDialog: false as boolean,
+    showScheduledItems: false as boolean,
     resizeObserver: null as ResizeObserver | null,
   }),
   computed: {
@@ -334,7 +359,7 @@ export default defineComponent({
         this.saveLiturgy();
       }
     },
-    async executeItem(item: any) {
+    async executeItem(item: any): Promise<void> {
       if (this.isItemProjecting(item)) {
         this.closeProjection(item.type);
         return;
@@ -416,6 +441,38 @@ export default defineComponent({
             window.open(item.url, "_blank");
           }
         }
+      } else if (item.type === "scheduled_item") {
+        const categoryId = item.categoryId;
+        const categories = this.extraData.scheduled_items || [];
+        const category = categories.find((c: any) => c.id === categoryId);
+        
+        if (!category) {
+          this.$alert.show({ text: "Categoria não encontrada ou foi removida.", translate: false });
+          return;
+        }
+
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, "0");
+        const day = String(today.getDate()).padStart(2, "0");
+        const dateString = `${year}-${month}-${day}`;
+
+        const schedule = category.schedules[dateString];
+        
+        if (!schedule || !schedule.filePath) {
+          this.$alert.show({ text: "Nenhum arquivo agendado para o dia de hoje nesta categoria.", translate: false });
+          return;
+        }
+
+        // Simular um item do tipo "media" para executar no fluxo padrão
+        const mediaItem = {
+          type: "media",
+          filePath: schedule.filePath,
+          name: schedule.name || "Item Agendado",
+          subtitle: category.name,
+        };
+        
+        return this.executeItem(mediaItem);
       }
 
       if (targetModule) {
@@ -456,27 +513,61 @@ export default defineComponent({
       }
     },
     async saveLiturgy() {
-      await this.$userdata.set("modules.liturgy.liturgies", JSON.parse(JSON.stringify(this.liturgies)));
-      await this.$userdata.set("modules.liturgy.dayNotes", JSON.parse(JSON.stringify(this.dayNotes)));
-      await this.$userdata.set("modules.liturgy.custom", JSON.parse(JSON.stringify(this.customLiturgies)));
+      const dataToSave = {
+        liturgies: JSON.parse(JSON.stringify(this.liturgies)),
+        dayNotes: JSON.parse(JSON.stringify(this.dayNotes)),
+        custom: JSON.parse(JSON.stringify(this.customLiturgies)),
+        scheduled_items: JSON.parse(JSON.stringify(this.extraData.scheduled_items || [])),
+        templates: JSON.parse(JSON.stringify(this.extraData.templates || [])),
+      };
+      if (window.electronAPI && window.electronAPI.saveLiturgyData) {
+        await window.electronAPI.saveLiturgyData(dataToSave);
+      }
     },
     async loadSavedLiturgies() {
       try {
-        const saved = await this.$userdata.get("modules.liturgy.liturgies");
+        if (!window.electronAPI || !window.electronAPI.getLiturgyData) return;
+        
+        let saved = await window.electronAPI.getLiturgyData() as any;
+        
+        // MIGRATION FALLBACK
+        if (!saved) {
+          const oldLiturgies = await this.$userdata.get("modules.liturgy.liturgies");
+          const oldNotes = await this.$userdata.get("modules.liturgy.dayNotes");
+          const oldCustom = await this.$userdata.get("modules.liturgy.custom");
+          
+          if (oldLiturgies || oldNotes || oldCustom) {
+            saved = {
+              liturgies: oldLiturgies || {},
+              dayNotes: oldNotes || {},
+              custom: oldCustom || [],
+              scheduled_items: [],
+              templates: [],
+            };
+            // The migrated data will be saved the next time saveLiturgy is called
+          }
+        }
+        
         if (saved) {
-          for (const day in this.liturgies) {
-            if (saved[day]) this.liturgies[day] = saved[day];
+          if (saved.liturgies) {
+            for (const day in this.liturgies) {
+              if (saved.liturgies[day]) this.liturgies[day] = saved.liturgies[day];
+            }
           }
-        }
-        const savedNotes = await this.$userdata.get("modules.liturgy.dayNotes");
-        if (savedNotes) {
-          for (const day in this.dayNotes) {
-            if (savedNotes[day]) this.dayNotes[day] = savedNotes[day];
+          if (saved.dayNotes) {
+            for (const day in this.dayNotes) {
+              if (saved.dayNotes[day]) this.dayNotes[day] = saved.dayNotes[day];
+            }
           }
-        }
-        const custom = await this.$userdata.get("modules.liturgy.custom");
-        if (custom && Array.isArray(custom)) {
-          this.customLiturgies = custom;
+          if (saved.custom && Array.isArray(saved.custom)) {
+            this.customLiturgies = saved.custom;
+          }
+          if (saved.scheduled_items) {
+            this.extraData.scheduled_items = saved.scheduled_items;
+          }
+          if (saved.templates) {
+            this.extraData.templates = saved.templates;
+          }
         }
       } catch (e) {
         console.error("Failed to load liturgies:", e);

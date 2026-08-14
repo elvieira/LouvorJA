@@ -272,18 +272,18 @@ export default defineComponent({
       return count;
     },
     getTypeIcon(type: string): string {
-      const map: Record<string, string> = { annotation: "mdi-text", category: "mdi-tag", music: "mdi-music-note", verse: "mdi-book-open-variant", media: "mdi-file-video", link: "mdi-link" };
+      const map: Record<string, string> = { annotation: "mdi-text", category: "mdi-tag", music: "mdi-music-note", verse: "mdi-book-open-variant", media: "mdi-file-video", link: "mdi-link", scheduled_item: "mdi-calendar-clock" };
       return map[type] || "mdi-help";
     },
     getTypeColor(type: string): string {
-      const map: Record<string, string> = { annotation: "info", category: "warning", music: "success", verse: "purple", media: "orange", link: "cyan" };
+      const map: Record<string, string> = { annotation: "info", category: "warning", music: "success", verse: "purple", media: "orange", link: "cyan", scheduled_item: "pink" };
       return map[type] || "grey";
     },
     isExecutable(item: any): boolean {
-      return ["music", "verse", "link", "media"].includes(item.type);
+      return ["music", "verse", "link", "media", "scheduled_item"].includes(item.type);
     },
     getExecuteIcon(type: string): string {
-      if (type === "media" && this.useInternalPlayer) {
+      if ((type === "media" || type === "scheduled_item") && this.useInternalPlayer) {
         return "mdi-play";
       }
       const map: Record<string, string> = {
@@ -291,11 +291,12 @@ export default defineComponent({
         verse: "mdi-presentation-play",
         link: "mdi-open-in-new",
         media: "mdi-open-in-new",
+        scheduled_item: "mdi-play",
       };
       return map[type] || "mdi-play";
     },
     getExecuteTooltip(type: string): string {
-      if (type === "media" && this.useInternalPlayer) {
+      if ((type === "media" || type === "scheduled_item") && this.useInternalPlayer) {
         return this.t("actions.play");
       }
       const map: Record<string, string> = {
@@ -303,6 +304,7 @@ export default defineComponent({
         verse: "actions.project",
         link: "actions.open",
         media: "actions.open",
+        scheduled_item: "actions.play",
       };
       return this.t(map[type] || "actions.project");
     },
