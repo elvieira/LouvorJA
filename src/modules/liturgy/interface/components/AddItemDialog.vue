@@ -505,7 +505,7 @@
               <div class="text-body-2 font-weight-medium mb-1" style="color: var(--sidebar-text-secondary); margin-left: 4px;">
                 Categoria Agendada
               </div>
-              <v-select
+              <v-autocomplete
                 v-model="addForm.categoryId"
                 :items="categories"
                 item-title="name"
@@ -517,18 +517,39 @@
                 hide-details
                 class="modern-input-compact"
                 placeholder="Selecione a categoria"
-                no-data-text="Nenhuma categoria criada. Crie uma no botão de Itens Agendados."
+                :menu-props="{ transition: 'fade-transition' }"
+                :list-props="{ style: 'background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border-color, rgba(150, 150, 150, 0.2)); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); padding: 8px 0;' }"
               >
-                <template #item="{ props }">
-                  <v-list-item v-bind="props">
+                <template #item="{ item, props }">
+                  <v-list-item 
+                    v-bind="props"
+                    :title="undefined"
+                    class="mx-2 rounded-lg mb-1"
+                    color="primary"
+                    style="min-height: 40px;"
+                  >
                     <template #prepend>
-                      <v-icon color="primary" class="mr-2">
-                        mdi-folder
+                      <v-icon :color="item.value === addForm.categoryId ? 'primary' : 'rgba(128,128,128,0.5)'" class="mr-3" size="20">
+                        {{ item.value === addForm.categoryId ? 'mdi-folder-open' : 'mdi-folder' }}
                       </v-icon>
+                    </template>
+                    <template #title>
+                      <div class="d-flex align-center">
+                        <span class="text-body-2 font-weight-medium" :class="item.value === addForm.categoryId ? '' : 'opacity-70'">
+                          {{ item.title }}
+                        </span>
+                      </div>
                     </template>
                   </v-list-item>
                 </template>
-              </v-select>
+                <template #no-data>
+                  <v-list-item>
+                    <v-list-item-title class="text-caption text-center pt-2 pb-2" style="color: var(--sidebar-text-secondary);">
+                      Nenhuma categoria criada. Crie uma em Itens Agendados.
+                    </v-list-item-title>
+                  </v-list-item>
+                </template>
+              </v-autocomplete>
             </div>
           </v-card-text>
           <v-card-actions class="px-6 pb-6 pt-2 d-flex justify-end" style="gap: 12px;">

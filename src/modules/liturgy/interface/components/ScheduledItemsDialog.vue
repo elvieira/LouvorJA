@@ -47,18 +47,16 @@
           </div>
           
           <v-list class="bg-transparent flex-grow-1 overflow-y-auto pa-2" density="compact">
-            <div v-if="showNewCategoryForm" class="mb-2 d-flex align-center px-2">
+            <div v-if="showNewCategoryForm" class="mb-3 d-flex align-center pa-2 rounded-lg" style="background: rgba(var(--v-theme-on-surface), 0.04); border: 1px solid rgba(128,128,128,0.1);">
               <v-text-field
                 v-model="newCategoryName"
-                variant="solo"
-                flat
-                bg-color="rgba(var(--v-theme-on-surface), 0.06)"
-                rounded="lg"
+                variant="outlined"
                 density="compact"
                 hide-details
-                placeholder="Nome"
+                placeholder="Nova Categoria..."
                 autofocus
                 class="modern-input-no-thick flex-grow-1 mr-2"
+                bg-color="rgba(var(--v-theme-surface), 0.5)"
                 @keyup.enter="saveNewCategory"
                 @keyup.esc="showNewCategoryForm = false"
               />
@@ -66,43 +64,45 @@
                 icon="mdi-check"
                 color="primary"
                 variant="flat"
-                size="28"
-                class="rounded-lg"
+                size="32"
+                class="rounded-md flex-shrink-0"
                 @click="saveNewCategory"
               />
             </div>
 
             <template v-if="categories.length > 0">
-              <v-list-item
+              <div
                 v-for="cat in categories"
                 :key="cat.id"
-                :active="selectedCategoryId === cat.id"
-                class="mb-1 rounded-lg"
+                class="category-item d-flex align-center pa-3 mb-2 rounded-lg cursor-pointer"
                 :style="{
-                  background: selectedCategoryId === cat.id ? 'rgba(var(--v-theme-primary), 0.1)' : 'transparent',
-                  color: selectedCategoryId === cat.id ? 'rgb(var(--v-theme-primary))' : 'var(--sidebar-text)'
+                  background: selectedCategoryId === cat.id ? 'rgba(var(--v-theme-primary), 0.15)' : 'transparent',
+                  color: selectedCategoryId === cat.id ? 'rgb(var(--v-theme-primary))' : 'var(--sidebar-text)',
+                  border: selectedCategoryId === cat.id ? '1px solid rgba(var(--v-theme-primary), 0.2)' : '1px solid transparent',
+                  transition: 'all 0.2s ease'
                 }"
                 @click="selectedCategoryId = cat.id"
               >
-                <template #prepend>
-                  <v-icon size="small" :color="selectedCategoryId === cat.id ? 'primary' : 'rgba(128,128,128,0.5)'">
-                    mdi-folder
-                  </v-icon>
-                </template>
-                <v-list-item-title class="font-weight-medium text-body-2">
+                <v-icon size="20" class="mr-3 flex-shrink-0" :color="selectedCategoryId === cat.id ? 'primary' : 'rgba(128,128,128,0.5)'">
+                  {{ selectedCategoryId === cat.id ? 'mdi-folder-open' : 'mdi-folder' }}
+                </v-icon>
+                <span class="text-body-2 font-weight-medium flex-grow-1 text-truncate">
                   {{ cat.name }}
-                </v-list-item-title>
-                <template #append>
-                  <v-btn
-                    color="error"
-                    icon="mdi-delete"
-                    variant="text"
-                    size="small"
-                    class="rounded-lg"
-                    @click.stop="deleteCategory(cat.id)"
-                  />
-                </template>
-              </v-list-item>
+                </span>
+                
+                <v-btn
+                  v-if="selectedCategoryId === cat.id"
+                  color="rgba(var(--v-theme-error), 0.1)"
+                  variant="flat"
+                  size="24"
+                  class="rounded-md ml-2 flex-shrink-0"
+                  @click.stop="deleteCategory(cat.id)"
+                >
+                  <v-icon size="14" color="error">
+                    mdi-delete
+                  </v-icon>
+                </v-btn>
+              </div>
             </template>
             <div v-else-if="!showNewCategoryForm" class="pa-4 text-center text-caption" style="color: var(--sidebar-text-secondary);">
               Nenhuma categoria criada.
@@ -113,101 +113,96 @@
         <!-- Right Pane: Calendar & Selection -->
         <div class="content-pane flex-grow-1 d-flex flex-column pa-6 rounded-xl" style="background: rgba(var(--v-theme-on-surface), 0.02); border: 1px solid rgba(128,128,128,0.1); overflow-y: auto;">
           <template v-if="selectedCategory">
-            <div class="d-flex align-center mb-6">
-              <v-avatar
-                color="rgba(var(--v-theme-primary), 0.1)"
-                size="40"
-                rounded="lg"
-                class="mr-3"
-              >
-                <v-icon color="primary" size="20">
-                  mdi-folder-open
-                </v-icon>
-              </v-avatar>
-              <div>
-                <h3 class="text-h6 font-weight-bold" style="color: var(--sidebar-text); line-height: 1.2;">
-                  {{ selectedCategory.name }}
-                </h3>
-                <span class="text-caption" style="color: var(--sidebar-text-secondary);">Selecione uma data para agendar a mídia</span>
+            <div class="d-flex align-center justify-space-between mb-6">
+              <div class="d-flex align-center">
+                <v-avatar
+                  color="rgba(var(--v-theme-primary), 0.1)"
+                  size="40"
+                  rounded="lg"
+                  class="mr-3"
+                >
+                  <v-icon color="primary" size="20">
+                    mdi-folder-open
+                  </v-icon>
+                </v-avatar>
+                <div>
+                  <h3 class="text-h6 font-weight-bold" style="color: var(--sidebar-text); line-height: 1.2;">
+                    {{ selectedCategory.name }}
+                  </h3>
+                  <span class="text-caption" style="color: var(--sidebar-text-secondary);">Gerencie os arquivos e datas desta categoria</span>
+                </div>
               </div>
+              <v-btn
+                color="primary"
+                variant="flat"
+                prepend-icon="mdi-plus"
+                class="rounded-lg modern-alert-btn"
+                @click="selectFile"
+              >
+                Adicionar Arquivo
+              </v-btn>
             </div>
 
-            <div class="d-flex" style="gap: 24px;">
-              <div class="calendar-container" style="min-width: 320px;">
-                <v-date-picker 
-                  v-model="selectedDateObj"
-                  color="primary"
-                  :first-day-of-week="0"
-                  class="rounded-xl border"
-                  style="border-color: rgba(128,128,128,0.1) !important;"
-                  elevation="0"
-                  hide-header
-                  show-adjacent-months
-                />
-              </div>
-
-              <div class="schedule-details flex-grow-1 d-flex flex-column">
-                <h4 class="text-subtitle-1 font-weight-bold mb-4" style="color: var(--sidebar-text);">
-                  Arquivo para {{ formattedDate }}
-                </h4>
-                
-                <div v-if="currentScheduledItem" class="current-item-box pa-4 rounded-xl border mb-4" style="background: rgba(var(--v-theme-on-surface), 0.04); border-color: rgba(128,128,128,0.1) !important;">
-                  <div class="d-flex align-center">
-                    <v-avatar
-                      color="rgba(var(--v-theme-primary), 0.1)"
-                      size="48"
-                      rounded="lg"
-                      class="mr-4"
-                    >
-                      <v-icon size="24" color="primary">
-                        mdi-file-video
-                      </v-icon>
-                    </v-avatar>
-                    <div class="flex-grow-1" style="min-width: 0;">
-                      <div class="text-body-2 font-weight-bold text-truncate" style="color: var(--sidebar-text);">
-                        {{ currentScheduledItem.name }}
-                      </div>
-                      <div class="text-caption text-truncate" style="color: var(--sidebar-text-secondary);">
-                        {{ currentScheduledItem.filePath }}
-                      </div>
+            <div class="schedule-list flex-grow-1 d-flex flex-column" style="gap: 12px; overflow-y: auto;">
+              <template v-if="currentCategoryItems.length > 0">
+                <div 
+                  v-for="item in currentCategoryItems" 
+                  :key="item.id" 
+                  class="current-item-box pa-3 rounded-xl border d-flex align-center" 
+                  style="background: rgba(var(--v-theme-on-surface), 0.04); border-color: rgba(128,128,128,0.1) !important;"
+                >
+                  <v-avatar
+                    color="rgba(var(--v-theme-primary), 0.1)"
+                    size="42"
+                    rounded="lg"
+                    class="mr-4 flex-shrink-0"
+                  >
+                    <v-icon size="20" color="primary">
+                      mdi-file-video
+                    </v-icon>
+                  </v-avatar>
+                  <div class="flex-grow-1" style="min-width: 0;">
+                    <div class="text-body-2 font-weight-bold text-truncate" style="color: var(--sidebar-text);">
+                      {{ item.name }}
                     </div>
+                    <div class="text-caption text-truncate" style="color: var(--sidebar-text-secondary);">
+                      {{ item.filePath }}
+                    </div>
+                  </div>
+                  
+                  <div class="d-flex align-center ml-4 flex-shrink-0" style="gap: 8px;">
+                    <input 
+                      type="date" 
+                      :value="item.date"
+                      class="px-2 py-1 rounded-lg border text-body-2 font-weight-medium"
+                      style="border-color: rgba(128,128,128,0.2); background: rgba(var(--v-theme-surface), 0.5); color: var(--sidebar-text); outline: none;"
+                      @change="(e) => updateItemDate(item.id, (e.target as HTMLInputElement).value)"
+                    />
                     <v-btn
-                      class="ml-2 rounded-lg"
+                      class="rounded-lg"
                       icon="mdi-delete"
                       variant="flat"
                       color="rgba(var(--v-theme-error), 0.1)"
-                      @click="removeScheduledItem"
+                      size="small"
+                      @click="removeScheduledItem(item.id)"
                     >
-                      <v-icon color="error" size="20">
+                      <v-icon color="error" size="18">
                         mdi-delete
                       </v-icon>
                     </v-btn>
                   </div>
                 </div>
-
-                <div v-else class="empty-state pa-6 text-center rounded-xl mb-4 d-flex flex-column align-center justify-center flex-grow-1" style="border: 2px dashed rgba(128,128,128,0.2);">
-                  <v-icon size="48" color="rgba(128,128,128,0.3)" class="mb-3">
-                    mdi-file-hidden
-                  </v-icon>
-                  <div class="text-body-2 mb-1" style="color: var(--sidebar-text);">
-                    Nenhum arquivo agendado
-                  </div>
-                  <div class="text-caption" style="color: var(--sidebar-text-secondary);">
-                    Clique no botão abaixo para escolher uma mídia.
-                  </div>
+              </template>
+              <div v-else class="empty-state pa-6 text-center rounded-xl d-flex flex-column align-center justify-center flex-grow-1" style="border: 2px dashed rgba(128,128,128,0.2);">
+                <v-icon size="48" color="rgba(128,128,128,0.3)" class="mb-3">
+                  mdi-file-hidden
+                </v-icon>
+                <div class="text-body-2 mb-1" style="color: var(--sidebar-text);">
+                  Nenhum arquivo agendado
                 </div>
-
-                <v-btn
-                  block
-                  color="primary"
-                  variant="flat"
-                  class="rounded-lg modern-alert-btn mt-auto"
-                  height="48"
-                  prepend-icon="mdi-folder-search"
-                  @click="selectFile"
-                >
-                  {{ currentScheduledItem ? 'Trocar Arquivo' : 'Selecionar Arquivo' }}
-                </v-btn>
+                <div class="text-caption" style="color: var(--sidebar-text-secondary);">
+                  Clique em "Adicionar Arquivo" para inserir mídias.
+                </div>
               </div>
             </div>
           </template>
@@ -235,14 +230,17 @@ import { defineComponent, PropType } from "vue";
 import { v4 as uuidv4 } from "uuid";
 
 interface ScheduledItem {
+  id: string;
   filePath: string;
   name: string;
+  date: string;
 }
 
 interface Category {
   id: string;
   name: string;
-  schedules: Record<string, ScheduledItem>; // key is YYYY-MM-DD
+  items?: ScheduledItem[];
+  schedules?: Record<string, any>; // legacy
 }
 
 export default defineComponent({
@@ -261,7 +259,6 @@ export default defineComponent({
   data() {
     return {
       selectedCategoryId: null as string | null,
-      selectedDateObj: [new Date()] as Date[] | Date,
       showNewCategoryForm: false,
       newCategoryName: "",
     };
@@ -273,37 +270,43 @@ export default defineComponent({
     selectedCategory(): Category | undefined {
       return this.categories.find(c => c.id === this.selectedCategoryId);
     },
-    resolvedDate(): Date | null {
-      const d = this.selectedDateObj;
-      if (!d) return null;
-      if (Array.isArray(d)) return d[0] || null;
-      return d;
-    },
-    selectedDateString(): string {
-      // YYYY-MM-DD in local timezone
-      const d = this.resolvedDate;
-      if (!d) return "";
-      const year = d.getFullYear();
-      const month = String(d.getMonth() + 1).padStart(2, "0");
-      const day = String(d.getDate()).padStart(2, "0");
-      return `${year}-${month}-${day}`;
-    },
-    formattedDate(): string {
-      const d = this.resolvedDate;
-      if (!d) return "";
-      return d.toLocaleDateString("pt-BR");
-    },
-    currentScheduledItem(): ScheduledItem | null {
-      if (!this.selectedCategory || !this.selectedDateString) return null;
-      return this.selectedCategory.schedules[this.selectedDateString] || null;
+    currentCategoryItems(): ScheduledItem[] {
+      if (!this.selectedCategory) return [];
+      const items = this.selectedCategory.items || [];
+      return [...items].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
     },
   },
   watch: {
     categories: {
       immediate: true,
       handler(newCats) {
-        if (newCats.length > 0 && !this.selectedCategoryId) {
-          this.selectedCategoryId = newCats[0].id;
+        let needsMigration = false;
+        const migratedCats = newCats.map((cat: Category) => {
+          if (cat.schedules && !cat.items) {
+            needsMigration = true;
+            return {
+              ...cat,
+              items: Object.entries(cat.schedules).map(([date, item]: [string, any]) => ({
+                id: uuidv4(),
+                filePath: item.filePath,
+                name: item.name,
+                date,
+              })),
+              schedules: undefined,
+            };
+          } else if (!cat.items) {
+            needsMigration = true;
+            return { ...cat, items: [] };
+          }
+          return cat;
+        });
+
+        if (needsMigration) {
+          this.updateExtraData(migratedCats);
+        }
+
+        if (migratedCats.length > 0 && !this.selectedCategoryId) {
+          this.selectedCategoryId = migratedCats[0].id;
         }
       },
     },
@@ -323,7 +326,7 @@ export default defineComponent({
         const newCat: Category = {
           id: uuidv4(),
           name: val,
-          schedules: {},
+          items: [],
         };
         const updated = [...this.categories, newCat];
         this.updateExtraData(updated);
@@ -349,8 +352,8 @@ export default defineComponent({
       );
     },
     async selectFile() {
-      if (!this.selectedCategory || !this.selectedDateString) return;
-
+      if (!this.selectedCategory) return;
+      
       if (window.electronAPI && window.electronAPI.openFileDialog) {
         const filePath = (await window.electronAPI.openFileDialog({
           title: "Selecionar Arquivo para Agendar",
@@ -361,33 +364,53 @@ export default defineComponent({
         })) as string | null;
 
         if (filePath) {
-          // extrai o nome do arquivo
           const name = filePath.split(/[/\\]/).pop() || "Arquivo";
           
-          const updatedSchedules = {
-            ...this.selectedCategory.schedules,
-            [this.selectedDateString]: { filePath, name },
+          const today = new Date();
+          const year = today.getFullYear();
+          const month = String(today.getMonth() + 1).padStart(2, "0");
+          const day = String(today.getDate()).padStart(2, "0");
+          const dateStr = `${year}-${month}-${day}`;
+
+          const newItem: ScheduledItem = {
+            id: uuidv4(),
+            filePath,
+            name,
+            date: dateStr,
           };
-          
-          const updatedCategories = this.categories.map((c) =>
-            c.id === this.selectedCategoryId ? { ...c, schedules: updatedSchedules } : c,
-          );
-          
-          this.updateExtraData(updatedCategories);
+
+          const newCategories = this.categories.map((c: Category) => {
+            if (c.id === this.selectedCategoryId) {
+              return { ...c, items: [...(c.items || []), newItem] };
+            }
+            return c;
+          });
+          this.updateExtraData(newCategories);
         }
       }
     },
-    removeScheduledItem() {
-      if (!this.selectedCategory || !this.selectedDateString) return;
-      
-      const updatedSchedules = { ...this.selectedCategory.schedules };
-      delete updatedSchedules[this.selectedDateString];
-      
-      const updatedCategories = this.categories.map((c) =>
-        c.id === this.selectedCategoryId ? { ...c, schedules: updatedSchedules } : c,
-      );
-      
-      this.updateExtraData(updatedCategories);
+    removeScheduledItem(itemId: string) {
+      if (!this.selectedCategory) return;
+      const newCategories = this.categories.map((c: Category) => {
+        if (c.id === this.selectedCategoryId) {
+          return { ...c, items: (c.items || []).filter(i => i.id !== itemId) };
+        }
+        return c;
+      });
+      this.updateExtraData(newCategories);
+    },
+    updateItemDate(itemId: string, newDate: string) {
+      if (!this.selectedCategory) return;
+      const newCategories = this.categories.map((c: Category) => {
+        if (c.id === this.selectedCategoryId) {
+          return {
+            ...c,
+            items: (c.items || []).map(i => i.id === itemId ? { ...i, date: newDate } : i),
+          };
+        }
+        return c;
+      });
+      this.updateExtraData(newCategories);
     },
     updateExtraData(newCategories: Category[]) {
       const updatedExtraData = { ...this.extraData, scheduled_items: newCategories };

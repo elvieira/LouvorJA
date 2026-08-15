@@ -13,12 +13,16 @@
         @close="module.show = false"
       >
         <v-btn
-          v-tooltip="'Itens Agendados'"
-          variant="text"
-          color="var(--sidebar-text)"
-          icon="mdi-calendar-clock"
+          variant="flat"
+          color="rgba(128,128,128,0.1)"
+          append-icon="mdi-calendar-clock"
+          class="rounded-lg text-body-2 font-weight-medium no-hover"
+          :ripple="false"
+          style="color: var(--sidebar-text); text-transform: none; letter-spacing: normal;"
           @click="showScheduledItems = true"
-        />
+        >
+          Itens Agendados
+        </v-btn>
       </ModuleHeader>
 
       <!-- Segmented Control for Days -->
@@ -515,7 +519,12 @@ export default defineComponent({
         const day = String(today.getDate()).padStart(2, "0");
         const dateString = `${year}-${month}-${day}`;
 
-        const schedule = category.schedules[dateString];
+        let schedule = null;
+        if (category.items && Array.isArray(category.items)) {
+          schedule = category.items.find((i: any) => i.date === dateString);
+        } else if (category.schedules) {
+          schedule = category.schedules[dateString];
+        }
         
         if (!schedule || !schedule.filePath) {
           this.$alert.show({ text: "Nenhum arquivo agendado para o dia de hoje nesta categoria.", translate: false });
@@ -679,5 +688,9 @@ export default defineComponent({
   height: 100%;
   background: var(--card-bg);
   z-index: 10;
+}
+
+.no-hover :deep(.v-btn__overlay) {
+  display: none !important;
 }
 </style>
