@@ -48,19 +48,23 @@
             :title="currentLiturgyTitle"
             :selected-item-index="selectedItemIndex"
             :use-internal-player="$userdata.get('modules.config.media_use_internal_player')"
+            :show-notes="showNotes"
             @select-item="selectItem"
             @edit-item="editItem"
+            @duplicate-item="duplicateItem"
             @remove-item="removeItem"
             @toggle-done="toggleItemDone"
             @execute-item="executeItem"
             @clear-all="confirmClearAll"
             @add-item="openAddMenu"
+            @add-item-to-category="openAddMenuWithCategory"
             @drag-end="saveLiturgy"
+            @toggle-notes="showNotes = !showNotes"
           />
 
           <!-- Right Panel: Sidebar (Notes Only) -->
           <LiturgyNotes 
-            v-if="!isCompactView"
+            v-if="showNotes && !isCompactView"
             v-model="currentNotes"
             @blur="saveLiturgy"
           />
@@ -151,8 +155,10 @@ export default defineComponent({
     showAddMenu: false as boolean,
     editData: null as any,
     editingIndex: null as number | null,
+    insertingCategoryId: null as string | null,
     showNewCustomDialog: false as boolean,
     showScheduledItems: false as boolean,
+    showNotes: false as boolean,
     resizeObserver: null as ResizeObserver | null,
   }),
   computed: {
@@ -293,22 +299,70 @@ export default defineComponent({
     openAddMenu() {
       this.editData = null;
       this.editingIndex = null;
+      this.insertingCategoryId = null;
+      this.showAddMenu = true;
+    },
+    openAddMenuWithCategory(categoryId: string) {
+      this.editData = null;
+      this.editingIndex = null;
+      this.insertingCategoryId = categoryId;
       this.showAddMenu = true;
     },
     editItem(index: number) {
       this.editingIndex = index;
+      this.insertingCategoryId = null;
       this.editData = { ...this.currentItems[index] };
       this.showAddMenu = true;
     },
     onSaveItem(item: any) {
       if (this.editingIndex !== null) {
         this.currentItems.splice(this.editingIndex, 1, item);
+      } else if (this.insertingCategoryId) {
+        const catIdx = this.currentItems.findIndex((i: any) => i.id === this.insertingCategoryId);
+        if (catIdx !== -1) {
+          let insertIdx = catIdx + 1;
+          while (insertIdx < this.currentItems.length && this.currentItems[insertIdx].type !== "category") {
+            insertIdx++;
+          }
+          this.currentItems.splice(insertIdx, 0, item);
+        } else {
+          this.currentItems.push(item);
+        }
       } else {
         this.currentItems.push(item);
       }
       this.showAddMenu = false;
       this.editData = null;
       this.editingIndex = null;
+      this.insertingCategoryId = null;
+      this.saveLiturgy();
+    },
+    duplicateItem(index: number) {
+      const original = this.currentItems[index];
+      
+      if (original.type === "category") {
+        let endIndex = index + 1;
+        while (endIndex < this.currentItems.length && this.currentItems[endIndex].type !== "category") {
+          endIndex++;
+        }
+        
+        const itemsToDuplicate = this.currentItems.slice(index, endIndex);
+        const newItems = itemsToDuplicate.map((item: any) => ({
+          ...JSON.parse(JSON.stringify(item)),
+          id: Date.now() + Math.random(),
+          done: false,
+        }));
+        
+        this.currentItems.splice(endIndex, 0, ...newItems);
+      } else {
+        const newItem = {
+          ...JSON.parse(JSON.stringify(original)),
+          id: Date.now() + Math.random(),
+          done: false,
+        };
+        this.currentItems.splice(index + 1, 0, newItem);
+      }
+      
       this.saveLiturgy();
     },
     removeItem(index: number) {
@@ -351,7 +405,7 @@ export default defineComponent({
         changed = true;
       }
 
-      if (["music", "verse", "link", "media"].includes(item.type)) {
+      if (["music", "verse", "link", "media", "file"].includes(item.type)) {
         this.executeItem(item);
       }
 
@@ -384,6 +438,10 @@ export default defineComponent({
               verses: item.verseNumbers,
             });
           });
+        }
+      } else if (item.type === "file") {
+        if (item.filePath && window.electronAPI?.openPath) {
+          window.electronAPI.openPath(item.filePath);
         }
       } else if (item.type === "media") {
         if (item.filePath) {

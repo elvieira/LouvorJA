@@ -8,18 +8,16 @@
       @blur="$emit('blur')"
     />
 
-    <div class="editor-toolbar d-flex flex-column mb-6" style="border-top: 1px solid var(--border-color, rgba(0,0,0,0.05)); border-bottom: 1px solid var(--border-color, rgba(0,0,0,0.05));">
+    <div class="editor-toolbar d-flex flex-column pb-4 pt-2 px-2" style="border-top: 1px solid rgba(var(--v-theme-on-surface), 0.05);">
       <!-- Linha 1: Fontes e Cores -->
-      <div class="d-flex align-center px-2 py-2 w-100" style="gap: 8px;">
+      <div class="d-flex align-center w-100 mb-2" style="gap: 8px;">
         <v-select
           v-model="selectedFont"
           :items="fonts"
           density="compact"
-          variant="solo"
-          flat
-          bg-color="rgba(150, 150, 150, 0.1)"
-          style="border: 1px solid var(--border-color, rgba(0,0,0,0.05)); border-radius: 24px;"
-          rounded
+          variant="outlined"
+          color="primary"
+          rounded="lg"
           hide-details
           class="toolbar-select flex-grow-1"
           :menu-props="{ contentClass: 'elevation-3 rounded-lg' }"
@@ -41,11 +39,10 @@
           v-model="selectedSize"
           :items="sizes"
           density="compact"
-          variant="solo"
-          flat
-          bg-color="rgba(150, 150, 150, 0.1)"
-          style="border: 1px solid var(--border-color, rgba(0,0,0,0.05)); border-radius: 24px; max-width: 120px;"
-          rounded
+          variant="outlined"
+          color="primary"
+          rounded="lg"
+          style="max-width: 120px;"
           hide-details
           class="toolbar-select"
           :menu-props="{ contentClass: 'elevation-3 rounded-lg' }"
@@ -83,10 +80,10 @@
         </ModernColorPicker>
       </div>
 
-      <div class="w-100" style="border-bottom: 1px solid var(--border-color, rgba(0,0,0,0.05));" />
+      <!-- Divider removed for cleaner look -->
 
       <!-- Linha 2: Ferramentas de Formatação -->
-      <div class="d-flex align-center px-2 pt-1 pb-2 w-100 justify-space-between">
+      <div class="d-flex align-center pt-1 w-100 justify-space-between">
         <div class="d-flex align-center" style="gap: 2px;">
           <v-btn
             icon
@@ -364,7 +361,7 @@ export default defineComponent({
 }
 
 .editor-toolbar {
-  background: rgba(var(--v-theme-surface), 0.5);
+  background: transparent;
 }
 
 .editor-content {

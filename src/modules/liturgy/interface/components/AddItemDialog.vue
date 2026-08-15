@@ -31,47 +31,44 @@
           </v-card-title>
           
           <v-card-text class="px-6 pb-6 pt-0">
-            <v-list class="bg-transparent pa-0" lines="two">
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
               <v-hover v-for="type in itemTypes" :key="type.value" v-slot="{ isHovering, props }">
-                <v-list-item
+                <div
                   v-bind="props"
-                  :class="['rounded-xl mb-2 px-4 py-3', { 'bg-primary-lighten': isHovering }]"
+                  class="pa-3 d-flex align-center"
                   :style="{ 
+                    borderRadius: '12px',
                     border: '1px solid',
-                    borderColor: isHovering ? 'rgba(var(--v-theme-primary), 0.3)' : 'rgba(128,128,128,0.1)',
-                    background: isHovering ? 'rgba(var(--v-theme-primary), 0.04)' : 'transparent',
+                    borderColor: isHovering ? 'rgba(var(--v-theme-primary), 0.3)' : 'rgba(var(--v-theme-on-surface), 0.03)',
+                    background: isHovering ? 'rgba(var(--v-theme-on-surface), 0.08)' : 'rgba(var(--v-theme-on-surface), 0.05)',
+                    cursor: 'pointer',
                     transition: 'all 0.2s ease'
                   }"
                   @click="openAddForm(type.value)"
                 >
-                  <template #prepend>
-                    <v-avatar 
-                      :color="isHovering ? 'primary' : 'rgba(128,128,128,0.08)'" 
-                      rounded="lg" 
-                      size="48" 
-                      class="mr-4"
-                      style="transition: all 0.3s ease"
-                    >
-                      <v-icon :color="isHovering ? 'white' : 'rgba(128,128,128,0.7)'" size="24">
-                        {{ type.icon }}
-                      </v-icon>
-                    </v-avatar>
-                  </template>
-                  <v-list-item-title class="font-weight-bold mb-1" style="font-size: 1rem; color: var(--sidebar-text);">
-                    {{ type.label }}
-                  </v-list-item-title>
-                  <v-list-item-subtitle class="text-caption" style="color: var(--sidebar-text-secondary); line-height: 1.3;">
-                    {{ type.description }}
-                  </v-list-item-subtitle>
-                  
-                  <template #append>
-                    <v-icon size="24" :color="isHovering ? 'primary' : 'rgba(128,128,128,0.3)'" :style="{ transition: 'all 0.3s ease', transform: isHovering ? 'translateX(4px)' : 'translateX(0)' }">
-                      mdi-chevron-right
+                  <div
+                    class="mr-3 d-flex align-center justify-center flex-shrink-0"
+                    :style="{
+                      width: '36px', height: '36px', borderRadius: '10px',
+                      background: isHovering ? 'rgba(var(--v-theme-primary), 0.1)' : 'rgba(var(--v-theme-on-surface), 0.06)',
+                      transition: 'all 0.2s ease',
+                    }"
+                  >
+                    <v-icon :color="isHovering ? 'primary' : 'rgba(var(--v-theme-on-surface), 0.6)'" size="20">
+                      {{ type.icon }}
                     </v-icon>
-                  </template>
-                </v-list-item>
+                  </div>
+                  <div style="min-width: 0;">
+                    <div class="font-weight-medium mb-1" style="font-size: 0.95rem; color: var(--sidebar-text); line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                      {{ type.label }}
+                    </div>
+                    <div class="text-caption" style="color: var(--sidebar-text-secondary); line-height: 1.2;">
+                      {{ type.description }}
+                    </div>
+                  </div>
+                </div>
               </v-hover>
-            </v-list>
+            </div>
           </v-card-text>
         </v-window-item>
 
@@ -116,16 +113,50 @@
               </div>
               <v-text-field
                 v-model="addForm.name"
-                variant="solo"
-                flat
-                bg-color="rgba(var(--v-theme-on-surface), 0.06)"
-                rounded="xl"
-                density="comfortable"
+                variant="outlined"
+                color="primary"
+                rounded="lg"
+                density="compact"
                 hide-details
-                class="modern-input-no-thick"
+                class="modern-input-compact"
                 :placeholder="getNamePlaceholder(addForm.type)"
                 autofocus
               />
+            </div>
+
+            <!-- Color Selector -->
+            <div class="mb-4">
+              <div class="text-body-2 font-weight-medium mb-2" style="color: var(--sidebar-text-secondary); margin-left: 4px;">
+                Cor de destaque (opcional)
+              </div>
+              <div class="d-flex align-center" style="flex-wrap: wrap; gap: 6px;">
+                <v-btn
+                  icon
+                  size="x-small"
+                  color="transparent"
+                  variant="flat"
+                  :style="!addForm.color ? 'border: 2px solid rgba(128,128,128,0.5);' : 'border: 1px dashed rgba(128,128,128,0.3);'"
+                  @click="addForm.color = ''"
+                >
+                  <v-icon size="16" :color="!addForm.color ? 'var(--sidebar-text)' : 'grey'">
+                    mdi-close
+                  </v-icon>
+                </v-btn>
+                <v-btn
+                  v-for="color in ['#F44336', '#E91E63', '#9C27B0', '#2196F3', '#00BCD4', '#4CAF50', '#8BC34A', '#FFEB3B', '#FF9800', '#FF5722']"
+                  :key="color"
+                  icon
+                  size="x-small"
+                  :color="color"
+                  variant="flat"
+                  :style="addForm.color === color ? 'border: 2px solid white; transform: scale(1.15); transition: all 0.2s;' : 'opacity: 0.8; transition: all 0.2s;'"
+                  @click="addForm.color = color"
+                >
+                  <v-icon v-if="addForm.color === color" size="16" color="white">
+                    mdi-check
+                  </v-icon>
+                </v-btn>
+              </div>
             </div>
 
             <!-- Description (annotation only) -->
@@ -135,15 +166,14 @@
               </div>
               <v-textarea
                 v-model="addForm.subtitle"
-                variant="solo"
-                flat
-                bg-color="rgba(var(--v-theme-on-surface), 0.06)"
-                rounded="xl"
-                density="comfortable"
+                variant="outlined"
+                color="primary"
+                rounded="lg"
+                density="compact"
                 hide-details
                 rows="2"
                 auto-grow
-                class="modern-input-no-thick"
+                class="modern-input-compact"
               />
             </div>
 
@@ -159,12 +189,11 @@
                 :custom-filter="() => true"
                 item-title="name"
                 item-value="id_music"
-                variant="solo"
-                flat
-                bg-color="rgba(var(--v-theme-on-surface), 0.06)"
-                rounded="xl"
-                density="comfortable"
-                class="modern-input-no-thick"
+                variant="outlined"
+                color="primary"
+                rounded="lg"
+                density="compact"
+                class="modern-input-compact"
                 :placeholder="t('fields.search_music')"
                 hide-details
                 clearable
@@ -214,12 +243,11 @@
                   :items="bibleBooks"
                   item-title="name"
                   item-value="id_bible_book"
-                  variant="solo"
-                  flat
-                  bg-color="rgba(var(--v-theme-on-surface), 0.06)"
-                  rounded="xl"
-                  density="comfortable"
-                  class="modern-input-no-thick"
+                  variant="outlined"
+                  color="primary"
+                  rounded="lg"
+                  density="compact"
+                  class="modern-input-compact"
                   :placeholder="t('fields.book')"
                   hide-details
                   :menu-props="{ transition: 'fade-transition' }"
@@ -260,13 +288,11 @@
                   <v-autocomplete
                     v-model="addForm.verseChapter"
                     :items="verseChapterList"
-                    variant="solo"
-                    flat
-                    bg-color="rgba(var(--v-theme-on-surface), 0.06)"
-                    rounded="xl"
-                    density="comfortable"
-                    class="modern-input-no-thick mb-3"
-                    hide-details
+                    variant="outlined"
+                    color="primary"
+                    rounded="lg"
+                    density="compact"
+                    class="modern-input-compact"
                     style="max-width: 120px;"
                     :placeholder="t('fields.chapter')"
                     :menu-props="{ transition: 'fade-transition' }"
@@ -304,13 +330,12 @@
                   </div>
                   <v-text-field
                     v-model="addForm.verseNumbers"
-                    variant="solo"
-                    flat
-                    bg-color="rgba(var(--v-theme-on-surface), 0.06)"
-                    rounded="xl"
-                    density="comfortable"
-                    class="modern-input-no-thick mb-3"
+                    variant="outlined"
+                    color="primary"
+                    rounded="lg"
+                    density="compact"
                     hide-details
+                    class="modern-input-compact"
                     :placeholder="t('fields.verses_placeholder')"
                   />
                 </div>
@@ -387,6 +412,76 @@
               </div>
             </div>
 
+            <!-- External File/Directory selector -->
+            <div v-if="addForm.type === 'file'" class="mb-4">
+              <div
+                v-if="addForm.filePath"
+                class="rounded-xl pa-4 d-flex align-center justify-space-between"
+                style="border: 1px solid var(--border-color, rgba(128,128,128,0.2)); background: rgba(var(--v-theme-on-surface), 0.06);"
+              >
+                <div class="d-flex align-center" style="overflow: hidden;">
+                  <v-icon color="primary" size="32" class="mr-3">
+                    mdi-folder-file-outline
+                  </v-icon>
+                  <div class="d-flex flex-column" style="overflow: hidden;">
+                    <span class="font-weight-bold text-truncate" style="color: var(--sidebar-text); max-width: 250px;">
+                      {{ addForm.filePath.split(/[\\/]/).pop() }}
+                    </span>
+                    <span class="text-caption text-truncate" style="color: var(--sidebar-text-secondary); max-width: 250px;" :title="addForm.filePath">
+                      {{ addForm.filePath }}
+                    </span>
+                  </div>
+                </div>
+                <div class="d-flex align-center">
+                  <v-btn
+                    icon
+                    size="small"
+                    variant="text"
+                    color="primary"
+                    class="mr-1"
+                    @click="selectExternalFile"
+                  >
+                    <v-icon>mdi-pencil</v-icon>
+                    <v-tooltip activator="parent" location="top">
+                      {{ t('actions.change') }}
+                    </v-tooltip>
+                  </v-btn>
+                  <v-btn
+                    icon
+                    size="small"
+                    variant="text"
+                    color="error"
+                    @click="addForm.filePath = ''"
+                  >
+                    <v-icon>mdi-delete</v-icon>
+                    <v-tooltip activator="parent" location="top">
+                      {{ t('actions.delete') }}
+                    </v-tooltip>
+                  </v-btn>
+                </div>
+              </div>
+
+              <div
+                v-else
+                class="rounded-xl d-flex flex-column align-center justify-center cursor-pointer"
+                style="height: 120px; border: 2px dashed var(--border-color, rgba(128,128,128,0.2)); background: rgba(128,128,128,0.02); transition: all 0.2s;"
+                onmouseover="this.style.background='rgba(128,128,128,0.04)'; this.style.borderColor='rgba(128,128,128,0.5)'"
+                onmouseout="this.style.background='rgba(128,128,128,0.02)'; this.style.borderColor='var(--border-color, rgba(128,128,128,0.2))'"
+                @click="selectExternalFile"
+              >
+                <v-icon
+                  size="36"
+                  color="primary"
+                  class="mb-2"
+                  style="opacity: 0.8;"
+                >
+                  mdi-file-find
+                </v-icon>
+                <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text);">Selecionar Arquivo ou Pasta</span>
+                <span class="text-caption mt-1" style="color: var(--sidebar-text-secondary);">{{ t('fields.click_to_browse') }}</span>
+              </div>
+            </div>
+
             <!-- Link URL -->
             <div v-if="addForm.type === 'link'" class="mb-4">
               <div class="text-body-2 font-weight-medium mb-1" style="color: var(--sidebar-text-secondary); margin-left: 4px;">
@@ -394,13 +489,12 @@
               </div>
               <v-text-field
                 v-model="addForm.url"
-                variant="solo"
-                flat
-                bg-color="rgba(var(--v-theme-on-surface), 0.06)"
-                rounded="xl"
-                density="comfortable"
-                class="modern-input-no-thick"
+                variant="outlined"
+                color="primary"
+                rounded="lg"
+                density="compact"
                 hide-details
+                class="modern-input-compact"
                 :placeholder="t('fields.url_placeholder')"
               />
             </div>
@@ -416,13 +510,12 @@
                 :items="categories"
                 item-title="name"
                 item-value="id"
-                variant="solo"
-                flat
-                bg-color="rgba(var(--v-theme-on-surface), 0.06)"
-                rounded="xl"
-                density="comfortable"
+                variant="outlined"
+                color="primary"
+                rounded="lg"
+                density="compact"
                 hide-details
-                class="modern-input-no-thick"
+                class="modern-input-compact"
                 placeholder="Selecione a categoria"
                 no-data-text="Nenhuma categoria criada. Crie uma no botão de Itens Agendados."
               >
@@ -500,6 +593,7 @@ export default defineComponent({
       filePath: "",
       url: "",
       categoryId: null as string | null,
+      color: "",
     },
     musicSearchQuery: "",
     musicList: [] as any[],
@@ -515,8 +609,9 @@ export default defineComponent({
         { value: "music", icon: "mdi-music-note", color: "success", label: this.t("types.music"), description: this.t("type_descriptions.music") },
         { value: "verse", icon: "mdi-book-open-variant", color: "purple", label: this.t("types.verse"), description: this.t("type_descriptions.verse") },
         { value: "media", icon: "mdi-file-video", color: "orange", label: this.t("types.media"), description: this.t("type_descriptions.media") },
-        { value: "link", icon: "mdi-link", color: "cyan", label: this.t("types.link"), description: this.t("type_descriptions.link") },
-        { value: "scheduled_item", icon: "mdi-calendar-clock", color: "pink", label: "Item Agendado", description: "Selecione uma categoria de agendamento" },
+        { value: "link", icon: "mdi-link", color: "indigo", label: this.t("types.link"), description: this.t("type_descriptions.link") },
+        { value: "file", icon: "mdi-file-document-outline", color: "blue-grey", label: this.t("types.file"), description: this.t("type_descriptions.file") },
+        { value: "scheduled_item", icon: "mdi-calendar-check", color: "deep-purple", label: this.t("types.scheduled_item"), description: this.t("type_descriptions.scheduled_item") },
       ];
     },
     isFormValid(): boolean {
@@ -524,6 +619,7 @@ export default defineComponent({
       if (this.addForm.type === "music" && !this.addForm.musicId) return false;
       if (this.addForm.type === "verse" && (!this.addForm.verseBookId || !this.addForm.verseChapter)) return false;
       if (this.addForm.type === "media" && !this.addForm.filePath) return false;
+      if (this.addForm.type === "file" && !this.addForm.filePath) return false;
       if (this.addForm.type === "link" && !this.addForm.url.trim()) return false;
       if (this.addForm.type === "scheduled_item" && !this.addForm.categoryId) return false;
       return true;
@@ -634,10 +730,11 @@ export default defineComponent({
         filePath: "",
         url: "",
         categoryId: null,
+        color: "",
       };
     },
     getTypeIcon(type: string): string {
-      const map: Record<string, string> = { annotation: "mdi-text", category: "mdi-tag", music: "mdi-music-note", verse: "mdi-book-open-variant", media: "mdi-file-video", link: "mdi-link", scheduled_item: "mdi-calendar-clock" };
+      const map: Record<string, string> = { annotation: "mdi-text", category: "mdi-tag", music: "mdi-music-note", verse: "mdi-book-open-variant", media: "mdi-file-video", link: "mdi-link", file: "mdi-folder-file-outline", scheduled_item: "mdi-calendar-clock" };
       return map[type] || "mdi-help";
     },
     getTypeColor(type: string): string {
@@ -693,6 +790,35 @@ export default defineComponent({
           this.addForm.filePath = filePath as string;
           if (!this.addForm.name) {
             const fileName = (filePath as string).split(/[\\/]/).pop() || "";
+            this.addForm.name = fileName;
+          }
+        }
+      }
+    },
+    async selectExternalFile() {
+      if (window.electronAPI?.openFileDialog) {
+        const filePath = await window.electronAPI.openFileDialog({
+          title: "Selecionar Arquivo ou Pasta",
+          properties: ["openFile", "openDirectory"],
+          filters: [
+            { name: "Todos os Arquivos", extensions: ["*"] },
+          ],
+        });
+        if (filePath) {
+          const pathStr = filePath as string;
+          const ext = pathStr.split(".").pop()?.toLowerCase() || "";
+          const blockedExts = ["mp4", "mkv", "avi", "mov", "wmv", "webm", "mp3", "wav", "flac", "aac", "ogg", "wma", "m4a"];
+          if (blockedExts.includes(ext)) {
+            if (this.$alert && typeof this.$alert.error === "function") {
+              this.$alert.error({ text: "Arquivos de áudio e vídeo devem ser adicionados usando o tipo 'Mídia'.", translate: false });
+            } else {
+              alert("Arquivos de áudio e vídeo devem ser adicionados usando o tipo 'Mídia'.");
+            }
+            return;
+          }
+          this.addForm.filePath = pathStr;
+          if (!this.addForm.name) {
+            const fileName = pathStr.split(/[\\/]/).pop() || "";
             this.addForm.name = fileName;
           }
         }
@@ -772,6 +898,7 @@ export default defineComponent({
         type: this.addForm.type,
         name: this.addForm.name.trim(),
         subtitle: this.addForm.subtitle?.trim() || "",
+        color: this.addForm.color,
       };
 
       if (this.addForm.type === "music") {
@@ -807,7 +934,7 @@ export default defineComponent({
         }
       }
 
-      if (this.addForm.type === "media") {
+      if (this.addForm.type === "media" || this.addForm.type === "file") {
         item.filePath = this.addForm.filePath;
         if (item.filePath) {
           const parts = item.filePath.split(/[\\/]/);

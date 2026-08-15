@@ -1,5 +1,5 @@
 <template>
-  <div class="d-flex flex-column flex-grow-1" style="min-width: 0; min-height: 0; background: var(--main-bg, transparent); border-radius: 20px;">
+  <div class="d-flex flex-column flex-grow-1" style="min-width: 0; min-height: 0; background: var(--main-bg, transparent); border-radius: 20px; position: relative;">
     <!-- List Header -->
     <div class="px-6 py-4 d-flex align-center justify-space-between">
       <h3 style="font-size: 1.25rem; color: var(--sidebar-text); font-weight: 700;">
@@ -16,6 +16,7 @@
         >
           {{ t('actions.clear_all') }}
         </v-btn>
+
         <v-btn
           variant="flat"
           color="primary"
@@ -50,167 +51,219 @@
         handle=".drag-handle"
         ghost-class="liturgy-ghost"
         animation="200"
+        class="liturgy-timeline-container"
         @update:model-value="$emit('update:items', $event)"
         @end="$emit('drag-end')"
       >
         <template #item="{ element, index }">
-          <div
-            v-if="element.type === 'category'"
-            class="liturgy-category-item"
-            :class="{ 'liturgy-item-active': selectedItemIndex === index }"
-            @click="$emit('select-item', index)"
-          >
-            <v-icon class="drag-handle mr-2" size="18" style="cursor: grab; opacity: 0.3;">
-              mdi-drag-vertical
-            </v-icon>
-            <v-icon color="warning" size="18" class="mr-2">
-              mdi-tag
-            </v-icon>
-            <span class="font-weight-black text-uppercase" style="font-size: 0.85rem; letter-spacing: 1px; color: var(--sidebar-text);">
-              {{ element.name }}
-            </span>
-            <v-spacer />
-            <v-btn
-              icon
-              size="x-small"
-              variant="text"
-              @click.stop="$emit('edit-item', index)"
-            >
-              <v-icon size="16">
-                mdi-pencil
-              </v-icon>
-              <v-tooltip
-                activator="parent"
-                location="top"
-                open-delay="300"
-                content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
-              >
-                {{ t('actions.edit') }}
-              </v-tooltip>
-            </v-btn>
-            <v-btn
-              icon
-              size="x-small"
-              variant="text"
-              color="error"
-              @click.stop="$emit('remove-item', index)"
-            >
-              <v-icon size="16">
-                mdi-close
-              </v-icon>
-              <v-tooltip
-                activator="parent"
-                location="top"
-                open-delay="300"
-                content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
-              >
-                {{ t('actions.delete') }}
-              </v-tooltip>
-            </v-btn>
-          </div>
+          <div v-show="element.type === 'category' || !isItemCollapsed(index)" class="timeline-row">
+            <!-- Timeline Node (Dot & Line) -->
+            <div class="timeline-node-wrapper">
+              <div class="timeline-node" :class="{ 'timeline-node-category': element.type === 'category' }">
+                <div v-if="element.type !== 'category'" class="timeline-node-inner" :style="{ borderColor: `rgb(var(--v-theme-${getTypeColor(element.type)}))` }" />
+                <v-icon v-else size="12" color="white">
+                  mdi-circle-small
+                </v-icon>
+              </div>
+            </div>
 
-          <div
-            v-else
-            class="liturgy-item"
-            :class="{ 'liturgy-item-active': selectedItemIndex === index }"
-            @click="$emit('select-item', index)"
-          >
-            <v-icon class="drag-handle mr-3" size="18" style="cursor: grab; opacity: 0.3;">
-              mdi-drag-vertical
-            </v-icon>
-            <div class="liturgy-item-number">
-              {{ getItemNumber(index) }}
-            </div>
-            <v-btn
-              icon
-              size="x-small"
-              variant="text"
-              :color="element.done ? 'success' : 'grey'"
-              class="mr-2"
-              @click.stop="$emit('toggle-done', index)"
-            >
-              <v-icon size="22">
-                {{ element.done ? 'mdi-check-circle' : 'mdi-checkbox-blank-circle-outline' }}
-              </v-icon>
-            </v-btn>
-            <v-icon
-              :color="getTypeColor(element.type)"
-              size="20"
-              class="mr-3"
-              :style="element.done ? 'opacity: 0.5;' : ''"
-            >
-              {{ getTypeIcon(element.type) }}
-            </v-icon>
-            <div class="flex-grow-1 d-flex flex-column" style="min-width: 0;" :style="element.done ? 'opacity: 0.5; text-decoration: line-through;' : ''">
-              <div class="font-weight-bold" style="font-size: 0.95rem; color: var(--sidebar-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                {{ element.name ? element.name.replace(/^undefined\s*-\s*/, '') : '' }}
+            <!-- Content Area -->
+            <div class="timeline-content">
+              <!-- Category Block -->
+              <div
+                v-if="element.type === 'category'"
+                class="liturgy-category-card"
+              >
+                <div class="d-flex align-center w-100 px-4 py-3">
+                  <v-icon class="drag-handle mr-2" size="18" style="cursor: grab; opacity: 0.3;">
+                    mdi-drag-vertical
+                  </v-icon>
+                  <v-btn
+                    icon
+                    size="x-small"
+                    variant="text"
+                    class="mr-2"
+                    @click.stop="toggleCategory(element.id)"
+                  >
+                    <v-icon size="16">
+                      {{ collapsedCategories.includes(element.id) ? 'mdi-chevron-right' : 'mdi-chevron-down' }}
+                    </v-icon>
+                  </v-btn>
+                  <v-icon color="grey" size="18" class="mr-3">
+                    mdi-flag-outline
+                  </v-icon>
+                  
+                  <span class="font-weight-bold text-subtitle-2" style="color: rgba(var(--v-theme-on-surface), 0.9); letter-spacing: 0.5px;">
+                    {{ element.name }}
+                  </span>
+                  
+                  <div class="ml-4 category-badge">
+                    {{ getItemsCountForCategory(index) }} itens
+                  </div>
+
+                  <v-spacer />
+
+                  <div class="d-flex align-center category-actions">
+                    <v-btn
+                      v-if="hasPlayableItems(index)"
+                      icon
+                      size="x-small"
+                      variant="text"
+                      @click.stop="playCategory(index)"
+                    >
+                      <v-icon size="18">
+                        mdi-play-outline
+                      </v-icon>
+                    </v-btn>
+                    <v-btn
+                      icon
+                      size="x-small"
+                      variant="text"
+                      @click.stop="$emit('add-item-to-category', element.id)"
+                    >
+                      <v-icon size="18">
+                        mdi-plus
+                      </v-icon>
+                    </v-btn>
+                    <v-btn
+                      icon
+                      size="x-small"
+                      variant="text"
+                      @click.stop="$emit('duplicate-item', index)"
+                    >
+                      <v-icon size="16">
+                        mdi-content-copy
+                      </v-icon>
+                    </v-btn>
+                    <v-btn
+                      icon
+                      size="x-small"
+                      variant="text"
+                      @click.stop="$emit('edit-item', index)"
+                    >
+                      <v-icon size="16">
+                        mdi-pencil-outline
+                      </v-icon>
+                    </v-btn>
+                    <v-btn
+                      icon
+                      size="x-small"
+                      variant="text"
+                      @click.stop="$emit('remove-item', index)"
+                    >
+                      <v-icon size="16">
+                        mdi-trash-can-outline
+                      </v-icon>
+                    </v-btn>
+                  </div>
+                </div>
               </div>
-              <div v-if="element.subtitle" class="text-caption" style="color: var(--sidebar-text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                {{ element.subtitle }}
+
+              <!-- Normal Item Block -->
+              <div
+                v-else
+                class="liturgy-item-card"
+                :class="{ 'liturgy-item-active': selectedItemIndex === index }"
+                :style="element.color ? `border-left: 3px solid ${element.color}; padding-left: 13px !important;` : ''"
+                @click="$emit('select-item', index)"
+              >
+                <div class="d-flex align-center w-100 px-4 py-3">
+                  <v-icon class="drag-handle mr-3" size="18" style="cursor: grab; opacity: 0.3;">
+                    mdi-drag-vertical
+                  </v-icon>
+
+                  <v-btn
+                    icon
+                    size="x-small"
+                    variant="text"
+                    :color="element.done ? 'success' : 'grey'"
+                    class="mr-3"
+                    @click.stop="$emit('toggle-done', index)"
+                  >
+                    <v-icon size="20">
+                      {{ element.done ? 'mdi-check-circle' : 'mdi-checkbox-blank-circle-outline' }}
+                    </v-icon>
+                  </v-btn>
+                  
+                  <div class="item-icon-wrapper mr-4">
+                    <v-icon size="18" :color="element.color || 'grey-lighten-1'">
+                      {{ getItemIcon(element) }}
+                    </v-icon>
+                  </div>
+
+                  <div class="flex-grow-1 d-flex flex-column" style="min-width: 0;" :style="element.done ? 'opacity: 0.5; text-decoration: line-through;' : ''">
+                    <div class="font-weight-medium" style="font-size: 0.95rem; color: rgba(var(--v-theme-on-surface), 0.9); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                      {{ element.name ? element.name.replace(/^undefined\s*-\s*/, '') : '' }}
+                    </div>
+                    <div v-if="element.subtitle" class="text-caption" style="color: rgba(var(--v-theme-on-surface), 0.5); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                      {{ element.subtitle }}
+                    </div>
+                  </div>
+
+                  <div class="d-flex align-center item-actions" style="gap: 4px; flex-shrink: 0;">
+                    <v-btn
+                      v-if="isExecutable(element)"
+                      icon
+                      size="x-small"
+                      variant="text"
+                      @click.stop="$emit('execute-item', element)"
+                    >
+                      <v-icon size="18">
+                        mdi-eye-outline
+                      </v-icon>
+                    </v-btn>
+                    <v-btn
+                      icon
+                      size="x-small"
+                      variant="text"
+                      @click.stop="$emit('duplicate-item', index)"
+                    >
+                      <v-icon size="16">
+                        mdi-content-copy
+                      </v-icon>
+                    </v-btn>
+                    <v-btn
+                      icon
+                      size="x-small"
+                      variant="text"
+                      @click.stop="$emit('edit-item', index)"
+                    >
+                      <v-icon size="16">
+                        mdi-pencil-outline
+                      </v-icon>
+                    </v-btn>
+                    <v-btn
+                      icon
+                      size="x-small"
+                      variant="text"
+                      @click.stop="$emit('remove-item', index)"
+                    >
+                      <v-icon size="16">
+                        mdi-trash-can-outline
+                      </v-icon>
+                    </v-btn>
+                  </div>
+                </div>
               </div>
-            </div>
-            <div class="d-flex align-center" style="gap: 2px; flex-shrink: 0;">
-              <v-btn
-                v-if="isExecutable(element)"
-                icon
-                size="x-small"
-                variant="text"
-                color="primary"
-                @click.stop="$emit('execute-item', element)"
-              >
-                <v-icon size="16">
-                  {{ getExecuteIcon(element.type) }}
-                </v-icon>
-                <v-tooltip
-                  activator="parent"
-                  location="top"
-                  open-delay="300"
-                  content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
-                >
-                  {{ getExecuteTooltip(element.type) }}
-                </v-tooltip>
-              </v-btn>
-              <v-btn
-                icon
-                size="x-small"
-                variant="text"
-                @click.stop="$emit('edit-item', index)"
-              >
-                <v-icon size="16">
-                  mdi-pencil
-                </v-icon>
-                <v-tooltip
-                  activator="parent"
-                  location="top"
-                  open-delay="300"
-                  content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
-                >
-                  {{ t('actions.edit') }}
-                </v-tooltip>
-              </v-btn>
-              <v-btn
-                icon
-                size="x-small"
-                variant="text"
-                color="error"
-                @click.stop="$emit('remove-item', index)"
-              >
-                <v-icon size="16">
-                  mdi-close
-                </v-icon>
-                <v-tooltip
-                  activator="parent"
-                  location="top"
-                  open-delay="300"
-                  content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
-                >
-                  {{ t('actions.delete') }}
-                </v-tooltip>
-              </v-btn>
             </div>
           </div>
         </template>
       </draggable>
+    </div>
+
+    <!-- Half-moon Notes Toggle Button -->
+    <div
+      class="notes-toggle-btn"
+      :class="{ 'is-active': showNotes }"
+      :title="showNotes ? 'Fechar Anotações' : 'Abrir Anotações'"
+      @click="$emit('toggle-notes')"
+    >
+      <v-icon size="20" color="white" class="chevron-icon flex-shrink-0">
+        {{ showNotes ? 'mdi-chevron-right' : 'mdi-chevron-left' }}
+      </v-icon>
+      <span class="notes-toggle-text">
+        {{ showNotes ? 'Fechar' : 'Anotações' }}
+      </span>
     </div>
   </div>
 </template>
@@ -241,18 +294,30 @@ export default defineComponent({
       type: Boolean,
       default: false,
     },
+    showNotes: {
+      type: Boolean,
+      default: false,
+    },
   },
   emits: [
     "update:items", 
     "select-item", 
     "edit-item", 
+    "duplicate-item",
     "remove-item", 
     "toggle-done", 
     "execute-item", 
     "clear-all", 
     "add-item",
+    "add-item-to-category",
     "drag-end",
+    "toggle-notes",
   ],
+  data() {
+    return {
+      collapsedCategories: [] as string[],
+    };
+  },
   methods: {
     t(text: string): string {
       return this.$t(`modules.liturgy.${text}`);
@@ -272,15 +337,64 @@ export default defineComponent({
       return count;
     },
     getTypeIcon(type: string): string {
-      const map: Record<string, string> = { annotation: "mdi-text", category: "mdi-tag", music: "mdi-music-note", verse: "mdi-book-open-variant", media: "mdi-file-video", link: "mdi-link", scheduled_item: "mdi-calendar-clock" };
+      const map: Record<string, string> = { annotation: "mdi-text", category: "mdi-tag", music: "mdi-music", verse: "mdi-book-open-variant", media: "mdi-file-video", link: "mdi-link", file: "mdi-folder-file-outline", scheduled_item: "mdi-calendar-clock" };
       return map[type] || "mdi-help";
     },
+    getItemIcon(element: any): string {
+      if (element.type === "media" && element.filePath) {
+        const ext = element.filePath.split(".").pop()?.toLowerCase() || "";
+        const audioExts = ["mp3", "wav", "flac", "aac", "ogg", "wma", "m4a"];
+        if (audioExts.includes(ext)) return "mdi-headphones";
+        return "mdi-video-outline";
+      }
+      return this.getTypeIcon(element.type);
+    },
     getTypeColor(type: string): string {
-      const map: Record<string, string> = { annotation: "info", category: "warning", music: "success", verse: "purple", media: "orange", link: "cyan", scheduled_item: "pink" };
+      const map: Record<string, string> = { annotation: "info", category: "warning", music: "indigo", verse: "purple", media: "orange", link: "cyan", file: "blue", scheduled_item: "pink" };
       return map[type] || "grey";
     },
+    toggleCategory(id: string) {
+      if (this.collapsedCategories.includes(id)) {
+        this.collapsedCategories = this.collapsedCategories.filter((c) => c !== id);
+      } else {
+        this.collapsedCategories.push(id);
+      }
+    },
+    isItemCollapsed(index: number): boolean {
+      for (let i = index - 1; i >= 0; i--) {
+        if (this.items[i].type === "category") {
+          return this.collapsedCategories.includes(this.items[i].id);
+        }
+      }
+      return false;
+    },
+    getItemsCountForCategory(index: number): number {
+      let count = 0;
+      for (let i = index + 1; i < this.items.length; i++) {
+        if (this.items[i].type === "category") break;
+        count++;
+      }
+      return count;
+    },
+    hasPlayableItems(index: number): boolean {
+      for (let i = index + 1; i < this.items.length; i++) {
+        if (this.items[i].type === "category") break;
+        if (this.isExecutable(this.items[i])) return true;
+      }
+      return false;
+    },
+    playCategory(index: number) {
+      // Find first playable item in this category
+      for (let i = index + 1; i < this.items.length; i++) {
+        if (this.items[i].type === "category") break;
+        if (this.isExecutable(this.items[i])) {
+          this.$emit("execute-item", this.items[i]);
+          return;
+        }
+      }
+    },
     isExecutable(item: any): boolean {
-      return ["music", "verse", "link", "media", "scheduled_item"].includes(item.type);
+      return ["music", "verse", "link", "media", "file", "scheduled_item"].includes(item.type);
     },
     getExecuteIcon(type: string): string {
       if ((type === "media" || type === "scheduled_item") && this.useInternalPlayer) {
@@ -313,64 +427,188 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
-.liturgy-item {
+.liturgy-timeline-container {
+  position: relative;
+  padding: 16px 24px;
+  
+  // The vertical timeline line
+  &::before {
+    content: '';
+    position: absolute;
+    top: 32px;
+    bottom: 32px;
+    left: 48px;
+    width: 1px;
+    background: rgba(var(--v-theme-on-surface), 0.1);
+    z-index: 0;
+  }
+}
+
+.timeline-row {
+  display: flex;
+  align-items: stretch;
+  position: relative;
+  z-index: 1;
+  margin-bottom: 4px;
+}
+
+.timeline-node-wrapper {
+  width: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.timeline-node {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--v-theme-surface);
+  border: 2px solid rgba(var(--v-theme-on-surface), 0.2);
   display: flex;
   align-items: center;
-  padding: 12px 16px;
-  margin: 8px 16px;
+  justify-content: center;
+  z-index: 2;
+
+  &.timeline-node-category {
+    width: 24px;
+    height: 24px;
+    border: none;
+    background: transparent;
+  }
+
+  .timeline-node-inner {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    border: 2px solid;
+    background: transparent;
+  }
+}
+
+.timeline-content {
+  flex-grow: 1;
+  min-width: 0;
+  padding-left: 12px;
+  padding-bottom: 8px;
+}
+
+/* Category Card */
+.liturgy-category-card {
+  background: rgba(var(--v-theme-on-surface), 0.03);
   border-radius: 12px;
-  cursor: pointer;
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.05);
+  margin-bottom: 8px;
   transition: all 0.2s ease;
-  background: var(--card-bg);
-  border: 1px solid var(--glass-border, transparent);
-  box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+  user-select: none;
+  cursor: pointer;
 
   &:hover {
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-hover);
+    background: rgba(var(--v-theme-on-surface), 0.06);
+    .category-actions .v-btn { opacity: 1; }
+  }
+
+  .category-badge {
+    background: rgba(var(--v-theme-on-surface), 0.08);
+    border-radius: 12px;
+    padding: 2px 8px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: rgba(var(--v-theme-on-surface), 0.6);
+  }
+
+  .category-actions .v-btn {
+    opacity: 0.4;
+    transition: opacity 0.2s;
+    color: rgba(var(--v-theme-on-surface), 0.7);
+    &:hover { opacity: 1; color: white; }
+  }
+}
+
+/* Item Card */
+.liturgy-item-card {
+  background: rgba(var(--v-theme-on-surface), 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.03);
+  transition: all 0.2s ease;
+  cursor: pointer;
+
+  &:hover {
+    background: rgba(var(--v-theme-on-surface), 0.08);
+    .item-actions .v-btn { opacity: 1; }
+  }
+
+  .item-icon-wrapper {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .item-actions .v-btn {
+    opacity: 0.3;
+    transition: opacity 0.2s;
+    color: rgba(var(--v-theme-on-surface), 0.7);
+    &:hover { opacity: 1; color: white; }
   }
 }
 
 .liturgy-item-active {
-  background: rgba(var(--v-theme-primary), 0.08) !important;
-  border-color: rgba(var(--v-theme-primary), 0.3) !important;
-  box-shadow: 0 4px 15px rgba(var(--v-theme-primary), 0.1) !important;
-}
-
-.liturgy-category-item {
-  display: flex;
-  align-items: center;
-  padding: 10px 16px;
-  margin: 16px 16px 8px;
-  border-radius: 10px;
-  cursor: pointer;
-  background: rgba(255, 193, 7, 0.06);
-  border: 1px dashed rgba(255, 193, 7, 0.3);
-  transition: all 0.2s ease;
-
-  &:hover {
-    background: rgba(255, 193, 7, 0.12);
-  }
-}
-
-.liturgy-item-number {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--accent-blue);
-  min-width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 8px;
-  background: rgba(0, 151, 215, 0.08);
-  margin-right: 12px;
-  flex-shrink: 0;
+  background: rgba(var(--v-theme-primary), 0.15) !important;
+  border: 1px solid rgba(var(--v-theme-primary), 0.3) !important;
 }
 
 .liturgy-ghost {
   opacity: 0.4;
   background: rgba(0, 151, 215, 0.05);
   border-radius: 12px;
+}
+</style>
+
+<style scoped>
+.notes-toggle-btn {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 60px;
+  background-color: rgba(var(--v-theme-primary), 0.8);
+  border-radius: 30px 0 0 30px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding-left: 2px;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: -2px 0 10px rgba(0,0,0,0.2);
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.1);
+  border-right: none;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.notes-toggle-btn:hover {
+  background-color: rgba(var(--v-theme-primary), 1);
+  width: 105px;
+  padding-left: 8px;
+}
+.notes-toggle-btn:active {
+  background-color: rgba(var(--v-theme-primary), 0.6);
+}
+.notes-toggle-text {
+  color: white;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-left: 4px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.notes-toggle-btn:hover .notes-toggle-text {
+  opacity: 1;
+  transition-delay: 0.1s;
 }
 </style>

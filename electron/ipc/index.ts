@@ -52,7 +52,7 @@ export function registerIpcHandlers() {
       filters: options?.filters || [
         { name: "Vídeos", extensions: ["mp4", "mkv", "avi", "mov", "wmv", "webm"] },
       ],
-      properties: ["openFile"],
+      properties: options?.properties || ["openFile"],
     });
     if (result.canceled) return null;
     return result.filePaths[0];

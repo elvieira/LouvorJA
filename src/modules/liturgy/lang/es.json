@@ -25,7 +25,9 @@
     "music": "Música",
     "verse": "Versículo",
     "media": "Medio",
-    "link": "Enlace"
+    "link": "Enlace",
+    "file": "Archivo/Directorio",
+    "scheduled_item": "Ítem Programado"
   },
   "type_descriptions": {
     "annotation": "Texto libre sin acción (ej: Oración, Doxología)",
@@ -33,7 +35,9 @@
     "music": "Seleccione una música del Himnario o Colección",
     "verse": "Seleccione un versículo bíblico",
     "media": "Seleccione un archivo de video",
-    "link": "Agregue una URL para abrir en el navegador"
+    "link": "Agregue una URL para abrir en el navegador",
+    "file": "Abrir un archivo o carpeta externa (no medio)",
+    "scheduled_item": "Seleccione una categoría de programación"
   },
   "fields": {
     "name": "Nombre",
