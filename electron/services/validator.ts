@@ -1,7 +1,7 @@
 import { app, ipcMain } from "electron";
 import * as path from "path";
 import * as fs from "fs-extra";
-import { coversPath, musicPath, slidesPath, sysDbPath, sysConfigPath } from "../config/constants";
+import { coversPath, musicPath, slidesPath, getSysDbPath, sysConfigPath } from "../config/constants";
 import { SQLiteHelper } from "../utils/sqlite";
 import DbExtractor from "./db-extractor";
 import { decryptData } from "../utils/crypto";
@@ -32,7 +32,7 @@ export function registerValidatorHandlers() {
       }
       
       // Limpa dlm.bin legado se existir
-      const legacyDlm = path.join(sysDbPath, "dlm.bin");
+      const legacyDlm = path.join(getSysDbPath(lang), "dlm.bin");
       if (fs.existsSync(legacyDlm)) {
         try {
           fs.unlinkSync(legacyDlm);
@@ -78,7 +78,8 @@ export function registerValidatorHandlers() {
       db.close();
 
       const actualCovers = new Set<string>(fs.existsSync(coversPath) ? fs.readdirSync(coversPath) : []);
-      const actualBins = new Set<string>(fs.existsSync(sysDbPath) ? fs.readdirSync(sysDbPath) : []);
+      const currentSysDbPath = getSysDbPath(lang);
+      const actualBins = new Set<string>(fs.existsSync(currentSysDbPath) ? fs.readdirSync(currentSysDbPath) : []);
 
       const missingCovers = [...coverFiles].filter(x => x && !actualCovers.has(x));
       

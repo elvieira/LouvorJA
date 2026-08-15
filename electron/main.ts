@@ -3,7 +3,7 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import { setupLifecycle } from "./core/lifecycle";
 import { registerIpcHandlers } from "./ipc";
-import { sysDbPath, mediaPath, coversPath, musicPath, slidesPath, oldDbPath } from "./config/constants";
+import { getSysDbPath, mediaPath, coversPath, musicPath, slidesPath, oldDbPath } from "./config/constants";
 import { setupUpdater } from "./services/updater";
 
 // Otimizações de GPU (Hardware Acceleration) para evitar travamentos em vídeos pesados e projetor
@@ -35,7 +35,7 @@ if (fs.existsSync(oldMusicPath)) {
 }
 
 // Garante que todas as pastas essenciais existam ao inicializar
-[sysDbPath, mediaPath, coversPath, musicPath, slidesPath].forEach(dir => {
+[getSysDbPath("pt"), getSysDbPath("es"), mediaPath, coversPath, musicPath, slidesPath].forEach(dir => {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 });
 

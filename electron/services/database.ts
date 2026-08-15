@@ -5,7 +5,7 @@ import DbExtractor from "./db-extractor";
 import { encryptData, decryptData } from "../utils/crypto";
 import { getFtpParams } from "../utils/ftp-client";
 import { SQLiteHelper } from "../utils/sqlite";
-import { sysDbPath, sysConfigPath, finalDbPath } from "../config/constants";
+import { getSysDbPath, sysConfigPath, finalDbPath } from "../config/constants";
 import * as ftp from "basic-ftp";
 
 export function registerDatabaseHandlers() {
@@ -24,6 +24,7 @@ export function registerDatabaseHandlers() {
       }
 
       // 2. Fallback: procura em arquivos individuais na sysDbPath (extraídos do BD)
+      const sysDbPath = getSysDbPath(lang);
       const filePath = path.join(sysDbPath, `${filename}.bin`);
       if (fs.existsSync(filePath)) {
         const encryptedContent = fs.readFileSync(filePath, "utf8");
@@ -68,7 +69,7 @@ export function registerDatabaseHandlers() {
         const dbPath = path.join(app.getPath("userData"), `database_${lang}.db`);
         if (fs.existsSync(dbPath)) {
           console.log(`[self-healing] Arquivo ${filename} ausente. Tentando restaurar a partir do banco de dados (${lang})...`);
-          const extractor = new DbExtractor(dbPath);
+          const extractor = new DbExtractor(dbPath, lang);
           const data = await extractor.repairFile(filename);
           if (data) {
             console.log(`[self-healing] Arquivo ${filename} restaurado com sucesso.`);
@@ -153,8 +154,11 @@ export function registerDatabaseHandlers() {
         fs.writeFileSync(sysConfigPath, encryptedContent, "utf8");
         
         // Remove a versão antiga avulsa se existir, para limpar o disco
-        const legacyPath = path.join(sysDbPath, `${filename}.bin`);
-        if (fs.existsSync(legacyPath)) fs.unlinkSync(legacyPath);
+        const legacyPathPt = path.join(getSysDbPath("pt"), `${filename}.bin`);
+        if (fs.existsSync(legacyPathPt)) fs.unlinkSync(legacyPathPt);
+        
+        const legacyPathEs = path.join(getSysDbPath("es"), `${filename}.bin`);
+        if (fs.existsSync(legacyPathEs)) fs.unlinkSync(legacyPathEs);
         
         return true;
       }
@@ -197,7 +201,7 @@ export function registerDatabaseHandlers() {
         throw new Error(`Arquivo não encontrado em: ${dbPath}`);
       }
       
-      const extractor = new DbExtractor(dbPath);
+      const extractor = new DbExtractor(dbPath, lang);
       await extractor.extract((data) => {
         event.sender.send("extract-progress", data);
       });

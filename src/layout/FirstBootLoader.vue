@@ -165,19 +165,21 @@ export default defineComponent({
       
       this.isOpen = true;
       
-      const isComplete: any = await window.electronAPI.getLocalDb("sfbc");
+      const currentLang = this.$i18n.locale || "pt";
+      const isComplete: any = await window.electronAPI.getLocalDb(`sfbc_${currentLang}`);
       if (!isComplete || !isComplete.complete) {
         this.isFirstBoot = true;
         
         // Limpa os arquivos essenciais do sistema antes de baixar o novo
         if (window.electronAPI.clearSysData) {
-          await window.electronAPI.clearSysData();
+          await window.electronAPI.clearSysData(currentLang);
         }
         
         const pendingLang = window.sessionStorage.getItem("pending_language");
         if (!pendingLang) {
           this.showWelcomeScreen = true;
         } else {
+          this.$i18n.locale = pendingLang;
           await this.runFirstBootSync();
         }
       } else {
@@ -339,7 +341,8 @@ export default defineComponent({
             }
 
             this.progress = 100;
-            await window.electronAPI.saveLocalDb("sfbc", { complete: true, date: new Date().toISOString() });
+            const finalLang = this.$i18n.locale || "pt";
+            await window.electronAPI.saveLocalDb(`sfbc_${finalLang}`, { complete: true, date: new Date().toISOString() });
             
             const pendingLang = window.sessionStorage.getItem("pending_language");
             if (pendingLang) {

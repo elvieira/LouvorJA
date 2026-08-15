@@ -1,7 +1,8 @@
 import { ipcMain, BrowserWindow, dialog, shell, app, screen, Display } from "electron";
 import * as fs from "fs-extra";
 import * as path from "path";
-import { sysDbPath, mediaPath, coversPath, musicPath, slidesPath, userDataPath } from "../config/constants";
+import { getSysDbPath, mediaPath, coversPath, musicPath, slidesPath, userDataPath, sysConfigPath } from "../config/constants";
+import { encryptData, decryptData } from "../utils/crypto";
 import { registerDatabaseHandlers } from "../services/database";
 import { registerMediaHandlers } from "../services/media";
 import { registerUpdaterHandlers } from "../services/updater";
@@ -18,17 +19,14 @@ export function registerIpcHandlers() {
     try {
       if (!fs.existsSync(dirPath)) return 0;
       const stats = await fs.stat(dirPath);
-      if (stats.isFile()) return stats.size;
-      
-      const files = await fs.readdir(dirPath);
-      const sizes = await Promise.all(
-        files.map(async file => {
-          const fullPath = path.join(dirPath, file);
-          const stat = await fs.stat(fullPath);
-          return stat.isDirectory() ? await getFolderSize(fullPath) : stat.size;
-        }),
-      );
-      totalSize = sizes.reduce((acc, size) => acc + size, 0);
+      if (stats.isFile()) {
+        totalSize += stats.size;
+      } else if (stats.isDirectory()) {
+        const files = await fs.readdir(dirPath);
+        for (const file of files) {
+          totalSize += await getFolderSize(path.join(dirPath, file));
+        }
+      }
     } catch (e) {
       console.error(e);
     }
@@ -40,6 +38,26 @@ export function registerIpcHandlers() {
       const bytes = await getFolderSize(userDataPath);
       return bytes;
     } catch {
+      return 0;
+    }
+  });
+
+  ipcMain.handle("get-folder-size", async (event, dirType: string) => {
+    try {
+      let targetPath = "";
+      switch (dirType) {
+        case "database": targetPath = getSysDbPath("pt"); break; // Retorna o tamanho aproximado
+        case "covers": targetPath = coversPath; break;
+        case "music": targetPath = musicPath; break;
+        case "slides": targetPath = slidesPath; break;
+      }
+      if (targetPath) {
+        const size = await getFolderSize(targetPath);
+        return size;
+      }
+      return 0;
+    } catch (error) {
+      console.error("Erro ao calcular tamanho da pasta:", error);
       return 0;
     }
   });
@@ -68,9 +86,17 @@ export function registerIpcHandlers() {
 
   ipcMain.handle("clear-all-data", async () => {
     try {
-      if (fs.existsSync(sysDbPath)) fs.emptyDirSync(sysDbPath);
+      // Deleta todos os diretórios com prefixo .sysdata_
+      const files = fs.readdirSync(userDataPath);
+      for (const file of files) {
+        if (file.startsWith(".sysdata_")) {
+          const p = path.join(userDataPath, file);
+          fs.emptyDirSync(p);
+        }
+      }
       if (fs.existsSync(mediaPath)) fs.emptyDirSync(mediaPath);
-      [sysDbPath, mediaPath, coversPath, musicPath, slidesPath].forEach(dir => {
+      
+      [getSysDbPath("pt"), getSysDbPath("es"), mediaPath, coversPath, musicPath, slidesPath].forEach(dir => {
         if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
       });
       return true;
@@ -80,10 +106,27 @@ export function registerIpcHandlers() {
     }
   });
 
-  ipcMain.handle("clear-sys-data", async () => {
+  ipcMain.handle("clear-sys-data", async (event, lang: string = "pt") => {
     try {
+      const sysDbPath = getSysDbPath(lang);
       if (fs.existsSync(sysDbPath)) fs.emptyDirSync(sysDbPath);
       if (!fs.existsSync(sysDbPath)) fs.mkdirSync(sysDbPath, { recursive: true });
+      
+      if (fs.existsSync(sysConfigPath)) {
+        const configEncrypted = fs.readFileSync(sysConfigPath, "utf8");
+        const configDecrypted = decryptData(configEncrypted);
+        if (configDecrypted) {
+          const sysConfig = JSON.parse(configDecrypted);
+          const sfbcKey = `sfbc_${lang}`;
+          if (sysConfig[sfbcKey]) {
+            delete sysConfig[sfbcKey];
+            const encryptedContent = encryptData(JSON.stringify(sysConfig));
+            if (encryptedContent) {
+              fs.writeFileSync(sysConfigPath, encryptedContent, "utf8");
+            }
+          }
+        }
+      }
       return true;
     } catch (error) {
       console.error("Erro ao limpar sysdata:", error);

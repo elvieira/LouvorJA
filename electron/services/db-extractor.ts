@@ -1,17 +1,18 @@
 import * as path from "path";
 import * as fs from "fs-extra";
-import { app } from "electron";
+
 import { encryptData } from "../utils/crypto";
 import { SQLiteHelper } from "../utils/sqlite";
+import { getSysDbPath } from "../config/constants";
 
 export default class DbExtractor {
   private dbPath: string;
   private sysdataDir: string;
   private db: SQLiteHelper | null = null;
 
-  constructor(dbPath: string) {
+  constructor(dbPath: string, lang: string = "pt") {
     this.dbPath = dbPath;
-    this.sysdataDir = path.join(app.getPath("userData"), ".sysdata");
+    this.sysdataDir = getSysDbPath(lang);
   }
 
   async connect() {

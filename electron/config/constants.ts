@@ -8,7 +8,9 @@ export const IV_LENGTH = 16;
 // Força o nome do app ANTES de pegar o userData, para que o modo dev e o build usem a mesma pasta "Louvor JA"
 app.setName("Louvor JA");
 export const userDataPath = app.getPath("userData");
-export const sysDbPath = path.join(userDataPath, ".sysdata");
+export function getSysDbPath(lang: string = "pt") {
+  return path.join(userDataPath, `.sysdata_${lang}`);
+}
 export const sysConfigPath = path.join(userDataPath, ".sysconfig.bin");
 export const oldDbPath = path.join(userDataPath, "database");
 export const mediaPath = path.join(userDataPath, "Media");

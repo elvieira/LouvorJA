@@ -59,7 +59,8 @@ export default {
     this.isPopupWindow = window.location.href.includes("popup");
     
     if (!this.isPopupWindow && window.electronAPI && window.electronAPI.isElectron) {
-      const isComplete = await window.electronAPI.getLocalDb("sfbc");
+      const currentLang = this.$i18n.locale || "pt";
+      const isComplete = await window.electronAPI.getLocalDb(`sfbc_${currentLang}`);
       if (isComplete && isComplete.complete) {
         this.isAppReady = true;
       }
