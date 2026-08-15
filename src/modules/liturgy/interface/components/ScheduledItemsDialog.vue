@@ -227,7 +227,7 @@
 
 <script lang="ts">
 import { defineComponent, PropType } from "vue";
-import { v4 as uuidv4 } from "uuid";
+
 
 interface ScheduledItem {
   id: string;
@@ -287,7 +287,7 @@ export default defineComponent({
             return {
               ...cat,
               items: Object.entries(cat.schedules).map(([date, item]: [string, any]) => ({
-                id: uuidv4(),
+                id: crypto.randomUUID(),
                 filePath: item.filePath,
                 name: item.name,
                 date,
@@ -324,7 +324,7 @@ export default defineComponent({
       const val = this.newCategoryName.trim();
       if (val) {
         const newCat: Category = {
-          id: uuidv4(),
+          id: crypto.randomUUID(),
           name: val,
           items: [],
         };
@@ -373,7 +373,7 @@ export default defineComponent({
           const dateStr = `${year}-${month}-${day}`;
 
           const newItem: ScheduledItem = {
-            id: uuidv4(),
+            id: crypto.randomUUID(),
             filePath,
             name,
             date: dateStr,
