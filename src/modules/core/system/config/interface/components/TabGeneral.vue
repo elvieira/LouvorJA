@@ -24,17 +24,32 @@
             :title="t('start_on_login')"
             :subtitle="t('start_on_login_desc')"
             type="switch"
+          />
+        </v-card-text>
+      </v-card>
+
+      <v-card class="settings-card rounded-xl pa-2 mb-6" flat style="background: var(--card-bg); box-shadow: var(--shadow);">
+        <v-card-text class="pa-6">
+          <SettingsActionRow
+            v-model="hide_undownloaded"
+            icon="mdi-eye-off"
+            :title="t('hide_undownloaded')"
+            :subtitle="t('hide_undownloaded_desc')"
+            type="switch"
             class="mb-8"
           />
 
-          <v-divider v-if="isDesktop" class="mb-8" style="opacity: 0.1;" />
+          <v-divider class="mb-8" style="opacity: 0.1;" />
 
           <SettingsActionRow
-            v-model="show_home_history"
-            icon="mdi-view-dashboard"
-            :title="t('home_layout')"
-            :subtitle="t('home_history_desc')"
-            type="switch"
+            v-model="primary_hymnal"
+            icon="mdi-book-open-page-variant"
+            :title="t('primary_hymnal')"
+            :subtitle="t('primary_hymnal_desc')"
+            type="select"
+            :items="primaryHymnalList"
+            item-title="name"
+            item-value="code"
           />
         </v-card-text>
       </v-card>
@@ -97,7 +112,9 @@ export default defineComponent({
   },
   data: () => ({
     language: "pt" as "pt" | "es",
-    show_home_history: true as boolean,
+    hide_undownloaded: false,
+    primary_hymnal: "none",
+
     start_on_login: false as boolean,
     isDesktop: !!(window as any).electronAPI,
     isInitialized: false,
@@ -107,6 +124,13 @@ export default defineComponent({
       return [
         { code: "pt", name: "Português" },
         { code: "es", name: "Español" },
+      ];
+    },
+    primaryHymnalList(): Array<{ code: string; name: string }> {
+      return [
+        { code: "none", name: this.t("hymnal_none") },
+        { code: "hymnal", name: this.t("hymnal_default") },
+        { code: "hymnal_1996", name: this.t("hymnal_1996") },
       ];
     },
     languageName(): string {
@@ -176,9 +200,7 @@ export default defineComponent({
         this.$i18n.locale = val;
       }
     },
-    show_home_history(val: boolean) {
-      this.$userdata.set("show_home_history", val);
-    },
+
     start_on_login(val: boolean) {
       if (!this.isInitialized) return;
       if ((window as any).electronAPI && (window as any).electronAPI.setLoginItemSettings) {
@@ -187,15 +209,25 @@ export default defineComponent({
         });
       }
     },
+    hide_undownloaded(val: boolean) {
+      this.$userdata.set("hide_undownloaded", val);
+    },
+    primary_hymnal(val: string) {
+      this.$userdata.set("primary_hymnal", val);
+    },
   },
   mounted() {
     if(this.$userdata.get("language")){
       this.language = this.$userdata.get("language");
     }
-    const saved_home_history = this.$userdata.get("show_home_history");
-    if (saved_home_history !== undefined && saved_home_history !== null) {
-      this.show_home_history = saved_home_history;
+    
+    if (this.$userdata.get("hide_undownloaded") !== undefined) {
+      this.hide_undownloaded = this.$userdata.get("hide_undownloaded");
     }
+    if (this.$userdata.get("primary_hymnal") !== undefined) {
+      this.primary_hymnal = this.$userdata.get("primary_hymnal");
+    }
+
     
     if (this.isDesktop && (window as any).electronAPI.getLoginItemSettings) {
       (window as any).electronAPI.getLoginItemSettings().then((settings: any) => {

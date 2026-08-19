@@ -26,7 +26,7 @@
 
 <script setup lang="ts">
 import { ref, shallowRef, watch, onMounted } from "vue";
-import { useDatabase, useString } from "@/composables/useHelpers";
+import { useDatabase, useString, useUserData } from "@/composables/useHelpers";
 import { useI18n } from "vue-i18n";
 
 const props = withDefaults(defineProps<{
@@ -54,8 +54,10 @@ const emit = defineEmits(["update:modelValue"]);
 
 const database = useDatabase();
 const stringHelper = useString();
+const userdata = useUserData();
 const { t } = useI18n();
 
+const downloadedAlbums = shallowRef<string[]>([]);
 const all_data = shallowRef<any[]>([]);
 const filter_data = shallowRef<any[]>([]);
 const data = shallowRef<any[]>([]);
@@ -136,7 +138,58 @@ const filterData = () => {
             .replace(/[\u0300-\u036f]/g, "")
             .startsWith(props.letter));
 
-      return searchableCondition && filterCondition && initialLetter;
+      let globalFilterCondition = true;
+      if (props.file === "pt_musics" || props.file === "es_musics") {
+        const hideUndownloaded = userdata.get("hide_undownloaded") === true;
+        const primaryHymnal = userdata.get("primary_hymnal") || "none";
+        const locale = props.file.split("_")[0]; // "pt" ou "es"
+
+        if (hideUndownloaded) {
+          let hasDownloadedCollection = false;
+          let hasAnyCollection = false;
+
+          if (item.albums && item.albums.length > 0) {
+            hasAnyCollection = true;
+            for (const album of item.albums) {
+              if (album.type === "hymnal") {
+                // DLA salva hinários como "hymnal_pt", "hymnal_1996_pt"
+                const hymnalKey = album.name?.includes("1996") ? `hymnal_1996_${locale}` : `hymnal_${locale}`;
+                if (downloadedAlbums.value.includes(hymnalKey)) {
+                  hasDownloadedCollection = true;
+                  break;
+                }
+              } else {
+                // DLA salva álbuns normais pelo id numérico
+                if (downloadedAlbums.value.includes(album.id_album)) {
+                  hasDownloadedCollection = true;
+                  break;
+                }
+              }
+            }
+          }
+
+          if (hasAnyCollection && !hasDownloadedCollection) {
+            globalFilterCondition = false;
+          }
+        }
+
+        if (globalFilterCondition && primaryHymnal !== "none") {
+          if (item.albums && item.albums.some((a: any) => a.type === "hymnal")) {
+            const isInPrimaryHymnal = item.albums.some((a: any) => {
+              if (a.type !== "hymnal") return false;
+              if (primaryHymnal === "hymnal_1996") {
+                return a.name?.includes("1996");
+              }
+              return a.name && !a.name.includes("1996");
+            });
+            if (!isInPrimaryHymnal) {
+              globalFilterCondition = false;
+            }
+          }
+        }
+      }
+
+      return searchableCondition && filterCondition && initialLetter && globalFilterCondition;
     })
     .slice();
 
@@ -194,6 +247,10 @@ const loadData = async () => {
   filter_data.value = [];
   data.value = [];
   loading.value = true;
+
+  if (window.electronAPI && window.electronAPI.isElectron) {
+    downloadedAlbums.value = ((await window.electronAPI.getLocalDb("dla")) as string[]) || [];
+  }
 
   all_data.value = await database.get(props.file);
 

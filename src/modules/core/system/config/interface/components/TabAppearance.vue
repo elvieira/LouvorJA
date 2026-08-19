@@ -63,6 +63,18 @@
           </v-item-group>
         </v-card-text>
       </v-card>
+
+      <v-card class="settings-card rounded-xl pa-2 mb-6" flat style="background: var(--card-bg); box-shadow: var(--shadow);">
+        <v-card-text class="pa-6">
+          <SettingsActionRow
+            v-model="show_home_history"
+            icon="mdi-view-dashboard"
+            :title="t('home_layout')"
+            :subtitle="t('home_history_desc')"
+            type="switch"
+          />
+        </v-card-text>
+      </v-card>
     </div>
   </div>
 </template>
@@ -70,9 +82,16 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import manifest from "../../manifest";
+import SettingsActionRow from "@/components/SettingsActionRow.vue";
 
 export default defineComponent({
   name: "TabAppearance",
+  components: {
+    SettingsActionRow,
+  },
+  data: () => ({
+    show_home_history: true as boolean,
+  }),
   computed: {
     active_theme_mode: {
       get(): string {
@@ -82,6 +101,17 @@ export default defineComponent({
         this.setTheme(mode);
       },
     },
+  },
+  watch: {
+    show_home_history(val: boolean) {
+      this.$userdata.set("show_home_history", val);
+    },
+  },
+  mounted() {
+    const saved_home_history = this.$userdata.get("show_home_history");
+    if (saved_home_history !== undefined && saved_home_history !== null) {
+      this.show_home_history = saved_home_history;
+    }
   },
   methods: {
     t(text: string): string {
