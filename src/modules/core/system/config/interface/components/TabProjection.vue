@@ -345,7 +345,7 @@
                   </div>
 
                   <!-- Peso da fonte -->
-                  <div>
+                  <div class="mb-6">
                     <div class="d-flex align-center mb-3">
                       <v-icon size="18" color="primary" class="mr-2">
                         mdi-format-bold
@@ -373,6 +373,38 @@
                         {{ t('weight_extra') }}
                       </v-btn>
                     </v-btn-toggle>
+                  </div>
+
+                  <!-- Opacidade do fundo do texto -->
+                  <div>
+                    <div class="d-flex align-center justify-space-between mb-3">
+                      <div class="d-flex align-center">
+                        <v-icon size="18" color="primary" class="mr-2">
+                          mdi-opacity
+                        </v-icon>
+                        <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text);">{{ t('text_bg_opacity') }}</span>
+                      </div>
+                      <v-chip
+                        size="small"
+                        variant="tonal"
+                        color="primary"
+                        class="font-weight-bold"
+                      >
+                        {{ slide_text_bg_opacity }}%
+                      </v-chip>
+                    </div>
+                    <div class="px-2">
+                      <v-slider
+                        v-model="slide_text_bg_opacity"
+                        :min="0"
+                        :max="100"
+                        :step="1"
+                        color="primary"
+                        track-color="rgba(255,255,255,0.1)"
+                        thumb-size="16"
+                        hide-details
+                      />
+                    </div>
                   </div>
                 </div>
               </v-expand-transition>
@@ -520,6 +552,44 @@
                       hide-details
                     />
                   </div>
+
+                  <!-- Remover fundo da letra -->
+                  <div class="mt-6 pt-4" style="border-top: 1px solid var(--border-color);">
+                    <div class="d-flex align-start">
+                      <div class="mr-4 mt-1">
+                        <v-icon color="primary" size="24">
+                          mdi-format-color-text
+                        </v-icon>
+                      </div>
+                      <div class="flex-grow-1">
+                        <div class="text-subtitle-1 font-weight-bold" style="color: var(--sidebar-text);">
+                          {{ t('remove_text_bg') }}
+                        </div>
+                        <div class="text-body-2 font-weight-medium" style="color: var(--sidebar-text-secondary);">
+                          {{ t('remove_text_bg_desc') }}
+                        </div>
+                      </div>
+                      <div>
+                        <v-switch
+                          v-model="slide_remove_text_bg"
+                          color="primary"
+                          inset
+                          hide-details
+                        />
+                      </div>
+                    </div>
+                    <v-expand-transition>
+                      <v-alert
+                        v-if="slide_remove_text_bg"
+                        type="warning"
+                        variant="tonal"
+                        density="compact"
+                        class="mt-4 font-weight-medium"
+                      >
+                        {{ t('remove_text_bg_warning') }}
+                      </v-alert>
+                    </v-expand-transition>
+                  </div>
                 </div>
               </v-expand-transition>
             </div>
@@ -569,10 +639,12 @@ export default defineComponent({
     slide_font_size: 100 as number,
     slide_font_color: "#FFFFFF" as string,
     slide_font_weight: "700" as string,
+    slide_text_bg_opacity: 25 as number,
     slide_custom_bg: false as boolean,
     slide_bg_color: "#000000" as string,
     slide_bg_image: null as string | null,
     slide_bg_opacity: 100 as number,
+    slide_remove_text_bg: false as boolean,
   }),
   computed: {
     rawDisplays(): any[] {
@@ -618,10 +690,12 @@ export default defineComponent({
     slide_font_size(val: number) { this.$userdata.set("modules.config.slide_font_size", val); },
     slide_font_color(val: string) { this.$userdata.set("modules.config.slide_font_color", val); },
     slide_font_weight(val: string) { this.$userdata.set("modules.config.slide_font_weight", val); },
+    slide_text_bg_opacity(val: number) { this.$userdata.set("modules.config.slide_text_bg_opacity", val); },
     slide_custom_bg(val: boolean) { this.$userdata.set("modules.config.slide_custom_bg", val); },
     slide_bg_color(val: string) { this.$userdata.set("modules.config.slide_bg_color", val); },
     slide_bg_image(val: string | null) { this.$userdata.set("modules.config.slide_bg_image", val); },
     slide_bg_opacity(val: number) { this.$userdata.set("modules.config.slide_bg_opacity", val); },
+    slide_remove_text_bg(val: boolean) { this.$userdata.set("modules.config.slide_remove_text_bg", val); },
     slideMonitorList: {
       handler(newList: any[]) {
         if (newList.length > 0 && this.rawDisplays.length > 0) {
@@ -660,8 +734,8 @@ export default defineComponent({
 
     const fields = [
       "slide_fullscreen", "slide_disable_main_if_extended", "slide_minimize_player", "slide_show_title",
-      "slide_custom_text_format", "slide_font_size", "slide_font_color", "slide_font_weight",
-      "slide_custom_bg", "slide_bg_color", "slide_bg_image", "slide_bg_opacity",
+      "slide_custom_text_format", "slide_font_size", "slide_font_color", "slide_font_weight", "slide_text_bg_opacity",
+      "slide_custom_bg", "slide_bg_color", "slide_bg_image", "slide_bg_opacity", "slide_remove_text_bg",
     ];
     fields.forEach(field => {
       const val = this.$userdata.get(`modules.config.${field}`);

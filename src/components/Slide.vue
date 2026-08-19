@@ -72,6 +72,9 @@ const customTextFormat = ref(false);
 const customFontSize = ref(100);
 const customFontColor = ref("#FFFFFF");
 const customFontWeight = ref("700");
+const customTextBgOpacity = ref(25);
+const removeTextBg = ref(false);
+
 const customBg = ref(false);
 const customBgColor = ref("#000000");
 const customBgImage = ref<string | null>(null);
@@ -104,11 +107,13 @@ const updateSettings = () => {
   customFontSize.value = userdata.get("modules.config.slide_font_size") || 100;
   customFontColor.value = userdata.get("modules.config.slide_font_color") || "#FFFFFF";
   customFontWeight.value = userdata.get("modules.config.slide_font_weight") || "700";
+  customTextBgOpacity.value = userdata.get("modules.config.slide_text_bg_opacity") ?? 25;
 
   customBg.value = userdata.get("modules.config.slide_custom_bg") || false;
   customBgColor.value = userdata.get("modules.config.slide_bg_color") || "#000000";
   customBgImage.value = userdata.get("modules.config.slide_bg_image") || null;
   customBgOpacity.value = userdata.get("modules.config.slide_bg_opacity") ?? 100;
+  removeTextBg.value = userdata.get("modules.config.slide_remove_text_bg") || false;
 };
 
 const setSlide = () => {
@@ -205,15 +210,28 @@ const style_text = (slide: any): any => {
     };
   } 
 
+  const bgOpacity = customTextFormat.value ? (customTextBgOpacity.value / 100) : 0.25;
+  const isBgRemoved = customBg.value && removeTextBg.value;
+
+  const bgStyles = isBgRemoved ? {
+    backgroundColor: "transparent",
+    border: "none",
+    backdropFilter: "none",
+    WebkitBackdropFilter: "none",
+    boxShadow: "none",
+  } : {
+    backgroundColor: `rgba(0, 0, 0, ${bgOpacity})`,
+    border: `${Math.max(2, fontSizePc(0.4))}px solid rgba(255, 255, 255, 0.85)`,
+    backdropFilter: "blur(8px)",
+    WebkitBackdropFilter: "blur(8px)",
+    boxShadow: "0px 10px 30px rgba(0, 0, 0, 0.4)",
+  };
+
   if (customTextFormat.value) {
     const sizeMultiplier = customFontSize.value / 100;
     return {
-      backgroundColor: "rgba(0, 0, 0, 0.25)",
-      border: `${Math.max(2, fontSizePc(0.4))}px solid rgba(255, 255, 255, 0.85)`,
+      ...bgStyles,
       padding: `${fontSizePc(5)}px ${fontSizePc(8)}px`,
-      backdropFilter: "blur(8px)",
-      WebkitBackdropFilter: "blur(8px)",
-      boxShadow: "0px 10px 30px rgba(0, 0, 0, 0.4)",
       textAlign: "center" as const,
       textTransform: "uppercase",
       fontSize: `${fontSizePc(15) * sizeMultiplier}px`,
@@ -226,8 +244,7 @@ const style_text = (slide: any): any => {
   }
 
   return {
-    backgroundColor: "rgba(0, 0, 0, 0.25)",
-    border: `${Math.max(2, fontSizePc(0.4))}px solid rgba(255, 255, 255, 0.85)`,
+    ...bgStyles,
     padding: `${fontSizePc(5)}px ${fontSizePc(8)}px`,
     textAlign: "center" as const,
     textTransform: "uppercase",
@@ -236,9 +253,6 @@ const style_text = (slide: any): any => {
     fontWeight: "700",
     letterSpacing: "0.03em",
     lineHeight: "1.4",
-    backdropFilter: "blur(8px)",
-    WebkitBackdropFilter: "blur(8px)",
-    boxShadow: "0px 10px 30px rgba(0, 0, 0, 0.4)",
   };
 };
 
