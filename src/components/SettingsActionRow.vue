@@ -30,14 +30,17 @@
       </template>
 
       <template v-else-if="type === 'switch'">
-        <v-switch
-          :model-value="modelValue"
-          :color="switchColor"
-          inset
-          hide-details
-          class="font-weight-medium"
-          @update:model-value="$emit('update:modelValue', $event)"
-        />
+        <div class="d-flex justify-end" style="flex: 0 0 auto;">
+          <v-switch
+            :model-value="modelValue"
+            :color="switchColor"
+            inset
+            hide-details
+            class="font-weight-medium mt-0 pt-0"
+            style="flex: none;"
+            @update:model-value="$emit('update:modelValue', $event)"
+          />
+        </div>
       </template>
 
       <template v-else-if="type === 'select'">

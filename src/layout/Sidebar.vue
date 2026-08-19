@@ -5,7 +5,16 @@
     @click="closeSidebar"
   />
 
-  <div class="dashboard-sidebar" :class="{ open: isOpen }">
+  <div 
+    class="dashboard-sidebar" 
+    :class="{ 
+      open: isOpen,
+      'is-collapsed': isCollapsed,
+      'is-pinned': isPinned 
+    }"
+    @mouseenter="isHovered = true"
+    @mouseleave="isHovered = false"
+  >
     <div class="sidebar-header">
       <div class="logo-container">
         <img src="/ico/favicon.svg" alt="LouvorJA" class="logo-svg" />
@@ -66,7 +75,7 @@
         <div 
           v-else 
           class="nav-item main-item"
-          :class="{ 'group-active': isGroupActive(group) && !submenuOpen[groupKey] }"
+          :class="{ 'group-active': isGroupActive(group) && (!submenuOpen[groupKey] || isCollapsed) }"
         >
           <a href="#" class="nav-link" @click.prevent="toggleSubmenu(groupKey)">
             <v-icon class="nav-icon">
@@ -201,10 +210,15 @@ export default defineComponent({
       type: Boolean,
       default: false,
     },
+    isPinned: {
+      type: Boolean,
+      default: false,
+    },
   },
-  emits: ["update:modelValue"],
+  emits: ["update:modelValue", "update:pinned"],
   data() {
     return {
+      isHovered: false,
       submenuOpen: {} as Record<string, boolean>,
       windowWidth: window.innerWidth,
       submenuTimeout: null as any,
@@ -230,6 +244,9 @@ export default defineComponent({
     },
     isMobile(): boolean {
       return this.windowWidth <= 1024;
+    },
+    isCollapsed(): boolean {
+      return !this.isPinned && !this.isHovered;
     },
     isDesktop(): boolean {
       return !!(window as any).electronAPI?.isElectron;
@@ -417,16 +434,73 @@ export default defineComponent({
   overflow: hidden;
   border-right: 1px solid var(--sidebar-border);
   box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &.is-collapsed {
+    width: var(--sidebar-collapsed-width);
+
+    .logo-text, .nav-text {
+      opacity: 0;
+      pointer-events: none;
+      max-width: 0;
+      overflow: hidden;
+      margin: 0;
+      transition: opacity 0.2s ease, max-width 0.2s ease, margin 0.2s ease;
+    }
+
+    .nav-arrow {
+      display: none !important;
+    }
+
+    .nav-submenu {
+      display: none !important;
+    }
+
+    .sidebar-header {
+      padding: 24px 16px;
+      
+      .logo-container {
+        gap: 0;
+      }
+    }
+
+    .nav-item {
+      margin: 4px 12px;
+      
+      .nav-link {
+        padding: 12px;
+        justify-content: center;
+        gap: 0;
+        
+        .nav-icon {
+          margin: 0;
+        }
+      }
+    }
+  }
+
+  .logo-text, .nav-text, .nav-arrow {
+    opacity: 1;
+    max-width: 200px;
+    transition: opacity 0.3s ease 0.1s, max-width 0.3s ease;
+    white-space: nowrap;
+    overflow: hidden;
+  }
 
   .sidebar-header {
     padding: 24px 24px;
     border-bottom: 1px solid var(--sidebar-border);
     background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: padding 0.3s ease;
     
     .logo-container {
       display: flex;
       justify-content: center;
       align-items: center;
+      width: 100%;
       gap: 12px;
       
       .logo-svg {
@@ -648,7 +722,7 @@ export default defineComponent({
 }
 
 @media (max-width: 1024px) {
-  .dashboard-sidebar .nav-item.close-item {
+  .dashboard-sidebar.is-pinned .nav-item.close-item {
     display: block !important;
   }
   
@@ -656,7 +730,7 @@ export default defineComponent({
     display: block;
   }
   
-  .dashboard-sidebar {
+  .dashboard-sidebar.is-pinned {
     transform: translateX(-100%);
     transition: transform 0.3s ease;
     

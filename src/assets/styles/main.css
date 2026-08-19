@@ -26,6 +26,7 @@
     --shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.12);
     
     --sidebar-width: 300px;
+    --sidebar-collapsed-width: 72px;
     --border-radius: 12px;
     --transition: all 0.3s ease;
     

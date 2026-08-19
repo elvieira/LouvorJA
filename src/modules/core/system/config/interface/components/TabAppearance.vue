@@ -67,6 +67,15 @@
       <v-card class="settings-card rounded-xl pa-2 mb-6" flat style="background: var(--card-bg); box-shadow: var(--shadow);">
         <v-card-text class="pa-6">
           <SettingsActionRow
+            v-model="sidebar_pinned"
+            icon="mdi-pin"
+            :title="t('sidebar_pinned')"
+            :subtitle="t('sidebar_pinned_desc')"
+            type="switch"
+            class="mb-8"
+          />
+          <v-divider class="mb-8" style="opacity: 0.1;" />
+          <SettingsActionRow
             v-model="show_home_history"
             icon="mdi-view-dashboard"
             :title="t('home_layout')"
@@ -91,6 +100,7 @@ export default defineComponent({
   },
   data: () => ({
     show_home_history: true as boolean,
+    sidebar_pinned: false as boolean,
   }),
   computed: {
     active_theme_mode: {
@@ -106,11 +116,21 @@ export default defineComponent({
     show_home_history(val: boolean) {
       this.$userdata.set("show_home_history", val);
     },
+    sidebar_pinned(val: boolean) {
+      this.$userdata.set("sidebar_pinned", val);
+      // Trigger a global event so layout can update instantly
+      document.querySelector(".main-container")?.dispatchEvent(new CustomEvent("sidebar-pinned-changed", { bubbles: true, detail: val }));
+    },
   },
   mounted() {
     const saved_home_history = this.$userdata.get("show_home_history");
     if (saved_home_history !== undefined && saved_home_history !== null) {
       this.show_home_history = saved_home_history;
+    }
+    
+    const saved_sidebar_pinned = this.$userdata.get("sidebar_pinned");
+    if (saved_sidebar_pinned !== undefined && saved_sidebar_pinned !== null) {
+      this.sidebar_pinned = saved_sidebar_pinned;
     }
   },
   methods: {

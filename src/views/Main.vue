@@ -1,7 +1,7 @@
 <template>
-  <AppSidebar v-model="sidebarOpen" />
+  <AppSidebar v-model="sidebarOpen" :is-pinned="sidebarPinned" @update:pinned="sidebarPinned = $event" />
 
-  <div class="main-container" :class="{ 'sidebar-open': sidebarOpen }" @toggle-sidebar="toggleSidebar">
+  <div class="main-container" :class="{ 'sidebar-open': sidebarOpen, 'sidebar-unpinned': !sidebarPinned }" @toggle-sidebar="toggleSidebar">
     <v-main class="bg-main">
       <AppModules />
       
@@ -168,6 +168,7 @@ export default defineComponent({
   data() {
     return {
       sidebarOpen: false,
+      sidebarPinned: false,
       showQuickSearch: false,
       showBibleSearch: false,
     };
@@ -349,6 +350,14 @@ export default defineComponent({
         }
       });
     }
+
+    const savedPinned = this.$userdata.get("sidebar_pinned");
+    if (savedPinned !== undefined && savedPinned !== null) {
+      this.sidebarPinned = savedPinned;
+    }
+    document.addEventListener("sidebar-pinned-changed", (e: any) => {
+      this.sidebarPinned = e.detail;
+    });
   },
   unmounted() {
     window.removeEventListener("keydown", this.onGlobalSearchShortcut);
@@ -413,8 +422,16 @@ export default defineComponent({
   flex-direction: column;
 }
 
+.main-container.sidebar-unpinned {
+  margin-left: var(--sidebar-collapsed-width);
+}
+
+.main-container.sidebar-unpinned :deep(.menu-toggle-btn) {
+  display: none !important;
+}
+
 @media (max-width: 1024px) {
-  .main-container {
+  .main-container:not(.sidebar-unpinned) {
     margin-left: 0 !important;
   }
 }

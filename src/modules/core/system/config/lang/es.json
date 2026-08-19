@@ -7,6 +7,8 @@
     "tab_general": "General",
     "tab_media": "Reproducción de Medios",
     "tab_projection": "Proyección (Textos)",
+    "sidebar_pinned": "Fijar Barra Lateral",
+    "sidebar_pinned_desc": "Mantiene la barra lateral siempre extendida en la pantalla.",
     "system_theme": "Tema del Programa",
     "system_theme_desc": "Elige el modo de color para la programa",
     "light_mode": "Modo Claro",
