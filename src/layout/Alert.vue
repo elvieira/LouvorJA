@@ -63,6 +63,10 @@ export default defineComponent({
   transform: translateX(calc(var(--sidebar-width, 280px) / 2));
 }
 
+body.sidebar-collapsed .modern-alert-dialog-wrapper {
+  transform: translateX(calc(var(--sidebar-collapsed-width, 72px) / 2));
+}
+
 .modern-alert-dialog-wrapper.center-alert {
   transform: translateX(0) !important;
 }

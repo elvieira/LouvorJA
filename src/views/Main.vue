@@ -223,6 +223,9 @@ export default defineComponent({
     slide(): any {
       return this.$media.slide();
     },
+    isSidebarCollapsed(): boolean {
+      return !this.sidebarPinned && !this.sidebarOpen;
+    },
   },
   watch: {
     externalMediaCurrentTime(val: number) {
@@ -259,6 +262,16 @@ export default defineComponent({
       if (val) {
         this.showMiniPlayer = true;
       }
+    },
+    isSidebarCollapsed: {
+      immediate: true,
+      handler(val: boolean) {
+        if (val) {
+          document.body.classList.add("sidebar-collapsed");
+        } else {
+          document.body.classList.remove("sidebar-collapsed");
+        }
+      },
     },
     isExternalMediaMinimized(val: boolean) {
       if (val && this.isExternalVideo) {
