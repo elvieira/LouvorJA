@@ -2,72 +2,89 @@
   <v-dialog
     :model-value="modelValue"
     persistent
-    max-width="900"
     content-class="modern-alert-dialog-wrapper"
-    attach="true"
     @update:model-value="$emit('update:modelValue', $event)"
   >
-    <v-card class="modern-alert-card rounded-xl">
-      <v-card-title class="pt-6 px-6 pb-4 d-flex align-center justify-space-between">
-        <div class="d-flex flex-column">
-          <span class="font-weight-bold" style="font-size: 1.25rem; color: var(--sidebar-text);">Itens Agendados</span>
-          <span class="text-caption mt-1" style="color: var(--sidebar-text-secondary); opacity: 0.8;">Gerencie as categorias e mídias agendadas por data</span>
+    <v-card 
+      class="rounded-xl"
+      style="background: var(--card-bg, #ffffff); box-shadow: 0 10px 40px rgba(0,0,0,0.5); display: flex; flex-direction: column; max-height: 90vh; max-width: 900px; width: 100%; margin: 0 auto;"
+    >
+      <div class="pa-6 pb-4 flex-shrink-0" style="background: rgba(0,0,0,0.02);">
+        <div class="d-flex align-center justify-space-between mb-2">
+          <div class="d-flex align-center">
+            <v-icon color="primary" size="32" class="mr-3">
+              mdi-calendar-clock
+            </v-icon>
+            <h2 class="text-h5 font-weight-bold mb-0" style="color: var(--sidebar-text);">
+              Itens Agendados
+            </h2>
+          </div>
+          <v-btn
+            icon
+            size="small"
+            variant="flat"
+            color="rgba(128,128,128,0.1)"
+            class="rounded-lg"
+            @click="close"
+          >
+            <v-icon size="20">
+              mdi-close
+            </v-icon>
+          </v-btn>
         </div>
-        <v-btn
-          icon
-          size="small"
-          variant="flat"
-          color="rgba(128,128,128,0.1)"
-          class="rounded-lg"
-          @click="close"
-        >
-          <v-icon size="20">
-            mdi-close
-          </v-icon>
-        </v-btn>
-      </v-card-title>
+        <p class="text-caption mb-0" style="color: var(--sidebar-text-secondary); margin-left: 44px;">
+          Gerencie as categorias e mídias agendadas por data
+        </p>
+      </div>
 
-      <v-card-text class="px-6 pb-6 pt-0" style="height: 550px; display: flex; overflow: hidden; gap: 16px;">
+      <div style="background: var(--main-bg, #f5f5f5); padding: 24px; flex: 1; min-height: 400px; display: flex; gap: 16px; overflow: hidden;">
         <!-- Left Pane: Categories -->
-        <div class="categories-pane rounded-xl" style="width: 280px; display: flex; flex-direction: column; background: rgba(var(--v-theme-on-surface), 0.04); border: 1px solid rgba(128,128,128,0.1);">
+        <div class="categories-pane rounded-xl flex-shrink-0" style="width: 260px; min-width: 260px; display: flex; flex-direction: column; background: rgba(var(--v-theme-on-surface), 0.04); border: 1px solid rgba(128,128,128,0.1);">
           <div class="pa-4 border-b d-flex align-center justify-space-between" style="border-bottom-color: rgba(128,128,128,0.1) !important;">
             <span class="font-weight-bold text-body-2" style="color: var(--sidebar-text);">Categorias</span>
             <v-btn
               color="primary"
-              icon="mdi-plus"
-              variant="flat"
-              size="24"
-              class="rounded-lg"
+              variant="tonal"
+              size="small"
+              class="rounded-lg text-none px-2"
+              height="28"
               @click="showNewCategoryForm = true"
             >
-              <v-icon size="16">
+              <v-icon size="16" class="mr-1">
                 mdi-plus
               </v-icon>
+              Nova
             </v-btn>
           </div>
           
           <v-list class="bg-transparent flex-grow-1 overflow-y-auto pa-2" density="compact">
-            <div v-if="showNewCategoryForm" class="mb-3 d-flex align-center pa-2 rounded-lg" style="background: rgba(var(--v-theme-on-surface), 0.04); border: 1px solid rgba(128,128,128,0.1);">
-              <v-text-field
+            <div 
+              v-if="showNewCategoryForm" 
+              class="category-item d-flex align-center pa-3 mb-2 rounded-lg" 
+              style="background: rgba(var(--v-theme-primary), 0.15); border: 1px solid rgba(var(--v-theme-primary), 0.2);"
+            >
+              <v-icon size="20" class="mr-3 flex-shrink-0" color="primary">
+                mdi-folder-plus
+              </v-icon>
+              <input 
                 v-model="newCategoryName"
-                variant="outlined"
-                density="compact"
-                hide-details
-                placeholder="Nova Categoria..."
+                type="text"
+                placeholder="Nome da categoria..."
                 autofocus
-                class="modern-input-no-thick flex-grow-1 mr-2"
-                bg-color="rgba(var(--v-theme-surface), 0.5)"
+                class="text-body-2 font-weight-medium flex-grow-1 mr-2"
+                style="background: transparent; border: none; outline: none; color: rgb(var(--v-theme-primary)); min-width: 0;"
                 @keyup.enter="saveNewCategory"
                 @keyup.esc="showNewCategoryForm = false"
               />
               <v-btn
-                icon="mdi-check"
                 color="primary"
                 variant="flat"
-                size="32"
-                class="rounded-md flex-shrink-0"
+                size="small"
+                class="rounded-lg text-none px-3 font-weight-bold ml-1"
                 @click="saveNewCategory"
-              />
+              >
+                Salvar
+              </v-btn>
             </div>
 
             <template v-if="categories.length > 0">
@@ -113,33 +130,35 @@
         <!-- Right Pane: Calendar & Selection -->
         <div class="content-pane flex-grow-1 d-flex flex-column pa-6 rounded-xl" style="background: rgba(var(--v-theme-on-surface), 0.02); border: 1px solid rgba(128,128,128,0.1); overflow-y: auto;">
           <template v-if="selectedCategory">
-            <div class="d-flex align-center justify-space-between mb-6">
-              <div class="d-flex align-center">
+            <div class="d-flex align-center justify-space-between mb-6" style="gap: 16px;">
+              <div class="d-flex align-center" style="min-width: 0; flex: 1;">
                 <v-avatar
                   color="rgba(var(--v-theme-primary), 0.1)"
                   size="40"
                   rounded="lg"
-                  class="mr-3"
+                  class="mr-3 flex-shrink-0"
                 >
                   <v-icon color="primary" size="20">
                     mdi-folder-open
                   </v-icon>
                 </v-avatar>
-                <div>
-                  <h3 class="text-h6 font-weight-bold" style="color: var(--sidebar-text); line-height: 1.2;">
+                <div style="min-width: 0;">
+                  <h3 class="text-h6 font-weight-bold text-truncate" style="color: var(--sidebar-text); line-height: 1.2;">
                     {{ selectedCategory.name }}
                   </h3>
-                  <span class="text-caption" style="color: var(--sidebar-text-secondary);">Gerencie os arquivos e datas desta categoria</span>
+                  <div class="text-caption text-truncate" style="color: var(--sidebar-text-secondary);">
+                    Gerencie os arquivos desta categoria
+                  </div>
                 </div>
               </div>
               <v-btn
                 color="primary"
                 variant="flat"
                 prepend-icon="mdi-plus"
-                class="rounded-lg modern-alert-btn"
+                class="rounded-lg text-none px-6 font-weight-bold"
                 @click="selectFile"
               >
-                Adicionar Arquivo
+                Adicionar
               </v-btn>
             </div>
 
@@ -176,7 +195,7 @@
                       :value="item.date"
                       class="px-2 py-1 rounded-lg border text-body-2 font-weight-medium"
                       style="border-color: rgba(128,128,128,0.2); background: rgba(var(--v-theme-surface), 0.5); color: var(--sidebar-text); outline: none;"
-                      @change="(e) => updateItemDate(item.id, (e.target as HTMLInputElement).value)"
+                      @change="(e) => updateItemDate(item.id, (e.target as HTMLInputElement).value, e.target as HTMLInputElement)"
                     />
                     <v-btn
                       class="rounded-lg"
@@ -193,7 +212,7 @@
                   </div>
                 </div>
               </template>
-              <div v-else class="empty-state pa-6 text-center rounded-xl d-flex flex-column align-center justify-center flex-grow-1" style="border: 2px dashed rgba(128,128,128,0.2);">
+              <div v-else class="empty-state pa-6 mt-4 text-center rounded-xl d-flex flex-column align-center" style="border: 2px dashed rgba(128,128,128,0.2);">
                 <v-icon size="48" color="rgba(128,128,128,0.3)" class="mb-3">
                   mdi-file-hidden
                 </v-icon>
@@ -220,13 +239,15 @@
             </div>
           </template>
         </div>
-      </v-card-text>
+      </div>
     </v-card>
   </v-dialog>
 </template>
 
 <script lang="ts">
 import { defineComponent, PropType } from "vue";
+import $snackbar from "@/helpers/ui/Snackbar";
+
 
 
 interface ScheduledItem {
@@ -366,10 +387,20 @@ export default defineComponent({
         if (filePath) {
           const name = filePath.split(/[/\\]/).pop() || "Arquivo";
           
-          const today = new Date();
-          const year = today.getFullYear();
-          const month = String(today.getMonth() + 1).padStart(2, "0");
-          const day = String(today.getDate()).padStart(2, "0");
+          let newDateObj = new Date();
+          if (this.selectedCategory.items && this.selectedCategory.items.length > 0) {
+            const items = this.selectedCategory.items;
+            const maxDateStr = items.reduce((max, item) => (item.date > max ? item.date : max), items[0].date);
+            const maxDate = new Date(`${maxDateStr}T00:00:00`);
+            if (!isNaN(maxDate.getTime())) {
+              maxDate.setDate(maxDate.getDate() + 1);
+              newDateObj = maxDate;
+            }
+          }
+
+          const year = newDateObj.getFullYear();
+          const month = String(newDateObj.getMonth() + 1).padStart(2, "0");
+          const day = String(newDateObj.getDate()).padStart(2, "0");
           const dateStr = `${year}-${month}-${day}`;
 
           const newItem: ScheduledItem = {
@@ -399,8 +430,21 @@ export default defineComponent({
       });
       this.updateExtraData(newCategories);
     },
-    updateItemDate(itemId: string, newDate: string) {
+    updateItemDate(itemId: string, newDate: string, target?: HTMLInputElement) {
       if (!this.selectedCategory) return;
+      
+      const isDateTaken = this.selectedCategory.items?.some(i => i.date === newDate && i.id !== itemId);
+      if (isDateTaken) {
+        $snackbar.show({ text: "Já existe um arquivo agendado para esta data. Por favor, escolha uma data diferente.", color: "warning" });
+        if (target) {
+          const currentItem = this.selectedCategory.items?.find(i => i.id === itemId);
+          if (currentItem) {
+            target.value = currentItem.date;
+          }
+        }
+        return;
+      }
+
       const newCategories = this.categories.map((c: Category) => {
         if (c.id === this.selectedCategoryId) {
           return {

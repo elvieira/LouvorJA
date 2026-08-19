@@ -395,7 +395,6 @@
           <div class="d-flex" style="gap: 12px;">
             <v-btn
               variant="tonal"
-              color="grey-darken-1"
               class="rounded-lg text-none px-6 font-weight-bold flex-shrink-0"
               @click="cancel"
             >

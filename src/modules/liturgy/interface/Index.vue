@@ -12,17 +12,28 @@
         icon="mdi-hands-pray"
         @close="module.show = false"
       >
-        <v-btn
-          variant="flat"
-          color="rgba(128,128,128,0.1)"
-          append-icon="mdi-calendar-clock"
-          class="rounded-lg text-body-2 font-weight-medium no-hover"
-          :ripple="false"
-          style="color: var(--sidebar-text); text-transform: none; letter-spacing: normal;"
-          @click="showScheduledItems = true"
-        >
-          Itens Agendados
-        </v-btn>
+        <div class="d-flex" style="gap: 12px;">
+          <v-btn
+            variant="tonal"
+            color="#f6c32a"
+            append-icon="mdi-view-dashboard-outline"
+            class="rounded-lg text-body-2 font-weight-medium no-hover"
+            :ripple="false"
+            style="text-transform: none; letter-spacing: normal;"
+          >
+            Templates
+          </v-btn>
+          <v-btn
+            variant="tonal"
+            color="primary"
+            append-icon="mdi-calendar-clock"
+            class="rounded-lg text-body-2 font-weight-bold"
+            style="text-transform: none; letter-spacing: normal;"
+            @click="showScheduledItems = true"
+          >
+            Itens Agendados
+          </v-btn>
+        </div>
       </ModuleHeader>
 
       <!-- Segmented Control for Days -->

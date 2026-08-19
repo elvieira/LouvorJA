@@ -59,22 +59,17 @@ export default defineComponent({
 </script>
 <style lang="scss">
 .modern-alert-dialog-wrapper {
-  backdrop-filter: blur(5px);
   transform: translateX(calc(var(--sidebar-width, 280px) / 2));
+  max-width: calc(100vw - var(--sidebar-width, 280px) - 48px) !important;
 }
 
 body.sidebar-collapsed .modern-alert-dialog-wrapper {
   transform: translateX(calc(var(--sidebar-collapsed-width, 72px) / 2));
+  max-width: calc(100vw - var(--sidebar-collapsed-width, 72px) - 48px) !important;
 }
 
 .modern-alert-dialog-wrapper.center-alert {
   transform: translateX(0) !important;
-}
-
-@media (max-width: 1024px) {
-  .modern-alert-dialog-wrapper {
-    transform: translateX(0);
-  }
 }
 
 .modern-alert-card {
@@ -107,5 +102,14 @@ body.sidebar-collapsed .modern-alert-dialog-wrapper {
       transform: translateY(-1px);
     }
   }
+}
+
+/* Global override for disabled buttons */
+button.v-btn.v-btn--disabled,
+.v-btn.v-btn--disabled.bg-primary,
+.v-application .v-btn--disabled {
+  background-color: rgba(128, 128, 128, 0.15) !important;
+  color: rgba(128, 128, 128, 0.5) !important;
+  opacity: 1 !important;
 }
 </style>

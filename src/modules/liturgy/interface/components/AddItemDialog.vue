@@ -1,57 +1,66 @@
 <template>
   <v-dialog
     :model-value="modelValue"
-    max-width="600"
     :theme="$theme.primary()"
     content-class="modern-alert-dialog-wrapper"
-    attach="true"
     @update:model-value="updateModelValue"
   >
-    <v-card class="modern-alert-card rounded-xl">
+    <v-card 
+      class="rounded-xl"
+      style="background: var(--card-bg, #ffffff); box-shadow: 0 10px 40px rgba(0,0,0,0.5); display: flex; flex-direction: column; max-height: 90vh; max-width: 600px; width: 100%; margin: 0 auto;"
+    >
       <v-window v-model="addStep">
         <!-- Step 1: Type Selection -->
         <v-window-item :value="1">
-          <v-card-title class="pt-6 px-6 pb-4 d-flex align-center justify-space-between">
-            <div class="d-flex flex-column">
-              <span class="font-weight-bold" style="font-size: 1.25rem; color: var(--sidebar-text);">{{ t('add_item') }}</span>
-              <span class="text-caption mt-1" style="color: var(--sidebar-text-secondary); opacity: 0.8;">Selecione o tipo de item para adicionar à liturgia</span>
+          <div class="pa-6 pb-4 flex-shrink-0" style="background: rgba(0,0,0,0.02);">
+            <div class="d-flex align-center justify-space-between">
+              <div>
+                <h2 class="text-h5 font-weight-bold mb-0" style="color: var(--sidebar-text); line-height: 1.2;">
+                  {{ t('add_item') }}
+                </h2>
+                <div class="text-caption mt-1" style="color: var(--sidebar-text-secondary);">
+                  Selecione o tipo de item para adicionar à liturgia
+                </div>
+              </div>
+              <v-btn
+                icon
+                size="small"
+                variant="flat"
+                color="rgba(128,128,128,0.1)"
+                class="rounded-lg"
+                @click="closeMenu"
+              >
+                <v-icon size="20">
+                  mdi-close
+                </v-icon>
+              </v-btn>
             </div>
-            <v-btn
-              icon
-              size="small"
-              variant="flat"
-              color="rgba(128,128,128,0.1)"
-              class="rounded-lg"
-              @click="closeMenu"
-            >
-              <v-icon size="20">
-                mdi-close
-              </v-icon>
-            </v-btn>
-          </v-card-title>
+          </div>
           
-          <v-card-text class="px-6 pb-6 pt-0">
+          <div style="background: var(--main-bg, #f5f5f5); padding: 24px; flex: 1; min-height: 0; overflow-y: auto;">
             <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
               <v-hover v-for="type in itemTypes" :key="type.value" v-slot="{ isHovering, props }">
                 <div
                   v-bind="props"
-                  class="pa-3 d-flex align-center"
+                  class="pa-4 d-flex align-center"
                   :style="{ 
-                    borderRadius: '12px',
+                    borderRadius: '16px',
                     border: '1px solid',
-                    borderColor: isHovering ? 'rgba(var(--v-theme-primary), 0.3)' : 'rgba(var(--v-theme-on-surface), 0.03)',
-                    background: isHovering ? 'rgba(var(--v-theme-on-surface), 0.08)' : 'rgba(var(--v-theme-on-surface), 0.05)',
+                    borderColor: isHovering ? 'rgba(var(--v-theme-primary), 0.3)' : 'rgba(128,128,128,0.1)',
+                    background: isHovering ? 'rgba(var(--v-theme-primary), 0.02)' : 'var(--card-bg, #ffffff)',
+                    boxShadow: isHovering ? '0 8px 24px rgba(0,0,0,0.08)' : '0 2px 8px rgba(0,0,0,0.04)',
                     cursor: 'pointer',
-                    transition: 'all 0.2s ease'
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    transform: isHovering ? 'translateY(-2px)' : 'none'
                   }"
                   @click="openAddForm(type.value)"
                 >
                   <div
-                    class="mr-3 d-flex align-center justify-center flex-shrink-0"
+                    class="mr-4 d-flex align-center justify-center flex-shrink-0"
                     :style="{
-                      width: '36px', height: '36px', borderRadius: '10px',
-                      background: isHovering ? 'rgba(var(--v-theme-primary), 0.1)' : 'rgba(var(--v-theme-on-surface), 0.06)',
-                      transition: 'all 0.2s ease',
+                      width: '42px', height: '42px', borderRadius: '12px',
+                      background: isHovering ? 'rgba(var(--v-theme-primary), 0.1)' : 'rgba(var(--v-theme-on-surface), 0.04)',
+                      transition: 'all 0.3s ease',
                     }"
                   >
                     <v-icon :color="isHovering ? 'primary' : 'rgba(var(--v-theme-on-surface), 0.6)'" size="20">
@@ -69,43 +78,49 @@
                 </div>
               </v-hover>
             </div>
-          </v-card-text>
+          </div>
         </v-window-item>
 
         <!-- Step 2: Form -->
         <v-window-item :value="2">
-          <v-card-title class="pt-6 px-6 pb-4 d-flex align-center">
-            <v-btn
-              icon
-              size="small"
-              variant="flat"
-              color="rgba(128,128,128,0.1)"
-              class="rounded-lg mr-4"
-              @click="addStep = 1"
-            >
-              <v-icon size="20">
-                mdi-arrow-left
-              </v-icon>
-            </v-btn>
+          <div class="pa-6 pb-4 flex-shrink-0" style="background: rgba(0,0,0,0.02);">
             <div class="d-flex align-center">
-              <v-avatar
-                color="rgba(var(--v-theme-primary), 0.1)"
-                size="40"
-                rounded="lg"
-                class="mr-3"
+              <v-btn
+                icon
+                size="small"
+                variant="flat"
+                color="rgba(128,128,128,0.1)"
+                class="rounded-lg mr-4"
+                @click="addStep = 1"
               >
-                <v-icon color="primary" size="20">
-                  {{ getTypeIcon(addForm.type) }}
+                <v-icon size="20">
+                  mdi-arrow-left
                 </v-icon>
-              </v-avatar>
-              <div class="d-flex flex-column">
-                <span class="font-weight-bold" style="font-size: 1.15rem; color: var(--sidebar-text); line-height: 1.2;">{{ getTypeLabel(addForm.type) }}</span>
-                <span class="text-caption" style="color: var(--sidebar-text-secondary); opacity: 0.8; line-height: 1.2;">Configurar detalhes do item</span>
+              </v-btn>
+              <div class="d-flex align-center">
+                <v-avatar
+                  color="rgba(var(--v-theme-primary), 0.1)"
+                  size="40"
+                  rounded="lg"
+                  class="mr-3"
+                >
+                  <v-icon color="primary" size="20">
+                    {{ getTypeIcon(addForm.type) }}
+                  </v-icon>
+                </v-avatar>
+                <div>
+                  <h2 class="text-h5 font-weight-bold mb-0" style="color: var(--sidebar-text); line-height: 1.2;">
+                    {{ getTypeLabel(addForm.type) }}
+                  </h2>
+                  <div class="text-caption mt-1" style="color: var(--sidebar-text-secondary);">
+                    Configurar detalhes do item
+                  </div>
+                </div>
               </div>
             </div>
-          </v-card-title>
+          </div>
 
-          <v-card-text class="px-6 pb-2 pt-4">
+          <div style="background: var(--main-bg, #f5f5f5); padding: 24px; flex: 1; min-height: 0; overflow-y: auto;">
             <!-- Name -->
             <div class="mb-4">
               <div class="text-body-2 font-weight-medium mb-1" style="color: var(--sidebar-text-secondary); margin-left: 4px;">
@@ -498,82 +513,80 @@
                 :placeholder="t('fields.url_placeholder')"
               />
             </div>
-          </v-card-text>
-
-          <v-card-text v-if="addForm.type === 'scheduled_item'" class="px-6 pb-2 pt-0">
-            <div class="mb-4">
-              <div class="text-body-2 font-weight-medium mb-1" style="color: var(--sidebar-text-secondary); margin-left: 4px;">
-                Categoria Agendada
+            <div v-if="addForm.type === 'scheduled_item'" class="pb-2 pt-0">
+              <div class="mb-4">
+                <div class="text-body-2 font-weight-medium mb-1" style="color: var(--sidebar-text-secondary); margin-left: 4px;">
+                  Categoria Agendada
+                </div>
+                <v-autocomplete
+                  v-model="addForm.categoryId"
+                  :items="categories"
+                  item-title="name"
+                  item-value="id"
+                  variant="outlined"
+                  color="primary"
+                  rounded="lg"
+                  density="compact"
+                  hide-details
+                  class="modern-input-compact"
+                  placeholder="Selecione a categoria"
+                  :menu-props="{ transition: 'fade-transition' }"
+                  :list-props="{ style: 'background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border-color, rgba(150, 150, 150, 0.2)); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); padding: 8px 0;' }"
+                >
+                  <template #item="{ item, props }">
+                    <v-list-item 
+                      v-bind="props"
+                      :title="undefined"
+                      class="mx-2 rounded-lg mb-1"
+                      color="primary"
+                      style="min-height: 40px;"
+                    >
+                      <template #prepend>
+                        <v-icon :color="item.value === addForm.categoryId ? 'primary' : 'rgba(128,128,128,0.5)'" class="mr-3" size="20">
+                          {{ item.value === addForm.categoryId ? 'mdi-folder-open' : 'mdi-folder' }}
+                        </v-icon>
+                      </template>
+                      <template #title>
+                        <div class="d-flex align-center">
+                          <span class="text-body-2 font-weight-medium" :class="item.value === addForm.categoryId ? '' : 'opacity-70'">
+                            {{ item.title }}
+                          </span>
+                        </div>
+                      </template>
+                    </v-list-item>
+                  </template>
+                  <template #no-data>
+                    <v-list-item>
+                      <v-list-item-title class="text-caption text-center pt-2 pb-2" style="color: var(--sidebar-text-secondary);">
+                        Nenhuma categoria criada. Crie uma em Itens Agendados.
+                      </v-list-item-title>
+                    </v-list-item>
+                  </template>
+                </v-autocomplete>
               </div>
-              <v-autocomplete
-                v-model="addForm.categoryId"
-                :items="categories"
-                item-title="name"
-                item-value="id"
-                variant="outlined"
-                color="primary"
-                rounded="lg"
-                density="compact"
-                hide-details
-                class="modern-input-compact"
-                placeholder="Selecione a categoria"
-                :menu-props="{ transition: 'fade-transition' }"
-                :list-props="{ style: 'background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border-color, rgba(150, 150, 150, 0.2)); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); padding: 8px 0;' }"
-              >
-                <template #item="{ item, props }">
-                  <v-list-item 
-                    v-bind="props"
-                    :title="undefined"
-                    class="mx-2 rounded-lg mb-1"
-                    color="primary"
-                    style="min-height: 40px;"
-                  >
-                    <template #prepend>
-                      <v-icon :color="item.value === addForm.categoryId ? 'primary' : 'rgba(128,128,128,0.5)'" class="mr-3" size="20">
-                        {{ item.value === addForm.categoryId ? 'mdi-folder-open' : 'mdi-folder' }}
-                      </v-icon>
-                    </template>
-                    <template #title>
-                      <div class="d-flex align-center">
-                        <span class="text-body-2 font-weight-medium" :class="item.value === addForm.categoryId ? '' : 'opacity-70'">
-                          {{ item.title }}
-                        </span>
-                      </div>
-                    </template>
-                  </v-list-item>
-                </template>
-                <template #no-data>
-                  <v-list-item>
-                    <v-list-item-title class="text-caption text-center pt-2 pb-2" style="color: var(--sidebar-text-secondary);">
-                      Nenhuma categoria criada. Crie uma em Itens Agendados.
-                    </v-list-item-title>
-                  </v-list-item>
-                </template>
-              </v-autocomplete>
             </div>
-          </v-card-text>
-          <v-card-actions class="px-6 pb-6 pt-2 d-flex justify-end" style="gap: 12px;">
+          </div>
+          <div class="pa-4 d-flex justify-space-between align-center flex-shrink-0" style="background: rgba(0,0,0,0.02); border-top: 1px solid rgba(0,0,0,0.05);">
             <v-spacer />
-            <v-btn
-              color="error"
-              variant="tonal"
-              class="modern-alert-btn px-6"
-              height="40"
-              @click="closeMenu"
-            >
-              {{ t('actions.cancel') }}
-            </v-btn>
-            <v-btn
-              color="primary"
-              variant="flat"
-              class="modern-alert-btn px-6"
-              height="40"
-              :disabled="!isFormValid"
-              @click="saveItem"
-            >
-              {{ t('actions.save') }}
-            </v-btn>
-          </v-card-actions>
+            <div class="d-flex justify-end" style="gap: 12px;">
+              <v-btn
+                variant="tonal"
+                class="rounded-lg text-none px-6 font-weight-bold flex-shrink-0"
+                @click="closeMenu"
+              >
+                {{ t('actions.cancel') }}
+              </v-btn>
+              <v-btn
+                color="primary"
+                variant="flat"
+                :disabled="!isFormValid"
+                class="rounded-lg text-none px-6 font-weight-bold flex-shrink-0"
+                @click="saveItem"
+              >
+                {{ t('actions.save') }}
+              </v-btn>
+            </div>
+          </div>
         </v-window-item>
       </v-window>
     </v-card>
