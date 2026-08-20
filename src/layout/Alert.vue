@@ -70,6 +70,12 @@ body.sidebar-collapsed .modern-alert-dialog-wrapper {
   transform: translateX(0) !important;
 }
 
+@media (max-width: 1024px) {
+  body:not(.sidebar-collapsed) .modern-alert-dialog-wrapper {
+    transform: none !important;
+  }
+}
+
 .modern-alert-card {
   background: var(--card-bg) !important;
   border: 1px solid var(--glass-border) !important;

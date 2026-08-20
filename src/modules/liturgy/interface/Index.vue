@@ -816,4 +816,11 @@ body.sidebar-collapsed .liturgy-dialog-wrapper {
   transform: translateX(calc(var(--sidebar-collapsed-width, 72px) / 2));
   max-width: calc(100vw - var(--sidebar-collapsed-width, 72px) - 48px) !important;
 }
+
+@media (max-width: 1024px) {
+  body:not(.sidebar-collapsed) .liturgy-dialog-wrapper {
+    transform: none !important;
+    max-width: calc(100vw - 48px) !important;
+  }
+}
 </style>
