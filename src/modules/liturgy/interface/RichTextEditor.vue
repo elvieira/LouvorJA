@@ -72,8 +72,8 @@
                 <span class="font-weight-bold" style="font-size: 15px; line-height: 1;">A</span>
                 <div :style="{ backgroundColor: selectedColor, height: '4px', width: '16px', marginTop: '2px', borderRadius: '2px' }" />
               </div>
-              <v-tooltip activator="parent" location="top" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">
-                Cor do Texto
+              <v-tooltip activator="parent" location="top" open-delay="300">
+                {{ t('richtext.text_color') }}
               </v-tooltip>
             </v-btn>
           </template>
@@ -95,8 +95,8 @@
             <v-icon size="16">
               mdi-format-bold
             </v-icon>
-            <v-tooltip activator="parent" location="top" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">
-              Negrito
+            <v-tooltip activator="parent" location="top" open-delay="300">
+              {{ t('richtext.bold') }}
             </v-tooltip>
           </v-btn>
           <v-btn
@@ -109,8 +109,8 @@
             <v-icon size="16">
               mdi-format-italic
             </v-icon>
-            <v-tooltip activator="parent" location="top" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">
-              Itálico
+            <v-tooltip activator="parent" location="top" open-delay="300">
+              {{ t('richtext.italic') }}
             </v-tooltip>
           </v-btn>
           <v-btn
@@ -123,8 +123,8 @@
             <v-icon size="16">
               mdi-format-underline
             </v-icon>
-            <v-tooltip activator="parent" location="top" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">
-              Sublinhado
+            <v-tooltip activator="parent" location="top" open-delay="300">
+              {{ t('richtext.underline') }}
             </v-tooltip>
           </v-btn>
           <v-btn
@@ -137,8 +137,8 @@
             <v-icon size="16">
               mdi-format-strikethrough
             </v-icon>
-            <v-tooltip activator="parent" location="top" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">
-              Riscado
+            <v-tooltip activator="parent" location="top" open-delay="300">
+              {{ t('richtext.strikethrough') }}
             </v-tooltip>
           </v-btn>
         </div>
@@ -156,8 +156,8 @@
             <v-icon size="16">
               mdi-format-align-left
             </v-icon>
-            <v-tooltip activator="parent" location="top" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">
-              Alinhar à Esquerda
+            <v-tooltip activator="parent" location="top" open-delay="300">
+              {{ t('richtext.align_left') }}
             </v-tooltip>
           </v-btn>
           <v-btn
@@ -170,8 +170,8 @@
             <v-icon size="16">
               mdi-format-align-center
             </v-icon>
-            <v-tooltip activator="parent" location="top" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">
-              Centralizar
+            <v-tooltip activator="parent" location="top" open-delay="300">
+              {{ t('richtext.align_center') }}
             </v-tooltip>
           </v-btn>
           <v-btn
@@ -184,8 +184,8 @@
             <v-icon size="16">
               mdi-format-align-right
             </v-icon>
-            <v-tooltip activator="parent" location="top" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">
-              Alinhar à Direita
+            <v-tooltip activator="parent" location="top" open-delay="300">
+              {{ t('richtext.align_right') }}
             </v-tooltip>
           </v-btn>
         </div>
@@ -204,8 +204,8 @@
             <v-icon size="16">
               mdi-format-clear
             </v-icon>
-            <v-tooltip activator="parent" location="top" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">
-              Limpar Formatação
+            <v-tooltip activator="parent" location="top" open-delay="300">
+              {{ t('richtext.clear_format') }}
             </v-tooltip>
           </v-btn>
           <v-btn
@@ -249,14 +249,7 @@ export default defineComponent({
       selectedFont: "Arial" as string,
       fonts: ["Arial", "Verdana", "Helvetica", "Times New Roman", "Courier New", "Georgia", "Impact", "Comic Sans MS"] as string[],
       selectedSize: "3" as string,
-      sizes: [
-        { title: "Pequeno (1)", value: "1" },
-        { title: "Normal (3)", value: "3" },
-        { title: "Médio (4)", value: "4" },
-        { title: "Grande (5)", value: "5" },
-        { title: "Extra (6)", value: "6" },
-        { title: "Gigante (7)", value: "7" },
-      ] as {title: string, value: string}[],
+
       selectedColor: "#000000" as string,
       isUpdating: false as boolean,
       savedRange: null as Range | null,
@@ -270,6 +263,18 @@ export default defineComponent({
         justifyRight: false,
       } as Record<string, boolean>,
     };
+  },
+  computed: {
+    sizes(): {title: string, value: string}[] {
+      return [
+        { title: this.t("richtext.size_small"), value: "1" },
+        { title: this.t("richtext.size_normal"), value: "3" },
+        { title: this.t("richtext.size_medium"), value: "4" },
+        { title: this.t("richtext.size_large"), value: "5" },
+        { title: this.t("richtext.size_extra"), value: "6" },
+        { title: this.t("richtext.size_giant"), value: "7" },
+      ];
+    },
   },
   watch: {
     modelValue(val) {
@@ -288,6 +293,9 @@ export default defineComponent({
     document.removeEventListener("selectionchange", this.handleSelectionChange);
   },
   methods: {
+    t(text: string): string {
+      return this.$t(`modules.liturgy.${text}`);
+    },
     handleSelectionChange() {
       const selection = window.getSelection();
       if (selection && selection.rangeCount > 0) {

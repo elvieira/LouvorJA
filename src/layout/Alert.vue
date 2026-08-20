@@ -60,12 +60,10 @@ export default defineComponent({
 <style lang="scss">
 .modern-alert-dialog-wrapper {
   transform: translateX(calc(var(--sidebar-width, 280px) / 2));
-  max-width: calc(100vw - var(--sidebar-width, 280px) - 48px) !important;
 }
 
 body.sidebar-collapsed .modern-alert-dialog-wrapper {
   transform: translateX(calc(var(--sidebar-collapsed-width, 72px) / 2));
-  max-width: calc(100vw - var(--sidebar-collapsed-width, 72px) - 48px) !important;
 }
 
 .modern-alert-dialog-wrapper.center-alert {

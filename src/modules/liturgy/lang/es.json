@@ -58,6 +58,7 @@
   "actions": {
     "save": "Guardar",
     "cancel": "Cancelar",
+    "add": "Agregar",
     "edit": "Editar",
     "delete": "Eliminar",
     "duplicate": "Duplicar",
@@ -86,5 +87,64 @@
     "confirm_delete": "¿Desea eliminar esta liturgia personalizada?",
     "empty_list": "Ninguna Liturgia Personalizada",
     "empty_list_hint": "Cree una nueva liturgia personalizada en la barra superior para comenzar."
+  },
+  "templates": {
+    "title": "Plantillas",
+    "subtitle": "Cree modelos de programas para usar en su liturgia",
+    "my_templates": "Mis Plantillas",
+    "new": "Nuevo",
+    "name_placeholder": "Nombre...",
+    "empty_list": "Ninguna plantilla creada. Cree una para comenzar.",
+    "template_subtitle": "Agregue los elementos para formar el programa base",
+    "apply": "Aplicar a la Liturgia",
+    "no_selection_title": "Seleccione una Plantilla",
+    "no_selection_hint": "Elija una plantilla en el menú lateral o cree una nueva para comenzar a estructurar.",
+    "confirm_delete": "¿Está seguro de que desea eliminar esta plantilla?",
+    "confirm_apply": "¿Está seguro de que desea aplicar esta plantilla? Esto reemplazará todos los elementos actuales de esta liturgia. La acción es irreversible."
+  },
+  "scheduled_items": {
+    "title": "Elementos Programados",
+    "subtitle": "Administre las categorías y medios programados por fecha",
+    "categories": "Categorías",
+    "new_category": "Nueva",
+    "category_name_placeholder": "Nombre de la categoría...",
+    "no_categories": "Ninguna categoría creada.",
+    "manage_files": "Administre los archivos de esta categoría",
+    "no_files": "Ningún archivo programado",
+    "no_files_hint": "Haga clic en \"Agregar Archivo\" para insertar medios.",
+    "no_selection_title": "Seleccione una Categoría",
+    "no_selection_hint": "Cree o seleccione una categoría en el menú lateral para comenzar a programar medios.",
+    "confirm_delete_category": "¿Está seguro de que desea eliminar esta categoría?",
+    "date_exists_warning": "Ya existe un archivo programado para esta fecha. Por favor, elija una fecha diferente."
+  },
+  "richtext": {
+    "text_color": "Color del Texto",
+    "bold": "Negrita",
+    "italic": "Cursiva",
+    "underline": "Subrayado",
+    "strikethrough": "Tachado",
+    "align_left": "Alinear a la Izquierda",
+    "align_center": "Centrar",
+    "align_right": "Alinear a la Derecha",
+    "clear_format": "Borrar Formato",
+    "clear_all": "Borrar Todo",
+    "size_small": "Pequeño (1)",
+    "size_normal": "Normal (3)",
+    "size_medium": "Medio (4)",
+    "size_large": "Grande (5)",
+    "size_extra": "Extra (6)",
+    "size_giant": "Gigante (7)"
+  },
+  "liturgy_list": {
+    "placeholder": "A COMPLETAR",
+    "placeholder_hint": "Haga clic para editar y seleccionar el archivo",
+    "items_count": "{count} elementos"
+  },
+  "add_item_dialog": {
+    "step1_subtitle": "Seleccione el tipo de elemento para agregar a la liturgia",
+    "step2_subtitle": "Configurar detalles del elemento",
+    "highlight_color": "Color de resalte (opcional)",
+    "scheduled_category": "Categoría Programada",
+    "no_scheduled_categories": "Ninguna categoría creada. Cree una en Elementos Programados."
   }
 }

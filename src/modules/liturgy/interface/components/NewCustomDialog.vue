@@ -3,7 +3,7 @@
     :model-value="modelValue"
     max-width="420"
     :theme="$theme.primary()"
-    content-class="modern-alert-dialog-wrapper"
+    content-class="liturgy-dialog-wrapper"
     attach="true"
     @update:model-value="$emit('update:modelValue', $event)"
   >

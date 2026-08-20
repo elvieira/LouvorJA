@@ -17,9 +17,9 @@
             variant="tonal"
             color="#f6c32a"
             append-icon="mdi-view-dashboard-outline"
-            class="rounded-lg text-body-2 font-weight-medium no-hover"
-            :ripple="false"
+            class="rounded-lg text-body-2 font-weight-medium"
             style="text-transform: none; letter-spacing: normal;"
+            @click="showTemplatesDialog = true"
           >
             Templates
           </v-btn>
@@ -99,9 +99,12 @@
 
       <!-- Add Item Dialog -->
       <AddItemDialog 
+        v-if="showAddMenu"
         v-model="showAddMenu"
         :edit-data="editData"
         :categories="extraData.scheduled_items || []"
+        :is-template-mode="isTemplateMode"
+        :is-filling-placeholder="isFillingPlaceholder"
         @save="onSaveItem"
       />
 
@@ -118,6 +121,15 @@
         v-model:extra-data="extraData"
         @save="saveLiturgy"
       />
+      <TemplatesDialog
+        v-if="showTemplatesDialog"
+        v-model="showTemplatesDialog"
+        :extra-data="extraData"
+        @update-extra-data="updateExtraDataAndSave"
+        @add-item="openAddMenuForTemplate"
+        @edit-item="editTemplateItem"
+        @apply-template="applyTemplateToCurrentDay"
+      />
     </div>
   </v-slide-y-reverse-transition>
 </template>
@@ -133,6 +145,8 @@ import LiturgyNotes from "./components/LiturgyNotes.vue";
 import AddItemDialog from "./components/AddItemDialog.vue";
 import NewCustomDialog from "./components/NewCustomDialog.vue";
 import ScheduledItemsDialog from "./components/ScheduledItemsDialog.vue";
+import TemplatesDialog from "./components/TemplatesDialog.vue";
+import { v4 as uuidv4 } from "uuid";
 
 export default defineComponent({
   name: "LiturgyModuleIndex",
@@ -145,6 +159,7 @@ export default defineComponent({
     AddItemDialog,
     NewCustomDialog,
     ScheduledItemsDialog,
+    TemplatesDialog,
   },
   data: () => ({
     isCompactView: false as boolean,
@@ -173,6 +188,10 @@ export default defineComponent({
     insertingCategoryId: null as string | null,
     showNewCustomDialog: false as boolean,
     showScheduledItems: false as boolean,
+    showTemplatesDialog: false as boolean,
+    isTemplateMode: false as boolean,
+    isFillingPlaceholder: false as boolean,
+    templateTargetId: null as string | null,
     showNotes: false as boolean,
     resizeObserver: null as ResizeObserver | null,
   }),
@@ -239,6 +258,7 @@ export default defineComponent({
       } else {
         this.showAddMenu = false;
         this.showNewCustomDialog = false;
+        this.showTemplatesDialog = false;
         if (this.resizeObserver) {
           this.resizeObserver.disconnect();
           this.resizeObserver = null;
@@ -315,41 +335,116 @@ export default defineComponent({
       this.editData = null;
       this.editingIndex = null;
       this.insertingCategoryId = null;
+      this.isTemplateMode = false;
+      this.isFillingPlaceholder = false;
       this.showAddMenu = true;
     },
     openAddMenuWithCategory(categoryId: string) {
       this.editData = null;
       this.editingIndex = null;
       this.insertingCategoryId = categoryId;
+      this.isTemplateMode = false;
+      this.isFillingPlaceholder = false;
       this.showAddMenu = true;
     },
     editItem(index: number) {
       this.editingIndex = index;
       this.insertingCategoryId = null;
       this.editData = { ...this.currentItems[index] };
+      
+      // Se for um placeholder, abre em modo de preenchimento
+      const isPlaceholder = this.isItemPlaceholder(this.editData);
+      this.isTemplateMode = isPlaceholder;
+      this.isFillingPlaceholder = isPlaceholder;
+      
       this.showAddMenu = true;
     },
+    isItemPlaceholder(item: any): boolean {
+      if (item.type === "music" && !item.musicId) return true;
+      if (item.type === "verse" && (!item.verseBookId || !item.verseChapter)) return true;
+      if (item.type === "media" && !item.filePath) return true;
+      if (item.type === "file" && !item.filePath) return true;
+      if (item.type === "link" && !item.url?.trim()) return true;
+      if (item.type === "scheduled_item" && !item.categoryId) return true;
+      return false;
+    },
+    openAddMenuForTemplate(templateId: string) {
+      this.editData = null;
+      this.editingIndex = null;
+      this.insertingCategoryId = null;
+      this.isTemplateMode = true;
+      this.isFillingPlaceholder = false;
+      this.templateTargetId = templateId;
+      this.showAddMenu = true;
+    },
+    editTemplateItem({ item, index, templateId }: any) {
+      this.editData = { ...item };
+      this.editingIndex = index;
+      this.insertingCategoryId = null;
+      this.isTemplateMode = true;
+      this.isFillingPlaceholder = false;
+      this.templateTargetId = templateId;
+      this.showAddMenu = true;
+    },
+    updateExtraDataAndSave(newData: any) {
+      this.extraData = newData;
+      this.saveLiturgy();
+    },
+    applyTemplateToCurrentDay(template: any) {
+      this.$alert.yesno({
+        text: this.t("templates.confirm_apply"),
+        translate: false,
+      }, (res: string) => {
+        if (res === "yes") {
+          const newItems = template.items.map((i: any) => {
+            const newItem = JSON.parse(JSON.stringify(i));
+            newItem.id = uuidv4();
+            return newItem;
+          });
+          this.currentItems = newItems;
+          this.saveLiturgy();
+        }
+      });
+    },
     onSaveItem(item: any) {
-      if (this.editingIndex !== null) {
-        this.currentItems.splice(this.editingIndex, 1, item);
-      } else if (this.insertingCategoryId) {
-        const catIdx = this.currentItems.findIndex((i: any) => i.id === this.insertingCategoryId);
-        if (catIdx !== -1) {
-          let insertIdx = catIdx + 1;
-          while (insertIdx < this.currentItems.length && this.currentItems[insertIdx].type !== "category") {
-            insertIdx++;
+      if (this.isTemplateMode && this.templateTargetId && !this.isFillingPlaceholder) {
+        // Save into template
+        if (!this.extraData.templates) this.extraData.templates = [];
+        const tIndex = this.extraData.templates.findIndex((t: any) => t.id === this.templateTargetId);
+        if (tIndex !== -1) {
+          const t = this.extraData.templates[tIndex];
+          if (this.editingIndex !== null) {
+            t.items.splice(this.editingIndex, 1, item);
+          } else {
+            t.items.push(item);
           }
-          this.currentItems.splice(insertIdx, 0, item);
+          this.saveLiturgy();
+        }
+      } else {
+        // Save into current liturgy
+        if (this.editingIndex !== null) {
+          this.currentItems.splice(this.editingIndex, 1, item);
+        } else if (this.insertingCategoryId) {
+          const catIdx = this.currentItems.findIndex((i: any) => i.id === this.insertingCategoryId);
+          if (catIdx !== -1) {
+            let insertIdx = catIdx + 1;
+            while (insertIdx < this.currentItems.length && this.currentItems[insertIdx].type !== "category") {
+              insertIdx++;
+            }
+            this.currentItems.splice(insertIdx, 0, item);
+          } else {
+            this.currentItems.push(item);
+          }
         } else {
           this.currentItems.push(item);
         }
-      } else {
-        this.currentItems.push(item);
       }
       this.showAddMenu = false;
       this.editData = null;
       this.editingIndex = null;
-      this.insertingCategoryId = null;
+      this.isTemplateMode = false;
+      this.isFillingPlaceholder = false;
+      this.templateTargetId = null;
       this.saveLiturgy();
     },
     duplicateItem(index: number) {
@@ -413,6 +508,11 @@ export default defineComponent({
     selectItem(index: number) {
       this.selectedItemIndex = index;
       const item = this.currentItems[index];
+
+      if (this.isItemPlaceholder(item)) {
+        this.editItem(index);
+        return;
+      }
 
       let changed = false;
       if (!item.done) {
@@ -703,5 +803,17 @@ export default defineComponent({
 
 .no-hover :deep(.v-btn__overlay) {
   display: none !important;
+}
+</style>
+
+<style lang="scss">
+.liturgy-dialog-wrapper {
+  transform: translateX(calc(var(--sidebar-width, 280px) / 2));
+  max-width: calc(100vw - var(--sidebar-width, 280px) - 48px) !important;
+}
+
+body.sidebar-collapsed .liturgy-dialog-wrapper {
+  transform: translateX(calc(var(--sidebar-collapsed-width, 72px) / 2));
+  max-width: calc(100vw - var(--sidebar-collapsed-width, 72px) - 48px) !important;
 }
 </style>

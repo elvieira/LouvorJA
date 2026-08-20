@@ -58,6 +58,7 @@
   "actions": {
     "save": "Salvar",
     "cancel": "Cancelar",
+    "add": "Adicionar",
     "edit": "Editar",
     "delete": "Remover",
     "duplicate": "Duplicar",
@@ -86,5 +87,64 @@
     "confirm_delete": "Deseja remover esta liturgia avulsa?",
     "empty_list": "Nenhuma Liturgia Avulsa",
     "empty_list_hint": "Crie uma nova liturgia avulsa na barra superior para começar."
+  },
+  "templates": {
+    "title": "Templates",
+    "subtitle": "Crie modelos de programas para usar na sua liturgia",
+    "my_templates": "Meus Templates",
+    "new": "Novo",
+    "name_placeholder": "Nome...",
+    "empty_list": "Nenhum template criado. Crie um para começar.",
+    "template_subtitle": "Adicione os itens para formar o programa base",
+    "apply": "Aplicar na Liturgia",
+    "no_selection_title": "Selecione um Template",
+    "no_selection_hint": "Escolha um template no menu lateral ou crie um novo para começar a estruturar.",
+    "confirm_delete": "Tem certeza que deseja excluir este template?",
+    "confirm_apply": "Tem certeza que deseja aplicar este template? Isso substituirá todos os itens atuais desta liturgia. A ação é irreversível."
+  },
+  "scheduled_items": {
+    "title": "Itens Agendados",
+    "subtitle": "Gerencie as categorias e mídias agendadas por data",
+    "categories": "Categorias",
+    "new_category": "Nova",
+    "category_name_placeholder": "Nome da categoria...",
+    "no_categories": "Nenhuma categoria criada.",
+    "manage_files": "Gerencie os arquivos desta categoria",
+    "no_files": "Nenhum arquivo agendado",
+    "no_files_hint": "Clique em \"Adicionar Arquivo\" para inserir mídias.",
+    "no_selection_title": "Selecione uma Categoria",
+    "no_selection_hint": "Crie ou selecione uma categoria no menu lateral para começar a agendar mídias.",
+    "confirm_delete_category": "Tem certeza que deseja remover esta categoria?",
+    "date_exists_warning": "Já existe um arquivo agendado para esta data. Por favor, escolha uma data diferente."
+  },
+  "richtext": {
+    "text_color": "Cor do Texto",
+    "bold": "Negrito",
+    "italic": "Itálico",
+    "underline": "Sublinhado",
+    "strikethrough": "Riscado",
+    "align_left": "Alinhar à Esquerda",
+    "align_center": "Centralizar",
+    "align_right": "Alinhar à Direita",
+    "clear_format": "Limpar Formatação",
+    "clear_all": "Apagar Tudo",
+    "size_small": "Pequeno (1)",
+    "size_normal": "Normal (3)",
+    "size_medium": "Médio (4)",
+    "size_large": "Grande (5)",
+    "size_extra": "Extra (6)",
+    "size_giant": "Gigante (7)"
+  },
+  "liturgy_list": {
+    "placeholder": "A PREENCHER",
+    "placeholder_hint": "Clique para editar e selecionar o arquivo",
+    "items_count": "{count} itens"
+  },
+  "add_item_dialog": {
+    "step1_subtitle": "Selecione o tipo de item para adicionar à liturgia",
+    "step2_subtitle": "Configurar detalhes do item",
+    "highlight_color": "Cor de destaque (opcional)",
+    "scheduled_category": "Categoria Agendada",
+    "no_scheduled_categories": "Nenhuma categoria criada. Crie uma em Itens Agendados."
   }
 }

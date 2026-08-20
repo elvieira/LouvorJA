@@ -52,13 +52,14 @@
         ghost-class="liturgy-ghost"
         animation="200"
         class="liturgy-timeline-container"
+        :class="{ 'no-timeline': hideTimeline }"
         @update:model-value="$emit('update:items', $event)"
         @end="$emit('drag-end')"
       >
         <template #item="{ element, index }">
           <div v-show="element.type === 'category' || !isItemCollapsed(index)" class="timeline-row">
             <!-- Timeline Node (Dot & Line) -->
-            <div class="timeline-node-wrapper">
+            <div v-if="!hideTimeline" class="timeline-node-wrapper">
               <div class="timeline-node" :class="{ 'timeline-node-category': element.type === 'category' }">
                 <div v-if="element.type !== 'category'" class="timeline-node-inner" :style="{ borderColor: `rgb(var(--v-theme-${getTypeColor(element.type)}))` }" />
                 <v-icon v-else size="12" color="white">
@@ -163,7 +164,10 @@
               <div
                 v-else
                 class="liturgy-item-card"
-                :class="{ 'liturgy-item-active': selectedItemIndex === index }"
+                :class="{ 
+                  'liturgy-item-active': selectedItemIndex === index,
+                  'liturgy-item-placeholder': isItemPlaceholder(element)
+                }"
                 :style="element.color ? `border-left: 3px solid ${element.color}; padding-left: 13px !important;` : ''"
                 @click="$emit('select-item', index)"
               >
@@ -192,11 +196,26 @@
                   </div>
 
                   <div class="flex-grow-1 d-flex flex-column" style="min-width: 0;" :style="element.done ? 'opacity: 0.5; text-decoration: line-through;' : ''">
-                    <div class="font-weight-medium" style="font-size: 0.95rem; color: rgba(var(--v-theme-on-surface), 0.9); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                      {{ element.name ? element.name.replace(/^undefined\s*-\s*/, '') : '' }}
+                    <div class="d-flex align-center">
+                      <div class="font-weight-medium" style="font-size: 0.95rem; color: rgba(var(--v-theme-on-surface), 0.9); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                        {{ element.name ? element.name.replace(/^undefined\s*-\s*/, '') : '' }}
+                      </div>
+                      <v-chip
+                        v-if="isItemPlaceholder(element)"
+                        size="x-small"
+                        color="warning"
+                        variant="flat"
+                        class="ml-2 font-weight-bold px-2"
+                        style="height: 18px; font-size: 0.65rem;"
+                      >
+                        {{ t('liturgy_list.placeholder') }}
+                      </v-chip>
                     </div>
-                    <div v-if="element.subtitle" class="text-caption" style="color: rgba(var(--v-theme-on-surface), 0.5); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                    <div v-if="element.subtitle && !isItemPlaceholder(element)" class="text-caption" style="color: rgba(var(--v-theme-on-surface), 0.5); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                       {{ element.subtitle }}
+                    </div>
+                    <div v-else-if="isItemPlaceholder(element)" class="text-caption font-weight-medium text-warning" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                      {{ t('liturgy_list.placeholder_hint') }}
                     </div>
                   </div>
 
@@ -253,6 +272,7 @@
 
     <!-- Half-moon Notes Toggle Button -->
     <div
+      v-if="hasNotesToggle"
       class="notes-toggle-btn"
       :class="{ 'is-active': showNotes }"
       :title="showNotes ? 'Fechar Anotações' : 'Abrir Anotações'"
@@ -295,6 +315,14 @@ export default defineComponent({
       default: false,
     },
     showNotes: {
+      type: Boolean,
+      default: false,
+    },
+    hasNotesToggle: {
+      type: Boolean,
+      default: true,
+    },
+    hideTimeline: {
       type: Boolean,
       default: false,
     },
@@ -394,7 +422,17 @@ export default defineComponent({
       }
     },
     isExecutable(item: any): boolean {
+      if (this.isItemPlaceholder(item)) return false;
       return ["music", "verse", "link", "media", "file", "scheduled_item"].includes(item.type);
+    },
+    isItemPlaceholder(item: any): boolean {
+      if (item.type === "music" && !item.musicId) return true;
+      if (item.type === "verse" && (!item.verseBookId || !item.verseChapter)) return true;
+      if (item.type === "media" && !item.filePath) return true;
+      if (item.type === "file" && !item.filePath) return true;
+      if (item.type === "link" && !item.url?.trim()) return true;
+      if (item.type === "scheduled_item" && !item.categoryId) return true;
+      return false;
     },
     getExecuteIcon(type: string): string {
       if ((type === "media" || type === "scheduled_item") && this.useInternalPlayer) {
@@ -441,6 +479,13 @@ export default defineComponent({
     width: 1px;
     background: rgba(var(--v-theme-on-surface), 0.1);
     z-index: 0;
+  }
+
+  &.no-timeline {
+    padding-left: 8px;
+    &::before {
+      display: none;
+    }
   }
 }
 
@@ -610,5 +655,14 @@ export default defineComponent({
 .notes-toggle-btn:hover .notes-toggle-text {
   opacity: 1;
   transition-delay: 0.1s;
+}
+
+.liturgy-item-placeholder {
+  border: 1px dashed rgba(var(--v-theme-warning), 0.5) !important;
+  background: rgba(var(--v-theme-warning), 0.03) !important;
+}
+.liturgy-item-placeholder:hover {
+  background: rgba(var(--v-theme-warning), 0.08) !important;
+  border-color: rgba(var(--v-theme-warning), 0.8) !important;
 }
 </style>

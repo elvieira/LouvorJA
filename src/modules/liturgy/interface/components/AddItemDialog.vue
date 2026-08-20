@@ -2,7 +2,7 @@
   <v-dialog
     :model-value="modelValue"
     :theme="$theme.primary()"
-    content-class="modern-alert-dialog-wrapper"
+    content-class="liturgy-dialog-wrapper"
     @update:model-value="updateModelValue"
   >
     <v-card 
@@ -19,7 +19,7 @@
                   {{ t('add_item') }}
                 </h2>
                 <div class="text-caption mt-1" style="color: var(--sidebar-text-secondary);">
-                  Selecione o tipo de item para adicionar à liturgia
+                  {{ t('add_item_dialog.step1_subtitle') }}
                 </div>
               </div>
               <v-btn
@@ -86,6 +86,7 @@
           <div class="pa-6 pb-4 flex-shrink-0" style="background: rgba(0,0,0,0.02);">
             <div class="d-flex align-center">
               <v-btn
+                v-if="!editData && !isFillingPlaceholder"
                 icon
                 size="small"
                 variant="flat"
@@ -113,7 +114,7 @@
                     {{ getTypeLabel(addForm.type) }}
                   </h2>
                   <div class="text-caption mt-1" style="color: var(--sidebar-text-secondary);">
-                    Configurar detalhes do item
+                    {{ t('add_item_dialog.step2_subtitle') }}
                   </div>
                 </div>
               </div>
@@ -142,7 +143,7 @@
             <!-- Color Selector -->
             <div class="mb-4">
               <div class="text-body-2 font-weight-medium mb-2" style="color: var(--sidebar-text-secondary); margin-left: 4px;">
-                Cor de destaque (opcional)
+                {{ t('add_item_dialog.highlight_color') }}
               </div>
               <div class="d-flex align-center" style="flex-wrap: wrap; gap: 6px;">
                 <v-btn
@@ -516,7 +517,7 @@
             <div v-if="addForm.type === 'scheduled_item'" class="pb-2 pt-0">
               <div class="mb-4">
                 <div class="text-body-2 font-weight-medium mb-1" style="color: var(--sidebar-text-secondary); margin-left: 4px;">
-                  Categoria Agendada
+                  {{ t('add_item_dialog.scheduled_category') }}
                 </div>
                 <v-autocomplete
                   v-model="addForm.categoryId"
@@ -558,7 +559,7 @@
                   <template #no-data>
                     <v-list-item>
                       <v-list-item-title class="text-caption text-center pt-2 pb-2" style="color: var(--sidebar-text-secondary);">
-                        Nenhuma categoria criada. Crie uma em Itens Agendados.
+                        {{ t('add_item_dialog.no_scheduled_categories') }}
                       </v-list-item-title>
                     </v-list-item>
                   </template>
@@ -611,6 +612,14 @@ export default defineComponent({
       type: Array as PropType<any[]>,
       default: () => [],
     },
+    isTemplateMode: {
+      type: Boolean,
+      default: false,
+    },
+    isFillingPlaceholder: {
+      type: Boolean,
+      default: false,
+    },
   },
   emits: ["update:modelValue", "save"],
   data: () => ({
@@ -649,7 +658,12 @@ export default defineComponent({
       ];
     },
     isFormValid(): boolean {
+      if (this.isTemplateMode && !this.isFillingPlaceholder) {
+        return true; // Se for modo template, tudo é opcional (o nome será preenchido depois se vazio)
+      }
+
       if (!this.addForm.name.trim()) return false;
+
       if (this.addForm.type === "music" && !this.addForm.musicId) return false;
       if (this.addForm.type === "verse" && (!this.addForm.verseBookId || !this.addForm.verseChapter)) return false;
       if (this.addForm.type === "media" && !this.addForm.filePath) return false;
@@ -725,20 +739,26 @@ export default defineComponent({
   watch: {
     modelValue(val) {
       if (val) {
-        if (!this.dataLoaded) {
-          this.loadData();
-        }
-        if (this.editData) {
-          this.addForm = { ...this.editData };
-          this.addStep = 2;
-        } else {
-          this.addStep = 1;
-          this.resetForm();
-        }
+        this.initForm();
       }
     },
   },
+  mounted() {
+    this.initForm();
+  },
   methods: {
+    initForm() {
+      if (!this.dataLoaded) {
+        this.loadData();
+      }
+      if (this.editData) {
+        this.addForm = { ...this.editData };
+        this.addStep = 2;
+      } else {
+        this.addStep = 1;
+        this.resetForm();
+      }
+    },
     t(text: string): string {
       return this.$t(`modules.liturgy.${text}`);
     },
@@ -893,6 +913,10 @@ export default defineComponent({
     },
     async saveItem() {
       if (!this.isFormValid) return;
+
+      if (this.isTemplateMode && !this.isFillingPlaceholder && !this.addForm.name.trim()) {
+        this.addForm.name = this.getTypeLabel(this.addForm.type);
+      }
 
       if (this.addForm.type === "verse" && this.addForm.verseNumbers) {
         try {

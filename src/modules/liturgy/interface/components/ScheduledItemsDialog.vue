@@ -2,7 +2,7 @@
   <v-dialog
     :model-value="modelValue"
     persistent
-    content-class="modern-alert-dialog-wrapper"
+    content-class="liturgy-dialog-wrapper"
     @update:model-value="$emit('update:modelValue', $event)"
   >
     <v-card 
@@ -16,7 +16,7 @@
               mdi-calendar-clock
             </v-icon>
             <h2 class="text-h5 font-weight-bold mb-0" style="color: var(--sidebar-text);">
-              Itens Agendados
+              {{ t('scheduled_items.title') }}
             </h2>
           </div>
           <v-btn
@@ -33,7 +33,7 @@
           </v-btn>
         </div>
         <p class="text-caption mb-0" style="color: var(--sidebar-text-secondary); margin-left: 44px;">
-          Gerencie as categorias e mídias agendadas por data
+          {{ t('scheduled_items.subtitle') }}
         </p>
       </div>
 
@@ -83,7 +83,7 @@
                 class="rounded-lg text-none px-3 font-weight-bold ml-1"
                 @click="saveNewCategory"
               >
-                Salvar
+                {{ t('actions.save') }}
               </v-btn>
             </div>
 
@@ -122,7 +122,7 @@
               </div>
             </template>
             <div v-else-if="!showNewCategoryForm" class="pa-4 text-center text-caption" style="color: var(--sidebar-text-secondary);">
-              Nenhuma categoria criada.
+              {{ t('scheduled_items.no_categories') }}
             </div>
           </v-list>
         </div>
@@ -147,7 +147,7 @@
                     {{ selectedCategory.name }}
                   </h3>
                   <div class="text-caption text-truncate" style="color: var(--sidebar-text-secondary);">
-                    Gerencie os arquivos desta categoria
+                    {{ t('scheduled_items.manage_files') }}
                   </div>
                 </div>
               </div>
@@ -158,7 +158,7 @@
                 class="rounded-lg text-none px-6 font-weight-bold"
                 @click="selectFile"
               >
-                Adicionar
+                {{ t('actions.add') }}
               </v-btn>
             </div>
 
@@ -217,10 +217,10 @@
                   mdi-file-hidden
                 </v-icon>
                 <div class="text-body-2 mb-1" style="color: var(--sidebar-text);">
-                  Nenhum arquivo agendado
+                  {{ t('scheduled_items.no_files') }}
                 </div>
                 <div class="text-caption" style="color: var(--sidebar-text-secondary);">
-                  Clique em "Adicionar Arquivo" para inserir mídias.
+                  {{ t('scheduled_items.no_files_hint') }}
                 </div>
               </div>
             </div>
@@ -231,10 +231,10 @@
                 mdi-calendar-blank
               </v-icon>
               <h3 class="text-h6 font-weight-bold" style="color: var(--sidebar-text);">
-                Selecione uma Categoria
+                {{ t('scheduled_items.no_selection_title') }}
               </h3>
               <p class="text-body-2 text-center mt-2" style="color: var(--sidebar-text-secondary); max-width: 250px;">
-                Crie ou selecione uma categoria no menu lateral para começar a agendar mídias.
+                {{ t('scheduled_items.no_selection_hint') }}
               </p>
             </div>
           </template>
@@ -333,6 +333,9 @@ export default defineComponent({
     },
   },
   methods: {
+    t(text: string): string {
+      return this.$t(`modules.liturgy.${text}`);
+    },
     close() {
       this.$emit("update:modelValue", false);
     },
@@ -360,7 +363,7 @@ export default defineComponent({
     },
     deleteCategory(id: string) {
       this.$alert.yesno(
-        { text: "Tem certeza que deseja remover esta categoria?", translate: false },
+        { text: this.t("scheduled_items.confirm_delete_category"), translate: false },
         (resp: string) => {
           if (resp === "yes") {
             const updated = this.categories.filter(c => c.id !== id);
@@ -435,7 +438,7 @@ export default defineComponent({
       
       const isDateTaken = this.selectedCategory.items?.some(i => i.date === newDate && i.id !== itemId);
       if (isDateTaken) {
-        $snackbar.show({ text: "Já existe um arquivo agendado para esta data. Por favor, escolha uma data diferente.", color: "warning" });
+        $snackbar.show({ text: this.t("scheduled_items.date_exists_warning"), color: "warning" });
         if (target) {
           const currentItem = this.selectedCategory.items?.find(i => i.id === itemId);
           if (currentItem) {
