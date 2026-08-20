@@ -146,7 +146,7 @@ import AddItemDialog from "./components/AddItemDialog.vue";
 import NewCustomDialog from "./components/NewCustomDialog.vue";
 import ScheduledItemsDialog from "./components/ScheduledItemsDialog.vue";
 import TemplatesDialog from "./components/TemplatesDialog.vue";
-import { v4 as uuidv4 } from "uuid";
+
 
 export default defineComponent({
   name: "LiturgyModuleIndex",
@@ -398,7 +398,7 @@ export default defineComponent({
         if (res === "yes") {
           const newItems = template.items.map((i: any) => {
             const newItem = JSON.parse(JSON.stringify(i));
-            newItem.id = uuidv4();
+            newItem.id = crypto.randomUUID();
             return newItem;
           });
           this.currentItems = newItems;

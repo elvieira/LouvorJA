@@ -207,7 +207,7 @@
 <script lang="ts">
 import { defineComponent, PropType } from "vue";
 import LiturgyList from "./LiturgyList.vue";
-import { v4 as uuidv4 } from "uuid";
+
 
 interface Template {
   id: string;
@@ -292,7 +292,7 @@ export default defineComponent({
       }
       
       const newTemplate: Template = {
-        id: uuidv4(),
+        id: crypto.randomUUID(),
         name,
         items: [],
       };
@@ -328,7 +328,7 @@ export default defineComponent({
       const item = this.selectedTemplate.items[index];
       if (!item) return;
       const duplicated = JSON.parse(JSON.stringify(item));
-      duplicated.id = uuidv4();
+      duplicated.id = crypto.randomUUID();
       
       const newItems = [...this.selectedTemplate.items];
       newItems.splice(index + 1, 0, duplicated);
