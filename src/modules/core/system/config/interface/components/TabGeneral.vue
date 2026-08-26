@@ -224,9 +224,8 @@ export default defineComponent({
     if (this.$userdata.get("hide_undownloaded") !== undefined) {
       this.hide_undownloaded = this.$userdata.get("hide_undownloaded");
     }
-    if (this.$userdata.get("primary_hymnal") !== undefined) {
-      this.primary_hymnal = this.$userdata.get("primary_hymnal");
-    }
+    
+    this.primary_hymnal = this.$userdata.get("primary_hymnal") || "none";
 
     
     if (this.isDesktop && (window as any).electronAPI.getLoginItemSettings) {

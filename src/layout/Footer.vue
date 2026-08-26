@@ -5,7 +5,7 @@
   <v-footer
     v-else-if="isMediaMinimized"
     id="footer-bar"
-    class="pa-0"
+    class="pa-0 d-flex flex-column"
     color="primary"
   >
     <LPlayer location="footer" />

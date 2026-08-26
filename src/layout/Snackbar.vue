@@ -17,7 +17,7 @@
         width="2"
         class="mr-3"
       />
-      <span class="text-body-2 font-weight-medium text-white">{{ snackbar.text }}</span>
+      <span class="text-body-2 font-weight-medium text-white">{{ $t(snackbar.text) }}</span>
     </div>
     <template #actions>
       <v-btn

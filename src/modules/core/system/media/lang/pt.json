@@ -1,7 +1,9 @@
 {
     "alerts": {
         "not_loaded": "Ocorreu um erro ao carregar este áudio!",
-        "close": "Deseja fechar essa música?"
+        "close": "Deseja fechar essa música?",
+        "no_instrumental_in_album": "Nenhuma música nesta coletânea possui playback.",
+        "some_instrumental_omitted": "Algumas músicas sem playback foram ignoradas."
     },
     "general": {
         "sung": "Cantado",
@@ -15,5 +17,15 @@
         "lazy_load_tooltip": "Se desmarcado, o áudio só será executado depois de totalmente carregado na memória.",
         "fade_audio": "Efeito de Fade no áudio",
         "fade_audio_tooltip": "Se marcado, o áudio irá reduzir ou aumentar o volume suavemente ao pausar ou dar play."
+    },
+    "queue": {
+        "title": "Fila de Reprodução",
+        "empty": "A fila está vazia",
+        "clear": "Limpar fila",
+        "added": "Música adicionada à fila",
+        "add_to_queue": "Adicionar à fila",
+        "now_playing": "Tocando agora",
+        "next_in_queue": "Próximas na fila",
+        "choose_version": "Escolha a versão"
     }
 }

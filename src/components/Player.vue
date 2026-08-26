@@ -184,6 +184,40 @@
 
 
       <v-btn
+        v-if="location === 'footer'"
+        variant="text"
+        size="small"
+        icon
+        :color="isQueueOpen ? 'var(--accent-blue)' : defaultTextColor"
+        class="mx-1 position-relative"
+        @click="toggleQueue"
+      >
+        <v-badge
+          v-if="queueCount > 0"
+          :content="queueCount"
+          color="error"
+          size="small"
+          floating
+          offset-x="2"
+          offset-y="2"
+        >
+          <v-icon>mdi-playlist-music</v-icon>
+        </v-badge>
+        <v-icon v-else>
+          mdi-playlist-music
+        </v-icon>
+        
+        <v-tooltip
+          activator="parent"
+          location="top"
+          open-delay="300"
+          content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+        >
+          Fila de Reprodução
+        </v-tooltip>
+      </v-btn>
+
+      <v-btn
         v-if="location === 'footer' && !showMiniPlayer"
         variant="text"
         size="small"
@@ -283,6 +317,10 @@
       </v-btn>
     </div>
   </div>
+  
+  <v-expand-transition>
+    <QueuePanel v-if="location === 'footer'" />
+  </v-expand-transition>
 </template>
 
 <script setup lang="ts">
@@ -290,6 +328,7 @@ import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import { useTheme } from "vuetify";
 import { useMedia, useAppData, useModules } from "@/composables/useHelpers";
 import { useI18n } from "vue-i18n";
+import QueuePanel from "@/components/QueuePanel.vue";
 
 defineOptions({ name: "MediaPlayer" });
 
@@ -334,6 +373,8 @@ const showMiniPlayer = computed(() => appdata.get("modules.media.show_mini_playe
 const has_instrumental_music = computed(() => !!media.value.data.url_instrumental_music);
 
 const isPlaylistOpen = computed(() => appdata.get("modules.media.show_playlist") || false);
+const isQueueOpen = computed(() => appdata.get("modules.media.show_queue") || false);
+const queueCount = computed(() => (appdata.get("modules.media.queue")?.items || []).length);
 
 const menu_modes = computed(() => [
   {
@@ -417,6 +458,10 @@ const changeVolume = () => mediaHelper.setVolume(media.value.config.volume);
 const togglePlaylist = () => {
   const currentState = appdata.get("modules.media.show_playlist") || false;
   appdata.set("modules.media.show_playlist", !currentState);
+};
+const toggleQueue = () => {
+  const currentState = appdata.get("modules.media.show_queue") || false;
+  appdata.set("modules.media.show_queue", !currentState);
 };
 
 onMounted(() => {
