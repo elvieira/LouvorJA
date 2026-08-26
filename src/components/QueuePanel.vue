@@ -2,8 +2,8 @@
   <v-expand-transition>
     <div
       v-if="isOpen"
-      class="queue-panel-container d-flex flex-column"
-      style="height: calc(100vh - 64px);"
+      class="queue-panel-container d-flex flex-column position-relative"
+      :style="{ height: queueHeight, '--queue-height': queueHeight }"
       :class="!isDark ? 'bg-light' : 'bg-dark'"
     >
       <div class="queue-panel-header d-flex align-center px-6 pt-4 pb-2 flex-shrink-0">
@@ -105,6 +105,14 @@
           </template>
         </draggable>
       </div>
+
+      <v-btn
+        icon="mdi-chevron-down"
+        color="primary"
+        variant="tonal"
+        class="queue-close-fab opacity-80"
+        @click="closeQueue"
+      />
     </div>
   </v-expand-transition>
 </template>
@@ -120,6 +128,9 @@ const appdata = useAppData();
 const media = useMedia();
 
 const isDark = computed(() => theme.name.value === "dark");
+const isElectron = computed(() => !!(window as any).electronAPI);
+
+const queueHeight = computed(() => isElectron.value ? "calc(100vh - 96px)" : "calc(100vh - 64px)");
 
 const isOpen = computed(() => appdata.get("modules.media.show_queue") === true);
 
@@ -145,6 +156,10 @@ const onDragEnd = (event: any) => {
   if (event.oldIndex !== undefined && event.newIndex !== undefined && event.oldIndex !== event.newIndex) {
     media.reorderQueue(event.oldIndex, event.newIndex);
   }
+};
+
+const closeQueue = () => {
+  appdata.set("modules.media.show_queue", false);
 };
 
 const clearQueue = () => {
@@ -207,6 +222,18 @@ const playFromQueue = (index: number) => {
 
 .queue-item:hover .drag-handle {
   opacity: 0.8 !important;
+}
+
+.queue-close-fab {
+  position: absolute;
+  top: calc(var(--queue-height) - 72px);
+  right: 16px;
+  z-index: 1000;
+  transition: opacity 0.2s;
+}
+
+.queue-close-fab:hover {
+  opacity: 1 !important;
 }
 
 .queue-cover {

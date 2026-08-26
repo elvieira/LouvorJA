@@ -193,9 +193,9 @@
         @click="toggleQueue"
       >
         <v-badge
-          v-if="queueCount > 0"
+          v-if="queueCount > 1"
           :content="queueCount"
-          color="error"
+          color="grey-darken-2"
           size="small"
           floating
           offset-x="2"

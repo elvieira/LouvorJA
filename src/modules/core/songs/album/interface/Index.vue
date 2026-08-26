@@ -47,8 +47,8 @@
               <v-btn
                 v-bind="menuProps"
                 color="primary"
-                variant="flat"
-                class="ml-6 text-none rounded-pill"
+                variant="tonal"
+                class="ml-6 text-none rounded"
                 prepend-icon="mdi-play"
               >
                 Reproduzir Todas

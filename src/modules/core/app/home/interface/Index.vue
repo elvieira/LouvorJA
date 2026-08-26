@@ -40,15 +40,16 @@
                   />
                 </template>
                 <v-card
-                  :class="isDark ? 'modern-glass-menu elevation-0' : 'elevation-3'"
-                  :color="isDark ? '' : '#ffffff'"
+                  class="elevation-3"
+                  :color="isDark ? 'var(--card-bg)' : '#ffffff'"
+                  :theme="isDark ? 'dark' : 'light'"
                   rounded="lg"
                   min-width="220"
                   style="overflow: hidden; border: 1px solid rgba(150, 150, 150, 0.1);"
                 >
                   <v-list
                     class="py-2"
-                    :bg-color="isDark ? 'transparent' : '#ffffff'"
+                    bg-color="transparent"
                   >
                     <div
                       class="text-caption font-weight-bold mb-2 mx-4 mt-1"

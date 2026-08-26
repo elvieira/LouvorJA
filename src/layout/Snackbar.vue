@@ -5,7 +5,8 @@
     :timeout="snackbar.timeout"
     location="bottom right"
     variant="flat"
-    class="mb-4 mr-4"
+    class="mr-4"
+    :style="{ marginBottom: isFooterVisible ? '80px' : '16px' }"
     @update:model-value="(val) => appdata.set('snackbar.show', val)"
   >
     <div class="d-flex align-center">
@@ -33,11 +34,16 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
-import { useAppData } from "@/composables/useHelpers";
+import { useAppData, useMedia } from "@/composables/useHelpers";
 
 defineOptions({ name: "AppSnackbar" });
 
 const appdata = useAppData();
+const media = useMedia();
+
+const isFooterVisible = computed(() => {
+  return media.isMinimized() || (appdata.get("modules.external_media.minimized") === true && !!appdata.get("modules.external_media.filePath"));
+});
 
 const snackbar = computed(() => ({
   show: appdata.get("snackbar.show") || false,

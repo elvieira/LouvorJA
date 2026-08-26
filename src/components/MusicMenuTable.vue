@@ -28,6 +28,7 @@
       location="top center"
       open-on-hover
       :close-on-content-click="true"
+      transition="slide-y-reverse-transition"
     >
       <template #activator="{ props: menuProps }">
         <v-btn
@@ -44,8 +45,13 @@
           </v-icon>
         </v-btn>
       </template>
-      <v-card class="modern-glass-menu elevation-0" :theme="isDark ? 'dark' : 'light'" rounded="lg">
-        <div class="text-caption text-center pt-2 pb-0 font-weight-bold opacity-70">
+      <v-card
+        class="elevation-3"
+        :color="isDark ? 'var(--card-bg)' : '#f4f5f7'"
+        :theme="isDark ? 'dark' : 'light'"
+        rounded="lg"
+      >
+        <div class="text-caption text-center pt-2 pb-0 font-weight-bold opacity-70" :class="!isDark ? 'text-black' : ''">
           {{ $t('modules.media.queue.add_to_queue') }}
         </div>
         <v-list class="py-1" bg-color="transparent" density="compact">
