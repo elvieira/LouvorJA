@@ -195,8 +195,7 @@
         <v-badge
           v-if="queueCount > 1"
           :content="queueCount"
-          color="grey-darken-2"
-          size="small"
+          class="discreet-badge"
           floating
           offset-x="2"
           offset-y="2"
@@ -537,6 +536,15 @@ onBeforeUnmount(() => {
   border-top: 1px solid var(--border-color);
   width: 100%;
   min-height: 64px;
+}
+
+.discreet-badge .v-badge__badge {
+  background-color: rgba(150, 150, 150, 0.25) !important;
+  color: inherit !important;
+  font-size: 9px !important;
+  min-width: 16px !important;
+  height: 16px !important;
+  padding: 0 4px !important;
 }
 
 .play-btn {

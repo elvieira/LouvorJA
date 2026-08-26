@@ -2,7 +2,7 @@
   <v-slide-y-reverse-transition>
     <div v-if="module?.show" class="module-full-page dashboard-home d-flex flex-column">
       <ModuleHeader :title="t('title')" :icon="module.icon">
-        <div class="search-bar ml-4 d-flex align-center" style="max-width: 500px; flex: 1; gap: 16px;">
+        <div class="search-bar ml-4 d-flex align-center" style="max-width: 800px; flex: 1; gap: 16px;">
           <v-text-field
             v-model="search"
             :placeholder="$t('modules.hymnal_1996.inputs.search') || 'Buscar música...'"
@@ -91,10 +91,7 @@
                 class="text-none px-4"
                 style="height: 44px; max-width: 220px; background: var(--card-bg); box-shadow: var(--shadow);"
               >
-                <div class="d-flex align-center text-truncate w-100" style="color: var(--sidebar-text);">
-                  <v-icon size="small" class="mr-3 opacity-70">
-                    mdi-filter-variant
-                  </v-icon>
+                <div class="d-flex align-center text-truncate w-100 justify-space-between" style="color: var(--sidebar-text);">
                   <span class="text-truncate font-weight-medium text-body-2">
                     {{ categoryOptions.find(c => c.id_category === id_category)?.name || 'Todos' }}
                   </span>
