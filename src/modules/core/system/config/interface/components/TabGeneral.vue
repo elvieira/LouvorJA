@@ -54,6 +54,59 @@
         </v-card-text>
       </v-card>
 
+      <!-- Comportamento de Projeção Bíblica -->
+      <v-card class="settings-card rounded-xl pa-2 mb-6" flat style="background: var(--card-bg); box-shadow: var(--shadow);">
+        <v-card-text class="pa-6">
+          <div class="d-flex align-center mb-4">
+            <v-icon color="primary" class="mr-3" size="28">
+              mdi-book-open-page-variant-outline
+            </v-icon>
+            <div>
+              <h3 class="font-weight-bold" style="color: var(--sidebar-text); font-size: 1.1rem; line-height: 1.2;">
+                {{ t('bible_proj_behavior') }}
+              </h3>
+              <div class="text-caption mt-1" style="color: var(--sidebar-text-secondary); line-height: 1.3;">
+                {{ t('bible_proj_behavior_desc') }}
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-4">
+            <v-switch
+              v-model="bible_proj_with_p"
+              :label="t('bible_proj_with_p')"
+              color="primary"
+              hide-details
+              inset
+              class="font-weight-medium mb-2"
+            />
+            
+            <v-expand-transition>
+              <div v-show="!bible_proj_with_p" class="pl-4 mt-4" style="border-left: 2px solid var(--border-color);">
+                <v-switch
+                  v-model="bible_auto_proj_quick"
+                  :label="t('bible_auto_proj_quick')"
+                  color="primary"
+                  hide-details
+                  inset
+                  density="compact"
+                  class="mb-2"
+                />
+
+                <v-switch
+                  v-model="bible_auto_proj_normal"
+                  :label="t('bible_auto_proj_normal')"
+                  color="primary"
+                  hide-details
+                  inset
+                  density="compact"
+                />
+              </div>
+            </v-expand-transition>
+          </div>
+        </v-card-text>
+      </v-card>
+
       <v-card class="settings-card rounded-xl pa-2" flat style="background: var(--card-bg); box-shadow: var(--shadow);">
         <v-card-text class="pa-6">
           <SettingsActionRow
@@ -118,6 +171,10 @@ export default defineComponent({
     start_on_login: false as boolean,
     isDesktop: !!(window as any).electronAPI,
     isInitialized: false,
+
+    bible_proj_with_p: false,
+    bible_auto_proj_quick: true,
+    bible_auto_proj_normal: false,
   }),
   computed: {
     languagesList(): Array<{ code: string; name: string }> {
@@ -215,6 +272,15 @@ export default defineComponent({
     primary_hymnal(val: string) {
       this.$userdata.set("primary_hymnal", val);
     },
+    bible_proj_with_p(val: boolean) {
+      this.updateBibleConfig({ projWithP: val });
+    },
+    bible_auto_proj_quick(val: boolean) {
+      this.updateBibleConfig({ autoProjQuick: val });
+    },
+    bible_auto_proj_normal(val: boolean) {
+      this.updateBibleConfig({ autoProjNormal: val });
+    },
   },
   mounted() {
     if(this.$userdata.get("language")){
@@ -234,12 +300,24 @@ export default defineComponent({
       });
     }
 
+    const savedBibleConfig = this.$appdata.get("modules.bible.config") || this.$userdata.get("bible_config") || {};
+    if (savedBibleConfig.projWithP !== undefined) this.bible_proj_with_p = savedBibleConfig.projWithP;
+    if (savedBibleConfig.autoProjQuick !== undefined) this.bible_auto_proj_quick = savedBibleConfig.autoProjQuick;
+    if (savedBibleConfig.autoProjNormal !== undefined) this.bible_auto_proj_normal = savedBibleConfig.autoProjNormal;
+
     // Set isInitialized after mounting so the watcher doesn't trigger on initial load
     this.$nextTick(() => {
       this.isInitialized = true;
     });
   },
   methods: {
+    updateBibleConfig(changes: any) {
+      if (!this.isInitialized) return;
+      const currentConfig = this.$appdata.get("modules.bible.config") || this.$userdata.get("bible_config") || {};
+      const newConfig = { ...currentConfig, ...changes };
+      this.$appdata.set("modules.bible.config", newConfig);
+      this.$userdata.set("bible_config", newConfig);
+    },
     t(text: string): string {
       return this.$t(`modules.${manifest.id}.${text}`);
     },

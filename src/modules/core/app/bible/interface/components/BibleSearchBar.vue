@@ -298,14 +298,19 @@ export default defineComponent({
       if (e.key === "Enter" && this.searchMode === "text") {
         e.preventDefault();
         this.$emit("search-text", this.searchQuery);
-        const inputEl = e.target as HTMLInputElement;
+        const inputEl = (this as any).nativeInput;
         if (inputEl && inputEl.blur) inputEl.blur();
         return;
       }
 
       if (this.searchMode !== "reference") return;
       
-      if (e.key === " " || e.key === "Enter") {
+      const key = e.key.toLowerCase();
+      
+      const bibleConfig = (this as any).$appdata.get("modules.bible.config") || (this as any).$userdata.get("bible_config") || {};
+      const projWithPEnabled = bibleConfig.projWithP === true;
+      
+      if (key === " " || key === "enter" || (key === "p" && projWithPEnabled)) {
         const { bookStr, chapterStr, verseStr, isChapterStep, isVerseStep } = this.parseQuery(this.searchQuery);
         const matchResult = this.getBestBookMatch(bookStr);
         const exactBook = Array.isArray(matchResult) ? null : matchResult;
@@ -316,36 +321,52 @@ export default defineComponent({
             this.searchQuery = `${exactBook.name} `;
             this.$nextTick(() => { this.updateAutocompleteHint(); });
             this.$emit("select-book", exactBook.id_bible_book);
-          } else if (e.key === " ") {
+          } else if (key === " ") {
             e.preventDefault();
+          } else if (key === "enter") {
+            e.preventDefault();
+            this.$emit("execute-fallback", this.searchQuery);
+            const inputEl = (this as any).nativeInput;
+            if (inputEl && inputEl.blur) inputEl.blur();
           }
         } else if (isChapterStep && !isVerseStep) {
-          if (!exactBook && e.key === " ") {
+          if (!exactBook && key === " ") {
             e.preventDefault();
             return;
           }
           if (chapterStr) {
-            e.preventDefault();
-            this.searchQuery = `${this.searchQuery.trim()}:`;
-            this.$nextTick(() => { this.updateAutocompleteHint(); });
-            this.$emit("select-chapter", parseInt(chapterStr));
-          } else if (e.key === " ") {
+            if (key === "enter" || key === " ") {
+              e.preventDefault();
+              this.searchQuery = `${this.searchQuery.trim()}:`;
+              this.$nextTick(() => { this.updateAutocompleteHint(); });
+              this.$emit("select-chapter", parseInt(chapterStr));
+            }
+          } else if (key === " ") {
             e.preventDefault();
           }
         } else if (isVerseStep) {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
+          if (key === "enter" || key === " " || key === "p") {
             if (exactBook && chapterStr && verseStr) {
+              e.preventDefault();
               this.$emit("select-chapter", parseInt(chapterStr));
               this.$emit("search-verse", verseStr);
               
-              // Remove focus so keyboard shortcuts can take over
-              const inputEl = e.target as HTMLInputElement;
+              const inputEl = (this as any).nativeInput;
               if (inputEl && inputEl.blur) {
                 inputEl.blur();
               }
-            } else {
+              
+              if (key === "p") {
+                // Allow the blur and selection to process, then simulate global P press
+                setTimeout(() => {
+                  window.dispatchEvent(new KeyboardEvent("keydown", { key: "p" }));
+                }, 150);
+              }
+            } else if (key === "enter" || key === " ") {
+              e.preventDefault();
               this.$emit("execute-fallback", this.searchQuery);
+              const inputEl = (this as any).nativeInput;
+              if (inputEl && inputEl.blur) inputEl.blur();
             }
           }
         }

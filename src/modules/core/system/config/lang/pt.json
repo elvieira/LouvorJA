@@ -104,7 +104,13 @@
     "auto_project_video": "Projetar vídeos automaticamente ao abrir",
     "pause_on_minimize": "Pausar vídeo ao minimizar",
     "fullscreen_main_media": "Abrir mídia em tela cheia na tela principal",
-    "msg_lang_title": "Aviso de Idioma",
-    "msg_lang_download": "Ao alterar o idioma, é necessário baixar o banco de dados e configurações do novo idioma. Deseja prosseguir?",
-    "msg_lang_reload": "Ao alterar o idioma, o programa será recarregado. Deseja prosseguir?"
+    "msg_lang_title": "Alterar Idioma",
+    "msg_lang_download": "Para usar este idioma, o programa precisa baixar o banco de dados correspondente. Isso substituirá os dados atuais.<br><br>Deseja continuar?",
+    "msg_lang_reload": "O banco de dados para este idioma já está salvo no seu dispositivo.<br><br>Deseja recarregar o programa para aplicar a alteração?",
+    "sync_projection_settings_media": "Sincronizar configurações da tela de projeção com Múltiplas Telas (Recomendado)",
+    "bible_proj_behavior": "Projeção da Bíblia",
+    "bible_proj_behavior_desc": "Configure o comportamento de busca e projeção de versículos para a tela.",
+    "bible_proj_with_p": "Projetar com a tecla 'P'",
+    "bible_auto_proj_quick": "Auto-projetar na Busca Rápida",
+    "bible_auto_proj_normal": "Auto-projetar na Busca Normal"
 }
