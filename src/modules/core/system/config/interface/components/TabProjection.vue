@@ -283,8 +283,8 @@
                       </v-btn>
                       <v-slider
                         v-model="slide_font_size"
-                        :min="50"
-                        :max="200"
+                        :min="75"
+                        :max="150"
                         :step="5"
                         color="primary"
                         track-color="grey-lighten-3"
@@ -296,7 +296,7 @@
                         size="small"
                         variant="tonal"
                         color="primary"
-                        @click="slide_font_size = Math.min(200, slide_font_size + 5)"
+                        @click="slide_font_size = Math.min(300, slide_font_size + 5)"
                       >
                         <v-icon size="18">
                           mdi-plus

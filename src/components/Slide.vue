@@ -15,7 +15,7 @@
         <div
           class="position-absolute top-0 left-0 w-100 h-100 d-flex justify-center"
           :class="slideAlignClass"
-          :style="{ padding: `${Math.max(16, fontSizePc(4))}px` }"
+          :style="{ padding: `${fontSizePc(4)}px` }"
         >
           <div class="d-flex flex-column align-center justify-center w-100">
             <!-- eslint-disable vue/no-v-html -->
@@ -93,8 +93,10 @@ const props_slide = computed(() => ({
 const screenSize = computed(() => ({ width: width.value, height: height.value }));
 
 const fontSizePc = (pc: number) => {
-  const v = Math.min(width.value, height.value);
-  return (pc * v) / 100 / 2;
+  const effectiveWidth = Math.min(width.value, height.value * (16 / 9));
+  const effectiveHeight = effectiveWidth / (16 / 9);
+  
+  return ((pc * effectiveHeight) / 100 / 2) * 1;
 };
 
 const updateSettings = () => {
@@ -221,7 +223,7 @@ const style_text = (slide: any): any => {
     boxShadow: "none",
   } : {
     backgroundColor: `rgba(0, 0, 0, ${bgOpacity})`,
-    border: `${Math.max(2, fontSizePc(0.4))}px solid rgba(255, 255, 255, 0.85)`,
+    border: `${Math.max(1, fontSizePc(0.4))}px solid rgba(255, 255, 255, 0.85)`,
     backdropFilter: "blur(8px)",
     WebkitBackdropFilter: "blur(8px)",
     boxShadow: "0px 10px 30px rgba(0, 0, 0, 0.4)",
@@ -279,17 +281,29 @@ watch(screenSize, () => {
   }, 100);
 });
 
+let resizeObserver: ResizeObserver | null = null;
+
 onMounted(() => {
   updateSettings();
   setSlide();
   windowResize();
   window.addEventListener("resize", windowResize);
   window.addEventListener("storage", updateSettings);
+  
+  if (container.value) {
+    resizeObserver = new ResizeObserver(() => {
+      windowResize();
+    });
+    resizeObserver.observe(container.value);
+  }
 });
 
 onUnmounted(() => {
   window.removeEventListener("resize", windowResize);
   window.removeEventListener("storage", updateSettings);
+  if (resizeObserver) {
+    resizeObserver.disconnect();
+  }
 });
 </script>
 
