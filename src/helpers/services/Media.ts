@@ -256,7 +256,12 @@ export default {
       $appdata.set("modules.media.config.lazy", false);
       $appdata.set("modules.media.loading", false);
 
-      if (isSameSong && savedTime > 0) {
+      const duration = $appdata.get("modules.media.config.duration") || 0;
+      
+      // If we are reopening the exact same song, but it was already at the end, we should rewind it
+      const shouldRewind = savedTime >= duration - 0.5;
+
+      if (isSameSong && savedTime > 0 && !shouldRewind) {
         audio.currentTime = savedTime;
         if (fadeAudioEnabled) {
           this.fadeIn(audio, volume / 100, 1000).catch(() => { });
@@ -264,6 +269,7 @@ export default {
           this.play();
         }
       } else {
+        audio.currentTime = 0;
         this.play();
       }
     } else {
@@ -777,7 +783,13 @@ export default {
     const current_time = $appdata.get("modules.media.config.current_time");
     const duration = $appdata.get("modules.media.config.duration");
     if (!is_paused && current_time >= duration && duration > 0) {
-      this.playNext();
+      const loopMode = $appdata.get("modules.media.config.loop") || "none";
+      if (loopMode === "track" || loopMode === true) {
+        this.goToTime(0);
+        this.play();
+      } else {
+        this.playNext();
+      }
     }
   },
   async fadeOut(audio: HTMLAudioElement, durationMs = 1000) {
@@ -846,8 +858,9 @@ export default {
       el.addEventListener("ended", () => {
         const currentActive = $appdata.get("modules.media.config.active_audio") || "a";
         if (el?.id === `__audio_${currentActive}`) {
-          const isLoop = $appdata.get("modules.media.config.loop") === true;
-          if (isLoop) {
+          const loopMode = $appdata.get("modules.media.config.loop") || "none";
+          
+          if (loopMode === "track" || loopMode === true) { // keep true for legacy compatibility
             this.goToTime(0);
             this.play();
           } else {
@@ -967,11 +980,17 @@ export default {
     }
     
     // Find next valid index
-    const nextIndex = stayOnCurrentIndex ? queue.currentIndex : queue.currentIndex + 1;
+    let nextIndex = stayOnCurrentIndex ? queue.currentIndex : queue.currentIndex + 1;
+    
     if (nextIndex >= queue.items.length || nextIndex < 0) {
-      // Reached the end of queue or invalid
-      this.close(true);
-      return;
+      const loopMode = $appdata.get("modules.media.config.loop") || "none";
+      if (loopMode === "queue" && queue.items.length > 0) {
+        nextIndex = 0; // Loop back to start of queue
+      } else {
+        // Reached the end of queue or invalid
+        this.close(true);
+        return;
+      }
     }
     
     this.playFromQueue(nextIndex);

@@ -63,6 +63,24 @@
           Próxima
         </v-tooltip>
       </v-btn>
+      <v-btn
+        icon
+        variant="text"
+        :color="loopIconColor"
+        size="small"
+        class="mx-1"
+        @click="toggleLoop"
+      >
+        <v-icon>{{ loopIcon }}</v-icon>
+        <v-tooltip
+          activator="parent"
+          location="top"
+          open-delay="300"
+          content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+        >
+          {{ loopTooltip }}
+        </v-tooltip>
+      </v-btn>
     </div>
 
     <div v-if="media.config.audio" class="player-timeline-wrapper d-flex align-center flex-grow-1 mr-6" style="min-width: 150px;">
@@ -374,6 +392,39 @@ const has_instrumental_music = computed(() => !!media.value.data.url_instrumenta
 const isPlaylistOpen = computed(() => appdata.get("modules.media.show_playlist") || false);
 const isQueueOpen = computed(() => appdata.get("modules.media.show_queue") || false);
 const queueCount = computed(() => (appdata.get("modules.media.queue")?.items || []).length);
+
+const loopMode = computed(() => appdata.get("modules.media.config.loop") || "none");
+
+const loopIcon = computed(() => {
+  if (loopMode.value === "track" || loopMode.value === true) return "mdi-repeat-once";
+  return "mdi-repeat";
+});
+
+const loopIconColor = computed(() => {
+  if (loopMode.value === "none" || !loopMode.value) return secondaryTextClass.value;
+  return "var(--accent-blue)";
+});
+
+const loopTooltip = computed(() => {
+  if (loopMode.value === "track" || loopMode.value === true) return "Repetir Música";
+  if (loopMode.value === "queue") return "Repetir Fila";
+  return "Repetição Desativada";
+});
+
+const toggleLoop = () => {
+  let nextMode = "none";
+  const current = loopMode.value;
+  
+  if (current === "none" || !current) {
+    nextMode = queueCount.value > 1 ? "queue" : "track";
+  } else if (current === "queue") {
+    nextMode = "track";
+  } else {
+    nextMode = "none";
+  }
+
+  appdata.set("modules.media.config.loop", nextMode);
+};
 
 const menu_modes = computed(() => [
   {
