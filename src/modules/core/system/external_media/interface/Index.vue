@@ -590,9 +590,9 @@ export default defineComponent({
 
     captureStreamForPopup() {
       const videoEl = this.$refs.videoEl as HTMLVideoElement;
-      if (videoEl && typeof videoEl.captureStream === "function") {
+      if (videoEl && typeof (videoEl as any).captureStream === "function") {
         try {
-          (window as any)._externalMediaStream = videoEl.captureStream();
+          (window as any)._externalMediaStream = (videoEl as any).captureStream();
         } catch (e) {
           console.error("captureStream error:", e);
         }
