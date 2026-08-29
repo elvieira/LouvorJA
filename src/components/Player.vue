@@ -206,8 +206,9 @@
         variant="text"
         size="small"
         icon
-        :color="isQueueOpen ? 'var(--accent-blue)' : defaultTextColor"
+        :color="isQueueOpen || queueHighlight ? 'var(--accent-blue)' : defaultTextColor"
         class="mx-1 position-relative"
+        :class="{ 'pulse-queue': queueHighlight }"
         @click="toggleQueue"
       >
         <v-badge
@@ -397,6 +398,7 @@ const has_instrumental_music = computed(() => !!media.value.data.url_instrumenta
 const isPlaylistOpen = computed(() => appdata.get("modules.media.show_playlist") || false);
 const isQueueOpen = computed(() => appdata.get("modules.media.show_queue") || false);
 const queueCount = computed(() => (appdata.get("modules.media.queue")?.items || []).length);
+const queueHighlight = computed(() => appdata.get("modules.media.queue_highlight") === true);
 
 const loopMode = computed(() => appdata.get("modules.media.config.loop") || "none");
 
@@ -517,6 +519,9 @@ const togglePlaylist = () => {
 const toggleQueue = () => {
   const currentState = appdata.get("modules.media.show_queue") || false;
   appdata.set("modules.media.show_queue", !currentState);
+  if (appdata.get("modules.media.queue_highlight")) {
+    appdata.set("modules.media.queue_highlight", false);
+  }
 };
 
 onMounted(() => {
@@ -629,6 +634,23 @@ onBeforeUnmount(() => {
   &:hover {
     opacity: 0.8;
     background: rgba(255,255,255,0.05);
+  }
+}
+
+.pulse-queue {
+  animation: pulse-queue-glow 1.5s infinite;
+  border-radius: 50%;
+}
+
+@keyframes pulse-queue-glow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(0, 151, 215, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 8px 4px rgba(0, 151, 215, 0.3);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 151, 215, 0);
   }
 }
 </style>

@@ -127,7 +127,11 @@ export default {
       shouldMaximize = false;
     }
 
-    if (shouldMaximize) {
+    if (params.startPaused) {
+      // Show the footer bar but hide the mini player popup - it will appear when the user presses play
+      this.minimize();
+      $appdata.set("modules.media.show_mini_player", false);
+    } else if (shouldMaximize) {
       this.maximize();
     } else {
       this.minimize();
@@ -263,14 +267,22 @@ export default {
 
       if (isSameSong && savedTime > 0 && !shouldRewind) {
         audio.currentTime = savedTime;
-        if (fadeAudioEnabled) {
-          this.fadeIn(audio, volume / 100, 1000).catch(() => { });
+        if (!params.startPaused) {
+          if (fadeAudioEnabled) {
+            this.fadeIn(audio, volume / 100, 1000).catch(() => { });
+          } else {
+            this.play();
+          }
         } else {
-          this.play();
+          this.pause();
         }
       } else {
         audio.currentTime = 0;
-        this.play();
+        if (!params.startPaused) {
+          this.play();
+        } else {
+          this.pause();
+        }
       }
     } else {
       $appdata.set("modules.media.config.audio", "");
@@ -324,8 +336,10 @@ export default {
         selectedMonitors = selectedMonitors.filter((m: any) => m !== (primary as any).id);
 
         if (selectedMonitors.length > 0) {
-          const { default: $popup } = await import("@/helpers/ui/Popup");
-          await $popup.syncMonitors(selectedMonitors, "media", true);
+          if (!params.startPaused) {
+            const { default: $popup } = await import("@/helpers/ui/Popup");
+            await $popup.syncMonitors(selectedMonitors, "media", true);
+          }
         }
       }
     }
@@ -618,6 +632,11 @@ export default {
   },
 
   play() {
+    // Restore mini player popup if it was hidden (e.g. loaded via addToQueue with startPaused)
+    if ($appdata.get("modules.media.show_mini_player") === false) {
+      $appdata.set("modules.media.show_mini_player", true);
+    }
+    this.syncMonitors();
     this.pause(false);
   },
   pause(bool = true, callback?: () => void) {
@@ -936,6 +955,18 @@ export default {
       queue.items.push(queueItem);
       $appdata.set("modules.media.queue", queue);
       $snackbar.show({ text: "modules.media.queue.added", color: "success", timeout: 3000 });
+      
+      if (!$appdata.get("modules.media.id_music")) {
+        this.open({
+          id_music: queueItem.id_music,
+          mode: queueItem.mode,
+          id_album: queueItem.id_album,
+          fromQueue: true,
+          minimized: true,
+          startPaused: true,
+        });
+        $appdata.set("modules.media.queue_highlight", true);
+      }
     }
   },
   removeFromQueue(index: number) {
