@@ -434,6 +434,14 @@ export default defineComponent({
       }
 
       if (e.key.toLowerCase() === "p") {
+        // If it's a real keyboard press (isTrusted is true), ignore it. 
+        // We only want 'p' to work when dispatched synthetically from the search bars.
+        if (e.isTrusted) return;
+
+        // @ts-ignore
+        const bibleConfig = this.$appdata.get("modules.bible.config") || this.$userdata.get("bible_config") || {};
+        if (bibleConfig.projWithP === false) return;
+        
         if (this.select_bible && this.select_bible.verses && this.select_bible.verses.length > 0) {
           e.preventDefault();
           this.projectIfConfigured(true);

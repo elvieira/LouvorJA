@@ -69,7 +69,7 @@
               name: true,
             }"
             :scroll="scroll"
-            :has_scroll="has_scroll"
+            :has-scroll="has_scroll"
             sort-by="track"
             :file="`${$i18n.locale}_hymnal`"
             class="modern-hymnal-table flex-grow-1 d-flex flex-column"

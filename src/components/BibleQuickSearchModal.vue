@@ -198,7 +198,13 @@ export default defineComponent({
 
     const getCleanString = (str: string) => {
       if (!str) return "";
-      let clean = str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+      let clean = str.toLowerCase().trim();
+      
+      // Casos especiais para abreviaturas idênticas que perdem a distinção ao remover acentos
+      if (clean === "jó") return "job_book";
+      if (clean === "jo") return "joao_book";
+      
+      clean = clean.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
       
       clean = clean.replace(/^iii\s+/, "3").replace(/^ii\s+/, "2").replace(/^i\s+/, "1");
       
@@ -229,8 +235,8 @@ export default defineComponent({
       if (!inputValue.value || step.value !== 1) return null;
       const val = getCleanString(inputValue.value);
       
-      // Exact abbreviation match
-      const exactAbv = books.value.find(b => getCleanString(b.abbreviation) === val);
+      // Exact abbreviation or name match
+      const exactAbv = books.value.find(b => getCleanString(b.abbreviation) === val || getCleanString(b.name) === val);
       if (exactAbv) return exactAbv;
       
       // If only 1 suggestion
@@ -296,10 +302,6 @@ export default defineComponent({
           book.value = matchedBook.value;
           step.value = 2;
           inputValue.value = "";
-        } else if (suggestedBooks.value.length > 0) {
-          book.value = suggestedBooks.value[0];
-          step.value = 2;
-          inputValue.value = "";
         }
       } else if (step.value === 2) {
         if (inputValue.value && !isNaN(Number(inputValue.value))) {
@@ -330,10 +332,11 @@ export default defineComponent({
     };
 
     const handlePKey = (_e: KeyboardEvent) => {
-      if (step.value === 3 && inputValue.value) {
+      const config = bibleConfig.value;
+      if (config.projWithP !== false && step.value === 3 && inputValue.value) {
         confirmStep(true);
       } else {
-        // If not in step 3, allow normal typing (though p is letter)
+        // If not in step 3 or the shortcut is disabled, allow normal typing
         inputValue.value += "p";
       }
     };
@@ -441,9 +444,15 @@ export default defineComponent({
         if (newVal !== cleanVal) {
           inputValue.value = cleanVal;
         }
-      } else {
-        // Passos 2 e 3: Apenas números
+      } else if (step.value === 2) {
+        // Passo 2: Apenas números
         const cleanVal = newVal.replace(/[^0-9]/g, "");
+        if (newVal !== cleanVal) {
+          inputValue.value = cleanVal;
+        }
+      } else if (step.value === 3) {
+        // Passo 3: Apenas números, vírgulas e traços
+        const cleanVal = newVal.replace(/[^0-9,-]/g, "");
         if (newVal !== cleanVal) {
           inputValue.value = cleanVal;
         }

@@ -62,7 +62,7 @@
       }"
       :filter="{ has_instrumental_music: filter_instrumental_music }"
       :scroll="scroll"
-      :has_scroll="has_scroll"
+      :has-scroll="has_scroll"
       sort-by="name"
       :file="`${$i18n.locale}_musics`"
     >
@@ -200,7 +200,7 @@ export default defineComponent({
       get() {
         return this.$userdata.get(`modules.${this.module_id}.search.name`);
       },
-      set(value) {
+      set(value: boolean) {
         this.$userdata.set(`modules.${this.module_id}.search.name`, value);
       },
     },
@@ -208,7 +208,7 @@ export default defineComponent({
       get() {
         return this.$userdata.get(`modules.${this.module_id}.search.lyric`);
       },
-      set(value) {
+      set(value: boolean) {
         this.$userdata.set(`modules.${this.module_id}.search.lyric`, value);
       },
     },
@@ -216,7 +216,7 @@ export default defineComponent({
       get() {
         return this.$userdata.get(`modules.${this.module_id}.search.album`);
       },
-      set(value) {
+      set(value: boolean) {
         this.$userdata.set(`modules.${this.module_id}.search.album`, value);
       },
     },
@@ -226,7 +226,7 @@ export default defineComponent({
           `modules.${this.module_id}.filter.instrumental_music`,
         );
       },
-      set(value) {
+      set(value: boolean) {
         this.$userdata.set(
           `modules.${this.module_id}.filter.instrumental_music`,
           value,
