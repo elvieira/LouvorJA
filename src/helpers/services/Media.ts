@@ -382,6 +382,7 @@ export default {
     this.clearVariables();
     $appdata.set("modules.media.show", false);
     $appdata.set("modules.media.minimized", false);
+    $appdata.set("modules.media.config.fullscreen", false);
 
     // Fechar a projeção se estiver aberta
     import("@/helpers/ui/Popup").then(({ default: $popup }) => {
@@ -524,6 +525,7 @@ export default {
     $appdata.set("modules.media.config.volume", 100);
     $appdata.set("modules.media.config.is_paused", false);
     $appdata.set("modules.media.config.is_fading", false);
+    $appdata.set("modules.media.config.fullscreen", false);
   },
 
   minimize() {
