@@ -384,7 +384,7 @@ export default defineComponent({
       return this.$t(`modules.${this.moduleId}.${text}`);
     },
     loadConfig() {
-      const savedConfig = this.$appdata.get(`modules.${this.moduleId}.config`);
+      const savedConfig = this.$appdata.get(`modules.${this.moduleId}.config`) || this.$userdata.get("sorteio_config");
       if (savedConfig) {
         this.localConfig = { ...this.defaultConfig, ...savedConfig };
       } else {

@@ -383,6 +383,11 @@ const secondaryTextClass = computed(() => {
   return isDark.value ? "text-grey" : "text-grey-darken-1";
 });
 
+const secondaryTextColor = computed(() => {
+  if (props.location !== "footer") return "grey";
+  return isDark.value ? "grey" : "grey-darken-1";
+});
+
 const media = computed(() => modules.get("media"));
 
 const showMiniPlayer = computed(() => appdata.get("modules.media.show_mini_player") !== false);
@@ -401,7 +406,7 @@ const loopIcon = computed(() => {
 });
 
 const loopIconColor = computed(() => {
-  if (loopMode.value === "none" || !loopMode.value) return secondaryTextClass.value;
+  if (loopMode.value === "none" || !loopMode.value) return secondaryTextColor.value;
   return "var(--accent-blue)";
 });
 

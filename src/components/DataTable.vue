@@ -307,6 +307,7 @@ watch(data, () => {
     filter_count: filter_data.value.length,
     count: data.value.length,
     data: data.value,
+    unformatted_data: filter_data.value,
   });
 });
 

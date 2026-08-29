@@ -16,6 +16,7 @@
       <h2 class="section-title mb-0" style="color: var(--sidebar-text); font-size: 24px; font-weight: 600; line-height: 1; white-space: nowrap;">
         {{ title }}
       </h2>
+      <slot name="title-actions" />
     </div>
     
     <div class="module-header-actions d-flex align-center justify-end" style="max-width: 100%; flex: 1; overflow: visible;">

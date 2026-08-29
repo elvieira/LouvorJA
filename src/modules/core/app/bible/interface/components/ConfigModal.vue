@@ -478,7 +478,7 @@ export default defineComponent({
       return this.$t(`modules.bible.${text}`);
     },
     loadConfig() {
-      const savedConfig = this.$appdata.get("modules.bible.config");
+      const savedConfig = this.$appdata.get("modules.bible.config") || this.$userdata.get("bible_config");
       if (savedConfig) {
         this.localConfig = { ...this.defaultConfig, ...savedConfig };
       } else {
