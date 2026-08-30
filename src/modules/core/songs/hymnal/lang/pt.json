@@ -1,7 +1,14 @@
 {
     "title": "Hinário Adventista",
     "inputs": {
-        "search": "Digite o número ou nome do hino..."
+        "search": "Digite o número ou nome do hino...",
+        "more_options": "Mais opções",
+        "show_all": "Mostrar",
+        "show_less": "Ocultar",
+        "play_all": "Reproduzir tudo",
+        "select": "Selecionar",
+        "cancel_selection": "Cancelar seleção",
+        "play_selected": "Reproduzir seleção"
     },
     "table": {
         "track": "Faixa",

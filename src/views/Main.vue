@@ -1,5 +1,5 @@
 <template>
-  <AppSidebar v-model="sidebarOpen" :is-pinned="sidebarPinned" @update:pinned="sidebarPinned = $event" />
+  <AppSidebar v-model="sidebarOpen" :is-pinned="sidebarPinned" @update:pinned="onPinnedChange" />
 
   <div class="main-container" :class="{ 'sidebar-open': sidebarOpen, 'sidebar-unpinned': !sidebarPinned }" @toggle-sidebar="toggleSidebar">
     <v-main class="bg-main">
@@ -376,6 +376,13 @@ export default defineComponent({
     window.removeEventListener("keydown", this.onGlobalSearchShortcut);
   },
   methods: {
+    onPinnedChange(val: boolean) {
+      this.sidebarPinned = val;
+      this.$userdata.set("sidebar_pinned", val);
+      // Keeps the "Fixar Barra Lateral" switch in Settings in sync when the
+      // sidebar's own pin button is used instead.
+      document.querySelector(".main-container")?.dispatchEvent(new CustomEvent("sidebar-pinned-changed", { bubbles: true, detail: val }));
+    },
     onGlobalSearchShortcut(e: KeyboardEvent) {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "f") {
         e.preventDefault();

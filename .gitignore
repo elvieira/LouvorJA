@@ -12,6 +12,7 @@ node_modules
 /dist-electron
 /release
 update.md
+alterações.md
 
 # local env files
 .env.local

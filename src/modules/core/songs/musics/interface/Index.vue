@@ -62,7 +62,7 @@
       }"
       :filter="{ has_instrumental_music: filter_instrumental_music }"
       :scroll="scroll"
-      :has_scroll="has_scroll"
+      :has-scroll="has_scroll"
       sort-by="name"
       :file="`${$i18n.locale}_musics`"
     >

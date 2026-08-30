@@ -9,7 +9,9 @@
         "settings": "Configurações",
         "close_menu": "Fechar menu",
         "local_library": "Biblioteca Local",
-        "update_available": "Atualização Disponível"
+        "update_available": "Atualização Disponível",
+        "pin": "Fixar menu",
+        "unpin": "Desafixar menu"
     },
     "modules": {
         "invalid": {
@@ -25,6 +27,9 @@
         },
         "utilities": {
             "title": "Utilitários"
+        },
+        "personalized": {
+            "title": "Personalizada"
         }
     },
     "components": {

@@ -7,6 +7,10 @@
     :aux_text="slide.aux_lyric"
     :image="slide.url_image ? $path.file(slide.url_image) : null"
     :image_position="slide.image_position"
+    :text_size_pc="slide.fontSize"
+    :text_color="slide.fontColor"
+    :aux_text_size_pc="slide.auxFontSize"
+    :aux_text_color="slide.auxFontColor"
   />
 </template>
 

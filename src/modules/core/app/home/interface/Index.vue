@@ -556,9 +556,12 @@ export default defineComponent({
     },
     
     playSong(song: any) {
-      if (song.id_music) {
-        this.$media.open({ id_music: song.id_music, mode: "audio" });
+      if (!song.id_music) return;
+      if (typeof song.id_music === "string" && song.id_music.startsWith("slja:")) {
+        this.$media.playExternalSlja(song.id_music.slice("slja:".length));
+        return;
       }
+      this.$media.open({ id_music: song.id_music, mode: "audio" });
     },
     
     getCollectionName(collection: any): string {

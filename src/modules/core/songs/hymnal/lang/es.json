@@ -1,7 +1,14 @@
 {
     "title": "Himnario Adventista",
     "inputs": {
-        "search": "Escriba el número o nombre del himno..."
+        "search": "Escriba el número o nombre del himno...",
+        "more_options": "Más opciones",
+        "show_all": "Mostrar",
+        "show_less": "Ocultar",
+        "play_all": "Reproducir todo",
+        "select": "Seleccionar",
+        "cancel_selection": "Cancelar selección",
+        "play_selected": "Reproducir selección"
     },
     "table": {
         "track": "Pista",

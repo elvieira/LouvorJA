@@ -142,7 +142,6 @@ export default defineComponent({
   position: relative;
   z-index: 99999;
   user-select: none;
-  border-bottom: 1px solid var(--border-color);
   -webkit-app-region: drag;
 }
 

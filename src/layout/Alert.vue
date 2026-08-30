@@ -28,7 +28,8 @@
           :key="index"
           :color="btn.color ? btn.color : 'primary'"
           :variant="btn.color === 'error' ? 'tonal' : 'flat'"
-          class="modern-alert-btn px-6"
+          :autofocus="btn.value === 'yes'"
+          :class="['modern-alert-btn px-6', { 'alert-btn-yes': btn.value === 'yes' }]"
           height="40"
           @click="clickBtn(btn.value)"
         >
@@ -47,6 +48,19 @@ export default defineComponent({
   computed: {
     alert(): any {
       return this.$appdata.get("alert");
+    },
+  },
+  watch: {
+    "alert.show"(val: boolean) {
+      if (!val) return;
+      // Reforço via JS: o atributo autofocus nem sempre funciona a tempo com a
+      // transição do v-dialog, então focamos o botão "Sim" manualmente também.
+      this.$nextTick(() => {
+        setTimeout(() => {
+          const btn = document.querySelector(".alert-btn-yes") as HTMLElement | null;
+          btn?.focus();
+        }, 50);
+      });
     },
   },
   methods: {

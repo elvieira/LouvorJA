@@ -22,6 +22,17 @@
           <span class="logo-title">{{ $t("app.name").toUpperCase() }}</span>
         </div>
       </div>
+      <button
+        v-if="!isMobile"
+        class="sidebar-pin-btn"
+        :class="{ pinned: isPinned }"
+        :title="isPinned ? $t('sidebar.unpin') : $t('sidebar.pin')"
+        @click="togglePin"
+      >
+        <v-icon size="16">
+          {{ isPinned ? "mdi-pin" : "mdi-pin-outline" }}
+        </v-icon>
+      </button>
     </div>
 
     <nav class="sidebar-nav-main">
@@ -277,6 +288,7 @@ export default defineComponent({
         musics: "mdi-play",
         bible: "mdi-book-cross",
         utilities: "mdi-plus-circle",
+        personalized: "mdi-star-outline",
       };
 
       for (const [key, group] of Object.entries(groups)) {
@@ -341,6 +353,9 @@ export default defineComponent({
   methods: {
     handleResize() {
       this.windowWidth = window.innerWidth;
+    },
+    togglePin() {
+      this.$emit("update:pinned", !this.isPinned);
     },
     closeSidebar() {
       this.isOpen = false;
@@ -458,7 +473,12 @@ export default defineComponent({
 
     .sidebar-header {
       padding: 24px 16px;
-      
+
+      .sidebar-pin-btn {
+        opacity: 0;
+        pointer-events: none;
+      }
+
       .logo-container {
         gap: 0;
       }
@@ -466,14 +486,28 @@ export default defineComponent({
 
     .nav-item {
       margin: 4px 12px;
-      
+
       .nav-link {
         padding: 12px;
         justify-content: center;
         gap: 0;
-        
+
         .nav-icon {
           margin: 0;
+        }
+      }
+
+      &.active,
+      &.group-active {
+        width: 44px;
+        height: 44px;
+        margin: 4px auto;
+        border-radius: 50%;
+
+        .nav-link {
+          width: 100%;
+          height: 100%;
+          padding: 0;
         }
       }
     }
@@ -488,27 +522,53 @@ export default defineComponent({
   }
 
   .sidebar-header {
+    position: relative;
     padding: 24px 24px;
-    border-bottom: 1px solid var(--sidebar-border);
     background: transparent;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: padding 0.3s ease;
-    
+
+    .sidebar-pin-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 26px;
+      height: 26px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: none;
+      border: none;
+      border-radius: 6px;
+      color: var(--sidebar-text-secondary);
+      cursor: pointer;
+      transition: var(--transition), opacity 0.2s ease;
+
+      &:hover {
+        background: var(--sidebar-hover);
+        color: var(--accent-blue);
+      }
+
+      &.pinned {
+        color: var(--accent-blue);
+      }
+    }
+
     .logo-container {
       display: flex;
       justify-content: center;
       align-items: center;
       width: 100%;
       gap: 12px;
-      
+
       .logo-svg {
         width: 38px;
         height: 38px;
         flex-shrink: 0;
       }
-      
+
       .logo-text .logo-title {
         font-size: 18px;
         font-weight: 700;
@@ -624,24 +684,24 @@ export default defineComponent({
     
     &.active {
       background: var(--sidebar-active);
-      border-radius: var(--border-radius);
-      
+      border-radius: 999px;
+
       .nav-link {
         color: white;
-        
+
         .nav-icon {
           color: white;
         }
       }
     }
-    
+
     &.group-active {
       background: var(--sidebar-active);
-      border-radius: var(--border-radius);
-      
+      border-radius: 999px;
+
       .nav-link {
         color: white;
-        
+
         .nav-icon {
           color: white;
         }
