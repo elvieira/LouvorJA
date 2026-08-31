@@ -524,6 +524,7 @@ export default defineComponent({
   .sidebar-header {
     position: relative;
     padding: 24px 24px;
+    border-bottom: 1px solid var(--sidebar-border);
     background: transparent;
     display: flex;
     align-items: center;
@@ -684,7 +685,7 @@ export default defineComponent({
     
     &.active {
       background: var(--sidebar-active);
-      border-radius: 999px;
+      border-radius: var(--border-radius);
 
       .nav-link {
         color: white;
@@ -697,7 +698,7 @@ export default defineComponent({
 
     &.group-active {
       background: var(--sidebar-active);
-      border-radius: 999px;
+      border-radius: var(--border-radius);
 
       .nav-link {
         color: white;
