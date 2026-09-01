@@ -109,11 +109,28 @@
           @clear-selection="clean"
         >
           <template #footer>
-            <div style="height: 220px; flex-shrink: 0; background: #000; position: relative;">
-              <div style="position: absolute; top: 12px; right: 12px; z-index: 10; display: flex; gap: 8px;">
+            <div style="flex-shrink: 0; border-radius: 16px; position: relative; overflow: hidden; transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s ease; border: 1px solid rgba(255, 255, 255, 0.05);" :style="{ maxHeight: showPreview ? '280px' : '60px', backgroundColor: showPreview ? ($vuetify.theme.global.name !== 'light' ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.75)') : 'rgba(0, 0, 0, 0.2)' }">
+              <div style="position: absolute; top: 0; right: 12px; height: 60px; z-index: 10; display: flex; align-items: center; gap: 8px;">
                 <v-btn
                   variant="tonal"
-                  color="primary"
+                  :color="showPreview ? 'white' : ($vuetify.theme.global.name === 'light' ? 'grey-darken-2' : 'white')"
+                  size="small"
+                  icon
+                  @click="showPreview = !showPreview"
+                >
+                  <v-icon>{{ showPreview ? 'mdi-eye-outline' : 'mdi-eye-off-outline' }}</v-icon>
+                  <v-tooltip
+                    activator="parent"
+                    location="top"
+                    open-delay="300"
+                    content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+                  >
+                    {{ showPreview ? 'Ocultar Preview' : 'Mostrar Preview' }}
+                  </v-tooltip>
+                </v-btn>
+                <v-btn
+                  variant="tonal"
+                  :color="showPreview ? 'white' : ($vuetify.theme.global.name === 'light' ? 'grey-darken-2' : 'white')"
                   size="small"
                   icon
                   class="config-palette-btn"
@@ -132,11 +149,13 @@
                 <LScreenBtn
                   module="bible"
                   variant="tonal"
-                  color="white"
-                  class="text-white"
+                  :color="showPreview ? 'white' : ($vuetify.theme.global.name === 'light' ? 'grey-darken-2' : 'white')"
                 />
               </div>
-              <Screen :force-standard-colors="true" />
+              <div style="height: 60px; width: 100%;" />
+              <div style="height: 220px; position: relative; width: 100%; transition: opacity 0.2s;" :style="{ opacity: showPreview ? 1 : 0 }">
+                <Screen :force-standard-colors="true" />
+              </div>
             </div>
           </template>
         </BibleVerses>
@@ -221,6 +240,8 @@ export default defineComponent({
       showSearchResults: false,
       searchResults: [] as any[],
       lastSearchQuery: "",
+      
+      showPreview: true,
     };
   },
   computed: {

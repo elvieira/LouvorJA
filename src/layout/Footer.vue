@@ -65,23 +65,20 @@ export default defineComponent({
 
 #footer-version {
   position: fixed;
-  bottom: 16px;
-  right: 16px;
-  z-index: 1001;
+  bottom: 8px;
+  left: 0;
+  width: var(--sidebar-collapsed-width, 72px);
+  text-align: center;
+  z-index: 9999;
   pointer-events: none;
 }
 
 .version-text {
   display: inline-block;
-  background: rgba(26, 26, 26, 0.9);
-  color: #ffffff;
-  padding: 6px 10px;
-  border-radius: 6px;
-  font-size: 11px;
+  color: rgba(255, 255, 255, 0.25);
+  font-size: 10px;
   font-weight: 500;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
-  transition: all 0.3s ease;
+  transition: color 0.3s ease;
 }
 </style>
 

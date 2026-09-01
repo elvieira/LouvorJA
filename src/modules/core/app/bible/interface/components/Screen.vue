@@ -3,7 +3,7 @@
     ref="container"
     class="d-flex align-center justify-center overflow-hidden"
     :style="{
-      background: forceStandardColors ? '#000000' : config.background,
+      background: previewBackground,
       width: '100%',
       height: height ? height + 'px' : '100%',
       color: forceStandardColors ? '#ffffff' : config.color,
@@ -62,7 +62,7 @@ export default defineComponent({
       return this.$appdata.get("modules.bible.data");
     },
     config(): any {
-      return this.$appdata.get("modules.bible.config") || {
+      return this.$appdata.get("modules.bible.config") || this.$userdata.get("bible_config") || {
         fontSizePc: 15,
         align: "text-center",
         background: "#000000",
@@ -70,6 +70,15 @@ export default defineComponent({
         refFontSizePc: 10,
         refColor: "#fb8c00",
       };
+    },
+    isDarkMode(): boolean {
+      return this.$vuetify?.theme?.global?.name !== "light";
+    },
+    previewBackground(): string {
+      if (this.forceStandardColors) {
+        return "transparent";
+      }
+      return this.config.background;
     },
   },
   mounted() {
