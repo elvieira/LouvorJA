@@ -183,7 +183,7 @@ export default defineComponent({
       return this.$vuetify.display.width < 1400;
     },
     config(): any {
-      return this.$appdata.get(`modules.${this.module_id}.config`) || this.defaultConfig;
+      return this.$appdata.get(`modules.${this.module_id}.config`) || this.$userdata.get("sorteio_config") || this.defaultConfig;
     },
   },
   watch: {

@@ -182,7 +182,8 @@ export default defineComponent({
       if (this.previewConfig) return this.previewConfig;
       // Allow receiving config from appdata directly
       const appConfig = this.$appdata ? this.$appdata.get("clock_config") : null;
-      return appConfig || this.defaultConfig;
+      const userConfig = this.$userdata ? this.$userdata.get("clock_config") : null;
+      return appConfig || userConfig || this.defaultConfig;
     },
     digitalFontSize(): number {
       const v = Math.min(this.s_width, this.s_height);

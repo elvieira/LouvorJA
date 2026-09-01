@@ -29,7 +29,7 @@ export default defineComponent({
   }),
   computed: {
     config(): any {
-      return this.$appdata.get(`modules.${this.module_id}.config`) || {
+      return this.$appdata.get(`modules.${this.module_id}.config`) || this.$userdata.get(`modules.${this.module_id}.config`) || {
         fontColor: "#ffffff",
         bgColor: "#000000",
         visualAlert: true,

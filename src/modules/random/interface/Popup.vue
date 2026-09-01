@@ -47,7 +47,7 @@ export default defineComponent({
       return manifest.id;
     },
     config(): any {
-      return this.$appdata.get(`modules.${this.module_id}.config`) || this.defaultConfig;
+      return this.$appdata.get(`modules.${this.module_id}.config`) || this.$userdata.get("sorteio_config") || this.defaultConfig;
     },
     data(): any {
       return this.$appdata.get(`modules.${this.module_id}.data`) || {

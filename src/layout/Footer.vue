@@ -65,7 +65,7 @@ export default defineComponent({
 
 #footer-version {
   position: fixed;
-  bottom: 8px;
+  bottom: 4px;
   left: 0;
   width: var(--sidebar-collapsed-width, 72px);
   text-align: center;
