@@ -6,7 +6,7 @@
         icon="mdi-music-box-multiple"
         :image="detailCollection?.coverImage || undefined"
       >
-        <div v-if="!detailCollection" class="search-bar ml-4 d-flex align-center" style="max-width: 500px; flex: 1; gap: 16px;">
+        <div v-if="!detailCollection" class="search-bar ml-4 d-flex align-center" style="max-width: 650px; flex: 1; gap: 16px;">
           <v-text-field
             v-model="search"
             :placeholder="t('search_collection_placeholder')"
@@ -29,32 +29,47 @@
                   />
                 </template>
                 <v-card
-                  class="pa-2"
+                  class="elevation-3"
+                  :color="isDark ? 'var(--card-bg)' : '#ffffff'"
+                  :theme="isDark ? 'dark' : 'light'"
                   rounded="lg"
-                  min-width="200"
-                  style="background: var(--card-bg); box-shadow: var(--shadow); border: 1px solid var(--border-color, rgba(150, 150, 150, 0.2));"
+                  min-width="220"
+                  style="overflow: hidden; border: 1px solid rgba(150, 150, 150, 0.1);"
                 >
-                  <div class="text-caption font-weight-bold mb-2 mx-2 mt-1" style="color: var(--sidebar-text-secondary);">
-                    {{ t('filter_search_by') }}
-                  </div>
-                  <v-list density="compact" bg-color="transparent" class="pa-0">
-                    <v-checkbox
-                      v-model="searchFilters"
-                      value="name"
-                      :label="t('filter_collection_name')"
-                      hide-details
-                      density="compact"
-                      color="primary"
-                      class="mb-1"
-                    />
-                    <v-checkbox
-                      v-model="searchFilters"
-                      value="songs"
-                      :label="t('filter_song_name')"
-                      hide-details
-                      density="compact"
-                      color="primary"
-                    />
+                  <v-list
+                    class="py-2"
+                    bg-color="transparent"
+                  >
+                    <div
+                      class="text-caption font-weight-bold mb-2 mx-4 mt-1"
+                      style="color: var(--sidebar-text-secondary);"
+                    >
+                      {{ t('filter_search_by') }}
+                    </div>
+                    <v-list-item
+                      :active="searchFilters.includes('name')"
+                      active-color="var(--accent-blue)"
+                      class="mx-2 rounded-lg mb-1"
+                      style="min-height: 40px;"
+                      @click="toggleSearchFilter('name')"
+                    >
+                      <div class="d-flex align-center">
+                        <v-icon :icon="searchFilters.includes('name') ? 'mdi-check-circle' : 'mdi-circle-outline'" size="small" class="mr-3" />
+                        <span class="text-body-2 font-weight-medium">{{ t('filter_collection_name') }}</span>
+                      </div>
+                    </v-list-item>
+                    <v-list-item
+                      :active="searchFilters.includes('songs')"
+                      active-color="var(--accent-blue)"
+                      class="mx-2 rounded-lg mb-1"
+                      style="min-height: 40px;"
+                      @click="toggleSearchFilter('songs')"
+                    >
+                      <div class="d-flex align-center">
+                        <v-icon :icon="searchFilters.includes('songs') ? 'mdi-check-circle' : 'mdi-circle-outline'" size="small" class="mr-3" />
+                        <span class="text-body-2 font-weight-medium">{{ t('filter_song_name') }}</span>
+                      </div>
+                    </v-list-item>
                   </v-list>
                 </v-card>
               </v-menu>
@@ -808,6 +823,9 @@ export default defineComponent({
     module(): any {
       return (this as any).$modules.get(this.module_id);
     },
+    isDark(): boolean {
+      return (this as any).$vuetify?.theme?.name === "dark";
+    },
     /* COMPUTEDS OBRIGATÓRIAS - FIM */
 
     detailCollection(): CustomCollection | null {
@@ -863,6 +881,16 @@ export default defineComponent({
       return (this as any).$t(`modules.${this.module_id}.${text}`, params || []);
     },
     /* METHODS OBRIGATÓRIOS - FIM */
+
+    toggleSearchFilter(filter: string) {
+      if (this.searchFilters.includes(filter)) {
+        if (this.searchFilters.length > 1) {
+          this.searchFilters = this.searchFilters.filter((f) => f !== filter);
+        }
+      } else {
+        this.searchFilters.push(filter);
+      }
+    },
 
     loadCollections() {
       this.collections = (this as any).$userdata.get("modules.custom_collection.list") || [];
@@ -1329,6 +1357,40 @@ export default defineComponent({
 }
 
 .custom-collection-module {
+  .search-bar {
+    .v-field {
+      background: var(--card-bg) !important;
+      box-shadow: var(--shadow) !important;
+      border: 1px solid transparent;
+      transition: all 0.2s ease;
+      border-radius: 25px !important;
+      
+      .v-field__input {
+        padding: 12px 20px !important;
+        font-size: 14px !important;
+      }
+      
+      .v-field__prepend-inner {
+        padding-left: 16px !important;
+        
+        .v-icon {
+          color: var(--accent-blue) !important;
+          opacity: 0.7;
+        }
+      }
+      
+      &:hover {
+        box-shadow: var(--shadow-hover) !important;
+      }
+      
+      &.v-field--focused {
+        border-color: var(--accent-blue);
+        background: rgba(0, 151, 215, 0.05) !important;
+        box-shadow: 0 4px 20px rgba(0, 151, 215, 0.15) !important;
+      }
+    }
+  }
+
   .collections-grid-wrap {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
