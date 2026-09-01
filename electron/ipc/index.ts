@@ -287,19 +287,35 @@ export function registerIpcHandlers() {
   ipcMain.handle("read-slja-zip", async (_event, filePath: string) => {
     try {
       if (!filePath || !fs.existsSync(filePath)) return null;
-      const zip = new AdmZip(filePath);
-      const entries = zip.getEntries();
-      const iniEntry = entries.find((e) => e.entryName.toLowerCase() === "slides.lja");
-      if (!iniEntry) return null;
 
-      const iniText = iniEntry.getData().toString("latin1");
+      let iniText = "";
+      let entries: Array<{ entryName: string; getData: () => Buffer }> = [];
+      let tempDir = "";
+      let isZip = false;
+
+      try {
+        const zip = new AdmZip(filePath);
+        entries = zip.getEntries();
+        const iniEntry = entries.find((e) => e.entryName.toLowerCase() === "slides.lja");
+        if (iniEntry) {
+          iniText = iniEntry.getData().toString("latin1");
+          isZip = true;
+        }
+      } catch {
+        // Fallback for unzipped/raw .lja or legacy .slja text files
+        iniText = fs.readFileSync(filePath, "latin1");
+        isZip = false;
+      }
+
+      if (!iniText) return null;
+
       const { geral, slides } = parseSljaIni(iniText);
 
-      const tempDir = path.join(app.getPath("temp"), "louvorja-slja");
+      tempDir = path.join(app.getPath("temp"), "louvorja-slja");
       await fs.ensureDir(tempDir);
 
       const extractEntry = (relPath: string): string | null => {
-        if (!relPath) return null;
+        if (!isZip || !relPath) return null;
         const normalized = relPath.replace(/\\/g, "/").toLowerCase();
         const entry = entries.find((e) => e.entryName.replace(/\\/g, "/").toLowerCase() === normalized);
         if (!entry) return null;

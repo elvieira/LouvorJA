@@ -43,5 +43,14 @@
     "format_image": "Imagen",
     "format_remove_image": "Quitar Imagen",
     "format_all_next": "Todas Siguientes",
-    "format_all_slides": "Todas las Diapositivas"
+    "format_all_slides": "Todas las Diapositivas",
+    "ribbon_tab_sync": "Sincronía",
+    "lyrics_editor": "Editor de Letra",
+    "slides_list": "Lista de Diapositivas",
+    "preview": "Vista Previa",
+    "add_slide": "Agregar Diapositiva",
+    "font_size": "Tamaño de Fuente",
+    "font_color": "Color de Fuente",
+    "aux_font_size": "Fuente Auxiliar",
+    "aux_font_color": "Color Auxiliar"
 }

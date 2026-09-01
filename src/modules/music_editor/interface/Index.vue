@@ -1,374 +1,333 @@
-﻿<template>
+<template>
   <v-slide-y-reverse-transition>
     <div v-if="module?.show" class="module-full-page music-editor-module d-flex flex-column">
+      <!-- ========================================== -->
+      <!-- HEADER / MODULE HEADER                    -->
+      <!-- ========================================== -->
       <ModuleHeader v-if="mode === 'edit'" :title="headerTitle" icon="mdi-music-note-plus">
-        <!-- EDIT HEADER (compact ribbon) -->
-        <div class="d-flex flex-column align-end compact-ribbon">
-          <div class="compact-ribbon-tabs d-flex align-center">
-            <button
-              v-for="tabItem in ribbonTabs"
-              :key="tabItem.key"
-              type="button"
-              class="ribbon-tab-btn compact"
-              :class="{ active: ribbonTab === tabItem.key }"
-              @click="ribbonTab = tabItem.key"
-            >
-              {{ tabItem.label }}
-            </button>
-          </div>
-
-          <div class="compact-ribbon-toolbar d-flex align-center">
-            <!-- ARQUIVO -->
-            <template v-if="ribbonTab === 'file'">
-              <v-btn
-                icon
-                variant="text"
-                size="small"
-                @click="openNewSong"
+        <div class="editor-header-controls">
+          <div class="editor-tools-group d-flex flex-wrap justify-end align-center" style="gap: 8px;">
+            <!-- Segmented Tab Navigation -->
+            <div class="editor-tabs-pill d-flex align-center flex-shrink-0">
+              <button
+                v-for="tabItem in ribbonTabs"
+                :key="tabItem.key"
+                type="button"
+                class="editor-tab-btn"
+                :class="{ active: ribbonTab === tabItem.key }"
+                @click="ribbonTab = tabItem.key"
               >
-                <v-icon>mdi-file-plus-outline</v-icon>
-                <v-tooltip activator="parent" location="bottom">
-                  {{ t('ribbon_new') }}
-                </v-tooltip>
-              </v-btn>
-              <v-btn
-                icon
-                variant="text"
-                size="small"
-                :color="currentFilePath ? 'primary' : undefined"
-                @click="openFile"
-              >
-                <v-icon>mdi-folder-open-outline</v-icon>
-                <v-tooltip activator="parent" location="bottom">
-                  {{ currentFilePath ? currentFileName : t('ribbon_open') }}
-                </v-tooltip>
-              </v-btn>
-              <v-btn
-                icon
-                variant="text"
-                size="small"
-                @click="importTextFile"
-              >
-                <v-icon>mdi-file-import-outline</v-icon>
-                <v-tooltip activator="parent" location="bottom">
-                  {{ t('ribbon_import') }}
-                </v-tooltip>
-              </v-btn>
-              <div class="compact-ribbon-divider" />
-              <v-btn
-                icon
-                variant="text"
-                size="small"
-                :color="externalAudioFilePath ? 'primary' : undefined"
-                @click="pickExternalFile('audio')"
-              >
-                <v-icon>mdi-file-music</v-icon>
-                <v-tooltip activator="parent" location="bottom">
-                  {{ externalAudioFilePath ? externalAudioFileName : t('external_audio_file') }}
-                </v-tooltip>
-              </v-btn>
-              <v-btn
-                icon
-                variant="text"
-                size="small"
-                :color="externalInstrumentalFilePath ? 'primary' : undefined"
-                @click="pickExternalFile('instrumental')"
-              >
-                <v-icon>mdi-file-music-outline</v-icon>
-                <v-tooltip activator="parent" location="bottom">
-                  {{ externalInstrumentalFilePath ? externalInstrumentalFileName : t('external_instrumental_file') }}
-                </v-tooltip>
-              </v-btn>
-              <v-btn
-                icon
-                variant="text"
-                size="small"
-                :disabled="!externalAudioFilePath && !externalInstrumentalFilePath"
-                @click="resetExternalPick"
-              >
-                <v-icon>mdi-music-note-off-outline</v-icon>
-                <v-tooltip activator="parent" location="bottom">
-                  {{ t('ribbon_remove_audio') }}
-                </v-tooltip>
-              </v-btn>
-              <div class="compact-ribbon-divider" />
-              <v-btn
-                icon
-                variant="text"
-                size="small"
-                :disabled="!canSave || !currentFilePath"
-                @click="saveDocument"
-              >
-                <v-icon>mdi-content-save</v-icon>
-                <v-tooltip activator="parent" location="bottom">
-                  {{ t('save') }}
-                </v-tooltip>
-              </v-btn>
-              <v-btn
-                icon
-                variant="text"
-                size="small"
-                @click="saveFileAs"
-              >
-                <v-icon>mdi-content-save-move-outline</v-icon>
-                <v-tooltip activator="parent" location="bottom">
-                  {{ t('ribbon_save_as') }}
-                </v-tooltip>
-              </v-btn>
-            </template>
-
-            <!-- SLIDES -->
-            <template v-if="ribbonTab === 'slides'">
-              <v-btn
-                icon
-                variant="text"
-                size="small"
-                @click="addSlide"
-              >
-                <v-icon>mdi-plus-box-outline</v-icon>
-                <v-tooltip activator="parent" location="bottom">
-                  {{ t('ribbon_new_slide') }}
-                </v-tooltip>
-              </v-btn>
-              <v-btn
-                icon
-                variant="text"
-                size="small"
-                @click="duplicateSlide"
-              >
-                <v-icon>mdi-content-duplicate</v-icon>
-                <v-tooltip activator="parent" location="bottom">
-                  {{ t('ribbon_duplicate_slide') }}
-                </v-tooltip>
-              </v-btn>
-              <v-btn
-                icon
-                variant="text"
-                size="small"
-                :disabled="slidesInput.length <= 1"
-                @click="removeSlide(activeSlideIndex)"
-              >
-                <v-icon>mdi-delete-outline</v-icon>
-                <v-tooltip activator="parent" location="bottom">
-                  {{ t('ribbon_delete_slide') }}
-                </v-tooltip>
-              </v-btn>
-              <div class="compact-ribbon-divider" />
-              <v-btn
-                icon
-                variant="text"
-                size="small"
-                :disabled="activeSlideIndex <= 0"
-                @click="goToFirstSlide"
-              >
-                <v-icon>mdi-page-first</v-icon>
-              </v-btn>
-              <v-btn
-                icon
-                variant="text"
-                size="small"
-                :disabled="activeSlideIndex <= 0"
-                @click="goToPrevSlide"
-              >
-                <v-icon>mdi-chevron-left</v-icon>
-              </v-btn>
-              <v-btn
-                icon
-                variant="text"
-                size="small"
-                :disabled="activeSlideIndex >= slidesInput.length - 1"
-                @click="goToNextSlide"
-              >
-                <v-icon>mdi-chevron-right</v-icon>
-              </v-btn>
-              <v-btn
-                icon
-                variant="text"
-                size="small"
-                :disabled="activeSlideIndex >= slidesInput.length - 1"
-                @click="goToLastSlide"
-              >
-                <v-icon>mdi-page-last</v-icon>
-              </v-btn>
-            </template>
-
-            <!-- FORMATAR -->
-            <template v-if="ribbonTab === 'format'">
-              <v-btn
-                icon
-                variant="text"
-                size="small"
-                :color="activeSlide?.image ? 'primary' : undefined"
-                @click="pickSlideImage"
-              >
-                <v-icon>mdi-image-outline</v-icon>
-                <v-tooltip activator="parent" location="bottom">
-                  {{ t('format_image') }}
-                </v-tooltip>
-              </v-btn>
-              <v-btn
-                icon
-                variant="text"
-                size="small"
-                :disabled="!activeSlide?.image"
-                @click="removeSlideImage"
-              >
-                <v-icon>mdi-image-remove</v-icon>
-                <v-tooltip activator="parent" location="bottom">
-                  {{ t('format_remove_image') }}
-                </v-tooltip>
-              </v-btn>
-              <v-btn
-                icon
-                variant="text"
-                size="small"
-                :disabled="!activeSlide?.image"
-                @click="applyImageToFollowingSlides"
-              >
-                <v-icon>mdi-arrow-right-bold-box-outline</v-icon>
-                <v-tooltip activator="parent" location="bottom">
-                  {{ t('format_all_next') }}
-                </v-tooltip>
-              </v-btn>
-              <v-btn
-                icon
-                variant="text"
-                size="small"
-                :disabled="!activeSlide?.image"
-                @click="applyImageToAllSlides"
-              >
-                <v-icon>mdi-view-grid-outline</v-icon>
-                <v-tooltip activator="parent" location="bottom">
-                  {{ t('format_all_slides') }}
-                </v-tooltip>
-              </v-btn>
-              <div class="compact-ribbon-divider" />
-              <div class="compact-format-field">
-                <input
-                  v-model.number="activeSlide.fontSize"
-                  type="number"
-                  min="1"
-                  class="ribbon-number-input"
-                />
-                <ModernColorPicker v-model="activeSlide.fontColor" />
-                <v-tooltip activator="parent" location="bottom">
-                  {{ t('main_text') }}
-                </v-tooltip>
-              </div>
-              <div class="compact-format-field">
-                <input
-                  v-model.number="activeSlide.auxFontSize"
-                  type="number"
-                  min="1"
-                  class="ribbon-number-input"
-                />
-                <ModernColorPicker v-model="activeSlide.auxFontColor" />
-                <v-tooltip activator="parent" location="bottom">
-                  {{ t('aux_text') }}
-                </v-tooltip>
-              </div>
-            </template>
-          </div>
-        </div>
-      </ModuleHeader>
-
-      <div class="content-main d-flex flex-column flex-grow-1" style="overflow: hidden;">
-        <!-- EDIT VIEW (ribbon-style editor) -->
-        <template v-if="mode === 'edit'">
-          <div class="editor-workspace d-flex flex-grow-1" style="min-height: 0;">
-            <!-- LEFT PANEL -->
-            <div class="editor-left-panel">
-              <div class="panel-section">
-                <div class="panel-label">
-                  {{ t('main_text') }}
-                </div>
-                <v-textarea
-                  v-model="activeSlide.text"
-                  :placeholder="t('slide_placeholder')"
-                  variant="outlined"
-                  density="comfortable"
-                  rounded="lg"
-                  rows="2"
-                  auto-grow
-                  hide-details
-                />
-              </div>
-              <div class="panel-section">
-                <div class="panel-label">
-                  {{ t('aux_text') }}
-                </div>
-                <v-textarea
-                  v-model="activeSlide.auxText"
-                  :placeholder="t('aux_text_placeholder')"
-                  variant="outlined"
-                  density="comfortable"
-                  rounded="lg"
-                  rows="1"
-                  auto-grow
-                  hide-details
-                />
-              </div>
-              <div class="panel-section pb-1">
-                <div class="panel-label mb-0">
-                  {{ t('slides') }}
-                </div>
-              </div>
-              <div ref="slidesListPanel" class="slides-list-panel">
-                <div
-                  v-for="(slide, index) in slidesInput"
-                  :key="index"
-                  class="slide-row"
-                  :class="{ active: index === activeSlideIndex }"
-                  :data-slide-index="index"
-                  @click="activeSlideIndex = index"
-                >
-                  <span class="slide-num">{{ index + 1 }}</span>
-                  <span class="slide-label">{{ slideRowLabel(slide) }}</span>
-                  <v-icon
-                    v-if="typeof slide.time === 'number'"
-                    size="14"
-                    color="success"
-                    class="slide-time-indicator"
-                  >
-                    mdi-check-circle
-                    <v-tooltip activator="parent" location="top">
-                      {{ t('slide_time_recorded') }}
-                    </v-tooltip>
-                  </v-icon>
-                  <div v-if="index === activeSlideIndex && isPreviewingThisAudio" class="slide-progress-track">
-                    <div class="slide-progress-fill" :style="{ width: activeSlideProgress + '%' }" />
-                  </div>
-                </div>
-              </div>
+                <v-icon :icon="tabItem.icon" size="16" class="mr-1" />
+                {{ tabItem.label }}
+              </button>
             </div>
 
-            <!-- PREVIEW -->
-            <div class="editor-preview-area">
-              <div class="editor-preview-toolbar d-flex align-center">
+            <!-- Contextual Action Bar -->
+            <div class="editor-actions-pill d-flex align-center flex-shrink-0">
+              <!-- TAB: ARQUIVO -->
+              <template v-if="ribbonTab === 'file'">
+                <v-btn
+                  icon
+                  variant="text"
+                  size="small"
+                  @click="openNewSong"
+                >
+                  <v-icon icon="mdi-file-plus-outline" size="20" />
+                  <v-tooltip
+                    activator="parent"
+                    location="bottom"
+                    open-delay="300"
+                    content-class="modern-glass-menu elevation-0 font-weight-medium"
+                  >
+                    {{ t('ribbon_new') }}
+                  </v-tooltip>
+                </v-btn>
+                <v-btn
+                  icon
+                  variant="text"
+                  size="small"
+                  :color="currentFilePath ? 'var(--accent-blue)' : undefined"
+                  @click="openFile"
+                >
+                  <v-icon icon="mdi-folder-open-outline" size="20" />
+                  <v-tooltip
+                    activator="parent"
+                    location="bottom"
+                    open-delay="300"
+                    content-class="modern-glass-menu elevation-0 font-weight-medium"
+                  >
+                    {{ currentFilePath ? currentFileName : t('ribbon_open') }}
+                  </v-tooltip>
+                </v-btn>
+                <v-btn
+                  icon
+                  variant="text"
+                  size="small"
+                  @click="importTextFile"
+                >
+                  <v-icon icon="mdi-file-import-outline" size="20" />
+                  <v-tooltip
+                    activator="parent"
+                    location="bottom"
+                    open-delay="300"
+                    content-class="modern-glass-menu elevation-0 font-weight-medium"
+                  >
+                    {{ t('ribbon_import') }}
+                  </v-tooltip>
+                </v-btn>
+
+                <div class="pill-divider" />
+
+                <v-btn
+                  icon
+                  variant="text"
+                  size="small"
+                  :color="externalAudioFilePath ? 'var(--accent-blue)' : undefined"
+                  @click="pickExternalFile('audio')"
+                >
+                  <v-icon icon="mdi-file-music" size="20" />
+                  <v-tooltip
+                    activator="parent"
+                    location="bottom"
+                    open-delay="300"
+                    content-class="modern-glass-menu elevation-0 font-weight-medium"
+                  >
+                    {{ externalAudioFilePath ? externalAudioFileName : t('external_audio_file') }}
+                  </v-tooltip>
+                </v-btn>
+                <v-btn
+                  icon
+                  variant="text"
+                  size="small"
+                  :color="externalInstrumentalFilePath ? 'var(--accent-blue)' : undefined"
+                  @click="pickExternalFile('instrumental')"
+                >
+                  <v-icon icon="mdi-file-music-outline" size="20" />
+                  <v-tooltip
+                    activator="parent"
+                    location="bottom"
+                    open-delay="300"
+                    content-class="modern-glass-menu elevation-0 font-weight-medium"
+                  >
+                    {{ externalInstrumentalFilePath ? externalInstrumentalFileName : t('external_instrumental_file') }}
+                  </v-tooltip>
+                </v-btn>
+                <v-btn
+                  v-if="externalAudioFilePath || externalInstrumentalFilePath"
+                  icon
+                  variant="text"
+                  size="small"
+                  class="text-error"
+                  @click="resetExternalPick"
+                >
+                  <v-icon icon="mdi-music-note-off-outline" size="20" />
+                  <v-tooltip
+                    activator="parent"
+                    location="bottom"
+                    open-delay="300"
+                    content-class="modern-glass-menu elevation-0 font-weight-medium"
+                  >
+                    {{ t('ribbon_remove_audio') }}
+                  </v-tooltip>
+                </v-btn>
+
+                <div class="pill-divider" />
+
+                <v-btn
+                  icon
+                  variant="text"
+                  size="small"
+                  @click="saveFileAs"
+                >
+                  <v-icon icon="mdi-content-save-move-outline" size="20" />
+                  <v-tooltip
+                    activator="parent"
+                    location="bottom"
+                    open-delay="300"
+                    content-class="modern-glass-menu elevation-0 font-weight-medium"
+                  >
+                    {{ t('ribbon_save_as') }}
+                  </v-tooltip>
+                </v-btn>
+              </template>
+
+              <!-- TAB: FORMATAÇÃO -->
+              <template v-if="ribbonTab === 'format'">
+                <v-btn
+                  icon
+                  variant="text"
+                  size="small"
+                  :color="activeSlide?.image ? 'var(--accent-blue)' : undefined"
+                  @click="pickSlideImage"
+                >
+                  <v-icon icon="mdi-image-plus-outline" size="20" />
+                  <v-tooltip
+                    activator="parent"
+                    location="bottom"
+                    open-delay="300"
+                    content-class="modern-glass-menu elevation-0 font-weight-medium"
+                  >
+                    {{ t('format_image') }}
+                  </v-tooltip>
+                </v-btn>
+                <v-btn
+                  icon
+                  variant="text"
+                  size="small"
+                  class="text-error"
+                  :disabled="!activeSlide?.image"
+                  @click="removeSlideImage"
+                >
+                  <v-icon icon="mdi-image-remove-outline" size="20" />
+                  <v-tooltip
+                    activator="parent"
+                    location="bottom"
+                    open-delay="300"
+                    content-class="modern-glass-menu elevation-0 font-weight-medium"
+                  >
+                    {{ t('format_remove_image') }}
+                  </v-tooltip>
+                </v-btn>
+                <v-btn
+                  icon
+                  variant="text"
+                  size="small"
+                  :disabled="!activeSlide?.image"
+                  @click="applyImageToFollowingSlides"
+                >
+                  <v-icon icon="mdi-arrow-right-bold-box-outline" size="20" />
+                  <v-tooltip
+                    activator="parent"
+                    location="bottom"
+                    open-delay="300"
+                    content-class="modern-glass-menu elevation-0 font-weight-medium"
+                  >
+                    {{ t('format_all_next') }}
+                  </v-tooltip>
+                </v-btn>
+                <v-btn
+                  icon
+                  variant="text"
+                  size="small"
+                  :disabled="!activeSlide?.image"
+                  @click="applyImageToAllSlides"
+                >
+                  <v-icon icon="mdi-view-grid-outline" size="20" />
+                  <v-tooltip
+                    activator="parent"
+                    location="bottom"
+                    open-delay="300"
+                    content-class="modern-glass-menu elevation-0 font-weight-medium"
+                  >
+                    {{ t('format_all_slides') }}
+                  </v-tooltip>
+                </v-btn>
+
+                <div class="pill-divider" />
+
+                <!-- Main Font Size & Color -->
+                <div class="format-inline-control d-flex align-center">
+                  <v-icon icon="mdi-format-size" size="16" class="mr-1 opacity-70" />
+                  <input
+                    v-model.number="activeSlide.fontSize"
+                    type="number"
+                    min="1"
+                    max="100"
+                    class="format-stepper-input"
+                  />
+                  <ModernColorPicker v-model="activeSlide.fontColor">
+                    <template #activator="{ props: colorProps }">
+                      <div
+                        v-bind="colorProps"
+                        class="color-dot-indicator cursor-pointer ml-1.5"
+                        :style="{ background: activeSlide.fontColor }"
+                      />
+                    </template>
+                  </ModernColorPicker>
+                  <v-tooltip
+                    activator="parent"
+                    location="bottom"
+                    open-delay="300"
+                    content-class="modern-glass-menu elevation-0 font-weight-medium"
+                  >
+                    {{ t('main_text') }} ({{ t('font_size') }} / {{ t('font_color') }})
+                  </v-tooltip>
+                </div>
+
+                <!-- Aux Font Size & Color -->
+                <div class="format-inline-control d-flex align-center ml-2">
+                  <v-icon icon="mdi-subtitles-outline" size="14" class="mr-1 opacity-70" />
+                  <input
+                    v-model.number="activeSlide.auxFontSize"
+                    type="number"
+                    min="1"
+                    max="100"
+                    class="format-stepper-input"
+                  />
+                  <ModernColorPicker v-model="activeSlide.auxFontColor">
+                    <template #activator="{ props: auxColorProps }">
+                      <div
+                        v-bind="auxColorProps"
+                        class="color-dot-indicator cursor-pointer ml-1.5"
+                        :style="{ background: activeSlide.auxFontColor }"
+                      />
+                    </template>
+                  </ModernColorPicker>
+                  <v-tooltip
+                    activator="parent"
+                    location="bottom"
+                    open-delay="300"
+                    content-class="modern-glass-menu elevation-0 font-weight-medium"
+                  >
+                    {{ t('aux_text') }} ({{ t('aux_font_size') }} / {{ t('aux_font_color') }})
+                  </v-tooltip>
+                </div>
+              </template>
+
+              <!-- TAB: SINCRONIA -->
+              <template v-if="ribbonTab === 'sync'">
                 <v-btn
                   icon
                   variant="text"
                   size="small"
                   :disabled="!externalAudioFilePath"
+                  :color="isPreviewingThisAudio ? 'var(--accent-blue)' : undefined"
                   @click="previewAudio"
                 >
-                  <v-icon>mdi-play</v-icon>
-                  <v-tooltip activator="parent" location="bottom">
+                  <v-icon :icon="isPreviewingThisAudio && !externalMediaIsPaused ? 'mdi-pause' : 'mdi-play'" size="20" />
+                  <v-tooltip
+                    activator="parent"
+                    location="bottom"
+                    open-delay="300"
+                    content-class="modern-glass-menu elevation-0 font-weight-medium"
+                  >
                     {{ t('ribbon_play') }}
                   </v-tooltip>
                 </v-btn>
+
                 <v-btn
-                  icon
-                  variant="text"
+                  variant="flat"
                   size="small"
+                  rounded="lg"
+                  color="var(--accent-blue)"
+                  class="px-3 text-none font-weight-bold"
                   :disabled="!externalAudioFilePath"
                   @click="recordAndAdvance"
                 >
-                  <v-icon>mdi-microphone-plus</v-icon>
-                  <v-tooltip activator="parent" location="bottom">
-                    {{ t('ribbon_record_advance') }}
+                  <v-icon icon="mdi-microphone-plus" start size="18" />
+                  {{ t('ribbon_record_advance') }}
+                  <v-tooltip
+                    activator="parent"
+                    location="bottom"
+                    open-delay="300"
+                    content-class="modern-glass-menu elevation-0 font-weight-medium"
+                  >
+                    Avança e grava o timestamp para o próximo slide
                   </v-tooltip>
                 </v-btn>
+
+                <div class="pill-divider" />
+
                 <v-btn
                   icon
                   variant="text"
@@ -376,87 +335,441 @@
                   :disabled="!hasRecordedTimes"
                   @click="resetRecordedTimes"
                 >
-                  <v-icon>mdi-record-circle-outline</v-icon>
-                  <v-tooltip activator="parent" location="bottom">
+                  <v-icon icon="mdi-restore" size="20" />
+                  <v-tooltip
+                    activator="parent"
+                    location="bottom"
+                    open-delay="300"
+                    content-class="modern-glass-menu elevation-0 font-weight-medium"
+                  >
                     {{ t('ribbon_record_start') }}
                   </v-tooltip>
                 </v-btn>
+
                 <v-btn
                   icon
                   variant="text"
                   size="small"
+                  class="text-error"
                   @click="clearAll"
                 >
-                  <v-icon>mdi-delete-sweep-outline</v-icon>
-                  <v-tooltip activator="parent" location="bottom">
+                  <v-icon icon="mdi-delete-outline" size="20" />
+                  <v-tooltip
+                    activator="parent"
+                    location="bottom"
+                    open-delay="300"
+                    content-class="modern-glass-menu elevation-0 font-weight-medium"
+                  >
                     {{ t('clear_all') }}
                   </v-tooltip>
                 </v-btn>
-              </div>
-              <div class="editor-preview-canvas">
-                <LSlide
-                  :text="activeSlideFormattedText"
-                  :aux_text="activeSlideFormattedAuxText"
-                  :image="activeSlideImageUrl || undefined"
-                  :text_size_pc="activeSlide?.fontSize"
-                  :text_color="activeSlide?.fontColor"
-                  :aux_text_size_pc="activeSlide?.auxFontSize"
-                  :aux_text_color="activeSlide?.auxFontColor"
-                  force_image
-                />
-                <div class="editor-preview-controls">
-                  <button
-                    type="button"
-                    class="preview-nav-btn"
-                    :disabled="activeSlideIndex <= 0"
-                    @click="goToFirstSlide"
-                  >
-                    <v-icon size="18">
-                      mdi-skip-previous
-                    </v-icon>
-                  </button>
-                  <button
-                    type="button"
-                    class="preview-nav-btn"
-                    :disabled="activeSlideIndex <= 0"
-                    @click="goToPrevSlide"
-                  >
-                    <v-icon size="18">
-                      mdi-chevron-left
-                    </v-icon>
-                  </button>
-                  <div class="preview-slide-count">
-                    {{ t('slide_label') }} {{ activeSlideIndex + 1 }} / {{ slidesInput.length }}
+              </template>
+            </div>
+          </div>
+          <!-- Fim do grupo (Tabs e Actions) -->
+
+          <!-- Primary Actions (Save & Present) -->
+          <div class="editor-primary-actions d-flex align-center" style="gap: 8px;">
+            <v-btn
+              :color="canSave ? 'primary' : undefined"
+              :variant="canSave ? 'flat' : 'tonal'"
+              rounded="lg"
+              class="editor-save-btn text-none font-weight-bold px-4"
+              :disabled="!canSave"
+              @click="saveDocument"
+            >
+              <v-icon
+                icon="mdi-content-save"
+                start
+                size="18"
+              />
+              {{ t('save') }}
+            </v-btn>
+
+            <v-btn
+              variant="tonal"
+              color="primary"
+              rounded="lg"
+              class="editor-present-btn text-none font-weight-bold px-4"
+              @click="startPresentation"
+            >
+              <v-icon
+                icon="mdi-play-circle"
+                start
+                size="18"
+              />
+              {{ t('present') }}
+            </v-btn>
+          </div>
+        </div>
+      </ModuleHeader>
+
+      <!-- ========================================== -->
+      <!-- MAIN WORKSPACE CONTENT                     -->
+      <!-- ========================================== -->
+      <div class="content-main flex-grow-1 w-100 d-flex flex-column" style="overflow: hidden; padding: 20px 24px; min-height: 0;">
+        <!-- EDIT MODE -->
+        <template v-if="mode === 'edit'">
+          <div class="editor-layout-grid d-flex flex-row flex-grow-1 w-100" style="min-height: 0; gap: 20px;">
+            <!-- ========================================== -->
+            <!-- LEFT PANEL: Text Editor & Slides List     -->
+            <!-- ========================================== -->
+            <div class="editor-sidebar-panel d-flex flex-column">
+              <!-- TOP CARD: Slide Text Editor -->
+              <div class="editor-glass-card slide-text-card pa-4 mb-4">
+                <div class="d-flex align-center justify-space-between mb-3">
+                  <div class="d-flex align-center">
+                    <v-icon
+                      icon="mdi-format-text"
+                      size="18"
+                      color="var(--accent-blue)"
+                      class="mr-2"
+                    />
+                    <span class="text-subtitle-2 font-weight-bold" style="color: var(--sidebar-text);">
+                      {{ t('lyrics_editor') }}
+                    </span>
                   </div>
+                  <v-chip
+                    size="x-small"
+                    color="primary"
+                    variant="flat"
+                    class="font-weight-bold"
+                  >
+                    {{ t('slide_label') }} {{ activeSlideIndex + 1 }}
+                  </v-chip>
+                </div>
+
+                <!-- Main Textarea -->
+                <div class="mb-3">
+                  <div class="input-header-label d-flex align-center justify-space-between mb-1.5">
+                    <span class="text-caption font-weight-bold" style="color: var(--sidebar-text-secondary);">
+                      {{ t('main_text') }}
+                    </span>
+                    <button
+                      v-if="activeSlide.text"
+                      type="button"
+                      class="clear-input-link"
+                      @click="activeSlide.text = ''"
+                    >
+                      Limpar
+                    </button>
+                  </div>
+                  <v-textarea
+                    v-model="activeSlide.text"
+                    :placeholder="t('slide_placeholder')"
+                    variant="solo"
+                    density="comfortable"
+                    rounded="lg"
+                    rows="3"
+                    auto-grow
+                    hide-details
+                    class="editor-modern-textarea"
+                  />
+                </div>
+
+                <!-- Aux Textarea -->
+                <div v-if="activeSlideIndex !== 0">
+                  <div class="input-header-label d-flex align-center justify-space-between mb-1.5">
+                    <span class="text-caption font-weight-bold" style="color: var(--sidebar-text-secondary);">
+                      {{ t('aux_text') }}
+                    </span>
+                    <button
+                      v-if="activeSlide.auxText"
+                      type="button"
+                      class="clear-input-link"
+                      @click="activeSlide.auxText = ''"
+                    >
+                      Limpar
+                    </button>
+                  </div>
+                  <v-textarea
+                    v-model="activeSlide.auxText"
+                    :placeholder="t('aux_text_placeholder')"
+                    variant="solo"
+                    density="comfortable"
+                    rounded="lg"
+                    rows="2"
+                    auto-grow
+                    hide-details
+                    class="editor-modern-textarea"
+                  />
+                </div>
+              </div>
+
+              <!-- BOTTOM CARD: Slide Navigator List -->
+              <div class="editor-glass-card slides-playlist-card flex-grow-1 d-flex flex-column pa-4" style="min-height: 0;">
+                <div class="d-flex align-center justify-space-between mb-3 flex-shrink-0">
+                  <div class="d-flex align-center">
+                    <v-icon
+                      icon="mdi-view-carousel-outline"
+                      size="18"
+                      color="var(--accent-blue)"
+                      class="mr-2"
+                    />
+                    <span class="text-subtitle-2 font-weight-bold" style="color: var(--sidebar-text);">
+                      {{ t('slides_list') }}
+                    </span>
+                  </div>
+                  <div class="d-flex align-center" style="gap: 8px;">
+                    <v-chip
+                      size="x-small"
+                      variant="tonal"
+                      color="primary"
+                      class="font-weight-medium"
+                    >
+                      {{ slidesInput.length }} {{ slidesInput.length === 1 ? 'slide' : 'slides' }}
+                    </v-chip>
+                    <v-btn
+                      icon
+                      variant="tonal"
+                      size="x-small"
+                      color="primary"
+                      @click="addSlide"
+                    >
+                      <v-icon icon="mdi-plus" size="16" />
+                      <v-tooltip
+                        activator="parent"
+                        location="top"
+                        open-delay="300"
+                        content-class="modern-glass-menu elevation-0 font-weight-medium"
+                      >
+                        {{ t('add_slide') }}
+                      </v-tooltip>
+                    </v-btn>
+                  </div>
+                </div>
+
+                <!-- Scrollable Slide Items -->
+                <div ref="slidesListPanel" class="slides-scroll-container flex-grow-1 pr-1">
+                  <div
+                    v-for="(slide, index) in slidesInput"
+                    :key="index"
+                    class="slide-item-card d-flex align-center mb-2"
+                    :class="{ active: index === activeSlideIndex }"
+                    :data-slide-index="index"
+                    @click="activeSlideIndex = index"
+                  >
+                    <!-- Slide Number Chip -->
+                    <div class="slide-item-chip d-flex align-center justify-center mr-3">
+                      {{ index + 1 }}
+                    </div>
+
+                    <!-- Slide Text Info -->
+                    <div class="slide-item-info flex-grow-1 text-truncate">
+                      <div class="slide-item-title text-truncate font-weight-bold">
+                        {{ slideRowLabel(slide) }}
+                      </div>
+                      <div class="slide-item-subtitle text-truncate">
+                        {{ index === 0 ? (slide.text ? '' : t('empty_slide')) : (slide.auxText || (slide.text ? 'Sem texto auxiliar' : t('empty_slide'))) }}
+                      </div>
+                    </div>
+
+                    <!-- Slide Image Badge / Thumbnail -->
+                    <div v-if="slide.image" class="slide-item-image-badge mr-2">
+                      <v-icon icon="mdi-image" size="16" color="var(--accent-blue)" />
+                    </div>
+
+                    <!-- Slide Timestamp Badge -->
+                    <div v-if="typeof slide.time === 'number'" class="slide-item-time-badge mr-2 d-flex align-center">
+                      <v-icon icon="mdi-clock-outline" size="12" class="mr-1" />
+                      <span>{{ formatTimeShort(slide.time) }}</span>
+                    </div>
+
+                    <!-- Actions on Hover -->
+                    <div class="slide-item-actions d-flex align-center" @click.stop>
+                      <v-btn
+                        icon
+                        variant="text"
+                        size="x-small"
+                        class="mx-0.5"
+                        @click="duplicateSlideAt(index)"
+                      >
+                        <v-icon icon="mdi-content-duplicate" size="14" />
+                        <v-tooltip
+                          activator="parent"
+                          location="top"
+                          open-delay="300"
+                          content-class="modern-glass-menu elevation-0 font-weight-medium"
+                        >
+                          {{ t('ribbon_duplicate_slide') }}
+                        </v-tooltip>
+                      </v-btn>
+                      <v-btn
+                        v-if="slidesInput.length > 1"
+                        icon
+                        variant="text"
+                        size="x-small"
+                        class="mx-0.5 text-error"
+                        @click="removeSlide(index)"
+                      >
+                        <v-icon icon="mdi-close" size="14" />
+                        <v-tooltip
+                          activator="parent"
+                          location="top"
+                          open-delay="300"
+                          content-class="modern-glass-menu elevation-0 font-weight-medium"
+                        >
+                          {{ t('ribbon_delete_slide') }}
+                        </v-tooltip>
+                      </v-btn>
+                    </div>
+
+                    <!-- Active Slide Progress Track -->
+                    <div v-if="index === activeSlideIndex && isPreviewingThisAudio" class="slide-progress-track">
+                      <div class="slide-progress-fill" :style="{ width: activeSlideProgress + '%' }" />
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Add Slide Action Footer -->
+                <div class="pt-2 flex-shrink-0">
                   <button
                     type="button"
-                    class="preview-nav-btn"
-                    :disabled="activeSlideIndex >= slidesInput.length - 1"
-                    @click="goToNextSlide"
+                    class="add-slide-dashed-btn w-100 d-flex align-center justify-center py-2"
+                    @click="addSlide"
                   >
-                    <v-icon size="18">
-                      mdi-chevron-right
-                    </v-icon>
+                    <v-icon icon="mdi-plus" size="18" class="mr-1.5" />
+                    <span class="text-body-2 font-weight-medium">{{ t('add_slide') }}</span>
                   </button>
-                  <button
-                    type="button"
-                    class="preview-nav-btn"
-                    :disabled="activeSlideIndex >= slidesInput.length - 1"
-                    @click="goToLastSlide"
+                </div>
+              </div>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- RIGHT/CENTER: Slide Preview Canvas         -->
+            <!-- ========================================== -->
+            <div class="editor-preview-panel flex-grow-1 d-flex flex-column align-center justify-center position-relative">
+              <!-- Widescreen Monitor Container -->
+              <div class="preview-monitor-wrapper w-100 d-flex align-center justify-center">
+                <div class="preview-monitor-card position-relative overflow-hidden">
+                  <!-- Top Badges Overlay (Audio Tag Info) -->
+                  <div
+                    v-if="externalAudioFilePath"
+                    class="preview-monitor-topbar position-absolute d-flex align-center px-4 py-3"
+                    style="top: 0; left: 0; z-index: 10;"
                   >
-                    <v-icon size="18">
-                      mdi-skip-next
-                    </v-icon>
-                  </button>
+                    <div class="preview-audio-tag d-flex align-center px-3 py-1">
+                      <v-icon
+                        icon="mdi-music"
+                        size="14"
+                        color="var(--accent-blue)"
+                        class="mr-1.5"
+                      />
+                      <span class="text-caption font-weight-bold text-white text-truncate" style="max-width: 200px;">
+                        {{ externalAudioFileName }}
+                      </span>
+                      <span v-if="isPreviewingThisAudio" class="ml-2 preview-live-dot" />
+                    </div>
+                  </div>
+
+                  <!-- Live Slide Render -->
+                  <div class="preview-slide-canvas w-100 h-100">
+                    <LSlide
+                      :text="activeSlideFormattedText"
+                      :aux_text="activeSlideIndex === 0 ? '' : activeSlideFormattedAuxText"
+                      :image="activeSlideImageUrl || undefined"
+                      :text_size_pc="activeSlide?.fontSize"
+                      :text_color="activeSlide?.fontColor"
+                      :aux_text_size_pc="activeSlide?.auxFontSize"
+                      :aux_text_color="activeSlide?.auxFontColor"
+                      :cover="activeSlideIndex === 0"
+                      force_image
+                      class="w-100 h-100"
+                    />
+                  </div>
+
+                  <!-- Floating Bottom Controller Pill -->
+                  <div class="preview-floating-pill position-absolute d-flex align-center px-4 py-2" style="bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 20;">
+                    <v-btn
+                      icon
+                      variant="text"
+                      size="small"
+                      color="white"
+                      class="mx-1"
+                      :disabled="activeSlideIndex <= 0"
+                      @click="goToFirstSlide"
+                    >
+                      <v-icon icon="mdi-skip-previous" size="18" />
+                    </v-btn>
+
+                    <v-btn
+                      icon
+                      variant="text"
+                      size="small"
+                      color="white"
+                      class="mx-1"
+                      :disabled="activeSlideIndex <= 0"
+                      @click="goToPrevSlide"
+                    >
+                      <v-icon icon="mdi-chevron-left" size="18" />
+                    </v-btn>
+
+                    <div class="preview-slide-counter px-3">
+                      <span class="text-body-2 font-weight-bold text-white">
+                        {{ activeSlideIndex + 1 }}
+                      </span>
+                      <span class="text-caption text-white opacity-60 mx-1">/</span>
+                      <span class="text-caption text-white opacity-80">
+                        {{ slidesInput.length }}
+                      </span>
+                    </div>
+
+                    <v-btn
+                      icon
+                      variant="text"
+                      size="small"
+                      color="white"
+                      class="mx-1"
+                      :disabled="activeSlideIndex >= slidesInput.length - 1"
+                      @click="goToNextSlide"
+                    >
+                      <v-icon icon="mdi-chevron-right" size="18" />
+                    </v-btn>
+
+                    <v-btn
+                      icon
+                      variant="text"
+                      size="small"
+                      color="white"
+                      class="mx-1"
+                      :disabled="activeSlideIndex >= slidesInput.length - 1"
+                      @click="goToLastSlide"
+                    >
+                      <v-icon icon="mdi-skip-next" size="18" />
+                    </v-btn>
+
+                    <div class="pill-divider" style="height: 20px; margin: 0 8px; background: rgba(255,255,255,0.2);" />
+
+                    <v-btn
+                      icon
+                      variant="text"
+                      size="small"
+                      color="white"
+                      class="mx-1"
+                      @click="startPresentation"
+                    >
+                      <v-icon icon="mdi-fullscreen" size="18" />
+                      <v-tooltip
+                        activator="parent"
+                        location="top"
+                        open-delay="300"
+                        content-class="modern-glass-menu elevation-0 font-weight-medium"
+                      >
+                        {{ t('present') }}
+                      </v-tooltip>
+                    </v-btn>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </template>
 
-        <!-- PRESENT VIEW (native player look) -->
+        <!-- ========================================== -->
+        <!-- PRESENTATION / PLAYBACK VIEW               -->
+        <!-- ========================================== -->
         <template v-if="mode === 'present'">
-          <div class="native-player-container position-relative w-100 h-100 d-flex flex-row overflow-hidden">
+          <div class="native-player-container position-relative w-100 h-100 d-flex flex-row overflow-hidden rounded-xl">
             <div class="native-player-visual flex-grow-1 position-relative">
               <LSlide
                 :text="currentSlideText"
@@ -471,26 +784,28 @@
               />
             </div>
 
+            <!-- Slide Playlist Drawer (Present Mode) -->
             <div class="native-player-playlist" :class="{ open: showSlideList }">
               <div ref="presentPlaylistPanel" class="native-playlist-scroll">
                 <div
                   v-for="(slide, index) in presentingSong?.slides"
                   :key="index"
-                  class="native-playlist-item"
+                  class="native-playlist-item mb-2"
                   :class="{ active: index === presentSlideIndex }"
                   :data-slide-index="index"
                   @click="goToPresentSlide(index)"
                 >
-                  <div class="native-slide-chip">
+                  <div class="native-slide-chip mr-3">
                     {{ index + 1 }}
                   </div>
-                  <div class="native-slide-text text-truncate">
+                  <div class="native-slide-text text-truncate font-weight-medium">
                     {{ slideRowLabel(slide) }}
                   </div>
                 </div>
               </div>
             </div>
 
+            <!-- Toolbar System Buttons -->
             <div class="native-player-toolbar d-flex align-center">
               <v-btn
                 icon
@@ -499,30 +814,28 @@
                 class="native-system-btn"
                 @click="exitPresentation"
               >
-                <v-icon>mdi-minus</v-icon>
-                <v-tooltip activator="parent" location="bottom">
-                  Minimizar
-                </v-tooltip>
-              </v-btn>
-              <v-btn
-                icon
-                variant="flat"
-                size="small"
-                class="native-system-btn"
-                @click="exitPresentation"
-              >
-                <v-icon>mdi-close</v-icon>
-                <v-tooltip activator="parent" location="bottom">
-                  Fechar
+                <v-icon icon="mdi-arrow-left" />
+                <v-tooltip
+                  activator="parent"
+                  location="bottom"
+                  open-delay="300"
+                  content-class="modern-glass-menu elevation-0 font-weight-medium"
+                >
+                  Voltar ao Editor
                 </v-tooltip>
               </v-btn>
             </div>
 
+            <!-- Bottom Floating Player Bar -->
             <div class="native-player-footer position-absolute w-100 d-flex justify-center">
               <div class="native-footer-pill d-flex align-center px-6 py-2">
                 <div class="native-player-info d-flex flex-column mr-6">
-                  <span class="text-subtitle-2 font-weight-bold text-truncate text-white" style="line-height: 1.2;">{{ presentingSong?.name }}</span>
-                  <span class="text-caption text-truncate" style="line-height: 1.2; color: rgba(255,255,255,0.6);">{{ presentingSong?.name }}</span>
+                  <span class="text-subtitle-2 font-weight-bold text-truncate text-white" style="line-height: 1.2;">
+                    {{ presentingSong?.name }}
+                  </span>
+                  <span class="text-caption text-truncate" style="line-height: 1.2; color: rgba(255,255,255,0.6);">
+                    Slide {{ presentSlideIndex + 1 }} de {{ presentingSong?.slides.length }}
+                  </span>
                 </div>
 
                 <div class="d-flex align-center mr-4">
@@ -530,31 +843,34 @@
                     icon
                     variant="text"
                     size="small"
+                    color="white"
                     class="mx-1"
                     :disabled="presentSlideIndex <= 0"
                     @click="prevSlide"
                   >
-                    <v-icon>mdi-skip-previous</v-icon>
+                    <v-icon icon="mdi-skip-previous" />
                   </v-btn>
                   <v-btn
                     v-if="presentingSong?.filePathAudio || presentingSong?.filePathInstrumental"
                     icon
                     variant="text"
                     size="large"
+                    color="white"
                     class="mx-1 native-play-btn"
                     @click="togglePresentPlayPause"
                   >
-                    <v-icon>{{ presentIsPaused ? 'mdi-play-circle' : 'mdi-pause-circle' }}</v-icon>
+                    <v-icon :icon="presentIsPaused ? 'mdi-play-circle' : 'mdi-pause-circle'" size="36" />
                   </v-btn>
                   <v-btn
                     icon
                     variant="text"
                     size="small"
+                    color="white"
                     class="mx-1"
                     :disabled="presentSlideIndex >= (presentingSong?.slides.length || 1) - 1"
                     @click="nextSlide"
                   >
-                    <v-icon>mdi-skip-next</v-icon>
+                    <v-icon icon="mdi-skip-next" />
                   </v-btn>
                 </div>
 
@@ -580,6 +896,7 @@
                     :icon="presentVolumeIcon"
                     variant="text"
                     size="small"
+                    color="white"
                     class="mx-1"
                     @click="togglePresentMute"
                   />
@@ -589,13 +906,18 @@
                   v-if="presentingSong?.filePathAudio && presentingSong?.filePathInstrumental"
                   icon
                   variant="text"
-                  :color="presentActiveMode === 'audio' ? 'info' : undefined"
+                  :color="presentActiveMode === 'audio' ? 'var(--accent-blue)' : 'white'"
                   size="small"
                   class="mx-1"
                   @click="togglePresentMode"
                 >
-                  <v-icon>mdi-account-voice</v-icon>
-                  <v-tooltip activator="parent" location="top">
+                  <v-icon icon="mdi-account-voice" />
+                  <v-tooltip
+                    activator="parent"
+                    location="top"
+                    open-delay="300"
+                    content-class="modern-glass-menu elevation-0 font-weight-medium"
+                  >
                     {{ presentActiveMode === 'instrumental' ? t('external_instrumental_file') : t('external_audio_file') }}
                   </v-tooltip>
                 </v-btn>
@@ -604,18 +926,26 @@
                   module="music_editor"
                   variant="text"
                   size="small"
-                  class="mx-1"
+                  class="mx-1 text-white"
                 />
 
                 <v-btn
                   icon
                   variant="text"
-                  :color="showSlideList ? 'info' : undefined"
+                  :color="showSlideList ? 'var(--accent-blue)' : 'white'"
                   size="small"
                   class="mx-1"
                   @click="showSlideList = !showSlideList"
                 >
-                  <v-icon>mdi-format-list-bulleted</v-icon>
+                  <v-icon icon="mdi-format-list-bulleted" />
+                  <v-tooltip
+                    activator="parent"
+                    location="top"
+                    open-delay="300"
+                    content-class="modern-glass-menu elevation-0 font-weight-medium"
+                  >
+                    Lista de Slides
+                  </v-tooltip>
                 </v-btn>
               </div>
             </div>
@@ -739,7 +1069,7 @@ export default defineComponent({
     return {
       slidesInput: [DEFAULT_SLIDE()] as EditorSlide[],
       activeSlideIndex: 0,
-      ribbonTab: "file" as "file" | "slides" | "format",
+      ribbonTab: "file" as "file" | "format" | "sync",
       currentFilePath: null as string | null,
       recordingMode: false,
       externalAudioFilePath: null as string | null,
@@ -772,11 +1102,11 @@ export default defineComponent({
       if (this.mode === "present") return this.presentingSong?.name || "";
       return this.nameInput || this.t("new_song");
     },
-    ribbonTabs(): { key: "file" | "slides" | "format"; label: string }[] {
+    ribbonTabs(): { key: "file" | "format" | "sync"; label: string; icon: string }[] {
       return [
-        { key: "file", label: this.t("ribbon_tab_file") },
-        { key: "slides", label: this.t("ribbon_tab_slides") },
-        { key: "format", label: this.t("ribbon_tab_format") },
+        { key: "file", label: this.t("ribbon_tab_file"), icon: "mdi-folder-outline" },
+        { key: "format", label: this.t("ribbon_tab_format"), icon: "mdi-format-paint" },
+        { key: "sync", label: this.t("ribbon_tab_sync"), icon: "mdi-clock-check-outline" },
       ];
     },
     canSave(): boolean {
@@ -800,6 +1130,9 @@ export default defineComponent({
     externalMediaCurrentTime(): number {
       return (this as any).$appdata.get("modules.external_media.config.current_time") || 0;
     },
+    externalMediaIsPaused(): boolean {
+      return (this as any).$appdata.get("modules.external_media.config.is_paused") !== false;
+    },
     isPreviewingThisAudio(): boolean {
       const appdata = (this as any).$appdata;
       return !!this.externalAudioFilePath && appdata.get("modules.external_media.filePath") === this.externalAudioFilePath;
@@ -808,7 +1141,6 @@ export default defineComponent({
       return this.slidesInput.some((s) => typeof s.time === "number");
     },
     activeSlideProgress(): number {
-      // O slide 1 sempre começa implicitamente em 0 (nunca tem tempo gravado).
       const start = typeof this.activeSlide?.time === "number"
         ? this.activeSlide.time
         : this.activeSlideIndex === 0 ? 0 : null;
@@ -912,6 +1244,12 @@ export default defineComponent({
         this.syncSlideToScreen();
       }
     },
+    ribbonTab(val: string) {
+      const valid = this.ribbonTabs.some((t) => t.key === val);
+      if (!valid) {
+        this.ribbonTab = "file";
+      }
+    },
     presentSlideIndex() {
       this.$nextTick(() => {
         const panel = this.$refs.presentPlaylistPanel as HTMLElement | undefined;
@@ -924,6 +1262,7 @@ export default defineComponent({
     },
   },
   mounted() {
+    this.ribbonTab = "file";
     if (this.module?.show) {
       this.openNewSong();
     }
@@ -940,13 +1279,19 @@ export default defineComponent({
     },
     /* METHODS OBRIGATÓRIOS - FIM */
 
+    formatTimeShort(seconds: number): string {
+      const mins = Math.floor(seconds / 60);
+      const secs = Math.floor(seconds % 60);
+      return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
+    },
+
     scrollActiveSlideIntoView() {
       this.$nextTick(() => {
         const panel = this.$refs.slidesListPanel as HTMLElement | undefined;
         if (!panel) return;
         const row = panel.querySelector(`[data-slide-index="${this.activeSlideIndex}"]`);
         if (row) {
-          row.scrollIntoView({ block: "center", behavior: "smooth" });
+          row.scrollIntoView({ block: "nearest", behavior: "smooth" });
         }
       });
     },
@@ -1146,11 +1491,11 @@ export default defineComponent({
       }
       const lines = content
         .split(/\r?\n/)
-        .map((l) => l.trim())
-        .filter((l) => l.length > 0);
+        .map((l: string) => l.trim())
+        .filter((l: string) => l.length > 0);
       if (lines.length === 0) return;
 
-      this.slidesInput = lines.map((l) => ({ ...DEFAULT_SLIDE(), text: l }));
+      this.slidesInput = lines.map((l: string) => ({ ...DEFAULT_SLIDE(), text: l }));
       this.activeSlideIndex = 0;
     },
     addSlide() {
@@ -1158,9 +1503,13 @@ export default defineComponent({
       this.activeSlideIndex = this.slidesInput.length - 1;
     },
     duplicateSlide() {
-      const copy = { ...this.activeSlide };
-      this.slidesInput.splice(this.activeSlideIndex + 1, 0, copy);
-      this.activeSlideIndex += 1;
+      this.duplicateSlideAt(this.activeSlideIndex);
+    },
+    duplicateSlideAt(index: number) {
+      const target = this.slidesInput[index] || this.activeSlide;
+      const copy = { ...target };
+      this.slidesInput.splice(index + 1, 0, copy);
+      this.activeSlideIndex = index + 1;
     },
     removeSlide(index: number) {
       if (this.slidesInput.length <= 1) return;
@@ -1200,7 +1549,7 @@ export default defineComponent({
       appdata.set("modules.external_media.minimized", true);
       appdata.set("modules.external_media.show", false);
       appdata.set("modules.external_media.config", {
-        is_paused: true,
+        is_paused: false,
         current_time: 0,
         progress: 0,
         duration: 0,
@@ -1215,8 +1564,6 @@ export default defineComponent({
         return;
       }
       this.recordingMode = true;
-      // O tempo é gravado no PRÓXIMO slide (o que está prestes a aparecer), não no atual —
-      // o slide 1 sempre começa em 0 implicitamente, sem precisar de tempo gravado.
       if (this.activeSlideIndex < this.slidesInput.length - 1) {
         this.activeSlideIndex++;
         this.activeSlide.time = this.externalMediaCurrentTime;
@@ -1272,7 +1619,12 @@ export default defineComponent({
 
     startPresentation() {
       const slides = this.slidesInput
-        .map((s) => ({ ...s, text: s.text.trim(), auxText: s.auxText.trim() }))
+        .map((s, index) => ({ 
+          ...s, 
+          text: s.text.trim(), 
+          auxText: index === 0 ? "" : s.auxText.trim(),
+          cover: index === 0,
+        }))
         .filter((s) => this.hasSlideContent(s));
       if (slides.length === 0) {
         (this as any).$alert.show({ text: this.t("slides_required"), translate: false });
@@ -1290,90 +1642,51 @@ export default defineComponent({
     syncSlideToScreen() {
       (this as any).$appdata.set("modules.music_editor.data", {
         text: this.currentSlideText,
-        auxText: this.currentSlideAuxText,
+        auxText: this.presentSlideIndex === 0 ? "" : this.currentSlideAuxText,
         image: this.currentSlideImageUrl,
         fontSize: this.currentSlideData?.fontSize,
         fontColor: this.currentSlideData?.fontColor,
         auxFontSize: this.currentSlideData?.auxFontSize,
         auxFontColor: this.currentSlideData?.auxFontColor,
+        cover: this.presentSlideIndex === 0,
       });
     },
-    nextSlide() {
-      if (!this.presentingSong) return;
-      if (this.presentSlideIndex >= this.presentingSong.slides.length - 1) return;
-      this.presentSlideIndex++;
-      this.syncSlideToScreen();
-    },
-    prevSlide() {
-      if (this.presentSlideIndex <= 0) return;
-      this.presentSlideIndex--;
-      this.syncSlideToScreen();
-    },
-    handlePresentKeydown(e: KeyboardEvent) {
-      if (this.mode !== "present") return;
-      const target = e.target as HTMLElement | null;
-      if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable)) return;
-      if (e.key === "ArrowRight" || e.key === "ArrowDown" || e.key === " ") {
-        e.preventDefault();
-        this.nextSlide();
-      } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
-        e.preventDefault();
-        this.prevSlide();
-      }
-    },
     exitPresentation() {
-      const appdata = (this as any).$appdata;
-      if (appdata.get("popup_module") === this.module_id) {
-        (this as any).$popup.exit();
-      }
-      appdata.set("modules.music_editor.data", null);
       this.presentingSong = null;
+      this.presentSlideIndex = 0;
+      const appdata = (this as any).$appdata;
+      if (appdata.get("popup_module") === "music_editor") {
+        import("@/helpers/ui/Popup").then(({ default: $popup }) => {
+          $popup.exit();
+        });
+      }
     },
-    playExternalFile(mode: "audio" | "instrumental") {
-      if (!this.presentingSong) return;
-      const filePath = mode === "audio" ? this.presentingSong.filePathAudio : this.presentingSong.filePathInstrumental;
+    playExternalFile(kind: "audio" | "instrumental") {
+      const filePath = kind === "audio"
+        ? this.presentingSong?.filePathAudio
+        : this.presentingSong?.filePathInstrumental;
       if (!filePath) return;
-
       const appdata = (this as any).$appdata;
       if (appdata.get("modules.media.id_music")) {
         (this as any).$media.close(true);
       }
       appdata.set("modules.external_media.filePath", filePath);
-      appdata.set("modules.external_media.title", this.presentingSong.name);
-      appdata.set("modules.external_media.subtitle", mode === "instrumental" ? "Playback" : "");
-      appdata.set("modules.external_media.minimized", false);
+      appdata.set("modules.external_media.title", this.presentingSong?.name || "");
+      appdata.set("modules.external_media.subtitle", "");
+      appdata.set("modules.external_media.minimized", true);
       appdata.set("modules.external_media.show", false);
       appdata.set("modules.external_media.config", {
-        is_paused: true,
+        is_paused: false,
         current_time: 0,
         progress: 0,
         duration: 0,
         volume: 100,
       });
     },
-    goToPresentSlide(index: number) {
-      const slide = this.presentingSong?.slides[index];
-      this.presentSlideIndex = index;
-      this.syncSlideToScreen();
-      if (slide && typeof slide.time === "number" && this.presentDuration > 0) {
-        const percent = Math.min(100, Math.max(0, (slide.time / this.presentDuration) * 100));
-        const appdata = (this as any).$appdata;
-        appdata.set("modules.external_media.config.current_time", slide.time);
-        appdata.set("modules.external_media.config.request_action", {
-          action: "seek",
-          value: percent,
-          timestamp: Date.now(),
-        });
-      }
-    },
-    formatPresentTime(seconds: number): string {
-      if (!seconds || isNaN(seconds)) return "0:00";
-      const mins = Math.floor(seconds / 60);
-      const secs = Math.floor(seconds % 60);
-      return `${mins}:${secs.toString().padStart(2, "0")}`;
-    },
     togglePresentPlayPause() {
-      if (!this.presentActiveMode) {
+      const appdata = (this as any).$appdata;
+      const activePath = appdata.get("modules.external_media.filePath");
+      if (!activePath) {
         if (this.presentingSong?.filePathAudio) {
           this.playExternalFile("audio");
         } else if (this.presentingSong?.filePathInstrumental) {
@@ -1381,278 +1694,489 @@ export default defineComponent({
         }
         return;
       }
-      (this as any).$appdata.set("modules.external_media.config.request_action", {
-        action: "toggle_play",
-        timestamp: Date.now(),
-      });
+      appdata.set("modules.external_media.config.is_paused", !this.presentIsPaused);
     },
     togglePresentMode() {
-      if (!this.presentingSong) return;
-      const next = this.presentActiveMode === "audio" ? "instrumental" : "audio";
-      const targetPath = next === "audio" ? this.presentingSong.filePathAudio : this.presentingSong.filePathInstrumental;
-      if (!targetPath) return;
-      this.playExternalFile(next);
-    },
-    seekPresentProgress() {
-      if (!this.presentDuration) return;
-      const appdata = (this as any).$appdata;
-      const time = (this.presentDuration * this.presentProgress) / 100;
-      appdata.set("modules.external_media.config.current_time", time);
-      appdata.set("modules.external_media.config.request_action", {
-        action: "seek",
-        value: this.presentProgress,
-        timestamp: Date.now(),
-      });
+      if (this.presentActiveMode === "audio" && this.presentingSong?.filePathInstrumental) {
+        this.playExternalFile("instrumental");
+      } else if (this.presentingSong?.filePathAudio) {
+        this.playExternalFile("audio");
+      }
     },
     togglePresentMute() {
       const appdata = (this as any).$appdata;
-      const nextVolume = this.presentVolume > 0 ? 0 : 100;
-      appdata.set("modules.external_media.config.volume", nextVolume);
-      appdata.set("modules.external_media.config.request_action", {
-        action: "set_volume",
-        value: nextVolume,
-        timestamp: Date.now(),
-      });
+      const current = this.presentVolume;
+      appdata.set("modules.external_media.config.volume", current > 0 ? 0 : 100);
+    },
+    seekPresentProgress(val: number) {
+      const duration = this.presentDuration;
+      if (duration <= 0) return;
+      const target = (val / 100) * duration;
+      (this as any).$appdata.set("modules.external_media.config.current_time", target);
+    },
+    formatPresentTime(seconds: number): string {
+      const s = Math.max(0, Math.floor(seconds || 0));
+      const m = Math.floor(s / 60);
+      const rem = s % 60;
+      return `${m}:${rem.toString().padStart(2, "0")}`;
+    },
+    goToPresentSlide(index: number) {
+      if (!this.presentingSong || index < 0 || index >= this.presentingSong.slides.length) return;
+      this.presentSlideIndex = index;
+      this.syncSlideToScreen();
+    },
+    nextSlide() {
+      if (!this.presentingSong) return;
+      if (this.presentSlideIndex < this.presentingSong.slides.length - 1) {
+        this.presentSlideIndex++;
+        this.syncSlideToScreen();
+      }
+    },
+    prevSlide() {
+      if (!this.presentingSong) return;
+      if (this.presentSlideIndex > 0) {
+        this.presentSlideIndex--;
+        this.syncSlideToScreen();
+      }
+    },
+    handlePresentKeydown(e: KeyboardEvent) {
+      if (this.mode !== "present") return;
+      if (e.key === "ArrowRight" || e.key === "PageDown" || e.key === " ") {
+        e.preventDefault();
+        this.nextSlide();
+      } else if (e.key === "ArrowLeft" || e.key === "PageUp") {
+        e.preventDefault();
+        this.prevSlide();
+      } else if (e.key === "Escape") {
+        e.preventDefault();
+        this.exitPresentation();
+      }
     },
   },
 });
 </script>
 
 <style lang="scss">
-.module-full-page {
-  position: absolute;
-  top: 0;
-  left: 0;
+.music-editor-module {
   width: 100%;
   height: 100%;
-  background: var(--card-bg);
-  z-index: 10;
-}
+  background-color: var(--main-bg);
 
-.music-editor-module {
-  /* Compact ribbon (docked in the header, top-right) */
-  .compact-ribbon {
-    gap: 4px;
-  }
+  /* ========================================== */
+  /* HEADER & CONTROLS                         */
+  /* ========================================== */
+  .search-header {
+    height: 72px;
+    padding-top: 24px !important;
+    padding-bottom: 0 !important;
+    flex-wrap: nowrap !important;
 
-  .compact-ribbon-tabs {
-    gap: 4px;
-  }
-
-  .ribbon-tab-btn {
-    background: none;
-    border: none;
-    padding: 2px 10px;
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--sidebar-text-secondary);
-    cursor: pointer;
-    border-radius: 4px;
-
-    &:hover {
-      color: var(--sidebar-text);
-    }
-
-    &.active {
-      color: var(--accent-blue);
-      background: rgba(var(--v-theme-primary), 0.12);
-    }
-  }
-
-  .compact-ribbon-toolbar {
-    gap: 2px;
-    min-height: 40px;
-  }
-
-  .compact-ribbon-divider {
-    width: 1px;
-    height: 24px;
-    background: var(--border-color);
-    margin: 0 4px;
-  }
-
-  .compact-format-field {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    padding: 0 6px;
-  }
-
-  .ribbon-number-input {
-    width: 44px;
-    background: var(--main-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-    color: var(--sidebar-text);
-    font-size: 12px;
-    padding: 2px 4px;
-  }
-
-  /* Editor workspace */
-  .editor-workspace {
-    overflow: hidden;
-  }
-
-  .editor-left-panel {
-    width: 300px;
-    flex-shrink: 0;
-    display: flex;
-    flex-direction: column;
-    overflow-y: auto;
-    background: var(--card-bg);
-  }
-
-  .panel-section {
-    padding: 12px 16px;
-  }
-
-  .panel-label {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--sidebar-text-secondary);
-    margin-bottom: 6px;
-  }
-
-  .slides-list-panel {
-    flex: 1;
-    overflow-y: auto;
-  }
-
-  .slide-row {
-    position: relative;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 16px;
-    cursor: pointer;
-    border-bottom: 1px solid var(--border-color);
-    overflow: hidden;
-
-    &:hover {
-      background: var(--sidebar-hover);
-    }
-
-    &.active {
-      background: var(--accent-blue);
-
-      .slide-num,
-      .slide-label {
-        color: white;
-      }
-    }
-
-    .slide-num {
-      font-weight: 700;
-      font-size: 15px;
-      min-width: 18px;
-      color: var(--accent-blue);
-    }
-
-    .slide-label {
-      flex: 1;
-      min-width: 0;
-      font-size: 13px;
-      color: var(--sidebar-text);
+    .section-title {
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
-      text-transform: uppercase;
-    }
 
-    .slide-time-indicator {
-      flex-shrink: 0;
-    }
+      @media (max-width: 1249px) {
+        max-width: 260px;
+      }
 
-    .slide-progress-track {
-      position: absolute;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      height: 3px;
-      background: rgba(255, 255, 255, 0.25);
-    }
-
-    .slide-progress-fill {
-      height: 100%;
-      background: rgb(var(--v-theme-success));
-      transition: width 0.15s linear;
+      @media (min-width: 1250px) {
+        max-width: 380px;
+      }
     }
   }
 
-  .editor-preview-area {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-    background: #000;
-  }
-
-  .editor-preview-toolbar {
-    flex-shrink: 0;
-    gap: 2px;
-    padding: 4px 12px;
-    background: var(--card-bg);
-    border-bottom: 1px solid var(--border-color);
-  }
-
-  .editor-preview-canvas {
-    flex: 1;
-    position: relative;
-  }
-
-  .editor-preview-controls {
+  .editor-header-controls {
     position: absolute;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
+    top: 20px;
+    right: 24px;
+    z-index: 35;
     display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
     align-items: center;
-    justify-content: center;
     gap: 8px;
-    padding: 8px 16px;
-    background: rgba(15, 15, 20, 0.55);
+    max-width: calc(100% - 470px);
+    pointer-events: none;
+    transition: all 0.25s ease;
+
+    & > * {
+      pointer-events: auto;
+    }
+
+    .editor-tabs-pill {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 3px;
+      box-shadow: var(--shadow);
+    }
+
+    .editor-tab-btn {
+      display: inline-flex;
+      align-items: center;
+      padding: 5px 12px;
+      border-radius: 16px;
+      border: none;
+      background: transparent;
+      color: var(--sidebar-text-secondary);
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+
+      &:hover {
+        color: var(--sidebar-text);
+        background: var(--sidebar-hover);
+      }
+
+      &.active {
+        background: var(--accent-blue);
+        color: #ffffff;
+        box-shadow: 0 2px 8px rgba(0, 151, 215, 0.35);
+      }
+    }
+
+    .editor-actions-pill {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 3px 8px;
+      min-height: 38px;
+      gap: 5px;
+      box-shadow: var(--shadow);
+
+      .v-btn {
+        width: 32px;
+        height: 32px;
+        min-width: 32px;
+        border-radius: 50% !important;
+        transition: var(--transition);
+
+        &:hover:not(:disabled):not(.v-btn--disabled) {
+          background: var(--sidebar-hover);
+        }
+
+        &:disabled,
+        &.v-btn--disabled {
+          opacity: 0.28 !important;
+          color: var(--sidebar-text-secondary) !important;
+        }
+
+        &.px-3 {
+          width: auto !important;
+          border-radius: 8px !important;
+        }
+      }
+    }
+
+    .pill-divider {
+      width: 1px;
+      height: 18px;
+      background: var(--border-color);
+      margin: 0 3px;
+    }
+
+    .format-inline-control {
+      background: var(--sidebar-hover);
+      padding: 2px 6px;
+      border-radius: 10px;
+
+      .format-stepper-input {
+        width: 34px;
+        background: transparent;
+        border: none;
+        outline: none;
+        color: var(--sidebar-text);
+        font-size: 12px;
+        font-weight: 700;
+        text-align: center;
+        
+        /* Oculta as setas nativas do navegador */
+        -moz-appearance: textfield;
+        appearance: textfield;
+        &::-webkit-outer-spin-button,
+        &::-webkit-inner-spin-button {
+          -webkit-appearance: none;
+          appearance: none;
+          margin: 0;
+        }
+      }
+    }
+
+    .color-dot-indicator {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 2px solid rgba(255, 255, 255, 0.8);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .editor-primary-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .editor-save-btn {
+      height: 38px;
+      border-radius: 8px !important;
+      transition: var(--transition);
+
+      &:not(:disabled):not(.v-btn--disabled) {
+        box-shadow: 0 4px 12px rgba(0, 151, 215, 0.3) !important;
+      }
+
+      &:disabled,
+      &.v-btn--disabled {
+        opacity: 0.5 !important;
+        background: var(--sidebar-hover) !important;
+        color: var(--sidebar-text-secondary) !important;
+        border: 1px solid var(--border-color) !important;
+        box-shadow: none !important;
+      }
+    }
+
+    .editor-present-btn {
+      height: 38px;
+      border-radius: 8px !important;
+    }
+  }
+
+  /* ========================================== */
+  /* LEFT SIDEBAR PANEL & CARDS                */
+  /* ========================================== */
+  .editor-sidebar-panel {
+    width: 360px;
+    min-width: 320px;
+    max-width: 400px;
+    height: 100%;
+  }
+
+  .editor-glass-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+  }
+
+  .slide-text-card {
+    flex-shrink: 0;
+
+    .clear-input-link {
+      background: transparent;
+      border: none;
+      font-size: 11px;
+      color: var(--accent-blue);
+      font-weight: 600;
+      cursor: pointer;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+
+    .editor-modern-textarea {
+      .v-field {
+        background: var(--main-bg) !important;
+        border: 1px solid var(--border-color) !important;
+        box-shadow: none !important;
+        transition: var(--transition);
+        border-radius: 12px !important;
+
+        &.v-field--focused {
+          border-color: var(--accent-blue) !important;
+          box-shadow: 0 0 0 3px rgba(0, 151, 215, 0.15) !important;
+        }
+
+        .v-field__input {
+          font-size: 14px;
+          line-height: 1.4;
+          color: var(--sidebar-text);
+        }
+      }
+    }
+  }
+
+  .slides-playlist-card {
+    overflow: hidden;
+
+    .slides-scroll-container {
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    .slide-item-card {
+      position: relative;
+      background: var(--main-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 10px 12px;
+      cursor: pointer;
+      transition: var(--transition);
+      overflow: hidden;
+
+      &:hover {
+        border-color: rgba(0, 151, 215, 0.4);
+        background: var(--sidebar-hover);
+        transform: translateX(3px);
+
+        .slide-item-actions {
+          opacity: 1;
+        }
+      }
+
+      &.active {
+        background: var(--sidebar-hover);
+        border-color: var(--accent-blue);
+        box-shadow: 0 4px 12px rgba(0, 151, 215, 0.15);
+        transform: translateX(4px);
+
+        .slide-item-chip {
+          background: var(--accent-blue);
+          color: #ffffff;
+        }
+
+        .slide-item-title {
+          color: var(--accent-blue);
+        }
+      }
+
+      .slide-item-chip {
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        background: var(--sidebar-hover);
+        color: var(--sidebar-text-secondary);
+        font-size: 12px;
+        font-weight: 700;
+        flex-shrink: 0;
+        transition: var(--transition);
+      }
+
+      .slide-item-title {
+        font-size: 13px;
+        color: var(--sidebar-text);
+        line-height: 1.2;
+        margin-bottom: 2px;
+      }
+
+      .slide-item-subtitle {
+        font-size: 11px;
+        color: var(--sidebar-text-secondary);
+        line-height: 1.2;
+      }
+
+      .slide-item-time-badge {
+        font-size: 11px;
+        font-weight: 600;
+        color: rgb(var(--v-theme-success));
+        background: rgba(var(--v-theme-success), 0.1);
+        padding: 2px 6px;
+        border-radius: 6px;
+        flex-shrink: 0;
+      }
+
+      .slide-item-image-badge {
+        flex-shrink: 0;
+      }
+
+      .slide-item-actions {
+        opacity: 0;
+        transition: opacity 0.2s ease;
+        flex-shrink: 0;
+      }
+
+      .slide-progress-track {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 3px;
+        background: rgba(0, 151, 215, 0.2);
+
+        .slide-progress-fill {
+          height: 100%;
+          background: var(--accent-blue);
+          transition: width 0.1s linear;
+        }
+      }
+    }
+
+    .add-slide-dashed-btn {
+      background: transparent;
+      border: 1px dashed var(--border-color);
+      border-radius: 12px;
+      color: var(--accent-blue);
+      cursor: pointer;
+      transition: var(--transition);
+
+      &:hover {
+        background: var(--sidebar-hover);
+        border-color: var(--accent-blue);
+      }
+    }
+  }
+
+  /* ========================================== */
+  /* RIGHT/CENTER PREVIEW MONITOR               */
+  /* ========================================== */
+  .editor-preview-panel {
+    background: transparent;
+    height: 100%;
+    min-width: 0;
+  }
+
+  .preview-monitor-wrapper {
+    height: 100%;
+  }
+
+  .preview-monitor-card {
+    width: 100%;
+    max-width: 960px;
+    aspect-ratio: 16 / 9;
+    background: #000000;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.45);
+  }
+
+  .preview-audio-tag {
+    background: rgba(15, 15, 20, 0.6);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+
+    .preview-live-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: rgb(var(--v-theme-success));
+      box-shadow: 0 0 8px rgb(var(--v-theme-success));
+      animation: pulse 1.5s infinite;
+    }
+  }
+
+  .preview-floating-pill {
+    background: rgba(15, 15, 20, 0.65);
     backdrop-filter: blur(28px) saturate(160%);
     -webkit-backdrop-filter: blur(28px) saturate(160%);
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: 9999px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-    z-index: 5;
-  }
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 
-  .preview-nav-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    border: none;
-    background: transparent;
-    color: white;
-    cursor: pointer;
-
-    &:hover:not(:disabled) {
-      background: rgba(255, 255, 255, 0.15);
-    }
-
-    &:disabled {
-      opacity: 0.35;
-      cursor: default;
+    .preview-slide-counter {
+      min-width: 60px;
+      text-align: center;
     }
   }
 
-  .preview-slide-count {
-    font-size: 13px;
-    font-weight: 600;
-    color: rgba(255, 255, 255, 0.85);
-    min-width: 90px;
-    text-align: center;
-  }
-
-  /* Native player look (present mode) */
+  /* ========================================== */
+  /* NATIVE PLAYER (PRESENT MODE)              */
+  /* ========================================== */
   .native-player-container {
+    background: #000000;
     height: 100%;
-    background: #000;
   }
 
   .native-player-visual {
@@ -1720,7 +2244,6 @@ export default defineComponent({
     border: 1px solid rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(12px);
     padding: 12px 16px;
-    margin-bottom: 12px;
     cursor: pointer;
 
     &:hover {
@@ -1758,7 +2281,6 @@ export default defineComponent({
     font-size: 12px;
     font-weight: 600;
     color: rgba(255, 255, 255, 0.8);
-    margin-right: 14px;
     flex-shrink: 0;
   }
 
@@ -1784,10 +2306,6 @@ export default defineComponent({
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     min-height: 60px;
     max-width: calc(100% - 48px);
-
-    .v-btn .v-icon {
-      color: white;
-    }
   }
 
   .native-player-info {
@@ -1828,6 +2346,21 @@ export default defineComponent({
       width: 12px;
       height: 12px;
     }
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.95);
+    opacity: 0.8;
   }
 }
 </style>
