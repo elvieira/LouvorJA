@@ -122,17 +122,22 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.books-scroll::-webkit-scrollbar,
 .chapters-scroll::-webkit-scrollbar {
-  width: 6px;
+  width: 4px;
 }
-.books-scroll::-webkit-scrollbar-track,
+
 .chapters-scroll::-webkit-scrollbar-track {
-  margin: 16px 0;
+  background-color: transparent;
+  margin: 6px 0;
 }
-.books-scroll::-webkit-scrollbar-thumb,
+
 .chapters-scroll::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.15);
-  border-radius: 3px;
+  border-radius: 4px;
+  background-color: rgba(0, 151, 215, 0.35);
+  transition: background-color 0.2s ease;
+}
+
+.chapters-scroll::-webkit-scrollbar-thumb:hover {
+  background-color: var(--accent-blue);
 }
 </style>
