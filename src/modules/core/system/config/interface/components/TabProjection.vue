@@ -375,7 +375,7 @@
                     </v-btn-toggle>
                   </div>
 
-                  <!-- Cor do sombreamento atrás das letras -->
+                  <!-- Cor da tarja atrás das letras -->
                   <div class="mb-6">
                     <div class="d-flex align-center mb-3">
                       <v-icon size="18" color="primary" class="mr-2">
@@ -414,7 +414,7 @@
                     </div>
                   </div>
 
-                  <!-- Intensidade do sombreamento -->
+                  <!-- Opacidade da tarja -->
                   <div class="mb-6">
                     <div class="d-flex align-center justify-space-between mb-3">
                       <div class="d-flex align-center">
@@ -443,7 +443,7 @@
                     />
                   </div>
 
-                  <!-- Borda do sombreamento -->
+                  <!-- Borda da tarja -->
                   <v-switch
                     v-model="slide_text_bg_border"
                     :label="t('text_bg_border')"
