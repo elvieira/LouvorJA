@@ -2,39 +2,9 @@
   <v-slide-y-reverse-transition>
     <div v-if="module?.show" class="module-full-page dashboard-home d-flex flex-column">
       <ModuleHeader :title="t('title')" :image="headerImage">
-        <div
-          class="search-bar ml-4 d-flex align-center"
-          :style="{ maxWidth: selectionMode ? '550px' : '500px', flex: '1', gap: '8px' }"
-        >
-          <v-badge
-            v-if="selectionMode"
-            :content="selectedIds.length"
-            :model-value="selectedIds.length > 0"
-            color="error"
-            location="top end"
-            offset-x="4"
-            offset-y="4"
-            class="flex-shrink-0"
-          >
-            <v-btn
-              icon
-              variant="flat"
-              color="primary"
-              :disabled="selectedIds.length === 0"
-              @click="playSelected"
-            >
-              <v-icon size="20">
-                mdi-play
-              </v-icon>
-              <v-tooltip activator="parent" location="bottom">
-                {{ t('inputs.play_selected') }}
-              </v-tooltip>
-            </v-btn>
-          </v-badge>
+        <div class="search-bar ml-4" style="max-width: 400px; flex: 1;">
           <v-text-field
             v-model="search"
-            class="flex-grow-1"
-            style="min-width: 0;"
             :placeholder="t('inputs.search')"
             prepend-inner-icon="mdi-magnify"
             variant="solo"
@@ -45,54 +15,6 @@
             :error="search !== '' && data.filter_count <= 0"
             @keydown.enter="playFirstResult"
           />
-          <v-menu location="bottom end">
-            <template #activator="{ props: menuProps }">
-              <v-btn
-                v-bind="menuProps"
-                icon
-                variant="tonal"
-                color="primary"
-                size="small"
-                class="flex-shrink-0"
-              >
-                <v-icon size="20">
-                  mdi-dots-vertical
-                </v-icon>
-                <v-tooltip activator="parent" location="bottom">
-                  {{ t('inputs.more_options') }}
-                </v-tooltip>
-              </v-btn>
-            </template>
-            <v-list density="compact" rounded="lg" class="py-1">
-              <v-list-item
-                :disabled="!data.showing_all && data.filter_count <= 50"
-                @click="toggleShowAllHymns"
-              >
-                <template #prepend>
-                  <v-icon size="18">
-                    {{ data.showing_all ? 'mdi-format-list-numbered' : 'mdi-view-list' }}
-                  </v-icon>
-                </template>
-                <v-list-item-title>{{ data.showing_all ? t('inputs.show_less') : t('inputs.show_all') }}</v-list-item-title>
-              </v-list-item>
-              <v-list-item @click="playAllHymns">
-                <template #prepend>
-                  <v-icon size="18">
-                    mdi-play-circle
-                  </v-icon>
-                </template>
-                <v-list-item-title>{{ t('inputs.play_all') }}</v-list-item-title>
-              </v-list-item>
-              <v-list-item @click="toggleSelectionMode">
-                <template #prepend>
-                  <v-icon size="18">
-                    {{ selectionMode ? 'mdi-close-circle-outline' : 'mdi-checkbox-marked-circle-outline' }}
-                  </v-icon>
-                </template>
-                <v-list-item-title>{{ selectionMode ? t('inputs.cancel_selection') : t('inputs.select') }}</v-list-item-title>
-              </v-list-item>
-            </v-list>
-          </v-menu>
         </div>
       </ModuleHeader>
 
@@ -128,19 +50,9 @@
                 v-for="item in data.data"
                 :key="item.id_music"
                 class="music-item"
-                :class="{ 'music-item-selected': selectionMode && selectedIds.includes(item.id_music) }"
                 style="cursor: pointer;"
-                @click="selectionMode ? toggleSelect(item.id_music) : $media.open({ id_music: item.id_music, mode: 'audio' })"
+                @click="$media.open({ id_music: item.id_music, mode: 'audio' })"
               >
-                <td v-if="selectionMode" class="music-select">
-                  <v-checkbox
-                    :model-value="selectedIds.includes(item.id_music)"
-                    hide-details
-                    density="compact"
-                    color="primary"
-                    class="flex-grow-0"
-                  />
-                </td>
                 <td class="music-number text-center">
                   {{ item.track }}
                 </td>
@@ -152,13 +64,27 @@
                 <td class="music-duration">
                   {{ $datetime.shortTime(item.duration) }}
                 </td>
-                <td v-if="!selectionMode" class="music-actions">
+                <td class="music-actions">
                   <div class="d-flex justify-end">
                     <LMusicMenuTable
                       :id-music="item.id_music"
                       :has-instrumental-music="item.has_instrumental_music"
                     />
                   </div>
+                </td>
+              </tr>
+              <tr v-if="!data.showing_all && data.count < data.filter_count" class="load-more-item">
+                <td colspan="4" class="text-center py-4">
+                  <v-btn
+                    variant="tonal"
+                    color="primary"
+                    rounded="lg"
+                    class="text-none font-weight-medium px-6"
+                    prepend-icon="mdi-chevron-down"
+                    @click="loadAllHymns"
+                  >
+                    {{ t('inputs.show_more') }}
+                  </v-btn>
                 </td>
               </tr>
             </tbody>
@@ -193,8 +119,6 @@ export default defineComponent({
       data: { filter_count: 0, data: [] } as any,
       scroll: {} as any,
       has_scroll: false,
-      selectionMode: false,
-      selectedIds: [] as string[],
       hymnalImg,
       hymnal1996Img,
     };
@@ -250,45 +174,8 @@ export default defineComponent({
         }
       }
     },
-    toggleShowAllHymns() {
-      const table = this.$refs.table as any;
-      if (this.data.showing_all) {
-        table?.collapseToLimit();
-      } else {
-        table?.loadAll();
-      }
-    },
-    playAllHymns() {
-      const list = (this.$refs.table as any)?.getFilteredData() || [];
-      const ids = list.map((item: any) => item.id_music).filter(Boolean);
-      if (ids.length > 0) {
-        this.$media.playQueue(ids);
-      }
-    },
-    toggleSelectionMode() {
-      this.selectionMode = !this.selectionMode;
-      if (!this.selectionMode) {
-        this.selectedIds = [];
-      }
-    },
-    toggleSelect(id: string) {
-      const index = this.selectedIds.indexOf(id);
-      if (index >= 0) {
-        this.selectedIds.splice(index, 1);
-      } else {
-        this.selectedIds.push(id);
-      }
-    },
-    playSelected() {
-      const list = (this.$refs.table as any)?.getFilteredData() || [];
-      const ids = list
-        .filter((item: any) => this.selectedIds.includes(item.id_music))
-        .map((item: any) => item.id_music);
-      if (ids.length > 0) {
-        this.selectionMode = false;
-        this.selectedIds = [];
-        this.$media.playQueue(ids);
-      }
+    loadAllHymns() {
+      (this.$refs.table as any)?.loadAll();
     },
     close() {
       this.search = "";
@@ -354,16 +241,6 @@ export default defineComponent({
       background: var(--sidebar-hover) !important;
     }
 
-    &.music-item-selected {
-      background: rgba(0, 151, 215, 0.1) !important;
-    }
-
-    .music-select {
-      display: flex;
-      align-items: center;
-      margin-right: 8px;
-    }
-
     td {
       border-bottom: none !important;
       padding: 0 !important;
@@ -376,6 +253,19 @@ export default defineComponent({
     &:hover > td {
       background: transparent !important;
       background-color: transparent !important;
+    }
+  }
+
+  .load-more-item {
+    display: flex;
+    justify-content: center;
+    padding: 16px 0;
+    border-bottom: none !important;
+
+    td {
+      border-bottom: none !important;
+      padding: 0 !important;
+      background: transparent !important;
     }
   }
 

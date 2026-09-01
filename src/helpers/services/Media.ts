@@ -418,27 +418,6 @@ export default {
     return true;
   },
 
-  async playQueue(ids: string[]) {
-    if (!ids || ids.length === 0) return;
-    $appdata.set("modules.media.queue", ids);
-    $appdata.set("modules.media.queue_index", 0);
-    await this.open({ id_music: ids[0], mode: "audio" });
-  },
-
-  hasNextInQueue(): boolean {
-    const queue = $appdata.get("modules.media.queue") || [];
-    const index = $appdata.get("modules.media.queue_index");
-    return typeof index === "number" && index >= 0 && index < queue.length - 1;
-  },
-
-  async playNextInQueue() {
-    const queue = $appdata.get("modules.media.queue") || [];
-    const index = ($appdata.get("modules.media.queue_index") ?? -1) + 1;
-    if (index >= queue.length) return;
-    $appdata.set("modules.media.queue_index", index);
-    await this.open({ id_music: queue[index], mode: "audio" });
-  },
-
   async syncMonitors() {
     if (window.electronAPI && window.electronAPI.getDisplays) {
       const displays = await window.electronAPI.getDisplays();
@@ -472,8 +451,6 @@ export default {
 
     this.stopAudio();
     this.clearVariables();
-    $appdata.set("modules.media.queue", []);
-    $appdata.set("modules.media.queue_index", -1);
     $appdata.set("modules.media.show", false);
     $appdata.set("modules.media.minimized", false);
 
@@ -891,11 +868,7 @@ export default {
     const current_time = $appdata.get("modules.media.config.current_time");
     const duration = $appdata.get("modules.media.config.duration");
     if (!is_paused && current_time >= duration && duration > 0) {
-      if (this.hasNextInQueue()) {
-        this.playNextInQueue();
-      } else {
-        this.close(true);
-      }
+      this.close(true);
     }
   },
   async fadeOut(audio: HTMLAudioElement, durationMs = 1000) {
@@ -968,8 +941,6 @@ export default {
           if (isLoop) {
             this.goToTime(0);
             this.play();
-          } else if (this.hasNextInQueue()) {
-            this.playNextInQueue();
           } else {
             this.close(true);
           }
