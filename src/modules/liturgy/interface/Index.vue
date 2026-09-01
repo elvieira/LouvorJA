@@ -520,7 +520,7 @@ export default defineComponent({
         changed = true;
       }
 
-      if (["music", "verse", "link", "media", "file"].includes(item.type)) {
+      if (["music", "verse", "link", "media", "file", "scheduled_item"].includes(item.type)) {
         this.executeItem(item);
       }
 

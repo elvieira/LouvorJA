@@ -172,7 +172,7 @@
         </v-list>
       </div>
 
-      <div v-show="!fullscreen" class="floating-pill-container position-absolute w-100 d-flex justify-center" style="bottom: 40px; z-index: 20; pointer-events: none;">
+      <div v-if="!fullscreen" class="floating-pill-container position-absolute w-100 d-flex justify-center" style="bottom: 40px; z-index: 20; pointer-events: none;">
         <div style="pointer-events: auto;">
           <LPlayer location="window" />
         </div>
@@ -281,6 +281,8 @@ export default defineComponent({
                   this.fullscreen = true;
                 }, 200);
               });
+            } else {
+              this.fullscreen = false;
             }
           });
         } else {
@@ -290,8 +292,12 @@ export default defineComponent({
                 this.fullscreen = true;
               }, 200);
             });
+          } else {
+            this.fullscreen = false;
           }
         }
+      } else {
+        this.fullscreen = false;
       }
     },
     slide_index() {
@@ -307,6 +313,9 @@ export default defineComponent({
         }
       });
     },
+  },
+  beforeUnmount() {
+    this.fullscreen = false;
   },
   methods: {
     t(text: string): string {

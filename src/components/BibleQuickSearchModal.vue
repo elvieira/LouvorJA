@@ -79,8 +79,9 @@
           v-model="inputValue"
           type="text"
           class="hidden-input"
-          @keydown.enter="confirmStep"
-          @keydown.space.prevent="confirmStep"
+          @keydown.enter="confirmStep(false)"
+          @keydown.space.prevent="confirmStep(false)"
+          @keydown.p.prevent="handlePKey"
           @keydown.delete="handleBackspace"
         />
 
@@ -128,7 +129,19 @@
             <div v-else class="text-caption text-grey mt-6 d-flex align-center justify-center flex-wrap">
               <span class="kbd-key mx-1">ESC</span> para sair
               <span class="mx-2 opacity-50">|</span>
-              <span class="kbd-key mx-1">ESPAÇO/ENTER</span> para projetar
+              
+              <template v-if="bibleConfig.projWithP">
+                <span class="kbd-key mx-1">ESPAÇO/ENTER</span> para abrir
+                <span class="mx-2 opacity-50">|</span>
+                <span class="kbd-key mx-1">P</span> para projetar
+              </template>
+              <template v-else-if="bibleConfig.autoProjQuick !== false">
+                <span class="kbd-key mx-1">ESPAÇO/ENTER</span> para projetar
+              </template>
+              <template v-else>
+                <span class="kbd-key mx-1">ESPAÇO/ENTER</span> para abrir
+              </template>
+              
               <span class="mx-2 opacity-50">|</span>
               <span class="kbd-key mx-1">BACKSPACE</span> para voltar
             </div>
@@ -179,9 +192,19 @@ export default defineComponent({
       return "";
     });
 
+    const bibleConfig = computed(() => {
+      return proxy.$appdata?.get("modules.bible.config") || proxy.$userdata?.get("bible_config") || {};
+    });
+
     const getCleanString = (str: string) => {
       if (!str) return "";
-      let clean = str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+      let clean = str.toLowerCase().trim();
+      
+      // Casos especiais para abreviaturas idênticas que perdem a distinção ao remover acentos
+      if (clean === "jó") return "job_book";
+      if (clean === "jo") return "joao_book";
+      
+      clean = clean.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
       
       clean = clean.replace(/^iii\s+/, "3").replace(/^ii\s+/, "2").replace(/^i\s+/, "1");
       
@@ -212,8 +235,8 @@ export default defineComponent({
       if (!inputValue.value || step.value !== 1) return null;
       const val = getCleanString(inputValue.value);
       
-      // Exact abbreviation match
-      const exactAbv = books.value.find(b => getCleanString(b.abbreviation) === val);
+      // Exact abbreviation or name match
+      const exactAbv = books.value.find(b => getCleanString(b.abbreviation) === val || getCleanString(b.name) === val);
       if (exactAbv) return exactAbv;
       
       // If only 1 suggestion
@@ -273,14 +296,10 @@ export default defineComponent({
       }
     };
 
-    const confirmStep = async () => {
+    const confirmStep = async (forceProject: boolean = false) => {
       if (step.value === 1) {
         if (matchedBook.value) {
           book.value = matchedBook.value;
-          step.value = 2;
-          inputValue.value = "";
-        } else if (suggestedBooks.value.length > 0) {
-          book.value = suggestedBooks.value[0];
           step.value = 2;
           inputValue.value = "";
         }
@@ -307,8 +326,18 @@ export default defineComponent({
           }
           verse.value = inputValue.value;
           verseError.value = "";
-          projectVerse();
+          projectVerse(forceProject);
         }
+      }
+    };
+
+    const handlePKey = (_e: KeyboardEvent) => {
+      const config = bibleConfig.value;
+      if (config.projWithP !== false && step.value === 3 && inputValue.value) {
+        confirmStep(true);
+      } else {
+        // If not in step 3 or the shortcut is disabled, allow normal typing
+        inputValue.value += "p";
       }
     };
 
@@ -330,11 +359,20 @@ export default defineComponent({
       }
     };
 
-    const projectVerse = () => {
+    const projectVerse = (forceProject: boolean = false) => {
       if (!book.value || !chapter.value || !verse.value) return;
       
       const appdata = proxy.$appdata;
       const modules = proxy.$modules;
+      const config = bibleConfig.value;
+
+      let shouldProject = true;
+      if (config.projWithP) {
+        shouldProject = forceProject;
+      } else {
+        // Fallback to the specific setting (autoProjQuick is true by default)
+        shouldProject = forceProject || config.autoProjQuick !== false;
+      }
 
       if (appdata && popupHelper) {
         appdata.set("modules.bible.data.navigate", {
@@ -348,31 +386,33 @@ export default defineComponent({
         
         modules.open("bible");
 
-        setTimeout(() => {
-          let selectedMonitors: any[] = [];
-          if ((window as any).electronAPI && (window as any).electronAPI.getDisplays) {
-            (window as any).electronAPI.getDisplays().then((displays: any) => {
-              if (displays && displays.length > 1) {
-                let configMonitors = proxy.$userdata.get("modules.config.slide_monitor");
-                if (!Array.isArray(configMonitors)) {
-                  configMonitors = configMonitors ? [configMonitors] : [];
+        if (shouldProject) {
+          setTimeout(() => {
+            let selectedMonitors: any[] = [];
+            if ((window as any).electronAPI && (window as any).electronAPI.getDisplays) {
+              (window as any).electronAPI.getDisplays().then((displays: any) => {
+                if (displays && displays.length > 1) {
+                  let configMonitors = proxy.$userdata.get("modules.config.slide_monitor");
+                  if (!Array.isArray(configMonitors)) {
+                    configMonitors = configMonitors ? [configMonitors] : [];
+                  }
+                  const primary = displays.find((d: any) => d.isPrimary) || displays[0];
+                  selectedMonitors = configMonitors.filter((m: any) => m !== primary.id);
                 }
-                const primary = displays.find((d: any) => d.isPrimary) || displays[0];
-                selectedMonitors = configMonitors.filter((m: any) => m !== primary.id);
-              }
-              
-              if (selectedMonitors.length > 0) {
-                popupHelper.syncMonitors(selectedMonitors, "bible", true);
-              } else {
-                const fullscreen = proxy.$userdata.get("modules.config.slide_fullscreen") !== false;
-                popupHelper.open({ module: "bible", fullscreen });
-              }
-            });
-          } else {
-            const fullscreen = proxy.$userdata.get("modules.config.slide_fullscreen") !== false;
-            popupHelper.open({ module: "bible", fullscreen });
-          }
-        }, 150);
+                
+                if (selectedMonitors.length > 0) {
+                  popupHelper.syncMonitors(selectedMonitors, "bible", true);
+                } else {
+                  const fullscreen = proxy.$userdata.get("modules.config.slide_fullscreen") !== false;
+                  popupHelper.open({ module: "bible", fullscreen });
+                }
+              });
+            } else {
+              const fullscreen = proxy.$userdata.get("modules.config.slide_fullscreen") !== false;
+              popupHelper.open({ module: "bible", fullscreen });
+            }
+          }, 150);
+        }
       }
 
       internalValue.value = false;
@@ -404,9 +444,15 @@ export default defineComponent({
         if (newVal !== cleanVal) {
           inputValue.value = cleanVal;
         }
-      } else {
-        // Passos 2 e 3: Apenas números
+      } else if (step.value === 2) {
+        // Passo 2: Apenas números
         const cleanVal = newVal.replace(/[^0-9]/g, "");
+        if (newVal !== cleanVal) {
+          inputValue.value = cleanVal;
+        }
+      } else if (step.value === 3) {
+        // Passo 3: Apenas números, vírgulas e traços
+        const cleanVal = newVal.replace(/[^0-9,-]/g, "");
         if (newVal !== cleanVal) {
           inputValue.value = cleanVal;
         }
@@ -423,10 +469,12 @@ export default defineComponent({
       verse,
       verseError,
       instructionText,
+      bibleConfig,
       suggestedBooks,
       matchedBook,
       focusInput,
       confirmStep,
+      handlePKey,
       handleBackspace,
     };
   },

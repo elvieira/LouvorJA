@@ -63,6 +63,24 @@
           Próxima
         </v-tooltip>
       </v-btn>
+      <v-btn
+        icon
+        variant="text"
+        :color="loopIconColor"
+        size="small"
+        class="mx-1"
+        @click="toggleLoop"
+      >
+        <v-icon>{{ loopIcon }}</v-icon>
+        <v-tooltip
+          activator="parent"
+          location="top"
+          open-delay="300"
+          content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+        >
+          {{ loopTooltip }}
+        </v-tooltip>
+      </v-btn>
     </div>
 
     <div v-if="media.config.audio" class="player-timeline-wrapper d-flex align-center flex-grow-1 mr-6" style="min-width: 150px;">
@@ -184,6 +202,40 @@
 
 
       <v-btn
+        v-if="location === 'footer'"
+        variant="text"
+        size="small"
+        icon
+        :color="isQueueOpen || queueHighlight ? 'var(--accent-blue)' : defaultTextColor"
+        class="mx-1 position-relative"
+        :class="{ 'pulse-queue': queueHighlight }"
+        @click="toggleQueue"
+      >
+        <v-badge
+          v-if="queueCount > 1"
+          :content="queueCount"
+          class="discreet-badge"
+          floating
+          offset-x="2"
+          offset-y="2"
+        >
+          <v-icon>mdi-playlist-music</v-icon>
+        </v-badge>
+        <v-icon v-else>
+          mdi-playlist-music
+        </v-icon>
+        
+        <v-tooltip
+          activator="parent"
+          location="top"
+          open-delay="300"
+          content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+        >
+          Fila de Reprodução
+        </v-tooltip>
+      </v-btn>
+
+      <v-btn
         v-if="location === 'footer' && !showMiniPlayer"
         variant="text"
         size="small"
@@ -283,6 +335,10 @@
       </v-btn>
     </div>
   </div>
+  
+  <v-expand-transition>
+    <QueuePanel v-if="location === 'footer'" />
+  </v-expand-transition>
 </template>
 
 <script setup lang="ts">
@@ -290,6 +346,7 @@ import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import { useTheme } from "vuetify";
 import { useMedia, useAppData, useModules } from "@/composables/useHelpers";
 import { useI18n } from "vue-i18n";
+import QueuePanel from "@/components/QueuePanel.vue";
 
 defineOptions({ name: "MediaPlayer" });
 
@@ -327,6 +384,11 @@ const secondaryTextClass = computed(() => {
   return isDark.value ? "text-grey" : "text-grey-darken-1";
 });
 
+const secondaryTextColor = computed(() => {
+  if (props.location !== "footer") return "grey";
+  return isDark.value ? "grey" : "grey-darken-1";
+});
+
 const media = computed(() => modules.get("media"));
 
 const showMiniPlayer = computed(() => appdata.get("modules.media.show_mini_player") !== false);
@@ -334,6 +396,42 @@ const showMiniPlayer = computed(() => appdata.get("modules.media.show_mini_playe
 const has_instrumental_music = computed(() => !!media.value.data.url_instrumental_music);
 
 const isPlaylistOpen = computed(() => appdata.get("modules.media.show_playlist") || false);
+const isQueueOpen = computed(() => appdata.get("modules.media.show_queue") || false);
+const queueCount = computed(() => (appdata.get("modules.media.queue")?.items || []).length);
+const queueHighlight = computed(() => appdata.get("modules.media.queue_highlight") === true);
+
+const loopMode = computed(() => appdata.get("modules.media.config.loop") || "none");
+
+const loopIcon = computed(() => {
+  if (loopMode.value === "track" || loopMode.value === true) return "mdi-repeat-once";
+  return "mdi-repeat";
+});
+
+const loopIconColor = computed(() => {
+  if (loopMode.value === "none" || !loopMode.value) return secondaryTextColor.value;
+  return "var(--accent-blue)";
+});
+
+const loopTooltip = computed(() => {
+  if (loopMode.value === "track" || loopMode.value === true) return "Repetir Música";
+  if (loopMode.value === "queue") return "Repetir Fila";
+  return "Repetição Desativada";
+});
+
+const toggleLoop = () => {
+  let nextMode = "none";
+  const current = loopMode.value;
+  
+  if (current === "none" || !current) {
+    nextMode = queueCount.value > 1 ? "queue" : "track";
+  } else if (current === "queue") {
+    nextMode = "track";
+  } else {
+    nextMode = "none";
+  }
+
+  appdata.set("modules.media.config.loop", nextMode);
+};
 
 const menu_modes = computed(() => [
   {
@@ -418,6 +516,13 @@ const togglePlaylist = () => {
   const currentState = appdata.get("modules.media.show_playlist") || false;
   appdata.set("modules.media.show_playlist", !currentState);
 };
+const toggleQueue = () => {
+  const currentState = appdata.get("modules.media.show_queue") || false;
+  appdata.set("modules.media.show_queue", !currentState);
+  if (appdata.get("modules.media.queue_highlight")) {
+    appdata.set("modules.media.queue_highlight", false);
+  }
+};
 
 onMounted(() => {
   resizeObserver = new ResizeObserver(entries => {
@@ -494,6 +599,15 @@ onBeforeUnmount(() => {
   min-height: 64px;
 }
 
+.discreet-badge .v-badge__badge {
+  background-color: rgba(150, 150, 150, 0.25) !important;
+  color: inherit !important;
+  font-size: 9px !important;
+  min-width: 16px !important;
+  height: 16px !important;
+  padding: 0 4px !important;
+}
+
 .play-btn {
   transform: scale(1.1);
   transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -520,6 +634,23 @@ onBeforeUnmount(() => {
   &:hover {
     opacity: 0.8;
     background: rgba(255,255,255,0.05);
+  }
+}
+
+.pulse-queue {
+  animation: pulse-queue-glow 1.5s infinite;
+  border-radius: 50%;
+}
+
+@keyframes pulse-queue-glow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(0, 151, 215, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 8px 4px rgba(0, 151, 215, 0.3);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 151, 215, 0);
   }
 }
 </style>

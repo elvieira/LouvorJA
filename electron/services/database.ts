@@ -88,7 +88,11 @@ export function registerDatabaseHandlers() {
   ipcMain.handle("search-bible", async (event, versionId: number, query: string, mode: "text" | "reference", lang: string = "pt") => {
     try {
       const dbPath = path.join(app.getPath("userData"), `database_${lang}.db`);
-      if (!fs.existsSync(dbPath)) return [];
+      console.log(`[searchBible] Searching in ${dbPath} for '${query}' (versionId: ${versionId}, mode: ${mode})`);
+      if (!fs.existsSync(dbPath)) {
+        console.error(`[searchBible] ERROR: File not found at ${dbPath}`);
+        return [];
+      }
 
       const db = new SQLiteHelper(dbPath);
       await db.connect();
@@ -119,6 +123,7 @@ export function registerDatabaseHandlers() {
           sqlQuery += " LIMIT 100"; // Limitar resultados para não travar
           
           const results = db.prepare(sqlQuery).all(...params);
+          console.log(`[searchBible] Query successful, found ${results.length} results.`);
           return results;
         }
       } finally {

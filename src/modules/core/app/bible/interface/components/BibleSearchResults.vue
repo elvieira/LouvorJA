@@ -112,11 +112,3 @@ export default defineComponent({
   },
 });
 </script>
-
-<style>
-@media (min-width: 1025px) {
-  .bible-search-dialog {
-    transform: translateX(calc(var(--sidebar-width, 350px) / 2)) !important;
-  }
-}
-</style>

@@ -301,7 +301,7 @@ export default defineComponent({
       return this.$t(`modules.${this.moduleId}.${text}`);
     },
     loadConfig() {
-      const saved = this.$appdata.get(`modules.${this.moduleId}.config`);
+      const saved = this.$appdata.get(`modules.${this.moduleId}.config`) || this.$userdata.get(`modules.${this.moduleId}.config`);
       if (saved) {
         this.localConfig = { ...this.defaultConfig, ...saved };
       } else {

@@ -346,6 +346,7 @@ watch(data, () => {
     count: data.value.length,
     showing_all: showingAll.value,
     data: data.value,
+    unformatted_data: filter_data.value,
   });
 });
 

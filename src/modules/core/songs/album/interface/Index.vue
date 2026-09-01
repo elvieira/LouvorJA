@@ -36,6 +36,45 @@
           <h2 class="section-title mb-0" style="color: var(--sidebar-text); font-size: 24px; font-weight: 600; line-height: 1;">
             {{ module?.data?.name }}
           </h2>
+          
+          <v-menu
+            v-if="module?.data?.musics && module.data.musics.length > 0"
+            location="bottom center"
+            open-on-hover
+            :close-on-content-click="true"
+          >
+            <template #activator="{ props: menuProps }">
+              <v-btn
+                v-bind="menuProps"
+                color="primary"
+                variant="tonal"
+                class="ml-6 text-none rounded"
+                prepend-icon="mdi-play"
+              >
+                Reproduzir Todas
+              </v-btn>
+            </template>
+            <v-card class="modern-glass-menu elevation-4 mt-2" rounded="lg">
+              <v-list class="py-1" bg-color="transparent" density="compact">
+                <v-list-item class="mx-1 rounded" style="min-height: 32px;" @click.stop="$media.playAll(module.data.musics, 'audio', module.data.id_album, module.data.url_image)">
+                  <div class="d-flex align-center">
+                    <v-icon size="small" class="mr-2">
+                      mdi-play-circle
+                    </v-icon>
+                    <span class="text-caption font-weight-medium">{{ $t('modules.media.general.sung') }}</span>
+                  </div>
+                </v-list-item>
+                <v-list-item class="mx-1 rounded" style="min-height: 32px;" @click.stop="$media.playAll(module.data.musics, 'instrumental', module.data.id_album, module.data.url_image)">
+                  <div class="d-flex align-center">
+                    <v-icon size="small" class="mr-2">
+                      mdi-play-circle-outline
+                    </v-icon>
+                    <span class="text-caption font-weight-medium">{{ $t('modules.media.general.instrumental') }}</span>
+                  </div>
+                </v-list-item>
+              </v-list>
+            </v-card>
+          </v-menu>
         </div>
       </div>
 

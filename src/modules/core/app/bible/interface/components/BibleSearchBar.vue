@@ -142,7 +142,13 @@ export default defineComponent({
     },
     getCleanString(str: string) {
       if (!str) return "";
-      let clean = str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+      let clean = str.toLowerCase().trim();
+      
+      // Casos especiais para abreviaturas idênticas que perdem a distinção ao remover acentos
+      if (clean === "jó") return "job_book";
+      if (clean === "jo") return "joao_book";
+      
+      clean = clean.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
       clean = clean.replace(/^iii\s+/, "3").replace(/^ii\s+/, "2").replace(/^i\s+/, "1");
       clean = clean
         .replace(/^isam/, "1sam")
@@ -165,31 +171,32 @@ export default defineComponent({
       let isVerseStep = false;
       
       const colonIdx = query.indexOf(":");
+      const beforeColon = colonIdx !== -1 ? query.substring(0, colonIdx) : query;
       if (colonIdx !== -1) {
         isVerseStep = true;
-        const beforeColon = query.substring(0, colonIdx).trimRight();
         verseStr = query.substring(colonIdx + 1).trimLeft();
-        
-        const m = beforeColon.match(/^(.+?)(?:\s+(\d*))?$/);
-        if (m) {
-          bookStr = m[1].trim();
-          chapterStr = m[2] || "";
+      }
+
+      const lastSpace = beforeColon.lastIndexOf(" ");
+      if (lastSpace !== -1) {
+        const p1 = beforeColon.substring(0, lastSpace).trim();
+        const p2 = beforeColon.substring(lastSpace + 1);
+
+        const matchP1 = this.getBestBookMatch(p1);
+        const exactP1 = Array.isArray(matchP1) ? null : matchP1;
+
+        if (exactP1) {
+          bookStr = p1;
+          chapterStr = p2;
+          isChapterStep = true;
         } else {
-          bookStr = beforeColon;
-        }
-      } else {
-        const m = query.match(/^(.+?)(?:\s+(\d*))?$/);
-        if (m) {
-          bookStr = m[1].trim();
-          if (m[2] !== undefined && m[2] !== "") {
-            isChapterStep = true;
-            chapterStr = m[2];
-          } else if (query.endsWith(" ")) {
+          bookStr = beforeColon.trimRight();
+          if (query.endsWith(" ") && colonIdx === -1) {
             isChapterStep = true;
           }
-        } else {
-          bookStr = query.trim();
         }
+      } else {
+        bookStr = beforeColon.trimRight();
       }
       
       return { bookStr, chapterStr, verseStr, isChapterStep, isVerseStep };
@@ -221,30 +228,54 @@ export default defineComponent({
         
         // Check if a space was forced into the input without a valid book
         const parsed = this.parseQuery(currentQuery);
+        
+        const matchResult = this.getBestBookMatch(parsed.bookStr);
+        const exactBook = Array.isArray(matchResult) ? null : matchResult;
+
         if (parsed.isChapterStep) {
-          const matchResult = this.getBestBookMatch(parsed.bookStr);
-          const exactBook = Array.isArray(matchResult) ? null : matchResult;
           if (!exactBook) {
             currentQuery = currentQuery.trimEnd();
-          } else if (parsed.chapterStr && exactBook.chapters) {
-            let chStr = parsed.chapterStr;
-            let chNum = parseInt(chStr);
-            while (chStr.length > 0 && chNum > exactBook.chapters) {
-              chStr = chStr.slice(0, -1);
-              chNum = parseInt(chStr);
-              currentQuery = `${parsed.bookStr} ${chStr}`;
+          } else if (parsed.chapterStr) {
+            let chStr = parsed.chapterStr.replace(/[^0-9]/g, "");
+            
+            if (chStr !== parsed.chapterStr) {
+              const versePart = parsed.isVerseStep ? `:${parsed.verseStr}` : "";
+              currentQuery = `${parsed.bookStr} ${chStr}${versePart}`;
+            }
+            
+            if (exactBook.chapters) {
+              let chNum = parseInt(chStr);
+              while (chStr.length > 0 && chNum > exactBook.chapters) {
+                chStr = chStr.slice(0, -1);
+                chNum = parseInt(chStr);
+                const versePart = parsed.isVerseStep ? `:${parsed.verseStr}` : "";
+                currentQuery = `${parsed.bookStr} ${chStr}${versePart}`;
+              }
             }
           }
-        } else if (parsed.isVerseStep) {
+        }
+        
+        if (parsed.isVerseStep && exactBook) {
           if (parsed.verseStr) {
-            let vStr = parsed.verseStr;
-            let vNum = parseInt(vStr);
-            // Cap to 176 (longest chapter in the Bible is Psalm 119 with 176 verses)
-            while (vStr.length > 0 && vNum > 176) {
-              vStr = vStr.slice(0, -1);
-              vNum = parseInt(vStr);
+            let vStr = parsed.verseStr.replace(/[^0-9,-]/g, "");
+            
+            if (vStr !== parsed.verseStr) {
               const colonIdx = currentQuery.indexOf(":");
               currentQuery = currentQuery.substring(0, colonIdx + 1) + vStr;
+            }
+            
+            const parts = vStr.split(/[,-]/);
+            let lastPart = parts[parts.length - 1];
+            if (lastPart && lastPart.length > 0) {
+              let vNum = parseInt(lastPart);
+              // Cap to 176 (longest chapter in the Bible is Psalm 119 with 176 verses)
+              while (lastPart.length > 0 && vNum > 176) {
+                vStr = vStr.slice(0, -1);
+                lastPart = lastPart.slice(0, -1);
+                vNum = parseInt(lastPart);
+                const colonIdx = currentQuery.indexOf(":");
+                currentQuery = currentQuery.substring(0, colonIdx + 1) + vStr;
+              }
             }
           }
         }
@@ -298,14 +329,19 @@ export default defineComponent({
       if (e.key === "Enter" && this.searchMode === "text") {
         e.preventDefault();
         this.$emit("search-text", this.searchQuery);
-        const inputEl = e.target as HTMLInputElement;
+        const inputEl = (this as any).nativeInput;
         if (inputEl && inputEl.blur) inputEl.blur();
         return;
       }
 
       if (this.searchMode !== "reference") return;
       
-      if (e.key === " " || e.key === "Enter") {
+      const key = e.key.toLowerCase();
+      
+      const bibleConfig = (this as any).$appdata.get("modules.bible.config") || (this as any).$userdata.get("bible_config") || {};
+      const projWithPEnabled = bibleConfig.projWithP === true;
+      
+      if (key === " " || key === "enter" || (key === "p" && projWithPEnabled)) {
         const { bookStr, chapterStr, verseStr, isChapterStep, isVerseStep } = this.parseQuery(this.searchQuery);
         const matchResult = this.getBestBookMatch(bookStr);
         const exactBook = Array.isArray(matchResult) ? null : matchResult;
@@ -316,36 +352,55 @@ export default defineComponent({
             this.searchQuery = `${exactBook.name} `;
             this.$nextTick(() => { this.updateAutocompleteHint(); });
             this.$emit("select-book", exactBook.id_bible_book);
-          } else if (e.key === " ") {
+          } else if (key === " ") {
             e.preventDefault();
+          } else if (key === "enter") {
+            e.preventDefault();
+            this.$emit("execute-fallback", this.searchQuery);
+            const inputEl = (this as any).nativeInput;
+            if (inputEl && inputEl.blur) inputEl.blur();
           }
         } else if (isChapterStep && !isVerseStep) {
-          if (!exactBook && e.key === " ") {
+          if (!exactBook && key === " ") {
             e.preventDefault();
             return;
           }
           if (chapterStr) {
-            e.preventDefault();
-            this.searchQuery = `${this.searchQuery.trim()}:`;
-            this.$nextTick(() => { this.updateAutocompleteHint(); });
-            this.$emit("select-chapter", parseInt(chapterStr));
-          } else if (e.key === " ") {
+            if (key === "enter" || key === " ") {
+              e.preventDefault();
+              this.searchQuery = `${this.searchQuery.trim()}:`;
+              this.$nextTick(() => { this.updateAutocompleteHint(); });
+              this.$emit("select-chapter", parseInt(chapterStr));
+            }
+          } else if (key === " ") {
             e.preventDefault();
           }
         } else if (isVerseStep) {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
+          const bibleConfig = (this as any).$appdata.get("modules.bible.config") || (this as any).$userdata.get("bible_config") || {};
+          const pEnabled = bibleConfig.projWithP !== false;
+          
+          if (key === "enter" || key === " " || (key === "p" && pEnabled)) {
             if (exactBook && chapterStr && verseStr) {
+              e.preventDefault();
               this.$emit("select-chapter", parseInt(chapterStr));
               this.$emit("search-verse", verseStr);
               
-              // Remove focus so keyboard shortcuts can take over
-              const inputEl = e.target as HTMLInputElement;
+              const inputEl = (this as any).nativeInput;
               if (inputEl && inputEl.blur) {
                 inputEl.blur();
               }
-            } else {
+              
+              if (key === "p") {
+                // Allow the blur and selection to process, then simulate global P press
+                setTimeout(() => {
+                  window.dispatchEvent(new KeyboardEvent("keydown", { key: "p" }));
+                }, 150);
+              }
+            } else if (key === "enter" || key === " ") {
+              e.preventDefault();
               this.$emit("execute-fallback", this.searchQuery);
+              const inputEl = (this as any).nativeInput;
+              if (inputEl && inputEl.blur) inputEl.blur();
             }
           }
         }

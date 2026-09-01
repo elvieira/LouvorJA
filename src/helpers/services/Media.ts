@@ -106,6 +106,21 @@ export default {
       $appdata.set("modules.media.external_instrumental_url", resolvedExternalInstrumentalUrl);
     }
 
+    if (!params.fromQueue) {
+      this.initQueue();
+      const queue = $appdata.get("modules.media.queue");
+      queue.items = [{
+        id_music,
+        mode: mode === "instrumental" && !data.has_instrumental_music ? "audio" : mode,
+        name: data.name,
+        subtitle: data.albums && data.albums.length > 0 ? data.albums[0].name : "",
+        url_image: data.url_image || "",
+        id_album,
+      }];
+      queue.currentIndex = 0;
+      $appdata.set("modules.media.queue", queue);
+    }
+
 
 
     const minimizePlayer = $userdata.get("modules.config.slide_minimize_player") === true;
@@ -133,7 +148,11 @@ export default {
       shouldMaximize = false;
     }
 
-    if (shouldMaximize) {
+    if (params.startPaused) {
+      // Show the footer bar but hide the mini player popup - it will appear when the user presses play
+      this.minimize();
+      $appdata.set("modules.media.show_mini_player", false);
+    } else if (shouldMaximize) {
       this.maximize();
     } else {
       this.minimize();
@@ -267,15 +286,29 @@ export default {
       $appdata.set("modules.media.config.lazy", false);
       $appdata.set("modules.media.loading", false);
 
-      if (isSameSong && savedTime > 0) {
+      const duration = $appdata.get("modules.media.config.duration") || 0;
+      
+      // If we are reopening the exact same song, but it was already at the end, we should rewind it
+      const shouldRewind = savedTime >= duration - 0.5;
+
+      if (isSameSong && savedTime > 0 && !shouldRewind) {
         audio.currentTime = savedTime;
-        if (fadeAudioEnabled) {
-          this.fadeIn(audio, volume / 100, 1000).catch(() => { });
+        if (!params.startPaused) {
+          if (fadeAudioEnabled) {
+            this.fadeIn(audio, volume / 100, 1000).catch(() => { });
+          } else {
+            this.play();
+          }
         } else {
-          this.play();
+          this.pause();
         }
       } else {
-        this.play();
+        audio.currentTime = 0;
+        if (!params.startPaused) {
+          this.play();
+        } else {
+          this.pause();
+        }
       }
     } else {
       $appdata.set("modules.media.config.audio", "");
@@ -329,8 +362,10 @@ export default {
         selectedMonitors = selectedMonitors.filter((m: any) => m !== (primary as any).id);
 
         if (selectedMonitors.length > 0) {
-          const { default: $popup } = await import("@/helpers/ui/Popup");
-          await $popup.syncMonitors(selectedMonitors, "media", true);
+          if (!params.startPaused) {
+            const { default: $popup } = await import("@/helpers/ui/Popup");
+            await $popup.syncMonitors(selectedMonitors, "media", true);
+          }
         }
       }
     }
@@ -453,6 +488,7 @@ export default {
     this.clearVariables();
     $appdata.set("modules.media.show", false);
     $appdata.set("modules.media.minimized", false);
+    $appdata.set("modules.media.config.fullscreen", false);
 
     // Fechar a projeção se estiver aberta
     import("@/helpers/ui/Popup").then(({ default: $popup }) => {
@@ -460,6 +496,8 @@ export default {
         $popup.exit();
       }
     });
+
+    this.clearQueue();
   },
 
   async openLyric(params: any) {
@@ -595,6 +633,7 @@ export default {
     $appdata.set("modules.media.config.volume", 100);
     $appdata.set("modules.media.config.is_paused", false);
     $appdata.set("modules.media.config.is_fading", false);
+    $appdata.set("modules.media.config.fullscreen", false);
   },
 
   minimize() {
@@ -703,6 +742,11 @@ export default {
   },
 
   play() {
+    // Restore mini player popup if it was hidden (e.g. loaded via addToQueue with startPaused)
+    if ($appdata.get("modules.media.show_mini_player") === false) {
+      $appdata.set("modules.media.show_mini_player", true);
+    }
+    this.syncMonitors();
     this.pause(false);
   },
   pause(bool = true, callback?: () => void) {
@@ -868,7 +912,13 @@ export default {
     const current_time = $appdata.get("modules.media.config.current_time");
     const duration = $appdata.get("modules.media.config.duration");
     if (!is_paused && current_time >= duration && duration > 0) {
-      this.close(true);
+      const loopMode = $appdata.get("modules.media.config.loop") || "none";
+      if (loopMode === "track" || loopMode === true) {
+        this.goToTime(0);
+        this.play();
+      } else {
+        this.playNext();
+      }
     }
   },
   async fadeOut(audio: HTMLAudioElement, durationMs = 1000) {
@@ -937,17 +987,162 @@ export default {
       el.addEventListener("ended", () => {
         const currentActive = $appdata.get("modules.media.config.active_audio") || "a";
         if (el?.id === `__audio_${currentActive}`) {
-          const isLoop = $appdata.get("modules.media.config.loop") === true;
-          if (isLoop) {
+          const loopMode = $appdata.get("modules.media.config.loop") || "none";
+          
+          if (loopMode === "track" || loopMode === true) { // keep true for legacy compatibility
             this.goToTime(0);
             this.play();
           } else {
-            this.close(true);
+            this.playNext();
           }
         }
       });
     }
     el.setAttribute("autoplay", "true");
     return el;
+  },
+
+  // --- Queue Methods ---
+  initQueue() {
+    if (!$appdata.get("modules.media.queue")) {
+      $appdata.set("modules.media.queue", { items: [], currentIndex: -1 });
+    }
+  },
+  async playAll(musics: any[], mode: string = "audio", id_album: number | null = null, albumImage: string = "") {
+    let filteredMusics = musics;
+    if (mode === "instrumental") {
+      filteredMusics = musics.filter((m: any) => m.has_instrumental_music === 1 || m.has_instrumental_music === true);
+      
+      if (filteredMusics.length === 0) {
+        import("@/helpers/ui/Snackbar").then(({ default: $snackbar }) => {
+          $snackbar.show({ text: "modules.media.alerts.no_instrumental_in_album", color: "warning", timeout: 3000 });
+        });
+        return;
+      } else if (filteredMusics.length < musics.length) {
+        import("@/helpers/ui/Snackbar").then(({ default: $snackbar }) => {
+          $snackbar.show({ text: "modules.media.alerts.some_instrumental_omitted", color: "info", timeout: 4000 });
+        });
+      }
+    }
+
+    this.initQueue();
+    const queue = $appdata.get("modules.media.queue");
+    
+    // Set queue to the musics array
+    queue.items = filteredMusics.map((music: any) => ({
+      id_music: music.id_music,
+      mode,
+      name: music.name,
+      subtitle: "", // will be filled when opened
+      url_image: music.url_image || albumImage || "",
+      id_album,
+    }));
+    
+    queue.currentIndex = 0;
+    $appdata.set("modules.media.queue", queue);
+    
+    // Play the first item
+    if (queue.items.length > 0) {
+      this.playFromQueue(0);
+    }
+  },
+  async addToQueue(item: { id_music: number, mode: string }) {
+    this.initQueue();
+    const queue = $appdata.get("modules.media.queue");
+    
+    const data: any = await $database.get(`music_${item.id_music}`);
+    
+    if (data) {
+      const queueItem = {
+        id_music: item.id_music,
+        mode: item.mode,
+        name: data.name,
+        subtitle: data.albums && data.albums.length > 0 ? data.albums[0].name : "",
+        url_image: data.url_image,
+        id_album: data.albums && data.albums.length > 0 ? data.albums[0].id_album : null,
+      };
+      
+      queue.items.push(queueItem);
+      $appdata.set("modules.media.queue", queue);
+      $snackbar.show({ text: "modules.media.queue.added", color: "success", timeout: 3000 });
+      
+      if (!$appdata.get("modules.media.id_music")) {
+        this.open({
+          id_music: queueItem.id_music,
+          mode: queueItem.mode,
+          id_album: queueItem.id_album,
+          fromQueue: true,
+          minimized: true,
+          startPaused: true,
+        });
+        $appdata.set("modules.media.queue_highlight", true);
+      }
+    }
+  },
+  removeFromQueue(index: number) {
+    const queue = $appdata.get("modules.media.queue");
+    if (queue && queue.items[index]) {
+      queue.items.splice(index, 1);
+      if (index < queue.currentIndex) {
+        queue.currentIndex--;
+      } else if (index === queue.currentIndex) {
+        // Current item removed, play the new one at this index (or stop if it was the last)
+        this.playNext(true);
+      }
+      $appdata.set("modules.media.queue", queue);
+    }
+  },
+  clearQueue() {
+    $appdata.set("modules.media.queue", { items: [], currentIndex: -1 });
+  },
+  reorderQueue(fromIndex: number, toIndex: number) {
+    const queue = $appdata.get("modules.media.queue");
+    if (queue) {
+      const item = queue.items.splice(fromIndex, 1)[0];
+      queue.items.splice(toIndex, 0, item);
+      
+      // Update currentIndex if affected
+      if (queue.currentIndex === fromIndex) {
+        queue.currentIndex = toIndex;
+      } else if (fromIndex < queue.currentIndex && toIndex >= queue.currentIndex) {
+        queue.currentIndex--;
+      } else if (fromIndex > queue.currentIndex && toIndex <= queue.currentIndex) {
+        queue.currentIndex++;
+      }
+      
+      $appdata.set("modules.media.queue", queue);
+    }
+  },
+  playNext(stayOnCurrentIndex = false) {
+    const queue = $appdata.get("modules.media.queue");
+    if (!queue || queue.items.length === 0) {
+      this.close(true);
+      return;
+    }
+    
+    // Find next valid index
+    let nextIndex = stayOnCurrentIndex ? queue.currentIndex : queue.currentIndex + 1;
+    
+    if (nextIndex >= queue.items.length || nextIndex < 0) {
+      const loopMode = $appdata.get("modules.media.config.loop") || "none";
+      if (loopMode === "queue" && queue.items.length > 0) {
+        nextIndex = 0; // Loop back to start of queue
+      } else {
+        // Reached the end of queue or invalid
+        this.close(true);
+        return;
+      }
+    }
+    
+    this.playFromQueue(nextIndex);
+  },
+  playFromQueue(index: number) {
+    const queue = $appdata.get("modules.media.queue");
+    if (queue && queue.items[index]) {
+      queue.currentIndex = index;
+      $appdata.set("modules.media.queue", queue);
+      const item = queue.items[index];
+      this.open({ id_music: item.id_music, mode: item.mode, id_album: item.id_album, fromQueue: true });
+    }
   },
 };

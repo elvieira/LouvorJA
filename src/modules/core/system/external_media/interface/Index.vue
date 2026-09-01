@@ -417,6 +417,7 @@ export default defineComponent({
         el.pause();
         el.currentTime = 0;
       }
+      this.cleanupStream();
     },
 
     togglePlay() {
@@ -445,6 +446,10 @@ export default defineComponent({
           el.volume = this.volume / 100;
           if (!this.userPaused) {
             el.play().then(() => {
+              // Captura o stream do vídeo para as janelas popup (projeção)
+              if (this.isVideo) {
+                this.captureStreamForPopup();
+              }
             }).catch((_err: any) => {
             });
           }
@@ -579,6 +584,29 @@ export default defineComponent({
           $popup.exit();
         }
       });
+    },
+
+    // --- Stream para Popup (Projeção) ---
+
+    captureStreamForPopup() {
+      const videoEl = this.$refs.videoEl as HTMLVideoElement;
+      if (videoEl && typeof (videoEl as any).captureStream === "function") {
+        try {
+          (window as any)._externalMediaStream = (videoEl as any).captureStream();
+        } catch (e) {
+          console.error("captureStream error:", e);
+        }
+      }
+    },
+
+    cleanupStream() {
+      if ((window as any)._externalMediaStream) {
+        try {
+          const stream = (window as any)._externalMediaStream as MediaStream;
+          stream.getTracks().forEach(track => track.stop());
+        } catch (_e) { /* ignore */ }
+        (window as any)._externalMediaStream = null;
+      }
     },
 
   },

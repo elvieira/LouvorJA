@@ -260,7 +260,11 @@ export default defineComponent({
     },
     isMinimized(val: boolean) {
       if (val) {
-        this.showMiniPlayer = true;
+        // Only auto-show mini player if the music is actually playing (not paused from addToQueue)
+        const isPaused = this.$appdata.get("modules.media.config.is_paused");
+        if (!isPaused) {
+          this.showMiniPlayer = true;
+        }
       }
     },
     isSidebarCollapsed: {

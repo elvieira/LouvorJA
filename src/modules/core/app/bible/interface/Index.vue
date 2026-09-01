@@ -302,7 +302,7 @@ export default defineComponent({
           await this.loadData();
           if (val.verses) {
             this.verseSearchQuery = val.verses;
-            this.applyVerseSearch();
+            this.applyVerseSearch(false);
           }
         }
       },
@@ -361,6 +361,10 @@ export default defineComponent({
   },
   async mounted() {
     await this.loadData();
+    window.addEventListener("keydown", this.handleGlobalKeydown);
+  },
+  unmounted() {
+    window.removeEventListener("keydown", this.handleGlobalKeydown);
   },
   methods: {
 
@@ -374,6 +378,73 @@ export default defineComponent({
     send(param: string, value: any) {
       // @ts-ignore
       this.$appdata.set(`modules.${this.module_id}.data.${param}`, value);
+    },
+    projectIfConfigured(forceProject: boolean = false) {
+      // @ts-ignore
+      const bibleConfig = this.$appdata.get("modules.bible.config") || this.$userdata.get("bible_config") || {};
+      
+      let shouldProject = false;
+      if (bibleConfig.projWithP) {
+        shouldProject = forceProject;
+      } else {
+        shouldProject = forceProject || bibleConfig.autoProjNormal === true;
+      }
+
+      if (shouldProject) {
+        setTimeout(() => {
+          let selectedMonitors: any[] = [];
+          if ((window as any).electronAPI && (window as any).electronAPI.getDisplays) {
+            (window as any).electronAPI.getDisplays().then((displays: any) => {
+              if (displays && displays.length > 1) {
+                // @ts-ignore
+                let configMonitors = this.$userdata.get("modules.config.slide_monitor");
+                if (!Array.isArray(configMonitors)) {
+                  configMonitors = configMonitors ? [configMonitors] : [];
+                }
+                const primary = displays.find((d: any) => d.isPrimary) || displays[0];
+                selectedMonitors = configMonitors.filter((m: any) => m !== primary.id);
+              }
+              
+              if (selectedMonitors.length > 0) {
+                // @ts-ignore
+                this.$popup.syncMonitors(selectedMonitors, "bible", true);
+              } else {
+                // @ts-ignore
+                const fullscreen = this.$userdata.get("modules.config.slide_fullscreen") !== false;
+                // @ts-ignore
+                this.$popup.open({ module: "bible", fullscreen });
+              }
+            });
+          } else {
+            // @ts-ignore
+            const fullscreen = this.$userdata.get("modules.config.slide_fullscreen") !== false;
+            // @ts-ignore
+            this.$popup.open({ module: "bible", fullscreen });
+          }
+        }, 150);
+      }
+    },
+    handleGlobalKeydown(e: KeyboardEvent) {
+      if (!this.show) return;
+      const target = e.target as HTMLElement;
+      if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable)) {
+        return;
+      }
+
+      if (e.key.toLowerCase() === "p") {
+        // If it's a real keyboard press (isTrusted is true), ignore it. 
+        // We only want 'p' to work when dispatched synthetically from the search bars.
+        if (e.isTrusted) return;
+
+        // @ts-ignore
+        const bibleConfig = this.$appdata.get("modules.bible.config") || this.$userdata.get("bible_config") || {};
+        if (bibleConfig.projWithP === false) return;
+        
+        if (this.select_bible && this.select_bible.verses && this.select_bible.verses.length > 0) {
+          e.preventDefault();
+          this.projectIfConfigured(true);
+        }
+      }
     },
     async loadData() {
       this.loading = true;
@@ -496,7 +567,7 @@ export default defineComponent({
       }
       await this.selChapter(payload.chapter);
     },
-    applyVerseSearch() {
+    applyVerseSearch(triggerProjection: boolean = true) {
       if (!this.verseSearchQuery) return;
       
       const newVerses = parseVerseSearchQuery(this.verseSearchQuery, this.verses);
@@ -515,6 +586,10 @@ export default defineComponent({
             element.scrollIntoView({ behavior: "smooth", block: "center" });
           }
         });
+        
+        if (triggerProjection) {
+          this.projectIfConfigured();
+        }
       }
       
       this.verseSearchQuery = "";
@@ -618,6 +693,8 @@ export default defineComponent({
       if (element) {
         element.scrollIntoView({ behavior: "smooth", block: "center" });
       }
+
+      this.projectIfConfigured();
     },
     async prevVerse() {
       if (this.select_bible?.id_bible_version) {
