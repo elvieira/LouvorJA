@@ -3,6 +3,8 @@
     <div class="d-flex align-center" style="flex-shrink: 0;">
       <MenuToggleButton style="margin-right: 16px; flex-shrink: 0;" @toggle-sidebar="toggleSidebar" />
       
+      <slot name="prefix" />
+      
       <div class="module-icon-box d-flex align-center justify-center mr-4" style="flex-shrink: 0; overflow: hidden;">
         <v-img
           v-if="image"
