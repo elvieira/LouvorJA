@@ -1,7 +1,8 @@
 {
     "title": "Himnario Adventista 1996",
     "inputs": {
-        "search": "Escriba el número o nombre del himno..."
+        "search": "Escriba el número o nombre del himno...",
+        "show_more": "Mostrar más himnos"
     },
     "table": {
         "track": "Pista",

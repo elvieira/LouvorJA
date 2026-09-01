@@ -375,14 +375,53 @@
                     </v-btn-toggle>
                   </div>
 
-                  <!-- Opacidade do fundo do texto -->
-                  <div>
+                  <!-- Cor da tarja atrás das letras -->
+                  <div class="mb-6">
+                    <div class="d-flex align-center mb-3">
+                      <v-icon size="18" color="primary" class="mr-2">
+                        mdi-palette
+                      </v-icon>
+                      <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text);">{{ t('text_bg_color') }}</span>
+                    </div>
+                    <div class="d-flex flex-wrap align-center" style="gap: 10px;">
+                      <div
+                        v-for="color in ['#000000', '#FFFFFF', '#192A56', '#2F3640', '#6D214F', '#2C2C54']"
+                        :key="color"
+                        class="rounded-circle cursor-pointer elevation-1"
+                        :class="slide_text_bg_color === color ? 'elevation-4' : ''"
+                        :style="{
+                          width: '36px', height: '36px',
+                          background: color,
+                          border: slide_text_bg_color === color ? '3px solid var(--accent-blue)' : '2px solid rgba(150,150,150,0.3)',
+                          transition: 'all 0.2s',
+                          transform: slide_text_bg_color === color ? 'scale(1.15)' : 'scale(1)',
+                        }"
+                        @click="slide_text_bg_color = color"
+                      />
+                      <ModernColorPicker v-model="slide_text_bg_color">
+                        <template #activator="{ props }">
+                          <div
+                            v-bind="props"
+                            class="rounded-circle cursor-pointer elevation-1 d-flex align-center justify-center"
+                            style="width: 36px; height: 36px; border: 2px dashed var(--border-color); background: var(--card-bg);"
+                          >
+                            <v-icon size="16" color="grey">
+                              mdi-eyedropper
+                            </v-icon>
+                          </div>
+                        </template>
+                      </ModernColorPicker>
+                    </div>
+                  </div>
+
+                  <!-- Opacidade da tarja -->
+                  <div class="mb-6">
                     <div class="d-flex align-center justify-space-between mb-3">
                       <div class="d-flex align-center">
                         <v-icon size="18" color="primary" class="mr-2">
                           mdi-opacity
                         </v-icon>
-                        <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text);">{{ t('text_bg_opacity') }}</span>
+                        <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text);">{{ t('text_bg_intensity') }}</span>
                       </div>
                       <v-chip
                         size="small"
@@ -390,22 +429,30 @@
                         color="primary"
                         class="font-weight-bold"
                       >
-                        {{ slide_text_bg_opacity }}%
+                        {{ slide_text_bg_intensity }}%
                       </v-chip>
                     </div>
-                    <div class="px-2">
-                      <v-slider
-                        v-model="slide_text_bg_opacity"
-                        :min="0"
-                        :max="100"
-                        :step="1"
-                        color="primary"
-                        track-color="rgba(255,255,255,0.1)"
-                        thumb-size="16"
-                        hide-details
-                      />
-                    </div>
+                    <v-slider
+                      v-model="slide_text_bg_intensity"
+                      :min="0"
+                      :max="100"
+                      :step="5"
+                      color="primary"
+                      track-color="grey-lighten-3"
+                      hide-details
+                    />
                   </div>
+
+                  <!-- Borda da tarja -->
+                  <v-switch
+                    v-model="slide_text_bg_border"
+                    :label="t('text_bg_border')"
+                    :disabled="slide_text_bg_intensity === 0"
+                    color="primary"
+                    inset
+                    hide-details
+                    class="font-weight-medium"
+                  />
                 </div>
               </v-expand-transition>
             </div>
@@ -639,7 +686,9 @@ export default defineComponent({
     slide_font_size: 100 as number,
     slide_font_color: "#FFFFFF" as string,
     slide_font_weight: "700" as string,
-    slide_text_bg_opacity: 25 as number,
+    slide_text_bg_color: "#000000" as string,
+    slide_text_bg_intensity: 25 as number,
+    slide_text_bg_border: true as boolean,
     slide_custom_bg: false as boolean,
     slide_bg_color: "#000000" as string,
     slide_bg_image: null as string | null,
@@ -690,7 +739,9 @@ export default defineComponent({
     slide_font_size(val: number) { this.$userdata.set("modules.config.slide_font_size", val); },
     slide_font_color(val: string) { this.$userdata.set("modules.config.slide_font_color", val); },
     slide_font_weight(val: string) { this.$userdata.set("modules.config.slide_font_weight", val); },
-    slide_text_bg_opacity(val: number) { this.$userdata.set("modules.config.slide_text_bg_opacity", val); },
+    slide_text_bg_color(val: string) { this.$userdata.set("modules.config.slide_text_bg_color", val); },
+    slide_text_bg_intensity(val: number) { this.$userdata.set("modules.config.slide_text_bg_intensity", val); },
+    slide_text_bg_border(val: boolean) { this.$userdata.set("modules.config.slide_text_bg_border", val); },
     slide_custom_bg(val: boolean) { this.$userdata.set("modules.config.slide_custom_bg", val); },
     slide_bg_color(val: string) { this.$userdata.set("modules.config.slide_bg_color", val); },
     slide_bg_image(val: string | null) { this.$userdata.set("modules.config.slide_bg_image", val); },
@@ -734,7 +785,8 @@ export default defineComponent({
 
     const fields = [
       "slide_fullscreen", "slide_disable_main_if_extended", "slide_minimize_player", "slide_show_title",
-      "slide_custom_text_format", "slide_font_size", "slide_font_color", "slide_font_weight", "slide_text_bg_opacity",
+      "slide_custom_text_format", "slide_font_size", "slide_font_color", "slide_font_weight",
+      "slide_text_bg_color", "slide_text_bg_intensity", "slide_text_bg_border",
       "slide_custom_bg", "slide_bg_color", "slide_bg_image", "slide_bg_opacity", "slide_remove_text_bg",
     ];
     fields.forEach(field => {
@@ -790,6 +842,9 @@ export default defineComponent({
       this.slide_font_size = 100;
       this.slide_font_color = "#FFFFFF";
       this.slide_font_weight = "700";
+      this.slide_text_bg_color = "#000000";
+      this.slide_text_bg_intensity = 25;
+      this.slide_text_bg_border = true;
       this.slide_custom_bg = false;
       this.slide_bg_color = "#000000";
       this.slide_bg_image = null;

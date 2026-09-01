@@ -86,12 +86,10 @@
         <BibleNavigation
           v-if="!compact"
           :books="books"
-          :chapters="chapters_list"
           :selected-book="bible.id_bible_book"
           :selected-chapter="bible.chapter"
           :loading="loading_book"
-          @select-book="selBook"
-          @select-chapter="selChapter"
+          @select-chapter="selBookChapter"
         />
 
         <BibleVerses
@@ -458,9 +456,8 @@ export default defineComponent({
           // @ts-ignore
           `${this.$i18n.locale}_bible_book`,
         );
-        if (!this.bible.id_bible_book) {
-          await this.selBook(this.books[0].id_bible_book);
-        }
+        // No book/chapter is pre-selected on first open; the reading pane
+        // stays empty until the user picks one in BibleNavigation.
         this.loading_book = false;
       }
 
@@ -486,14 +483,16 @@ export default defineComponent({
         }
       }
 
-      const bible_file = `bible_${this.bible.id_bible_version}_${this.bible.id_bible_book}_${this.bible.chapter}`;
-      if (bible_file !== this.last_bible_file) {
-        this.loading_verses = true;
-        this.verses = {};
-        // @ts-ignore
-        this.verses = await this.$database.get(bible_file);
-        this.last_bible_file = bible_file;
-        this.loading_verses = false;
+      if (this.bible.id_bible_book && this.bible.chapter) {
+        const bible_file = `bible_${this.bible.id_bible_version}_${this.bible.id_bible_book}_${this.bible.chapter}`;
+        if (bible_file !== this.last_bible_file) {
+          this.loading_verses = true;
+          this.verses = {};
+          // @ts-ignore
+          this.verses = await this.$database.get(bible_file);
+          this.last_bible_file = bible_file;
+          this.loading_verses = false;
+        }
       }
 
       if (
@@ -529,8 +528,9 @@ export default defineComponent({
         this.bible.id_bible_book = id_bible_book;
       }
       this.bible.book = this.book.name;
-      this.bible.verses = [];
-      this.last_verse = 1;
+      // Keeps the current chapter and verse selection when only the book
+      // changes; selChapter() below already clears them when the chapter
+      // actually changes (new chapter, or clamped to the book's last one).
       if (!this.bible.chapter) {
         this.selChapter(1);
       } else if (this.bible.chapter > this.book.chapters) {
@@ -556,6 +556,16 @@ export default defineComponent({
       if (element) {
         element.scrollIntoView({ behavior: "smooth", block: "center" });
       }
+    },
+    // Picking a chapter while browsing a book's expanded chapter list in
+    // BibleNavigation: switches book + chapter together in one step, since
+    // browsing that list no longer navigates the reading pane by itself.
+    async selBookChapter(payload: { id_bible_book: any; chapter: any }) {
+      if (payload.id_bible_book && payload.id_bible_book !== this.bible.id_bible_book) {
+        this.bible.id_bible_book = payload.id_bible_book;
+        this.bible.book = this.book?.name;
+      }
+      await this.selChapter(payload.chapter);
     },
     applyVerseSearch(triggerProjection: boolean = true) {
       if (!this.verseSearchQuery) return;

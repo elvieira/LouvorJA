@@ -1,5 +1,5 @@
 <template>
-  <div v-if="isElectron && isMainApp" class="app-titlebar d-flex align-center" :style="{ background: 'var(--main-bg)', color: 'var(--sidebar-text)' }">
+  <div v-if="isElectron && isMainApp" class="app-titlebar d-flex align-center" :style="{ background: 'var(--sidebar-bg)', color: 'var(--sidebar-text)' }">
     <!-- MAC VERSION -->
     <template v-if="isMac">
       <div class="mac-controls d-flex align-center h-100 titlebar-no-drag pl-4" :class="{ 'mac-unfocused': !isFocused }" style="z-index: 2;">
@@ -105,7 +105,7 @@ export default defineComponent({
             title: "alert.close_app_title",
             text: "alert.close_app_text",
             translate: true,
-          }, (btn: string) => {
+          }, (btn: any) => {
             if (btn === "yes") {
               this.executeClose();
             }
@@ -142,7 +142,6 @@ export default defineComponent({
   position: relative;
   z-index: 99999;
   user-select: none;
-  border-bottom: 1px solid var(--border-color);
   -webkit-app-region: drag;
 }
 

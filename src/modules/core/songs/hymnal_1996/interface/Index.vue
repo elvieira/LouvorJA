@@ -61,6 +61,7 @@
       <div class="content-main d-flex flex-column flex-grow-1" style="overflow: hidden; padding-top: 16px;">
         <div class="music-list flex-grow-1 d-flex flex-column" style="background: transparent; box-shadow: none; min-height: 0;">
           <LTable
+            ref="table"
             v-model="data"
             :search="search"
             letter=""
@@ -70,6 +71,7 @@
             }"
             :scroll="scroll"
             :has-scroll="has_scroll"
+            :initial-limit="50"
             sort-by="track"
             :file="`${$i18n.locale}_hymnal_1996`"
             class="modern-hymnal-table flex-grow-1 d-flex flex-column"
@@ -109,6 +111,20 @@
                       :has-instrumental-music="item.has_instrumental_music"
                     />
                   </div>
+                </td>
+              </tr>
+              <tr v-if="!data.showing_all && data.count < data.filter_count" class="load-more-item">
+                <td colspan="4" class="text-center py-4">
+                  <v-btn
+                    variant="tonal"
+                    color="primary"
+                    rounded="lg"
+                    class="text-none font-weight-medium px-6"
+                    prepend-icon="mdi-chevron-down"
+                    @click="loadAllHymns"
+                  >
+                    {{ t('inputs.show_more') }}
+                  </v-btn>
                 </td>
               </tr>
             </tbody>
@@ -189,6 +205,9 @@ export default defineComponent({
         }
       }
     },
+    loadAllHymns() {
+      (this.$refs.table as any)?.loadAll();
+    },
     close() {
       this.search = "";
     },
@@ -248,11 +267,11 @@ export default defineComponent({
     padding: 12px 20px;
     border-bottom: 1px solid var(--border-color);
     transition: var(--transition);
-    
+
     &:hover {
       background: var(--sidebar-hover) !important;
     }
-    
+
     td {
       border-bottom: none !important;
       padding: 0 !important;
@@ -265,6 +284,19 @@ export default defineComponent({
     &:hover > td {
       background: transparent !important;
       background-color: transparent !important;
+    }
+  }
+
+  .load-more-item {
+    display: flex;
+    justify-content: center;
+    padding: 16px 0;
+    border-bottom: none !important;
+
+    td {
+      border-bottom: none !important;
+      padding: 0 !important;
+      background: transparent !important;
     }
   }
 

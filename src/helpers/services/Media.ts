@@ -33,19 +33,27 @@ export default {
     const mode = params.mode ? params.mode : "no_audio";
     const currentMode = $appdata.get("modules.media.config.mode");
     const isSameSong = params.id_music === $appdata.get("modules.media.id_music");
+    const isExternal = typeof params.id_music === "string" && params.id_music.startsWith("slja:");
 
-    if (isSameSong && mode === currentMode) {
+    // Músicas externas (.slja) sempre reiniciam do slide 1 — não faz sentido "retomar"
+    // uma apresentação, além de garantir que o conteúdo recém-salvo seja recarregado.
+    if (!isExternal && isSameSong && mode === currentMode) {
       this.maximize();
       return true;
     }
 
     let savedTime = 0;
+    // Capturados antes do clearVariables() (que zera esses campos) para permitir reaproveitar
+    // os dados/URLs externos em trocas de modo (Cantado/Playback/Sem Áudio) que não reenviam externalData.
+    const existingExternalAudioUrl = $appdata.get("modules.media.external_audio_url") || "";
+    const existingExternalInstrumentalUrl = $appdata.get("modules.media.external_instrumental_url") || "";
+    const existingData = isSameSong && isExternal ? $appdata.get("modules.media.data") : null;
 
     let audio = this.getElement();
     // const volume = $appdata.get("modules.media.config.volume") / 100;
     const fadeAudioEnabled = $userdata.get("modules.media.fade_audio") !== false;
 
-    if (isSameSong) {
+    if (isSameSong && !isExternal) {
       savedTime = audio.currentTime;
       if (fadeAudioEnabled && !audio.paused && audio.volume > 0) {
         this.fadeOut(audio, 1000).catch(() => { });
@@ -68,13 +76,17 @@ export default {
 
     $appdata.set("modules.media.loading", true);
 
-    const data = await $database.get<any>(`music_${id_music}`);
+    const data = params.externalData
+      ? params.externalData
+      : isSameSong && isExternal
+        ? existingData
+        : await $database.get<any>(`music_${id_music}`);
     if (data === null) {
       this.close(true);
       return false;
     }
 
-    if (!isSameSong) {
+    if (!isSameSong || isExternal) {
       $appdata.set("modules.media.data", data);
       $appdata.set("modules.media.id_music", id_music);
       $appdata.set("modules.media.id_album", id_album);
@@ -83,6 +95,15 @@ export default {
       $appdata.set("modules.media.config.last_slide", this.slides().length);
       $appdata.set("modules.media.times", []);
       this.setAlbumInfo(id_album);
+    }
+
+    // Restaura/atualiza as URLs externas (.slja) mesmo em modos sem áudio (ex.: Sem Áudio),
+    // para que voltar depois para Cantado/Playback ainda encontre o arquivo correto.
+    if (isExternal) {
+      const resolvedExternalAudioUrl = params.externalData ? (params.externalAudioUrl || "") : existingExternalAudioUrl;
+      const resolvedExternalInstrumentalUrl = params.externalData ? (params.externalInstrumentalUrl || "") : existingExternalInstrumentalUrl;
+      $appdata.set("modules.media.external_audio_url", resolvedExternalAudioUrl);
+      $appdata.set("modules.media.external_instrumental_url", resolvedExternalInstrumentalUrl);
     }
 
     if (!params.fromQueue) {
@@ -144,7 +165,7 @@ export default {
       audio.volume = volume / 100;
 
       this.pause(true);
-      if (!isSameSong) {
+      if (!isSameSong || isExternal) {
         audio.currentTime = 0;
       }
 
@@ -168,10 +189,15 @@ export default {
       );
 
       const urlPath = mode === "audio" ? data.url_music : data.url_instrumental_music;
-      const targetAudioUrl = $path.file(urlPath);
 
-      // Interceptação Offline (Desktop)
-      if (window.electronAPI && window.electronAPI.isElectron) {
+      const targetAudioUrl = isExternal
+        ? (mode === "audio"
+          ? $appdata.get("modules.media.external_audio_url")
+          : $appdata.get("modules.media.external_instrumental_url")) || ""
+        : $path.file(urlPath);
+
+      // Interceptação Offline (Desktop) — não aplicável a músicas externas (arquivos .slja locais)
+      if (!isExternal && window.electronAPI && window.electronAPI.isElectron) {
         let isDownloadedCollection = false;
         const dla = ((await window.electronAPI.getLocalDb("dla")) as string[]) || [];
 
@@ -347,6 +373,86 @@ export default {
     return true;
   },
 
+  // Reproduz um arquivo .slja local a partir do seu caminho, reconstruindo os dados
+  // externos necessários. Usado por telas que só têm o id_music (ex.: "Músicas mais tocadas"),
+  // sem acesso ao item original da Coletânea Personalizada.
+  async playExternalSlja(filePath: string, mode: "audio" | "instrumental" | "no_audio" = "audio") {
+    const electronAPI = window.electronAPI as any;
+    if (!electronAPI?.readSljaZip) return false;
+    const data = await electronAPI.readSljaZip(filePath);
+    if (!data) {
+      $alert.error({ text: "modules.media.alerts.not_loaded", translate: true });
+      return false;
+    }
+
+    const toLocalFileUrl = (rawPath: string | null): string => {
+      if (!rawPath) return "";
+      const normalized = rawPath.replace(/\\/g, "/");
+      const prefix = normalized.startsWith("/") ? "local://app" : "local://app/";
+      return `${prefix}${normalized}`;
+    };
+    const escapeHtml = (raw: string): string =>
+      (raw || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/\n/g, "<br>");
+    const secondsToHms = (totalSeconds: number | null): string => {
+      const total = Math.max(0, Math.floor(totalSeconds || 0));
+      const h = Math.floor(total / 3600);
+      const m = Math.floor((total % 3600) / 60);
+      const s = total % 60;
+      return `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+    };
+
+    const [firstSlide, ...remainingSlides] = data.slides;
+    const lyric: Record<string, any> = {};
+    remainingSlides.forEach((s: any, index: number) => {
+      const timeHms = secondsToHms(s.time);
+      lyric[`s${index}`] = {
+        lyric: escapeHtml(s.text),
+        aux_lyric: escapeHtml(s.auxText),
+        show_slide: 1,
+        order: index,
+        time: timeHms,
+        instrumental_time: timeHms,
+        url_image: s.image ? toLocalFileUrl(s.image) : undefined,
+        image_position: 50,
+        fontSize: s.fontSize,
+        fontColor: s.fontColor,
+        auxFontSize: s.auxFontSize,
+        auxFontColor: s.auxFontColor,
+      };
+    });
+
+    const titleFromFirstSlide = firstSlide?.text?.trim();
+    const externalData = {
+      name: titleFromFirstSlide || data.name,
+      url_image: firstSlide?.image ? toLocalFileUrl(firstSlide.image) : undefined,
+      image_position: 50,
+      lyric,
+      albums: [],
+      categories: [],
+      duration: "0:00",
+      instrumental_duration: "0:00",
+    };
+
+    const playMode = mode === "instrumental" ? "instrumental" : mode === "no_audio" ? "no_audio" : "audio";
+    await this.open({
+      id_music: `slja:${filePath}`,
+      mode: playMode,
+      externalData,
+      externalAudioUrl: data.audioPath ? toLocalFileUrl(data.audioPath) : null,
+      externalInstrumentalUrl: data.instrumentalPath ? toLocalFileUrl(data.instrumentalPath) : null,
+    });
+
+    if (playMode === "audio" || playMode === "instrumental") {
+      const preciseTimes = [0, ...remainingSlides.map((s: any) => (typeof s.time === "number" ? s.time : 0))];
+      $appdata.set("modules.media.times", preciseTimes);
+    }
+    return true;
+  },
+
   async syncMonitors() {
     if (window.electronAPI && window.electronAPI.getDisplays) {
       const displays = await window.electronAPI.getDisplays();
@@ -509,6 +615,8 @@ export default {
   clearVariables() {
     $appdata.set("modules.media.data", {});
     $appdata.set("modules.media.id_music", null);
+    $appdata.set("modules.media.external_audio_url", "");
+    $appdata.set("modules.media.external_instrumental_url", "");
     $appdata.set("modules.media.config.title", "");
     $appdata.set("modules.media.config.subtitle", "");
     $appdata.set("modules.media.config.track", 0);

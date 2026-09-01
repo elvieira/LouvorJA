@@ -1,5 +1,6 @@
 <template>
   <v-table
+    ref="tableRoot"
     fixed-header
     loading
     density="compact"
@@ -25,7 +26,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, shallowRef, watch, onMounted } from "vue";
+import { ref, shallowRef, watch, onMounted, nextTick } from "vue";
 import { useDatabase, useString, useUserData } from "@/composables/useHelpers";
 import { useI18n } from "vue-i18n";
 
@@ -39,6 +40,7 @@ const props = withDefaults(defineProps<{
   filter?: Record<string, boolean>;
   letter?: string;
   sortBy?: string;
+  initialLimit?: number;
 }>(), {
   modelValue: () => ({}),
   search: "",
@@ -48,6 +50,7 @@ const props = withDefaults(defineProps<{
   filter: () => ({}),
   letter: "",
   sortBy: "",
+  initialLimit: undefined,
 });
 
 const emit = defineEmits(["update:modelValue"]);
@@ -65,24 +68,59 @@ const limit = ref(0);
 const error = ref<string | null>(null);
 const last_filter = ref<Record<string, any>>({});
 const loading = ref(true);
+const tableRoot = ref<any>(null);
+const showingAll = ref(false);
+
+// Modules pass `scroll`/`hasScroll` via their own scroll wrapper, but that
+// wiring isn't reliable for every layout. Detecting overflow on our own
+// wrapper lets us stop auto-filling as soon as the list actually needs a
+// scrollbar, regardless of whether the parent's props are wired up.
+const hasVisibleScrollbar = () => {
+  const wrapper = tableRoot.value?.$el?.querySelector(".v-table__wrapper") as HTMLElement | undefined;
+  return !!wrapper && wrapper.scrollHeight > wrapper.clientHeight + 1;
+};
 
 const paginateData = () => {
+  if (props.initialLimit && !showingAll.value) {
+    limit.value = Math.min(props.initialLimit, filter_data.value.length);
+    data.value = filter_data.value.slice(0, limit.value);
+    loading.value = false;
+    return;
+  }
+
   limit.value += 10;
   data.value = filter_data.value.slice(0, limit.value);
   loading.value = false;
 
-  setTimeout(() => {
-    if (!props.hasScroll && data.value.length < filter_data.value.length) {
+  nextTick(() => {
+    if (!props.hasScroll && !hasVisibleScrollbar() && data.value.length < filter_data.value.length) {
       paginateData();
     }
-  }, 100);
+  });
 };
+
+const loadAll = () => {
+  showingAll.value = true;
+  limit.value = filter_data.value.length;
+  data.value = filter_data.value.slice();
+};
+
+const collapseToLimit = () => {
+  showingAll.value = false;
+  limit.value = Math.min(props.initialLimit ?? filter_data.value.length, filter_data.value.length);
+  data.value = filter_data.value.slice(0, limit.value);
+};
+
+const getFilteredData = () => filter_data.value;
+
+defineExpose({ loadAll, collapseToLimit, getFilteredData });
 
 const filterData = () => {
   if (!all_data.value) {
     all_data.value = [];
   }
   limit.value = 0;
+  showingAll.value = false;
   const value = stringHelper.clean(props.search || "");
 
   const searchable = props.searchableFields
@@ -306,6 +344,7 @@ watch(data, () => {
     total_count: all_data.value.length,
     filter_count: filter_data.value.length,
     count: data.value.length,
+    showing_all: showingAll.value,
     data: data.value,
     unformatted_data: filter_data.value,
   });

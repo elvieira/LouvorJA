@@ -127,15 +127,25 @@ export default defineComponent({
     if (saved_home_history !== undefined && saved_home_history !== null) {
       this.show_home_history = saved_home_history;
     }
-    
+
     const saved_sidebar_pinned = this.$userdata.get("sidebar_pinned");
     if (saved_sidebar_pinned !== undefined && saved_sidebar_pinned !== null) {
       this.sidebar_pinned = saved_sidebar_pinned;
     }
+
+    // Keeps this switch in sync when pinning is toggled from the sidebar's
+    // own pin button instead of from here.
+    document.addEventListener("sidebar-pinned-changed", this.onExternalPinChange);
+  },
+  beforeUnmount() {
+    document.removeEventListener("sidebar-pinned-changed", this.onExternalPinChange);
   },
   methods: {
     t(text: string): string {
       return this.$t(`modules.${manifest.id}.${text}`);
+    },
+    onExternalPinChange(e: any) {
+      this.sidebar_pinned = e.detail;
     },
     setTheme(theme_id: string) {
       (this as any).$vuetify.theme.global.name = theme_id;

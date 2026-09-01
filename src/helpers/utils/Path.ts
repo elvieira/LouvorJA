@@ -4,6 +4,9 @@ export default {
     return url + (path.startsWith("/") ? path : `/${path}`);
   },
   file(path: string): string {
+    if (path.startsWith("local://") || path.startsWith("http://") || path.startsWith("https://")) {
+      return path;
+    }
     if (window.electronAPI) {
       const cleanPath = path.startsWith("/") ? path.substring(1) : path;
       return `local://media/${cleanPath}`;

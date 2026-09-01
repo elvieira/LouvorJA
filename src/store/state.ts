@@ -80,6 +80,10 @@ const state: AppState = {
       title: "module_group.utilities.title",
       modules: [],
     },
+    personalized: {
+      title: "module_group.personalized.title",
+      modules: [],
+    },
   },
   menu: {
     show: false,

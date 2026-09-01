@@ -51,6 +51,11 @@ const props = withDefaults(defineProps<{
   aux_text?: string;
   image?: string;
   image_position?: number;
+  text_size_pc?: number;
+  text_color?: string;
+  aux_text_size_pc?: number;
+  aux_text_color?: string;
+  force_image?: boolean;
 }>(), {
   slide_number: 0,
   cover: false,
@@ -58,6 +63,11 @@ const props = withDefaults(defineProps<{
   aux_text: "",
   image: "",
   image_position: 50,
+  text_size_pc: undefined,
+  text_color: undefined,
+  aux_text_size_pc: undefined,
+  aux_text_color: undefined,
+  force_image: false,
 });
 
 const userdata = useUserData();
@@ -72,7 +82,9 @@ const customTextFormat = ref(false);
 const customFontSize = ref(100);
 const customFontColor = ref("#FFFFFF");
 const customFontWeight = ref("700");
-const customTextBgOpacity = ref(25);
+const customTextBgColor = ref("#000000");
+const customTextBgIntensity = ref(25);
+const customTextBgBorder = ref(true);
 const removeTextBg = ref(false);
 
 const customBg = ref(false);
@@ -99,6 +111,15 @@ const fontSizePc = (pc: number) => {
   return ((pc * effectiveHeight) / 100 / 2) * 1;
 };
 
+const hexToRgba = (hex: string, alpha: number) => {
+  const clean = hex.replace("#", "");
+  const full = clean.length === 3 ? clean.split("").map((c) => c + c).join("") : clean;
+  const r = parseInt(full.substring(0, 2), 16) || 0;
+  const g = parseInt(full.substring(2, 4), 16) || 0;
+  const b = parseInt(full.substring(4, 6), 16) || 0;
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};
+
 const updateSettings = () => {
   const align = userdata.get("modules.config.slide_align") || "Centro";
   if (align === "Cima") slideAlignClass.value = "align-start";
@@ -109,7 +130,9 @@ const updateSettings = () => {
   customFontSize.value = userdata.get("modules.config.slide_font_size") || 100;
   customFontColor.value = userdata.get("modules.config.slide_font_color") || "#FFFFFF";
   customFontWeight.value = userdata.get("modules.config.slide_font_weight") || "700";
-  customTextBgOpacity.value = userdata.get("modules.config.slide_text_bg_opacity") ?? 25;
+  customTextBgColor.value = userdata.get("modules.config.slide_text_bg_color") || "#000000";
+  customTextBgIntensity.value = userdata.get("modules.config.slide_text_bg_intensity") ?? 25;
+  customTextBgBorder.value = userdata.get("modules.config.slide_text_bg_border") ?? true;
 
   customBg.value = userdata.get("modules.config.slide_custom_bg") || false;
   customBgColor.value = userdata.get("modules.config.slide_bg_color") || "#000000";
@@ -143,10 +166,10 @@ const setSlide = () => {
 };
 
 const style_bg = (slide: any) => {
-  if (customBg.value) {
+  if (customBg.value && !(props.force_image && slide.image)) {
     return {
       backgroundColor: customBgColor.value,
-      backgroundImage: customBgImage.value ? `url(${customBgImage.value})` : "none",
+      backgroundImage: customBgImage.value ? `url("${customBgImage.value}")` : "none",
       backgroundRepeat: "no-repeat",
       backgroundPosition: "center center",
       backgroundSize: "cover",
@@ -156,7 +179,7 @@ const style_bg = (slide: any) => {
 
   return {
     backgroundColor: "transparent",
-    backgroundImage: `url(${slide.image})`,
+    backgroundImage: slide.image ? `url("${slide.image}")` : "none",
     backgroundRepeat: "no-repeat",
     backgroundPosition: [
       "top left",
@@ -185,10 +208,10 @@ const style_aux_text = (slide: any): any => {
       textShadow: "0px 4px 16px rgba(0,0,0,0.8)",
       textAlign: "center" as const,
     };
-  } 
+  }
   return {
-    fontSize: `${fontSizePc(4)}px`,
-    color: "rgba(255, 255, 255, 0.8)",
+    fontSize: `${fontSizePc(props.aux_text_size_pc ?? 4)}px`,
+    color: props.aux_text_color ?? "rgba(255, 255, 255, 0.8)",
     textTransform: "uppercase",
     fontWeight: "500",
     letterSpacing: "0.1em",
@@ -212,32 +235,60 @@ const style_text = (slide: any): any => {
     };
   } 
 
-  const bgOpacity = customTextFormat.value ? (customTextBgOpacity.value / 100) : 0.25;
   const isBgRemoved = customBg.value && removeTextBg.value;
 
-  const bgStyles = isBgRemoved ? {
-    backgroundColor: "transparent",
-    border: "none",
-    backdropFilter: "none",
-    WebkitBackdropFilter: "none",
-    boxShadow: "none",
-  } : {
-    backgroundColor: `rgba(0, 0, 0, ${bgOpacity})`,
-    border: `${Math.max(1, fontSizePc(0.4))}px solid rgba(255, 255, 255, 0.85)`,
-    backdropFilter: "blur(8px)",
-    WebkitBackdropFilter: "blur(8px)",
-    boxShadow: "0px 10px 30px rgba(0, 0, 0, 0.4)",
-  };
+  if (isBgRemoved) {
+    const bgStyles = {
+      backgroundColor: "transparent",
+      border: "none",
+      backdropFilter: "none",
+      WebkitBackdropFilter: "none",
+      boxShadow: "none",
+    };
 
-  if (customTextFormat.value) {
-    const sizeMultiplier = customFontSize.value / 100;
+    if (customTextFormat.value) {
+      const sizeMultiplier = customFontSize.value / 100;
+      return {
+        ...bgStyles,
+        padding: `${fontSizePc(5)}px ${fontSizePc(8)}px`,
+        textAlign: "center" as const,
+        textTransform: "uppercase",
+        fontSize: `${fontSizePc(props.text_size_pc ?? 15) * sizeMultiplier}px`,
+        color: props.text_color ?? (repeat.value ? "#f6c32a" : customFontColor.value),
+        fontWeight: customFontWeight.value,
+        letterSpacing: "0.03em",
+        lineHeight: "1.4",
+        textShadow: "0px 2px 10px rgba(0, 0, 0, 0.8)",
+      };
+    }
+
     return {
       ...bgStyles,
       padding: `${fontSizePc(5)}px ${fontSizePc(8)}px`,
       textAlign: "center" as const,
       textTransform: "uppercase",
-      fontSize: `${fontSizePc(15) * sizeMultiplier}px`,
-      color: repeat.value ? "#f6c32a" : customFontColor.value,
+      fontSize: `${fontSizePc(props.text_size_pc ?? 15)}px`,
+      color: props.text_color ?? (repeat.value ? "#f6c32a" : "#ffffff"),
+      fontWeight: "700",
+      letterSpacing: "0.03em",
+      lineHeight: "1.4",
+    };
+  }
+
+  if (customTextFormat.value) {
+    const sizeMultiplier = customFontSize.value / 100;
+    const hasTextBg = customTextBgIntensity.value > 0;
+    return {
+      backgroundColor: hasTextBg ? hexToRgba(customTextBgColor.value, customTextBgIntensity.value / 100) : "transparent",
+      border: hasTextBg && customTextBgBorder.value ? `${Math.max(2, fontSizePc(0.4))}px solid rgba(255, 255, 255, 0.85)` : "none",
+      padding: `${fontSizePc(5)}px ${fontSizePc(8)}px`,
+      backdropFilter: hasTextBg ? "blur(8px)" : "none",
+      WebkitBackdropFilter: hasTextBg ? "blur(8px)" : "none",
+      boxShadow: hasTextBg ? "0px 10px 30px rgba(0, 0, 0, 0.4)" : "none",
+      textAlign: "center" as const,
+      textTransform: "uppercase",
+      fontSize: `${fontSizePc(props.text_size_pc ?? 15) * sizeMultiplier}px`,
+      color: props.text_color ?? (repeat.value ? "#f6c32a" : customFontColor.value),
       fontWeight: customFontWeight.value,
       letterSpacing: "0.03em",
       lineHeight: "1.4",
@@ -246,15 +297,19 @@ const style_text = (slide: any): any => {
   }
 
   return {
-    ...bgStyles,
+    backgroundColor: "rgba(0, 0, 0, 0.25)",
+    border: `${Math.max(2, fontSizePc(0.4))}px solid rgba(255, 255, 255, 0.85)`,
     padding: `${fontSizePc(5)}px ${fontSizePc(8)}px`,
     textAlign: "center" as const,
     textTransform: "uppercase",
-    fontSize: `${fontSizePc(15)}px`,
-    color: repeat.value ? "#f6c32a" : "#ffffff",
+    fontSize: `${fontSizePc(props.text_size_pc ?? 15)}px`,
+    color: props.text_color ?? (repeat.value ? "#f6c32a" : "#ffffff"),
     fontWeight: "700",
     letterSpacing: "0.03em",
     lineHeight: "1.4",
+    backdropFilter: "blur(8px)",
+    WebkitBackdropFilter: "blur(8px)",
+    boxShadow: "0px 10px 30px rgba(0, 0, 0, 0.4)",
   };
 };
 

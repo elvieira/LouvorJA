@@ -22,6 +22,46 @@ interface ElectronAPI {
   checkMedia: (destFolderType: string, filename: string) => Promise<string | false>
   deleteMedia: (destFolderType: string, filename: string) => Promise<boolean>
   openFileDialog: (options: Record<string, unknown>) => Promise<unknown>
+  saveFileDialog: (options: Record<string, unknown>) => Promise<string | null>
+  readTextFile: (filePath: string) => Promise<string | null>
+  writeTextFile: (filePath: string, content: string) => Promise<boolean>
+  readFileBase64: (filePath: string) => Promise<string | null>
+  writeBase64ToTempFile: (base64: string, suggestedName: string) => Promise<string | null>
+  readAudioFolder: (folderPath: string) => Promise<{ name: string, filePath: string }[]>
+  writeSljaZip: (payload: {
+    filePath: string
+    slides: Array<{
+      tipo: string
+      letra: string
+      letraAux: string
+      fundoLetra: number
+      tamanhoLetra: number
+      corLetra: string
+      corFundo: string
+      tamanhoLetraAux: number
+      corLetraAux: string
+      imagemSourcePath: string | null
+      imagemPosicao: number
+      tempo: number
+    }>
+    audioSourcePath: string | null
+    instrumentalSourcePath: string | null
+  }) => Promise<boolean>
+  readSljaZip: (filePath: string) => Promise<{
+    name: string
+    audioPath: string | null
+    instrumentalPath: string | null
+    slides: Array<{
+      text: string
+      auxText: string
+      image: string | null
+      fontSize: number
+      fontColor: string
+      auxFontSize: number
+      auxFontColor: string
+      time: number | null
+    }>
+  } | null>
   openExternal: (url: string) => Promise<void>
   openPath: (filePath: string) => Promise<void>
   clearAllData: () => Promise<void>

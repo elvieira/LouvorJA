@@ -115,6 +115,10 @@
               :aux_text="slide.aux_lyric"
               :image="slide.url_image ? $path.file(slide.url_image) : null"
               :image_position="slide.image_position"
+              :text_size_pc="slide.fontSize"
+              :text_color="slide.fontColor"
+              :aux_text_size_pc="slide.auxFontSize"
+              :aux_text_color="slide.auxFontColor"
               class="w-100 h-100"
             />
             <LFullscreenPlayer v-if="fullscreen" class="w-100 h-100" />
@@ -154,7 +158,7 @@
                 v-model="config.slide_progress"
                 :indeterminate="loading"
                 :height="4"
-                :color="config.is_paused ? 'var(--accent-yellow)' : 'white'"
+                color="success"
                 class="slide-progress-bar"
               />
             </div>
@@ -301,13 +305,13 @@ export default defineComponent({
         return;
       }
 
-      if (this.$refs?.slideItem && (this.$refs?.slideItem as any)[0]?.$el) {
-        const self = this;
-        const height = (this.$refs.slideItem as any)[0].$el.offsetHeight;
-        setTimeout(() => {
-          self.scrollPos = self.slide_index * height - height;
-        }, 100);
-      }
+      this.$nextTick(() => {
+        const items = this.$refs?.slideItem as any[] | undefined;
+        const activeEl = items?.[this.slide_index]?.$el as HTMLElement | undefined;
+        if (activeEl) {
+          activeEl.scrollIntoView({ block: "center", behavior: "smooth" });
+        }
+      });
     },
   },
   beforeUnmount() {
@@ -413,6 +417,7 @@ export default defineComponent({
   }
 
   .playlist-item {
+    position: relative;
     border-radius: 12px;
     transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     background: rgba(0, 0, 0, 0.25) !important;
@@ -484,11 +489,9 @@ export default defineComponent({
       bottom: 0;
       left: 0;
       width: 100%;
-      padding: 0 16px;
-      transform: translateY(2px);
 
       .slide-progress-bar {
-        border-radius: 2px;
+        border-radius: 0 0 12px 12px;
       }
     }
   }
