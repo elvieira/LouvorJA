@@ -13,6 +13,55 @@
         @close="module.show = false"
       >
         <div class="d-flex" style="gap: 12px;">
+          <v-menu location="bottom end">
+            <template #activator="{ props }">
+              <v-btn
+                variant="tonal"
+                color="secondary"
+                v-bind="props"
+                append-icon="mdi-swap-vertical"
+                class="rounded-lg text-body-2 font-weight-medium"
+                style="text-transform: none; letter-spacing: normal;"
+              >
+                Importar / Exportar
+              </v-btn>
+            </template>
+            <v-card class="elevation-3" rounded="lg" style="overflow: hidden; border: 1px solid var(--border-color, rgba(255, 255, 255, 0.05));">
+              <v-list class="py-2" bg-color="var(--card-bg)">
+                <v-list-item 
+                  class="mx-2 rounded-lg mb-1" 
+                  style="min-height: 40px;"
+                  @click="importLiturgy"
+                >
+                  <div class="d-flex align-center">
+                    <v-icon 
+                      icon="mdi-import" 
+                      size="small" 
+                      class="mr-3" 
+                      style="opacity: 0.9;" 
+                    />
+                    <span class="text-body-2 font-weight-medium">Importar</span>
+                  </div>
+                </v-list-item>
+                <v-list-item 
+                  class="mx-2 rounded-lg mb-0" 
+                  style="min-height: 40px;"
+                  @click="exportLiturgy"
+                >
+                  <div class="d-flex align-center">
+                    <v-icon 
+                      icon="mdi-export" 
+                      size="small" 
+                      class="mr-3" 
+                      style="opacity: 0.9;" 
+                    />
+                    <span class="text-body-2 font-weight-medium">Exportar</span>
+                  </div>
+                </v-list-item>
+              </v-list>
+            </v-card>
+          </v-menu>
+
           <v-btn
             variant="tonal"
             color="#f6c32a"
@@ -130,6 +179,222 @@
         @edit-item="editTemplateItem"
         @apply-template="applyTemplateToCurrentDay"
       />
+      <!-- Export Dialog -->
+      <v-dialog 
+        v-model="showExportDialog" 
+        max-width="440"
+      >
+        <v-card
+          class="rounded-xl pa-2"
+          :color="isDark ? 'var(--card-bg)' : '#ffffff'"
+          :theme="isDark ? 'dark' : 'light'"
+        >
+          <v-card-title class="font-weight-bold">
+            Exportar Liturgia
+          </v-card-title>
+          <v-card-text>
+            <div class="mb-4">
+              <div
+                class="text-body-2 font-weight-medium mb-1"
+                style="color: var(--sidebar-text-secondary); margin-left: 4px;"
+              >
+                Qual liturgia você deseja exportar?
+              </div>
+              <v-select
+                v-model="exportSelectedLiturgy"
+                :items="allLiturgyOptions"
+                item-title="title"
+                item-value="value"
+                variant="outlined"
+                color="primary"
+                rounded="lg"
+                density="compact"
+                hide-details
+                class="modern-input-compact"
+                :menu-props="{ transition: 'fade-transition' }"
+                :list-props="{ style: 'background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border-color, rgba(150, 150, 150, 0.2)); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); padding: 8px 0;' }"
+              >
+                <template #selection="{ item }">
+                  <div class="d-flex align-center">
+                    <v-icon
+                      v-if="item.raw.icon"
+                      :icon="item.raw.icon"
+                      size="small"
+                      class="mr-2"
+                      style="opacity: 0.85;"
+                    />
+                    <span class="text-body-2">{{ item.title }}</span>
+                  </div>
+                </template>
+                <template #item="{ item, props }">
+                  <v-list-item
+                    v-bind="props"
+                    :title="undefined"
+                    class="mx-2 rounded-lg mb-1"
+                    color="primary"
+                    style="min-height: 40px;"
+                  >
+                    <template #prepend>
+                      <v-icon
+                        v-if="item.raw.icon"
+                        :icon="item.raw.icon"
+                        size="small"
+                        class="mr-3"
+                        :color="item.value === exportSelectedLiturgy ? 'primary' : undefined"
+                        style="opacity: 0.85;"
+                      />
+                    </template>
+                    <template #title>
+                      <div class="d-flex align-center">
+                        <span
+                          class="text-body-2 font-weight-medium"
+                          :class="item.value === exportSelectedLiturgy ? 'text-primary' : 'opacity-80'"
+                        >
+                          {{ item.title }}
+                        </span>
+                      </div>
+                    </template>
+                  </v-list-item>
+                </template>
+              </v-select>
+            </div>
+          </v-card-text>
+          <v-card-actions class="px-4 pb-4">
+            <v-spacer />
+            <div class="d-flex" style="gap: 12px;">
+              <v-btn
+                variant="tonal"
+                :color="isDark ? 'white' : 'grey-darken-2'"
+                class="rounded-lg text-none px-6 font-weight-bold"
+                @click="showExportDialog = false"
+              >
+                Cancelar
+              </v-btn>
+              <v-btn
+                variant="flat"
+                color="primary"
+                class="rounded-lg text-none px-6 font-weight-bold"
+                @click="performExportLiturgy"
+              >
+                Continuar
+              </v-btn>
+            </div>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+
+      <!-- Import Target Dialog -->
+      <v-dialog 
+        v-model="showImportTargetDialog" 
+        max-width="440" 
+        persistent
+      >
+        <v-card
+          class="rounded-xl pa-2"
+          :color="isDark ? 'var(--card-bg)' : '#ffffff'"
+          :theme="isDark ? 'dark' : 'light'"
+        >
+          <v-card-title class="font-weight-bold">
+            Importar Liturgia
+          </v-card-title>
+          <v-card-text>
+            <div
+              class="text-caption mb-3"
+              style="color: var(--sidebar-text-secondary); margin-left: 4px; line-height: 1.4;"
+            >
+              Arquivo lido com sucesso! Selecione onde deseja inserir os itens importados.
+              <br />
+              <strong style="color: var(--sidebar-text);">Atenção:</strong> Isso substituirá a liturgia selecionada.
+            </div>
+            <div class="mb-4">
+              <div
+                class="text-body-2 font-weight-medium mb-1"
+                style="color: var(--sidebar-text-secondary); margin-left: 4px;"
+              >
+                Destino da importação
+              </div>
+              <v-select
+                v-model="importSelectedTarget"
+                :items="allLiturgyOptions"
+                item-title="title"
+                item-value="value"
+                variant="outlined"
+                color="primary"
+                rounded="lg"
+                density="compact"
+                hide-details
+                class="modern-input-compact"
+                :menu-props="{ transition: 'fade-transition' }"
+                :list-props="{ style: 'background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border-color, rgba(150, 150, 150, 0.2)); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); padding: 8px 0;' }"
+              >
+                <template #selection="{ item }">
+                  <div class="d-flex align-center">
+                    <v-icon
+                      v-if="item.raw.icon"
+                      :icon="item.raw.icon"
+                      size="small"
+                      class="mr-2"
+                      style="opacity: 0.85;"
+                    />
+                    <span class="text-body-2">{{ item.title }}</span>
+                  </div>
+                </template>
+                <template #item="{ item, props }">
+                  <v-list-item
+                    v-bind="props"
+                    :title="undefined"
+                    class="mx-2 rounded-lg mb-1"
+                    color="primary"
+                    style="min-height: 40px;"
+                  >
+                    <template #prepend>
+                      <v-icon
+                        v-if="item.raw.icon"
+                        :icon="item.raw.icon"
+                        size="small"
+                        class="mr-3"
+                        :color="item.value === importSelectedTarget ? 'primary' : undefined"
+                        style="opacity: 0.85;"
+                      />
+                    </template>
+                    <template #title>
+                      <div class="d-flex align-center">
+                        <span
+                          class="text-body-2 font-weight-medium"
+                          :class="item.value === importSelectedTarget ? 'text-primary' : 'opacity-80'"
+                        >
+                          {{ item.title }}
+                        </span>
+                      </div>
+                    </template>
+                  </v-list-item>
+                </template>
+              </v-select>
+            </div>
+          </v-card-text>
+          <v-card-actions class="px-4 pb-4">
+            <v-spacer />
+            <div class="d-flex" style="gap: 12px;">
+              <v-btn
+                variant="tonal"
+                :color="isDark ? 'white' : 'grey-darken-2'"
+                class="rounded-lg text-none px-6 font-weight-bold"
+                @click="showImportTargetDialog = false; importedDataForTarget = []"
+              >
+                Cancelar
+              </v-btn>
+              <v-btn
+                variant="flat"
+                color="primary"
+                class="rounded-lg text-none px-6 font-weight-bold"
+                @click="performImportLiturgy"
+              >
+                Importar Aqui
+              </v-btn>
+            </div>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
     </div>
   </v-slide-y-reverse-transition>
 </template>
@@ -146,6 +411,7 @@ import AddItemDialog from "./components/AddItemDialog.vue";
 import NewCustomDialog from "./components/NewCustomDialog.vue";
 import ScheduledItemsDialog from "./components/ScheduledItemsDialog.vue";
 import TemplatesDialog from "./components/TemplatesDialog.vue";
+import { parseClassicLiturgy, generateClassicLiturgy } from "@/helpers/LiturgyParser";
 
 
 export default defineComponent({
@@ -189,6 +455,12 @@ export default defineComponent({
     showNewCustomDialog: false as boolean,
     showScheduledItems: false as boolean,
     showTemplatesDialog: false as boolean,
+    showExportDialog: false as boolean,
+    exportSelectedLiturgy: "" as string,
+    showImportTargetDialog: false as boolean,
+    importSelectedTarget: "" as string,
+    importedDataForTarget: [] as any[],
+    rawImportedData: null as Record<string, any[]> | null,
     isTemplateMode: false as boolean,
     isFillingPlaceholder: false as boolean,
     templateTargetId: null as string | null,
@@ -199,12 +471,32 @@ export default defineComponent({
     module_id(): string { return manifest.id; },
     module(): any { return this.$modules.get(this.module_id); },
     show(): boolean { return this.module.show; },
+    isDark(): boolean {
+      return (this as any).$vuetify?.theme?.name === "dark";
+    },
     dayOptions(): {value: string, label: string}[] {
       const days = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
       return [
         ...days.map(d => ({ value: d, label: this.t(`days.${d}`) })),
         { value: "custom", label: this.t("days.custom") },
       ];
+    },
+    allLiturgyOptions(): { value: string, title: string, icon: string }[] {
+      const days = [
+        { value: "sunday", icon: "mdi-calendar-blank" },
+        { value: "monday", icon: "mdi-calendar-blank" },
+        { value: "tuesday", icon: "mdi-calendar-blank" },
+        { value: "wednesday", icon: "mdi-calendar-blank" },
+        { value: "thursday", icon: "mdi-calendar-blank" },
+        { value: "friday", icon: "mdi-calendar-blank" },
+        { value: "saturday", icon: "mdi-calendar-check" },
+      ];
+      const options = [{ value: "all", title: "Todas", icon: "mdi-calendar-multiple" }];
+      options.push(...days.map(d => ({ value: d.value, title: this.t(`days.${d.value}`), icon: d.icon })));
+      this.customLiturgies.forEach((custom, index) => {
+        options.push({ value: `custom_${index}`, title: custom.name, icon: "mdi-star-outline" });
+      });
+      return options;
     },
     currentItems: {
       get(): any[] {
@@ -295,6 +587,159 @@ export default defineComponent({
     setTodayAsDefault() {
       const dayMap = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
       this.selectedDay = dayMap[new Date().getDay()];
+    },
+    async importLiturgy() {
+      const electronAPI = (window as any).electronAPI;
+      let content: string | null = null;
+
+      try {
+        if (electronAPI?.openFileDialog && electronAPI?.readTextFile) {
+          const filePath = (await electronAPI.openFileDialog({
+            title: "Importar Liturgia",
+            filters: [{ name: "Arquivos LouvorJA", extensions: ["ja"] }],
+            properties: ["openFile"],
+          })) as string | null;
+
+          if (!filePath) return;
+          content = await electronAPI.readTextFile(filePath);
+        } else {
+          content = await new Promise<string | null>((resolve) => {
+            const input = document.createElement("input");
+            input.type = "file";
+            input.accept = ".ja";
+            input.onchange = async (e: any) => {
+              const file = e.target.files?.[0];
+              if (!file) {
+                resolve(null);
+                return;
+              }
+              const text = await file.text();
+              resolve(text);
+            };
+            input.click();
+          });
+        }
+
+        if (!content) return;
+
+        const imported = parseClassicLiturgy(content);
+        this.rawImportedData = imported;
+
+        let allItems: any[] = [];
+        for (const items of Object.values(imported)) {
+          if (items && items.length > 0) {
+            allItems = allItems.concat(items);
+          }
+        }
+
+        this.importedDataForTarget = allItems;
+        this.importSelectedTarget = "all";
+        this.showImportTargetDialog = true;
+      } catch (e: any) {
+        console.error("Failed to import liturgy:", e);
+        (this as any).$alert.error({
+          text: `Erro ao importar liturgia: ${e?.message || e}`,
+          translate: false,
+        });
+      }
+    },
+    performImportLiturgy() {
+      if (!this.importSelectedTarget) return;
+
+      if (this.importSelectedTarget === "all") {
+        if (this.rawImportedData) {
+          for (const [day, items] of Object.entries(this.rawImportedData)) {
+            if (this.liturgies[day] !== undefined && items && items.length > 0) {
+              this.liturgies[day] = [...items];
+            }
+          }
+        }
+      } else if (this.importSelectedTarget.startsWith("custom_")) {
+        const idx = parseInt(this.importSelectedTarget.replace("custom_", ""));
+        if (this.customLiturgies[idx]) {
+          this.customLiturgies[idx].items = [...this.importedDataForTarget];
+        }
+      } else {
+        this.liturgies[this.importSelectedTarget] = [...this.importedDataForTarget];
+      }
+
+      this.saveLiturgy();
+      this.showImportTargetDialog = false;
+      this.importedDataForTarget = [];
+      this.rawImportedData = null;
+
+      (this as any).$alert.show({
+        text: "Liturgia importada com sucesso!",
+        translate: false,
+      });
+    },
+    async exportLiturgy() {
+      this.exportSelectedLiturgy = "all";
+      this.showExportDialog = true;
+    },
+    async performExportLiturgy() {
+      if (!this.exportSelectedLiturgy) return;
+
+      this.showExportDialog = false;
+
+      try {
+        let iniString = "";
+        if (this.exportSelectedLiturgy === "all") {
+          iniString = generateClassicLiturgy(this.liturgies);
+        } else {
+          let itemsToExport: any[] = [];
+          if (this.exportSelectedLiturgy.startsWith("custom_")) {
+            const idx = parseInt(this.exportSelectedLiturgy.replace("custom_", ""));
+            if (this.customLiturgies[idx]) itemsToExport = this.customLiturgies[idx].items;
+          } else {
+            itemsToExport = this.liturgies[this.exportSelectedLiturgy] || [];
+          }
+
+          // We wrap the items in "sunday" to force it to export as "Domingo" in the classic INI format
+          const singleDayLiturgy = { sunday: itemsToExport };
+          iniString = generateClassicLiturgy(singleDayLiturgy);
+        }
+
+        const electronAPI = (window as any).electronAPI;
+
+        if (electronAPI?.saveFileDialog && electronAPI?.writeTextFile) {
+          const filePath = await electronAPI.saveFileDialog({
+            title: "Exportar Liturgia",
+            defaultPath: "liturgia.ja",
+            filters: [{ name: "Arquivos LouvorJA", extensions: ["ja"] }],
+          });
+
+          if (filePath) {
+            await electronAPI.writeTextFile(filePath, iniString);
+            (this as any).$alert.show({
+              text: "Liturgia exportada com sucesso!",
+              translate: false,
+            });
+          }
+        } else {
+          // Web fallback: trigger browser download
+          const blob = new Blob([iniString], { type: "text/plain;charset=utf-8" });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = "liturgia.ja";
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+
+          (this as any).$alert.show({
+            text: "Liturgia exportada com sucesso!",
+            translate: false,
+          });
+        }
+      } catch (e: any) {
+        console.error("Failed to perform export:", e);
+        (this as any).$alert.error({
+          text: `Erro ao exportar liturgia: ${e?.message || e}`,
+          translate: false,
+        });
+      }
     },
     onDayChange() {
       this.selectedItemIndex = null;
