@@ -22,6 +22,7 @@
       
       <div class="mac-title-center h-100 d-flex align-center justify-center">
         <span class="text-caption font-weight-medium" style="opacity: 0.9; letter-spacing: 0.5px;">{{ $t('app.name') }}</span>
+        <span class="ml-2" style="font-size: 10px; opacity: 0.4; letter-spacing: 0.5px; font-weight: 500;">v{{ version }}</span>
       </div>
     </template>
 
@@ -37,6 +38,7 @@
           alt="Icone"
         />
         <span class="text-caption font-weight-medium" style="opacity: 0.9; letter-spacing: 0.5px;">{{ $t('app.name') }}</span>
+        <span class="ml-2" style="font-size: 10px; opacity: 0.4; letter-spacing: 0.5px; font-weight: 500;">v{{ version }}</span>
       </div>
       
       <div class="window-controls d-flex h-100 titlebar-no-drag">
@@ -64,6 +66,7 @@
 import { defineComponent } from "vue";
 import $appdata from "@/helpers/config/AppData";
 import $alert from "@/helpers/ui/Alert";
+import packageJson from "../../package.json";
 
 export default defineComponent({
   name: "AppTitlebar",
@@ -73,14 +76,19 @@ export default defineComponent({
       isElectron: false as boolean,
       isMac: false as boolean,
       isFocused: true as boolean,
+      db_version: 0 as number,
     };
   },
   computed: {
     isMainApp(): boolean {
       return this.$route.name !== "Popup";
     },
+    version(): string {
+      return `${packageJson.version}.${this.db_version}`;
+    },
   },
   async mounted() {
+    await this.loadDBVersion();
     this.isMac = navigator.userAgent.includes("Mac");
     
     window.addEventListener("focus", () => { this.isFocused = true; });
@@ -117,6 +125,10 @@ export default defineComponent({
     }
   },
   methods: {
+    async loadDBVersion() {
+      const config = await this.$database.get("config");
+      this.db_version = config?.version_number || 0;
+    },
     minimize() {
       if (this.isElectron && window.electronAPI) window.electronAPI.windowControl("minimize");
     },

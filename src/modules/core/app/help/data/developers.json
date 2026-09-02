@@ -1,0 +1,74 @@
+{
+  "owner": {
+    "name": "Mayco Rolbuche",
+    "role": "Idealizador e Desenvolvedor Principal",
+    "avatar": "https://github.com/maycorolbuche.png",
+    "description": "Criador original do projeto Louvor JA.",
+    "links": [
+      { "icon": "mdi-github", "url": "https://github.com/maycorolbuche" },
+      { "icon": "mdi-web", "url": "https://maycorolbuche.com.br" },
+      { "icon": "mdi-facebook", "url": "https://www.facebook.com/maycorolbuche" },
+      { "icon": "mdi-email", "url": "mailto:mayco.rolbuche@yahoo.com.br" }
+    ]
+  },
+  "current_version_maintainer": {
+    "name": "Elias Vieira",
+    "role": "Desenvolvedor Principal - Versão Flute",
+    "avatar": "https://github.com/elvieira.png",
+    "description": "Responsável pelo desenvolvimento desta distribuição do Louvor JA.",
+    "links": [
+      { "icon": "mdi-github", "url": "https://github.com/elvieira" },
+      { "icon": "mdi-web", "url": "https://elvieira.dev" },
+      { "icon": "mdi-instagram", "url": "https://www.instagram.com/el.vieira" },
+      { "icon": "mdi-email", "url": "mailto:elvieiradev@gmail.com" }
+    ]
+  },
+  "developers": [
+    {
+      "name": "Railson Monteiro",
+      "role": "Desenvolvedor",
+      "avatar": "https://github.com/railsonmonteiro.png",
+      "links": [
+        { "icon": "mdi-github", "url": "https://github.com/railsonmonteiro" }
+      ]
+    },
+    {
+      "name": "Rafael Dias Zendron",
+      "role": "Desenvolvedor",
+      "avatar": "https://github.com/rafaumeu.png",
+      "links": [
+        { "icon": "mdi-github", "url": "https://github.com/rafaumeu" }
+      ]
+    }
+  ],
+  "collaborators": [
+    {
+      "name": "Blog Liga o Som",
+      "link": "http://www.ligaosom.com.br/"
+    },
+    {
+      "name": "Se7en Informática",
+      "link": "https://seveninformatica.net.br/"
+    },
+    {
+      "name": "Portal Adventista Baixo Guandu/ES",
+      "link": "https://iasdbaixoguandu.com.br/"
+    },
+    {
+      "name": "Grupo Evangelístico 300 de Gideão",
+      "link": "https://300gideao.com.br/"
+    },
+    {
+      "name": "Esperança Jovem",
+      "link": "https://esperancajovem.com.br/"
+    },
+    {
+      "name": "Blog Daniel Gonçalves",
+      "link": "http://daniellocutor.com.br"
+    },
+    {
+      "name": "Rede Adventista",
+      "link": "https://redeadventista.com/"
+    }
+  ]
+}

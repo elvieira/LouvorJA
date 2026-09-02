@@ -4,7 +4,7 @@
   "tab_manual": "Manual",
   "tab_developers": "Desarrolladores",
   "version": "Versión {version} (Beta)",
-  "app_desc": "Aplicación de escritorio para gestionar y presentar música, himnos, letras y recursos multimedia para iglesias. Hecho con amor y tecnología para hacer la adoración aún más fluida.",
+  "app_desc": "Sencillo, moderno y centrado en hacer tu culto más inspirador.",
   "manual_title": "Manual de Uso",
   "manual_desc": "Aprende a utilizar todas las funciones",
   "manual_btn": "Acceder",
@@ -18,5 +18,9 @@
   "diagnostics_desc": "Ver registros e información del sistema",
   "diagnostics_btn": "Ver",
   "devs_title": "Equipo y Colaboradores",
-  "devs_desc": "La información sobre los desarrolladores y colaboradores del proyecto estará disponible aquí pronto."
+  "devs_desc": "La información sobre los desarrolladores y colaboradores del proyecto estará disponible aquí pronto.",
+  "project_owner": "Creador del Proyecto",
+  "version_maintainer": "Responsable de esta Versión",
+  "other_developers": "Equipo de Desarrolladores",
+  "collaborators": "Colaboradores y Patrocinadores"
 }

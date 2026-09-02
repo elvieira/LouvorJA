@@ -1,7 +1,5 @@
 <template>
-  <div v-if="!isMediaMinimized && !isExternalMediaMinimized" id="footer-version">
-    <span class="version-text">v{{ version }}</span>
-  </div>
+  <div v-if="!isMediaMinimized && !isExternalMediaMinimized" style="display: none;" />
   <v-footer
     v-else-if="isMediaMinimized"
     id="footer-bar"

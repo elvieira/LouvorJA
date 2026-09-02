@@ -1,20 +1,37 @@
 <template>
   <div class="settings-container mx-auto pb-4" style="max-width: 600px;">
     <!-- App Info Card -->
-    <v-card class="settings-card rounded-xl pa-2 mb-6" flat style="background: var(--card-bg); box-shadow: var(--shadow);">
-      <v-card-text class="pa-6 d-flex flex-column align-center text-center">
-        <div class="mb-4 rounded-circle d-flex align-center justify-center" style="width: 96px; height: 96px; background: rgba(0, 151, 215, 0.05); border: 1px solid var(--border-color);">
-          <img src="/ico/favicon.svg" alt="LouvorJA" style="width: 56px; height: 56px;" />
+    <v-card class="settings-card rounded-xl mb-6 overflow-hidden" flat style="background: var(--card-bg); box-shadow: var(--shadow); position: relative; border: 1px solid var(--border-color);">
+      <!-- Subtle gradient background -->
+      <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, rgba(0, 151, 215, 0.15) 0%, transparent 60%); pointer-events: none;" />
+      
+      <v-card-text class="pa-8 d-flex flex-column align-center text-center" style="position: relative; z-index: 1;">
+        <!-- Logo with glow -->
+        <div class="mb-5 rounded-circle d-flex align-center justify-center" style="width: 100px; height: 100px; background: rgba(0, 151, 215, 0.05); border: 1px solid var(--border-color); box-shadow: 0 8px 32px rgba(0, 151, 215, 0.15); backdrop-filter: blur(10px);">
+          <img src="/ico/favicon.svg" alt="LouvorJA" style="width: 64px; height: 64px; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));" />
         </div>
-        <h3 class="font-weight-bold mb-1" style="color: var(--sidebar-text); font-size: 1.5rem; letter-spacing: -0.02em;">
-          Louvor JA
-        </h3>
-        <div class="text-body-2 font-weight-medium mb-6" style="color: var(--sidebar-text-secondary); background: var(--main-bg); padding: 4px 12px; border-radius: 20px; box-shadow: inset 0 0 0 1px var(--border-color);">
-          {{ $t('modules.help.version', { version: appVersion }) }}
+        
+        <!-- Title & Badge -->
+        <div class="d-flex flex-column align-center justify-center mb-4">
+          <h3 class="font-weight-bold mb-1" style="color: var(--sidebar-text); font-size: 1.5rem; letter-spacing: -0.02em;">
+            LOUVOR JA
+          </h3>
+          <span
+            style="font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; border-radius: 4px; border: 1px solid rgba(0, 132, 193, 0.35); display: inline-flex; align-items: center; color: #0084C1; background-color: rgba(0, 132, 193, 0.15); font-size: 11px; padding: 2px 10px;"
+          >
+            FLUTE
+          </span>
         </div>
-        <p class="text-body-2 px-4" style="color: var(--sidebar-text-secondary); line-height: 1.6;">
+        
+        <!-- Description -->
+        <p class="text-body-1 px-sm-6 mb-6" style="color: var(--sidebar-text-secondary); line-height: 1.6; max-width: 450px;">
           {{ $t('modules.help.app_desc') }}
         </p>
+
+        <!-- Version Pill -->
+        <div class="text-caption font-weight-bold" style="color: var(--sidebar-text-secondary); background: var(--main-bg); padding: 6px 16px; border-radius: 20px; box-shadow: inset 0 0 0 1px var(--border-color);">
+          {{ $t('modules.help.version', { version: appVersion }) }}
+        </div>
       </v-card-text>
     </v-card>
 

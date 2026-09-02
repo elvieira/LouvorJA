@@ -97,6 +97,9 @@ export default {
       
       // Inicia a sincronização silenciosa em background (se necessária)
       setTimeout(async () => {
+        // Cache de avatares de desenvolvedores
+        import("@/helpers/services/Developers").then(mod => mod.cacheAvatars());
+
         // Verificação de atualização do Banco de Dados
         if (window.electronAPI) {
           try {
