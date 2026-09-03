@@ -319,12 +319,14 @@ export default defineComponent({
         if (dbVersionMatch && dbVersionMatch[1]) {
           const remoteVersion = parseInt(dbVersionMatch[1], 10);
           const localConfig = await window.electronAPI.getLocalDb("config") as any;
-          const localVersion = (localConfig?.data?.version_number || localConfig?.version_number) ? parseInt(localConfig?.data?.version_number || localConfig?.version_number, 10) : 0;
+          const localVersion = (localConfig?.data?.version_number || localConfig?.version_number || localConfig?.db_version) 
+            ? parseInt(localConfig?.data?.version_number || localConfig?.version_number || localConfig?.db_version, 10) 
+            : (window.electronAPI.getDatabaseVersion ? await window.electronAPI.getDatabaseVersion(this.$i18n.locale) : 0);
           
+          (this as any).$appdata.set("modules.sync.db_version_local", localVersion);
+          (this as any).$appdata.set("modules.sync.db_version_remote", remoteVersion);
           if (remoteVersion > localVersion) {
             (this as any).$appdata.set("modules.sync.db_update_available", true);
-            (this as any).$appdata.set("modules.sync.db_version_local", localVersion);
-            (this as any).$appdata.set("modules.sync.db_version_remote", remoteVersion);
           } else {
             (this as any).$appdata.set("modules.sync.db_update_available", false);
           }
@@ -349,23 +351,21 @@ export default defineComponent({
       }
 
       try {
-        this.dbUpdateStatus = "Atualizando configurações...";
-        const date = new Date().toISOString().slice(0, 10).replace(/-/g, "");
-        const response = await fetch(`${$path.db("/config")}?${date}`, {
-          headers: { "Api-Token": import.meta.env.VITE_API_TOKEN as string },
-        });
-        if (response.ok) {
-          const configData = await response.json();
-          await window.electronAPI.saveLocalDb("config", configData);
-        }
-
         this.dbUpdateStatus = "Baixando banco de dados...";
         this.dbUpdateProgress = 0;
         await window.electronAPI.downloadDatabase(this.$i18n.locale, true);
         
-        this.dbUpdateStatus = "Extraindo arquivos (isso pode levar um minuto)...";
+        this.dbUpdateStatus = "Extraindo arquivos e atualizando versão...";
         this.dbUpdateProgress = 0;
         await window.electronAPI.extractLocalDb(this.$i18n.locale);
+
+        const localConfig = await window.electronAPI.getLocalDb("config") as any;
+        const localVersion = (localConfig?.data?.version_number || localConfig?.version_number || localConfig?.db_version) 
+          ? parseInt(localConfig?.data?.version_number || localConfig?.version_number || localConfig?.db_version, 10) 
+          : (window.electronAPI.getDatabaseVersion ? await window.electronAPI.getDatabaseVersion(this.$i18n.locale) : 0);
+
+        (this as any).$appdata.set("modules.sync.db_version_local", localVersion);
+        (this as any).$appdata.set("modules.sync.db_update_available", false);
         
         this.dbUpdateStatus = "Concluído! Reiniciando...";
         setTimeout(() => {

@@ -1,9 +1,52 @@
 import * as path from "path";
 import * as fs from "fs-extra";
 
-import { encryptData } from "../utils/crypto";
+import { encryptData, decryptData } from "../utils/crypto";
 import { SQLiteHelper } from "../utils/sqlite";
-import { getSysDbPath } from "../config/constants";
+import { getSysDbPath, sysConfigPath } from "../config/constants";
+
+export function updateSysConfig(key: string, value: unknown): boolean {
+  try {
+    let sysConfig: Record<string, unknown> = {};
+    if (fs.existsSync(sysConfigPath)) {
+      const encrypted = fs.readFileSync(sysConfigPath, "utf8");
+      const decrypted = decryptData(encrypted);
+      if (decrypted) {
+        sysConfig = JSON.parse(decrypted);
+      }
+    }
+    sysConfig[key] = value;
+    const encryptedContent = encryptData(JSON.stringify(sysConfig));
+    if (encryptedContent) {
+      fs.writeFileSync(sysConfigPath, encryptedContent, "utf8");
+      return true;
+    }
+    return false;
+  } catch (e) {
+    console.error("Erro ao atualizar sysconfig:", e);
+    return false;
+  }
+}
+
+export function getSysConfigValue<T = unknown>(key: string): T | null {
+  try {
+    if (fs.existsSync(sysConfigPath)) {
+      const encrypted = fs.readFileSync(sysConfigPath, "utf8");
+      const decrypted = decryptData(encrypted);
+      if (decrypted) {
+        const sysConfig = JSON.parse(decrypted);
+        if (sysConfig[key] !== undefined) {
+          return sysConfig[key] as T;
+        }
+      }
+    }
+    return null;
+  } catch (e) {
+    console.error("Erro ao ler sysconfig:", e);
+    return null;
+  }
+}
+
 
 export default class DbExtractor {
   private dbPath: string;
@@ -42,6 +85,9 @@ export default class DbExtractor {
     
     try {
       const db = this.db!;
+      progressCallback({ text: "Lendo versão do banco de dados...", progress: 5 });
+      this.repairConfig(db);
+
       progressCallback({ text: "Extraindo categorias...", progress: 10 });
       this.extractCategories(db);
 
@@ -63,6 +109,55 @@ export default class DbExtractor {
     }
   }
 
+  public repairConfig(db: SQLiteHelper): { version_number: number; db_version: number } {
+    try {
+      const hasVersao = db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND LOWER(name)='versao'").get();
+      let versionNumber = 0;
+      if (hasVersao) {
+        const row = db.prepare("SELECT VERSAO_BD FROM VERSAO LIMIT 1").get() as Record<string, unknown> | null;
+        const val = row?.VERSAO_BD ?? row?.versao_bd ?? row?.VERSAO;
+        if (val !== undefined && val !== null) {
+          versionNumber = Number(val);
+        }
+      }
+      const configData = { version_number: versionNumber, db_version: versionNumber };
+      
+      // Salva no sysconfig (.sysconfig.bin) - não salva em config.bin
+      updateSysConfig("config", configData);
+      updateSysConfig("db_version", versionNumber);
+
+      return configData;
+    } catch (e) {
+      console.error("Erro ao extrair VERSAO do banco de dados:", e);
+      return { version_number: 0, db_version: 0 };
+    }
+  }
+
+  public async getVersion(): Promise<number> {
+    const cachedConfig = getSysConfigValue<{ version_number?: number }>("config");
+    if (cachedConfig && typeof cachedConfig.version_number === "number" && cachedConfig.version_number > 0) {
+      return cachedConfig.version_number;
+    }
+    const cachedVer = getSysConfigValue<number>("db_version");
+    if (typeof cachedVer === "number" && cachedVer > 0) {
+      return cachedVer;
+    }
+
+    if (!fs.existsSync(this.dbPath)) return 0;
+    const autoClose = !this.db;
+    if (autoClose) {
+      await this.connect();
+    }
+    try {
+      const configData = this.repairConfig(this.db!);
+      return configData.version_number;
+    } finally {
+      if (autoClose) {
+        this.close();
+      }
+    }
+  }
+
   public async repairFile(filename: string): Promise<unknown> {
     if (!fs.existsSync(this.dbPath)) return null;
     fs.ensureDirSync(this.sysdataDir);
@@ -74,7 +169,9 @@ export default class DbExtractor {
     
     try {
       const db = this.db!;
-      if (filename.endsWith("_categories")) {
+      if (filename === "config" || filename === "db_version") {
+        return this.repairConfig(db);
+      } else if (filename.endsWith("_categories")) {
         const lang = filename.split("_")[0];
         return this.repairCategories(db, lang);
       } else if (filename.endsWith("_bible_book")) {
@@ -114,6 +211,7 @@ export default class DbExtractor {
     }
     return null;
   }
+
 
   private repairCategories(db: SQLiteHelper, requestedLang: string = "pt"): unknown {
     const hasLangCol = this.hasLanguageColumn(db, "categories");

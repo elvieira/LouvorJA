@@ -29,6 +29,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
   extractLocalDb: (lang?: string) => ipcRenderer.invoke("extract-local-db", lang),
   downloadDatabase: (lang?: string, force?: boolean) => ipcRenderer.invoke("download-database", lang, force),
   checkDatabaseExists: (lang?: string) => ipcRenderer.invoke("check-database-exists", lang),
+  getDatabaseVersion: (lang?: string) => ipcRenderer.invoke("get-database-version", lang),
   checkOldInstallation: () => ipcRenderer.invoke("check-old-installation"),
   importOldInstallation: () => ipcRenderer.invoke("import-old-installation"),
   searchBible: (versionId: number, query: string, mode: string, lang?: string) => ipcRenderer.invoke("search-bible", versionId, query, mode, lang),

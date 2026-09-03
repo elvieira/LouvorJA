@@ -68,6 +68,7 @@ interface ElectronAPI {
   clearSysData: (lang?: string) => Promise<void>
   getAppDataSize: () => Promise<number>
   getLocalDb: (filename: string, lang?: string) => Promise<unknown | null>
+  getDatabaseVersion: (lang?: string) => Promise<number>
   extractLocalDb: (lang?: string) => Promise<boolean>
   downloadDatabase: (lang?: string, force?: boolean) => Promise<unknown>
   checkDatabaseExists: (lang?: string) => Promise<boolean>

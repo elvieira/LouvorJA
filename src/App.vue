@@ -109,12 +109,16 @@ export default {
             if (dbVersionMatch && dbVersionMatch[1]) {
               const remoteVersion = parseInt(dbVersionMatch[1], 10);
               const localConfig = await window.electronAPI.getLocalDb("config");
-              const localVersion = (localConfig?.data?.version_number || localConfig?.version_number) ? parseInt(localConfig?.data?.version_number || localConfig?.version_number, 10) : 0;
+              const localVersion = (localConfig?.data?.version_number || localConfig?.version_number || localConfig?.db_version) 
+                ? parseInt(localConfig?.data?.version_number || localConfig?.version_number || localConfig?.db_version, 10) 
+                : (window.electronAPI.getDatabaseVersion ? await window.electronAPI.getDatabaseVersion() : 0);
               
+              this.$appdata.set("modules.sync.db_version_local", localVersion);
+              this.$appdata.set("modules.sync.db_version_remote", remoteVersion);
               if (remoteVersion > localVersion) {
                 this.$appdata.set("modules.sync.db_update_available", true);
-                this.$appdata.set("modules.sync.db_version_local", localVersion);
-                this.$appdata.set("modules.sync.db_version_remote", remoteVersion);
+              } else {
+                this.$appdata.set("modules.sync.db_update_available", false);
               }
             }
           } catch (e) {

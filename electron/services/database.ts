@@ -5,7 +5,7 @@ import DbExtractor from "./db-extractor";
 import { encryptData, decryptData } from "../utils/crypto";
 import { getFtpParams } from "../utils/ftp-client";
 import { SQLiteHelper } from "../utils/sqlite";
-import { getSysDbPath, sysConfigPath, finalDbPath } from "../config/constants";
+import { getSysDbPath, sysConfigPath } from "../config/constants";
 import * as ftp from "basic-ftp";
 
 export function registerDatabaseHandlers() {
@@ -23,7 +23,22 @@ export function registerDatabaseHandlers() {
         }
       }
 
+      // Se for "config" ou "db_version", busca e recupera exclusivamente a partir da tabela VERSAO do SQLite
+      // e armazena em sysconfig (.sysconfig.bin), sem gerar arquivo config.bin
+      if (filename === "config" || filename === "db_version") {
+        const dbPath = path.join(app.getPath("userData"), `database_${lang}.db`);
+        if (fs.existsSync(dbPath)) {
+          const extractor = new DbExtractor(dbPath, lang);
+          const data = await extractor.repairFile(filename);
+          if (data) {
+            return data;
+          }
+        }
+        return filename === "config" ? { version_number: 0, db_version: 0 } : 0;
+      }
+
       // 2. Fallback: procura em arquivos individuais na sysDbPath (extraídos do BD)
+
       const sysDbPath = getSysDbPath(lang);
       const filePath = path.join(sysDbPath, `${filename}.bin`);
       if (fs.existsSync(filePath)) {
@@ -318,7 +333,7 @@ export function registerDatabaseHandlers() {
         try { client.close(); } catch { console.error("FTP close error"); }
 
         // Limpar arquivo temporário corrompido
-        const tempPath = `${finalDbPath}.downloading`;
+        const tempPath = `${dbPath}.downloading`;
         if (fs.existsSync(tempPath)) {
           try { fs.unlinkSync(tempPath); } catch { console.error("Unlink error"); }
         }
@@ -357,5 +372,31 @@ export function registerDatabaseHandlers() {
   ipcMain.handle("check-database-exists", async (event, lang: string = "pt") => {
     const dbPath = path.join(app.getPath("userData"), `database_${lang}.db`);
     return fs.existsSync(dbPath);
+  });
+  ipcMain.handle("get-database-version", async (event, lang: string = "pt") => {
+    try {
+      if (fs.existsSync(sysConfigPath)) {
+        const configEncrypted = fs.readFileSync(sysConfigPath, "utf8");
+        const configDecrypted = decryptData(configEncrypted);
+        if (configDecrypted) {
+          const sysConfig = JSON.parse(configDecrypted);
+          if (sysConfig["config"]?.version_number) {
+            return sysConfig["config"].version_number;
+          }
+          if (typeof sysConfig["db_version"] === "number") {
+            return sysConfig["db_version"];
+          }
+        }
+      }
+
+      const dbPath = path.join(app.getPath("userData"), `database_${lang}.db`);
+      if (fs.existsSync(dbPath)) {
+        const extractor = new DbExtractor(dbPath, lang);
+        return await extractor.getVersion();
+      }
+      return 0;
+    } catch {
+      return 0;
+    }
   });
 }
