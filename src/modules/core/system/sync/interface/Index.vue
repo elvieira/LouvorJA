@@ -363,7 +363,7 @@ export default defineComponent({
         this.dbUpdateProgress = 0;
         await window.electronAPI.downloadDatabase(this.$i18n.locale, true);
         
-        this.dbUpdateStatus = "Extraindo arquivos (isso pode levar um minuto)...";
+        this.dbUpdateStatus = "Extraindo banco de dados...";
         this.dbUpdateProgress = 0;
         await window.electronAPI.extractLocalDb(this.$i18n.locale);
         

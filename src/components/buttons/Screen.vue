@@ -97,7 +97,7 @@ const handleGlobalKeydown = (e: KeyboardEvent) => {
     // Mas F5 e ESC costumam ser globais mesmo dentro de input, vou deixar passar ESC e F5
   }
 
-  if (e.key === "F5") {
+  if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
     // Only trigger if this specific module is the one currently open on screen
     const isModuleActive = appdata.get(`modules.${props.module}.show`);
     if (isModuleActive) {

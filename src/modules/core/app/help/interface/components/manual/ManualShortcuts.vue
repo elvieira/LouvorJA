@@ -45,7 +45,7 @@
               </td>
             </tr>
             <tr>
-              <td><kbd>F5</kbd></td>
+              <td><kbd>CTRL / ⌘</kbd> + <kbd>Enter</kbd></td>
               <td style="color: var(--sidebar-text-secondary);">
                 Projeta a janela atual (quando disponível o recurso)
               </td>

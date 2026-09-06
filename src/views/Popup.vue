@@ -35,7 +35,7 @@ export default defineComponent({
       const target = e.target as HTMLElement;
       if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable)) return;
 
-      if (e.key === "Escape" || e.key === "F5") {
+      if (e.key === "Escape" || ((e.ctrlKey || e.metaKey) && e.key === "Enter")) {
         if (window.opener) {
           window.opener.postMessage("escape-pressed", "*");
         }
