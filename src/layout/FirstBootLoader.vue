@@ -265,14 +265,8 @@ export default defineComponent({
               this.progress = data.progress;
             });
           }
-          
-          try {
-            await this.fetchAndSave("config");
-          } catch (e: any) {
-            console.warn("Non-fatal error: Failed to fetch config from server. Proceeding with local extraction if available.", e);
-          }
-          
           this.statusText = this.$t("first_boot.status.downloading_db");
+
           this.progress = 0;
           
           let shouldDownloadDb = true;
