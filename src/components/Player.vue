@@ -315,7 +315,7 @@
       </v-btn>
 
       <v-btn 
-        v-if="location === 'window' && playerWidth >= 880"
+        v-if="location === 'window'"
         variant="text" 
         size="small" 
         icon 

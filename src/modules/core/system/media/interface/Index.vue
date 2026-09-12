@@ -99,8 +99,8 @@
       </div>
     </template>
 
-    <div class="player-main-container position-relative w-100 h-100 d-flex flex-row overflow-hidden bg-black">
-      <div class="player-visual-area flex-grow-1 position-relative transition-all" style="z-index: 1;">
+    <div class="player-main-container position-relative w-100 h-100 overflow-hidden">
+      <div class="player-visual-area position-absolute w-100 h-100 top-0 left-0" style="z-index: 1;">
         <fullscreen
           v-model="fullscreen"
           class="position-absolute w-100 h-100"
@@ -126,39 +126,46 @@
         </fullscreen>
       </div>
 
-      <div class="player-playlist-area transition-all" :class="{'playlist-open': isPlaylistOpen, 'playlist-closed': !isPlaylistOpen}">
-        <v-list class="playlist-scroll h-100 pa-4 bg-transparent pt-6" :width="340" theme="dark">
-          <v-list-item
+      <div class="player-playlist-area" :class="{'playlist-open': isPlaylistOpen, 'playlist-closed': !isPlaylistOpen}">
+        <div ref="playlistScroll" class="playlist-scroll">
+          <div
             v-for="(item, index) in slides"
             :key="index"
             ref="slideItem"
-            link
-            :active="config.slide_index === index"
-            class="playlist-item"
-            :height="64"
+            class="playlist-item mb-2"
+            :class="{ 
+              active: config.slide_index === index,
+              'title-slide': isTitleSlide(item, index)
+            }"
             @click="$media.goToSlide(index)"
           >
-            <template #prepend>
-              <div class="slide-number-chip">
-                {{ index + 1 }}
-              </div>
-            </template>
+            <!-- Title Slide Chip -->
+            <div v-if="isTitleSlide(item, index)" class="slide-number-chip title-chip mr-3">
+              <v-icon size="15">
+                mdi-music
+              </v-icon>
+            </div>
+            <!-- Standard Slide Chip -->
+            <div v-else class="slide-number-chip mr-3">
+              {{ index + 1 }}
+            </div>
 
-            <v-list-item-title v-if="item.cover" class="slide-title">
-              {{ item.lyric }}
-            </v-list-item-title>
-            <div
-              v-else
-              class="slide-text text-truncate"
-              v-html="item.lyric"
-            />
-            
+            <!-- Content -->
+            <div class="slide-text-wrapper d-flex flex-column text-truncate">
+              <span v-if="isTitleSlide(item, index)" class="slide-badge-title">
+                TÍTULO
+              </span>
+              <span class="slide-text text-truncate font-weight-medium">
+                {{ getSlideText(item) }}
+              </span>
+            </div>
+
             <div v-if="config.audio != '' && config.slide_index == index" class="slide-progress-container">
               <v-progress-linear
                 v-model="config.slide_progress"
                 :indeterminate="loading"
-                :height="4"
-                color="success"
+                :height="3"
+                color="white"
                 class="slide-progress-bar"
               />
             </div>
@@ -168,11 +175,11 @@
               :src="$path.file(item.url_image)"
               style="display: none"
             />
-          </v-list-item>
-        </v-list>
+          </div>
+        </div>
       </div>
 
-      <div v-if="!fullscreen" class="floating-pill-container position-absolute w-100 d-flex justify-center" style="bottom: 40px; z-index: 20; pointer-events: none;">
+      <div v-if="!fullscreen" class="floating-pill-container position-absolute w-100 d-flex justify-center" style="bottom: 32px; z-index: 60; pointer-events: none;">
         <div style="pointer-events: auto;">
           <LPlayer location="window" />
         </div>
@@ -307,11 +314,24 @@ export default defineComponent({
 
       this.$nextTick(() => {
         const items = this.$refs?.slideItem as any[] | undefined;
-        const activeEl = items?.[this.slide_index]?.$el as HTMLElement | undefined;
+        const activeEl = (items?.[this.slide_index] as any)?.$el || (items?.[this.slide_index] as HTMLElement | undefined);
         if (activeEl) {
           activeEl.scrollIntoView({ block: "center", behavior: "smooth" });
         }
       });
+    },
+    isPlaylistOpen(newVal: boolean) {
+      if (newVal) {
+        this.$nextTick(() => {
+          setTimeout(() => {
+            const items = this.$refs?.slideItem as any[] | undefined;
+            const activeEl = (items?.[this.slide_index] as any)?.$el || (items?.[this.slide_index] as HTMLElement | undefined);
+            if (activeEl) {
+              activeEl.scrollIntoView({ block: "center", behavior: "smooth" });
+            }
+          }, 200);
+        });
+      }
     },
   },
   beforeUnmount() {
@@ -323,6 +343,18 @@ export default defineComponent({
     },
     resize(data: any) {
       this.preview_height = data.container_height;
+    },
+    getSlideText(item: any): string {
+      if (!item) return "";
+      const raw = item.lyric || item.aux_lyric || "";
+      return raw
+        .replace(/<br\s*\/?>/gi, " ")
+        .replace(/<[^>]+>/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
+    },
+    isTitleSlide(item: any, index: number): boolean {
+      return index === 0 || item?.cover === true;
     },
   },
 });
@@ -391,63 +423,93 @@ export default defineComponent({
 }
 
 .player-playlist-area {
-  z-index: 2;
-  background: linear-gradient(to right, rgba(0,0,0,0) 0%, rgba(0,0,0,0.4) 100%);
-  display: flex;
-  flex-direction: column;
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: 0;
+  opacity: 0;
+  z-index: 40;
   overflow: hidden;
+  pointer-events: none;
+  background: linear-gradient(
+    to right,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0.2) 15%,
+    rgba(0, 0, 0, 0.45) 40%,
+    rgba(0, 0, 0, 0.65) 75%,
+    rgba(0, 0, 0, 0.75) 100%
+  );
   transition: width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.3s;
   
   &.playlist-open {
     width: 340px;
     opacity: 1;
+    pointer-events: auto;
   }
   
   &.playlist-closed {
     width: 0px;
     opacity: 0;
-    border: none;
+    pointer-events: none;
   }
 
   .playlist-scroll {
+    height: 100%;
     overflow-y: auto;
     overflow-x: hidden;
+    padding: 32px 16px 110px;
 
-
+    &::-webkit-scrollbar {
+      width: 4px;
+    }
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+    }
+    &::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.4);
+    }
   }
 
   .playlist-item {
     position: relative;
+    display: flex;
+    align-items: center;
     border-radius: 12px;
     transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-    background: rgba(0, 0, 0, 0.25) !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    padding: 8px 16px;
-    margin-bottom: 12px;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    user-select: none;
 
     &:hover {
-      background: rgba(0, 0, 0, 0.4) !important;
-      border: 1px solid rgba(255, 255, 255, 0.2) !important;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.2);
       transform: translateX(-4px);
     }
 
-    &.v-list-item--active {
-      background: rgba(0, 0, 0, 0.55) !important;
-      border: 1px solid rgba(255, 255, 255, 0.4) !important;
+    &.active {
+      background: rgba(0, 0, 0, 0.55);
+      border: 1px solid rgba(255, 255, 255, 0.4);
       transform: translateX(-8px) scale(1.02);
-      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
 
       .slide-number-chip {
         background: white;
         color: black;
       }
       
-      .slide-text, .slide-title {
+      .slide-text {
         color: white;
-        font-weight: 600; line-height: 1;
-        text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+        font-weight: 600;
       }
     }
 
@@ -460,28 +522,21 @@ export default defineComponent({
       align-items: center;
       justify-content: center;
       font-size: 12px;
-      font-weight: 600; line-height: 1;
+      font-weight: 600;
       color: rgba(255, 255, 255, 0.8);
-      margin-right: 14px;
+      margin-right: 12px;
+      flex-shrink: 0;
       transition: all 0.2s;
-    }
-
-    .slide-title {
-      font-size: 14px;
-      color: rgba(255, 255, 255, 0.9);
-      text-transform: uppercase;
     }
 
     .slide-text {
       font-size: 13px;
-      line-height: 1.4;
-      color: rgba(255, 255, 255, 0.6);
-      white-space: normal;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      line-clamp: 2;
-      -webkit-box-orient: vertical;
+      color: rgba(255, 255, 255, 0.75);
       text-transform: uppercase;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.2;
     }
 
     .slide-progress-container {
@@ -489,9 +544,69 @@ export default defineComponent({
       bottom: 0;
       left: 0;
       width: 100%;
+      pointer-events: none;
 
       .slide-progress-bar {
         border-radius: 0 0 12px 12px;
+      }
+    }
+
+    /* Estilo Especial para o Primeiro Slide (Capa / Título da Música) */
+    &.title-slide {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      margin-bottom: 14px;
+      padding: 10px 16px;
+
+      .title-chip {
+        background: rgba(246, 195, 42, 0.2);
+        color: #f6c32a;
+        border: 1px solid rgba(246, 195, 42, 0.4);
+      }
+
+      .slide-badge-title {
+        font-size: 9px;
+        font-weight: 700;
+        color: #f6c32a;
+        letter-spacing: 0.12em;
+        line-height: 1;
+        margin-bottom: 3px;
+        text-transform: uppercase;
+      }
+
+      .slide-text {
+        font-size: 13px;
+        font-weight: 700;
+        color: #ffffff;
+        letter-spacing: 0.02em;
+      }
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.14);
+        border-color: rgba(246, 195, 42, 0.5);
+        transform: translateX(-4px);
+      }
+
+      &.active {
+        background: rgba(246, 195, 42, 0.22);
+        border: 1px solid rgba(246, 195, 42, 0.7);
+        transform: translateX(-8px) scale(1.02);
+        box-shadow: 0 8px 24px rgba(246, 195, 42, 0.25), 0 4px 12px rgba(0, 0, 0, 0.4);
+
+        .title-chip {
+          background: #f6c32a;
+          color: #000;
+          border-color: #f6c32a;
+        }
+
+        .slide-badge-title {
+          color: #ffe082;
+        }
+
+        .slide-text {
+          color: #ffffff;
+          font-weight: 800;
+        }
       }
     }
   }
