@@ -44,6 +44,7 @@
     },
     "alert": {
         "close": "Fechar",
+        "cancel": "Cancelar",
         "yes": "Sim",
         "no": "Não",
         "wait": "Aguarde...",
@@ -69,7 +70,7 @@
             "loading_env": "Carregando ambiente...",
             "preparing": "Preparando...",
             "downloading_db": "Baixando banco de dados...",
-            "importing_old": "Importando dados da versão antiga...",
+            "importing_old": "Importando dados da versão clássica...",
             "import_failed": "Falha ao importar. Baixando do servidor...",
             "extracting": "Extraindo dados locais...",
             "complete": "Concluindo..."
@@ -82,8 +83,8 @@
             "extraction_fail": "Erro na extração dos dados locais."
         },
         "old_version": {
-            "title": "Versão antiga detectada",
-            "text": "Detectamos que você possui a versão antiga do Louvor JA instalada neste computador.<br><br>Gostaria de importar o banco de dados da versão antiga para a nova versão?<br><br>Isso agilizará o processo de inicialização. Fique tranquilo, isso não irá alterar, remover ou interferir no funcionamento da versão antiga instalada."
+            "title": "Versão clássica detectada",
+            "text": "Detectamos que você possui a versão clássica do Louvor JA instalada neste computador.<br><br>Gostaria de importar o banco de dados da versão clássica para a nova versão?<br><br>Isso agilizará o processo de inicialização. Fique tranquilo, isso não irá alterar, remover ou interferir no funcionamento da versão clássica instalada."
         }
     }
 }

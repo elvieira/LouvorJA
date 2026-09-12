@@ -174,7 +174,23 @@ export function registerMediaHandlers() {
     } else if (destFolderType === "slides" && decodedFilename.startsWith("/images/")) {
       decodedFilename = decodedFilename.substring(8);
     }
-    const filePath = path.join(destFolder, decodedFilename);
+    let filePath = path.join(destFolder, decodedFilename);
+    if (!fs.existsSync(filePath) && destFolderType === "music") {
+      if (decodedFilename.startsWith("pt/")) {
+        const alt = path.join(destFolder, decodedFilename.slice(3));
+        if (fs.existsSync(alt)) {
+          filePath = alt;
+          decodedFilename = decodedFilename.slice(3);
+        }
+      } else {
+        const alt = path.join(destFolder, "pt", decodedFilename);
+        if (fs.existsSync(alt)) {
+          filePath = alt;
+          decodedFilename = `pt/${decodedFilename}`;
+        }
+      }
+    }
+
     if (fs.existsSync(filePath)) {
       const cleanFilename = decodedFilename.replace(/\\/g, "/");
       const mappedType = destFolderType === "slides" ? "images" : destFolderType;

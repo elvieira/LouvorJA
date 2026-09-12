@@ -21,6 +21,8 @@
           :variant="buttonVariant"
           :color="buttonColor"
           :elevation="buttonElevation"
+          :loading="buttonLoading"
+          :disabled="buttonDisabled"
           class="rounded-lg text-none font-weight-bold px-4"
           height="40"
           @click="$emit('action')"
@@ -99,6 +101,8 @@ const props = withDefaults(defineProps<{
   buttonColor?: string;
   buttonVariant?: "flat" | "text" | "elevated" | "tonal" | "outlined" | "plain";
   buttonElevation?: number | string;
+  buttonLoading?: boolean;
+  buttonDisabled?: boolean;
   switchColor?: string;
   items?: any[];
   itemTitle?: string;
@@ -111,6 +115,8 @@ const props = withDefaults(defineProps<{
   buttonColor: "primary",
   buttonVariant: "tonal",
   buttonElevation: 0,
+  buttonLoading: false,
+  buttonDisabled: false,
   switchColor: "primary",
   items: () => [],
   itemTitle: "title",

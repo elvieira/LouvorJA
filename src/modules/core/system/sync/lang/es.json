@@ -26,5 +26,16 @@
   "download_error": "Error al descargar",
   "no_connection": "Sin conexión",
   "batch_cancelled_no_internet": "La descarga por lotes fue cancelada porque no hay conexión a internet.",
-  "delete_confirm": "¿Estás seguro de que deseas eliminar la colección \"<b>{name}</b>\"? Esto borrará los archivos de tu computadora."
+  "delete_confirm": "¿Estás seguro de que deseas eliminar la colección \"<b>{name}</b>\"? Esto borrará los archivos de tu computadora.",
+  "import_legacy": "Importar de Louvor JA Clásico",
+  "import_legacy_title": "Importar de Louvor JA Clásico",
+  "import_legacy_found": "Encontramos una instalación de Louvor JA Clásico en:<br><b>{path}</b><br><br>¿Deseas importar la música e imágenes sin necesidad de descargarlas de internet?",
+  "import_legacy_not_found": "La instalación predeterminada de Louvor JA Clásico no se encontró en <b>{path}</b>.<br><br>¿Deseas seleccionar manualmente la carpeta donde está instalado el programa clásico?",
+  "import_legacy_choose": "Elegir otra carpeta",
+  "import_legacy_select_folder": "Seleccionar carpeta",
+  "import_legacy_btn_import": "Importar",
+  "import_legacy_importing": "Importando archivos clásicos...",
+  "import_legacy_success": "¡Importación completada con éxito! Se importaron {count} archivos de medios.",
+  "import_legacy_invalid_folder": "La carpeta seleccionada no contiene las carpetas 'musicas' o 'imagens' de Louvor JA Clásico.",
+  "import_legacy_error": "Ocurrió un error al importar los archivos: {error}"
 }

@@ -52,9 +52,26 @@ export function setupLifecycle(): void {
         fallbackPath = filePath;
       }
 
+      if (fallbackPath.startsWith("/music/")) {
+        fallbackPath = `/musics/${fallbackPath.slice(7)}`;
+      }
+
       const userDataPath = app.getPath("userData");
       const mediaPath = path.join(userDataPath, "Media");
-      filePath = path.join(mediaPath, fallbackPath);
+      let resolvedFilePath = path.join(mediaPath, fallbackPath);
+
+      if (!fs.existsSync(resolvedFilePath) && fallbackPath.startsWith("/musics/")) {
+        const rest = fallbackPath.slice(8); // após /musics/
+        if (rest.startsWith("pt/")) {
+          const alt = path.join(mediaPath, "musics", rest.slice(3));
+          if (fs.existsSync(alt)) resolvedFilePath = alt;
+        } else {
+          const alt = path.join(mediaPath, "musics", "pt", rest);
+          if (fs.existsSync(alt)) resolvedFilePath = alt;
+        }
+      }
+
+      filePath = resolvedFilePath;
 
       if (!fs.existsSync(filePath)) {
         const apiUrl = `https://api.louvorja.com.br/file${fallbackPath.replace(/\\/g, "/")}`;

@@ -109,6 +109,42 @@
 
       <v-card class="settings-card rounded-xl pa-2" flat style="background: var(--card-bg); box-shadow: var(--shadow);">
         <v-card-text class="pa-6">
+          <template v-if="isWindows">
+            <SettingsActionRow
+              icon="mdi-folder-sync-outline"
+              icon-color="primary"
+              :title="t('import_legacy')"
+              :subtitle="t('import_legacy_desc')"
+              :button-text="t('import_legacy_btn')"
+              button-color="primary"
+              button-variant="tonal"
+              :button-loading="isImportingLegacy"
+              :button-disabled="isImportingLegacy"
+              :class="isImportingLegacy ? 'mb-4' : 'mb-8'"
+              @action="startLegacyImport"
+            />
+
+            <div v-if="isImportingLegacy" class="mb-8 pl-9">
+              <div class="d-flex justify-space-between text-caption mb-1">
+                <span style="color: var(--sidebar-text-secondary); max-width: 80%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                  {{ legacyImportStatus }}
+                </span>
+                <span v-if="legacyImportTotal > 0" class="font-weight-bold" style="color: var(--accent-blue);">
+                  {{ legacyImportCurrent }}/{{ legacyImportTotal }}
+                </span>
+              </div>
+              <v-progress-linear
+                :model-value="legacyImportPercent"
+                :indeterminate="legacyImportTotal === 0"
+                color="primary"
+                height="6"
+                rounded
+              />
+            </div>
+
+            <v-divider class="mb-8" style="opacity: 0.1;" />
+          </template>
+
           <SettingsActionRow
             icon="mdi-database-refresh"
             icon-color="error"
@@ -175,8 +211,20 @@ export default defineComponent({
     bible_proj_with_p: false,
     bible_auto_proj_quick: true,
     bible_auto_proj_normal: false,
+
+    isImportingLegacy: false,
+    legacyImportStatus: "",
+    legacyImportCurrent: 0,
+    legacyImportTotal: 0,
   }),
   computed: {
+    isWindows(): boolean {
+      return !!((window as any).electronAPI && (window as any).electronAPI.isWindows);
+    },
+    legacyImportPercent(): number {
+      if (this.legacyImportTotal === 0) return 0;
+      return Math.min(100, Math.round((this.legacyImportCurrent / this.legacyImportTotal) * 100));
+    },
     languagesList(): Array<{ code: string; name: string }> {
       return [
         { code: "pt", name: "Português" },
@@ -305,6 +353,14 @@ export default defineComponent({
     if (savedBibleConfig.autoProjQuick !== undefined) this.bible_auto_proj_quick = savedBibleConfig.autoProjQuick;
     if (savedBibleConfig.autoProjNormal !== undefined) this.bible_auto_proj_normal = savedBibleConfig.autoProjNormal;
 
+    if ((window as any).electronAPI?.onImportLegacyProgress) {
+      (window as any).electronAPI.onImportLegacyProgress((data: any) => {
+        this.legacyImportCurrent = data.current;
+        this.legacyImportTotal = data.total;
+        this.legacyImportStatus = `${this.t("import_legacy_importing")} (${data.filename})`;
+      });
+    }
+
     // Set isInitialized after mounting so the watcher doesn't trigger on initial load
     this.$nextTick(() => {
       this.isInitialized = true;
@@ -318,8 +374,115 @@ export default defineComponent({
       this.$appdata.set("modules.bible.config", newConfig);
       this.$userdata.set("bible_config", newConfig);
     },
-    t(text: string): string {
-      return this.$t(`modules.${manifest.id}.${text}`);
+    t(text: string, values?: Record<string, unknown>): string {
+      return this.$t(`modules.${manifest.id}.${text}`, values as any);
+    },
+    async startLegacyImport() {
+      if (!(window as any).electronAPI || !this.isWindows || this.isImportingLegacy) return;
+
+      try {
+        const check = await (window as any).electronAPI.checkLegacyInstallation?.();
+        if (check?.exists) {
+          (this as any).$alert.show({
+            title: this.t("import_legacy_title"),
+            text: this.t("import_legacy_found", { path: check.path }),
+            translate: false,
+            maxWidth: 540,
+            buttons: [
+              { text: "alert.cancel", color: "grey", variant: "text", value: "cancel" },
+              { text: this.t("import_legacy_choose"), color: "primary", variant: "tonal", value: "choose" },
+              { text: this.t("import_legacy_btn_import"), color: "primary", variant: "flat", value: "import" },
+            ],
+          }, async (resp: string) => {
+            if (resp === "import") {
+              await this.executeLegacyImport(check.path);
+            } else if (resp === "choose") {
+              await this.chooseAndImportLegacy();
+            }
+          });
+        } else {
+          const defaultPath = "C:\\Program Files (x86)\\Louvor JA";
+          (this as any).$alert.show({
+            title: this.t("import_legacy_title"),
+            text: this.t("import_legacy_not_found", { path: defaultPath }),
+            translate: false,
+            maxWidth: 520,
+            buttons: [
+              { text: "alert.cancel", color: "grey", variant: "text", value: "cancel" },
+              { text: this.t("import_legacy_select_folder"), color: "primary", variant: "flat", value: "choose" },
+            ],
+          }, async (resp: string) => {
+            if (resp === "choose") {
+              await this.chooseAndImportLegacy();
+            }
+          });
+        }
+      } catch (err) {
+        console.error("Erro ao verificar instalação clássica:", err);
+      }
+    },
+    async chooseAndImportLegacy() {
+      if (!(window as any).electronAPI?.selectLegacyFolder) return;
+      const res = await (window as any).electronAPI.selectLegacyFolder();
+      if (res.canceled || !res.path) return;
+
+      if (!res.valid) {
+        (this as any).$alert.show({
+          title: this.t("import_legacy_title"),
+          text: this.t("import_legacy_invalid_folder"),
+          translate: false,
+          buttons: [
+            { text: "alert.close", color: "primary", value: "close" },
+          ],
+        });
+        return;
+      }
+
+      await this.executeLegacyImport(res.path);
+    },
+    async executeLegacyImport(folderPath?: string) {
+      if (!(window as any).electronAPI?.importLegacyMedia) return;
+
+      this.isImportingLegacy = true;
+      this.legacyImportCurrent = 0;
+      this.legacyImportTotal = 0;
+      this.legacyImportStatus = this.t("import_legacy_importing");
+
+      try {
+        const result = await (window as any).electronAPI.importLegacyMedia(folderPath);
+        if (result.success) {
+          (this as any).$alert.show({
+            title: this.t("import_legacy_title"),
+            text: this.t("import_legacy_success", { count: result.totalCopied }),
+            translate: false,
+            buttons: [
+              { text: "alert.close", color: "primary", value: "close" },
+            ],
+          });
+        } else {
+          (this as any).$alert.show({
+            title: this.t("import_legacy_title"),
+            text: this.t("import_legacy_error", { error: result.error || "" }),
+            translate: false,
+            buttons: [
+              { text: "alert.close", color: "primary", value: "close" },
+            ],
+          });
+        }
+      } catch (err: any) {
+        console.error("Erro na importação legada:", err);
+        (this as any).$alert.show({
+          title: this.t("import_legacy_title"),
+          text: this.t("import_legacy_error", { error: err.message || err }),
+          translate: false,
+          buttons: [
+            { text: "alert.close", color: "primary", value: "close" },
+          ],
+        });
+      } finally {
+        this.isImportingLegacy = false;
+        this.legacyImportStatus = "";
+      }
     },
     resetHistory() {
       this.$alert.yesno(

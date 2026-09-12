@@ -44,6 +44,7 @@
     },
     "alert": {
         "close": "Cerrar",
+        "cancel": "Cancelar",
         "yes": "Sí",
         "no": "No",
         "wait": "Espere...",
@@ -69,7 +70,7 @@
             "loading_env": "Cargando ambiente...",
             "preparing": "Preparando...",
             "downloading_db": "Descargando base de datos...",
-            "importing_old": "Importando datos de la versión antigua...",
+            "importing_old": "Importando datos de la versión clásica...",
             "import_failed": "Fallo al importar. Descargando del servidor...",
             "extracting": "Extrayendo datos locales...",
             "complete": "Terminando..."
@@ -82,8 +83,8 @@
             "extraction_fail": "Error en la extracción de los datos locales."
         },
         "old_version": {
-            "title": "Versión antigua detectada",
-            "text": "Detectamos que tienes la versión antigua de Loor JA instalada en esta computadora.<br><br>¿Te gustaría importar la base de datos de la versión antigua a la nueva versión?<br><br>Esto acelerará el proceso de inicialización. No te preocupes, esto no alterará, eliminará ni interferirá con el funcionamiento de la versión antigua instalada."
+            "title": "Versión clásica detectada",
+            "text": "Detectamos que tienes la versión clásica de Loor JA instalada en esta computadora.<br><br>¿Te gustaría importar la base de datos de la versión clásica a la nueva versión?<br><br>Esto acelerará el proceso de inicialización. No te preocupes, esto no alterará, eliminará ni interferirá con el funcionamiento de la versión clásica instalada."
         }
     }
 }

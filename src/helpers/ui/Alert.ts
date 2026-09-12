@@ -1,14 +1,22 @@
 import $dev from "@/helpers/config/Dev";
 import $appdata from "@/helpers/config/AppData";
 
+export interface AlertButton {
+  text: string;
+  color?: string;
+  variant?: string;
+  value: string;
+}
+
 export interface AlertData {
   title?: string | null;
   text?: string | null;
   error?: string | null;
   color?: string;
   center?: boolean;
+  maxWidth?: number | string;
   translate?: boolean;
-  buttons?: Array<{ text: string; color?: string; value: string }>;
+  buttons?: Array<AlertButton>;
 }
 
 export type AlertInput = string | [string, string] | AlertData;
@@ -26,6 +34,7 @@ export default {
     $appdata.set("alert.error", formattedData.error || null);
     $appdata.set("alert.color", formattedData.color || "");
     $appdata.set("alert.center", formattedData.center || false);
+    $appdata.set("alert.maxWidth", formattedData.maxWidth || 500);
     $appdata.set(
       "alert.translate",
       formattedData.translate === null || formattedData.translate === undefined

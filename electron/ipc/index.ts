@@ -8,6 +8,7 @@ import { registerDatabaseHandlers } from "../services/database";
 import { registerMediaHandlers } from "../services/media";
 import { registerUpdaterHandlers } from "../services/updater";
 import { registerValidatorHandlers } from "../services/validator";
+import { checkLegacyInstallation, selectLegacyFolder, importLegacyMedia } from "../services/legacy-importer";
 
 interface SljaSlideInput {
   tipo: string;
@@ -102,6 +103,19 @@ export function registerIpcHandlers() {
   registerMediaHandlers();
   registerUpdaterHandlers();
   registerValidatorHandlers();
+
+  ipcMain.handle("check-legacy-installation", async () => {
+    return checkLegacyInstallation();
+  });
+
+  ipcMain.handle("select-legacy-folder", async () => {
+    const focusedWin = BrowserWindow.getFocusedWindow();
+    return await selectLegacyFolder(focusedWin);
+  });
+
+  ipcMain.handle("import-legacy-media", async (event, folderPath?: string) => {
+    return await importLegacyMedia(folderPath, event.sender);
+  });
 
   const getFolderSize = async (dirPath: string): Promise<number> => {
     let totalSize = 0;

@@ -14,6 +14,7 @@ declare module "*.json" {
 // Tipos do electronAPI expostos via preload
 interface ElectronAPI {
   isElectron: boolean
+  isWindows?: boolean
 
   saveLocalDb: (filename: string, data: unknown) => Promise<void>
   getLiturgyData: () => Promise<unknown | null>
@@ -74,6 +75,10 @@ interface ElectronAPI {
   checkDatabaseExists: (lang?: string) => Promise<boolean>
   checkOldInstallation: () => Promise<boolean>
   importOldInstallation: () => Promise<boolean>
+  checkLegacyInstallation?: () => Promise<{ exists: boolean; path: string; hasMusic: boolean; hasImages: boolean }>
+  selectLegacyFolder?: () => Promise<{ canceled: boolean; path?: string; valid?: boolean }>
+  importLegacyMedia?: (folderPath?: string) => Promise<{ success: boolean; copiedMusic: number; copiedImages: number; totalCopied: number; error?: string }>
+  onImportLegacyProgress?: (callback: (data: { current: number; total: number; filename: string }) => void) => void
   searchBible: (versionId: number, query: string, mode: string, lang?: string) => Promise<Record<string, unknown>[]>
   validateInstallation: (lang?: string) => Promise<{ missingCovers: string[], missingMusic: string[], missingImages: string[], missingBins: string[], totalMissing: number }>
   repairSysdata: (filenames: string[], lang?: string) => Promise<boolean>

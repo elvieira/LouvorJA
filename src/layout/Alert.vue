@@ -1,7 +1,7 @@
 <template>
   <v-dialog
     v-model="alert.show"
-    max-width="450"
+    :max-width="alert.maxWidth || 500"
     persistent
     :z-index="11000"
     :theme="$theme.primary()"
@@ -21,16 +21,16 @@
         <small v-if="alert.error" class="text-error mt-2 d-block" v-html="alert.error" />
         <!-- eslint-enable vue/no-v-html -->
       </v-card-text>
-      <v-card-actions class="px-6 pb-6 pt-2 d-flex justify-end" style="gap: 12px;">
+      <v-card-actions class="px-6 pb-6 pt-2 d-flex justify-end flex-wrap" style="gap: 10px;">
         <v-spacer />
         <v-btn
           v-for="(btn, index) in alert.buttons"
           :key="index"
           :color="btn.color ? btn.color : 'primary'"
-          :variant="btn.color === 'error' ? 'tonal' : 'flat'"
+          :variant="btn.variant ? btn.variant : (btn.color === 'error' ? 'tonal' : 'flat')"
           :autofocus="btn.value === 'yes'"
-          :class="['modern-alert-btn px-6', { 'alert-btn-yes': btn.value === 'yes' }]"
-          height="40"
+          :class="['modern-alert-btn px-4', { 'alert-btn-yes': btn.value === 'yes' }]"
+          height="38"
           @click="clickBtn(btn.value)"
         >
           {{ $t(btn.text) }}

@@ -2,6 +2,7 @@ import { contextBridge, ipcRenderer } from "electron";
 
 contextBridge.exposeInMainWorld("electronAPI", {
   isElectron: true,
+  isWindows: process.platform === "win32",
   getLocalDb: (filename: string, lang?: string) => ipcRenderer.invoke("get-local-db", filename, lang),
   saveLocalDb: (filename: string, data: unknown) => ipcRenderer.invoke("save-local-db", filename, data),
   getLiturgyData: () => ipcRenderer.invoke("get-liturgy-data"),
@@ -32,6 +33,12 @@ contextBridge.exposeInMainWorld("electronAPI", {
   getDatabaseVersion: (lang?: string) => ipcRenderer.invoke("get-database-version", lang),
   checkOldInstallation: () => ipcRenderer.invoke("check-old-installation"),
   importOldInstallation: () => ipcRenderer.invoke("import-old-installation"),
+  checkLegacyInstallation: () => ipcRenderer.invoke("check-legacy-installation"),
+  selectLegacyFolder: () => ipcRenderer.invoke("select-legacy-folder"),
+  importLegacyMedia: (folderPath?: string) => ipcRenderer.invoke("import-legacy-media", folderPath),
+  onImportLegacyProgress: (callback: (data: unknown) => void) => {
+    ipcRenderer.on("import-legacy-progress", (_event, data: unknown) => callback(data));
+  },
   searchBible: (versionId: number, query: string, mode: string, lang?: string) => ipcRenderer.invoke("search-bible", versionId, query, mode, lang),
   
   validateInstallation: (lang?: string) => ipcRenderer.invoke("validate-installation", lang),
