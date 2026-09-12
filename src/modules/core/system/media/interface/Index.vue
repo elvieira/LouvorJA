@@ -119,6 +119,7 @@
               :text_color="slide.fontColor"
               :aux_text_size_pc="slide.auxFontSize"
               :aux_text_color="slide.auxFontColor"
+              :all_slides="slides"
               class="w-100 h-100"
             />
             <LFullscreenPlayer v-if="fullscreen" class="w-100 h-100" />

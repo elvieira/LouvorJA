@@ -11,6 +11,7 @@
     :text_color="slide.fontColor"
     :aux_text_size_pc="slide.auxFontSize"
     :aux_text_color="slide.auxFontColor"
+    :all_slides="slides"
   />
 </template>
 
@@ -43,6 +44,9 @@ export default defineComponent({
     },
     slide(): any {
       return this.$media.slide();
+    },
+    slides(): any[] {
+      return this.$media.slides();
     },
   },
 });

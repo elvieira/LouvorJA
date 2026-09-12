@@ -779,6 +779,7 @@
                 :text_color="currentSlideData?.fontColor"
                 :aux_text_size_pc="currentSlideData?.auxFontSize"
                 :aux_text_color="currentSlideData?.auxFontColor"
+                :all_slides="presentingSong?.slides"
                 force_image
                 class="w-100 h-100"
               />

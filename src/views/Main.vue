@@ -64,6 +64,7 @@
                 :aux_text="slide.aux_lyric"
                 :image="slide.url_image ? $path.file(slide.url_image) : null"
                 :image_position="slide.image_position"
+                :all_slides="slides"
                 class="w-100 h-100"
               />
               <div v-else class="w-100 h-100 d-flex align-center justify-center text-grey">
@@ -222,6 +223,9 @@ export default defineComponent({
     },
     slide(): any {
       return this.$media.slide();
+    },
+    slides(): any[] {
+      return this.$media.slides();
     },
     isSidebarCollapsed(): boolean {
       return !this.sidebarPinned && !this.sidebarOpen;
