@@ -3,26 +3,16 @@
     <div v-if="module?.show" class="module-full-page dashboard-home d-flex flex-column">
       <!-- Top Bar -->
       <ModuleHeader :title="t('title')" :icon="module.icon">
-        <v-btn-toggle
+        <PillSwitch
           v-model="currentMode"
-          mandatory
-          color="primary"
-          variant="tonal"
-          class="rounded-lg"
-          style="height: 36px; background: var(--card-bg); box-shadow: inset 0 0 0 1px var(--border-color);"
+          :items="[
+            { value: 'timer', label: t('mode_timer') },
+            { value: 'stopwatch', label: t('mode_stopwatch') },
+            { value: 'cult', label: t('mode_cult') },
+          ]"
           :disabled="isRunning"
           @update:model-value="onModeChange"
-        >
-          <v-btn value="timer" class="text-caption font-weight-bold px-3 text-none">
-            {{ t('mode_timer') }}
-          </v-btn>
-          <v-btn value="stopwatch" class="text-caption font-weight-bold px-3 text-none">
-            {{ t('mode_stopwatch') }}
-          </v-btn>
-          <v-btn value="cult" class="text-caption font-weight-bold px-3 text-none">
-            {{ t('mode_cult') }}
-          </v-btn>
-        </v-btn-toggle>
+        />
       </ModuleHeader>
 
       <!-- Main Content -->
@@ -235,40 +225,14 @@
             >
               <!-- Seletor de Tipo de Término -->
               <div class="mb-4">
-                <v-btn-toggle
+                <PillSwitch
                   v-model="cultType"
-                  mandatory
-                  color="primary"
-                  variant="tonal"
-                  density="compact"
-                  class="rounded-lg"
-                  style="background: var(--card-bg); box-shadow: inset 0 0 0 1px var(--border-color);"
-                >
-                  <v-btn
-                    value="duration"
-                    class="text-caption font-weight-bold px-4 text-none"
-                  >
-                    <v-icon
-                      start
-                      size="16"
-                    >
-                      mdi-timer-sand
-                    </v-icon>
-                    {{ t('cult_type_duration') }}
-                  </v-btn>
-                  <v-btn
-                    value="time"
-                    class="text-caption font-weight-bold px-4 text-none"
-                  >
-                    <v-icon
-                      start
-                      size="16"
-                    >
-                      mdi-clock-outline
-                    </v-icon>
-                    {{ t('cult_type_time') }}
-                  </v-btn>
-                </v-btn-toggle>
+                  :items="[
+                    { value: 'duration', label: t('cult_type_duration'), icon: 'mdi-timer-sand' },
+                    { value: 'time', label: t('cult_type_time'), icon: 'mdi-clock-outline' },
+                  ]"
+                  @update:model-value="setCultType"
+                />
               </div>
 
               <!-- Input: Por Duração em Minutos -->
@@ -430,6 +394,7 @@ import ConfigModal from "./components/ConfigModal.vue";
 import ModuleHeader from "@/components/ModuleHeader.vue";
 import manifest from "../manifest";
 import { stopSchoolBellAlert, playCultAlert } from "../helpers/audioAlert";
+import PillSwitch from "@/components/inputs/PillSwitch.vue";
 
 export default defineComponent({
   name: manifest.id,
@@ -438,6 +403,7 @@ export default defineComponent({
     LScreenBtn,
     ConfigModal,
     ModuleHeader,
+    PillSwitch,
   },
   data: () => ({
     currentMode: "timer", // 'timer' | 'stopwatch' | 'cult'
@@ -691,6 +657,14 @@ export default defineComponent({
         targetDuration: totalMs,
         configuredDuration: totalMs,
       });
+    },
+    setCultType(val: "duration" | "time") {
+      this.cultType = val;
+      if (val === "duration") {
+        this.onCultDurationChange();
+      } else {
+        this.onCultTimeChange();
+      }
     },
     addCultSeconds(secs: number) {
       if (!this.isRunning && !this.isPaused) {

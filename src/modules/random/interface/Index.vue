@@ -3,21 +3,13 @@
     <div v-if="module?.show" class="module-full-page dashboard-home d-flex flex-column">
       <!-- Top Bar -->
       <ModuleHeader :title="t('title')" :icon="module.icon">
-        <v-btn-toggle
+        <PillSwitch
           v-model="drawMode"
-          mandatory
-          color="primary"
-          variant="tonal"
-          class="rounded-lg"
-          style="height: 36px; background: var(--card-bg); box-shadow: inset 0 0 0 1px var(--border-color);"
-        >
-          <v-btn value="names" class="text-caption font-weight-bold px-3 text-none">
-            {{ t('mode_names') }}
-          </v-btn>
-          <v-btn value="numbers" class="text-caption font-weight-bold px-3 text-none">
-            {{ t('mode_numbers') }}
-          </v-btn>
-        </v-btn-toggle>
+          :items="[
+            { value: 'names', label: t('mode_names') },
+            { value: 'numbers', label: t('mode_numbers') },
+          ]"
+        />
         
         <v-btn
           variant="flat"
@@ -142,6 +134,7 @@ import ModuleHeader from "@/components/ModuleHeader.vue";
 import AvailableList from "./components/AvailableList.vue";
 import HistoryList from "./components/HistoryList.vue";
 import manifest from "../manifest";
+import PillSwitch from "@/components/inputs/PillSwitch.vue";
 
 export default defineComponent({
   name: "SorteioPage",
@@ -151,6 +144,7 @@ export default defineComponent({
     ModuleHeader,
     AvailableList,
     HistoryList,
+    PillSwitch,
   },
   data: () => ({
     defaultConfig: { background: "#ffffff", color: "#0097d7", fontSizePc: 15, textTransform: "none", animationSpeed: "normal" },

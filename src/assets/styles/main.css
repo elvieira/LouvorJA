@@ -141,3 +141,58 @@ img, a {
     border: 1px solid rgba(0, 0, 0, 0.12) !important;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12) !important;
 }
+
+/* ==========================================================================
+   Custom Segmented Pill Switch (Estilo Editor de Música)
+   ========================================================================== */
+.custom-tabs-pill {
+    position: relative !important;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    padding: 3px;
+    box-shadow: var(--shadow);
+    display: inline-flex;
+    align-items: center;
+}
+
+.custom-tab-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 14px;
+    border-radius: 16px;
+    border: none;
+    background: transparent;
+    color: var(--sidebar-text-secondary);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition, all 0.2s ease);
+    user-select: none;
+    white-space: nowrap;
+}
+
+.custom-tab-btn .v-icon {
+    color: inherit;
+    transition: color 0.2s ease;
+}
+
+.custom-tab-btn:hover:not(:disabled):not(.active) {
+    color: var(--sidebar-text);
+    background: var(--sidebar-hover);
+}
+
+.custom-tab-btn.active {
+    background: var(--accent-blue);
+    color: #ffffff !important;
+    box-shadow: 0 2px 8px rgba(0, 151, 215, 0.35);
+}
+
+.custom-tab-btn.active .v-icon {
+    color: #ffffff !important;
+}
+
+.custom-tab-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}

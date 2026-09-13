@@ -213,26 +213,17 @@
                   <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text);">Transformação de Texto</span>
                 </div>
               </div>
-              <v-btn-toggle
+              <PillSwitch
                 v-model="localConfig.textTransform"
-                color="primary"
-                variant="tonal"
-                divided
-                mandatory
-                rounded="lg"
-                class="w-100 mb-2 d-flex"
-                style="height: 40px;"
-              >
-                <v-btn value="none" class="flex-grow-1 text-none text-caption font-weight-bold px-1">
-                  Aa (Normal)
-                </v-btn>
-                <v-btn value="uppercase" class="flex-grow-1 text-none text-caption font-weight-bold px-1">
-                  AA (Maiúsculo)
-                </v-btn>
-                <v-btn value="lowercase" class="flex-grow-1 text-none text-caption font-weight-bold px-1">
-                  aa (Minúsculo)
-                </v-btn>
-              </v-btn-toggle>
+                block
+                class="mb-2"
+                style="background: var(--main-bg);"
+                :items="[
+                  { value: 'none', label: 'Aa (Normal)' },
+                  { value: 'uppercase', label: 'AA (Maiúsculo)' },
+                  { value: 'lowercase', label: 'aa (Minúsculo)' },
+                ]"
+              />
             </v-card-text>
           </v-card>
 
@@ -253,35 +244,17 @@
                 </div>
               </div>
 
-              <v-btn-toggle
+              <PillSwitch
                 v-model="localConfig.animationSpeed"
-                color="primary"
-                variant="tonal"
-                divided
-                mandatory
-                rounded="lg"
-                class="w-100 mb-2 d-flex"
-                style="height: 40px;"
-              >
-                <v-btn value="fast" class="flex-grow-1 text-none font-weight-bold">
-                  <v-icon start size="18">
-                    mdi-run-fast
-                  </v-icon>
-                  Rápido
-                </v-btn>
-                <v-btn value="normal" class="flex-grow-1 text-none font-weight-bold">
-                  <v-icon start size="18">
-                    mdi-run
-                  </v-icon>
-                  Normal
-                </v-btn>
-                <v-btn value="slow" class="flex-grow-1 text-none font-weight-bold">
-                  <v-icon start size="18">
-                    mdi-walk
-                  </v-icon>
-                  Lento
-                </v-btn>
-              </v-btn-toggle>
+                block
+                class="mb-2"
+                style="background: var(--main-bg);"
+                :items="[
+                  { value: 'fast', label: 'Rápido', icon: 'mdi-run-fast' },
+                  { value: 'normal', label: 'Normal', icon: 'mdi-run' },
+                  { value: 'slow', label: 'Lento', icon: 'mdi-walk' },
+                ]"
+              />
             </v-card-text>
           </v-card>
         </div>
@@ -325,11 +298,13 @@
 <script lang="ts">
 import { defineComponent, PropType } from "vue";
 import ModernColorPicker from "@/components/inputs/ModernColorPicker.vue";
+import PillSwitch from "@/components/inputs/PillSwitch.vue";
 
 export default defineComponent({
   name: "SorteioConfigModal",
   components: {
     ModernColorPicker,
+    PillSwitch,
   },
   props: {
     modelValue: {
