@@ -484,8 +484,10 @@ export default defineComponent({
       }
     }
 
-    .nav-item {
+    .nav-item,
+    .nav-item.main-item {
       margin: 4px 12px;
+      flex-shrink: 0;
 
       .nav-link {
         padding: 12px;
@@ -501,13 +503,22 @@ export default defineComponent({
       &.group-active {
         width: 44px;
         height: 44px;
+        min-width: 44px;
+        min-height: 44px;
         margin: 4px auto;
-        border-radius: 50%;
+        border-radius: 50% !important;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
 
         .nav-link {
           width: 100%;
           height: 100%;
-          padding: 0;
+          padding: 0 !important;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
       }
     }
@@ -592,6 +603,14 @@ export default defineComponent({
     gap: 2px;
     overflow-y: auto;
     overflow-x: hidden;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+      width: 0;
+      height: 0;
+    }
 
     &::before,
     &::after {
@@ -814,6 +833,180 @@ export default defineComponent({
   }
   100% {
     box-shadow: 0 0 0 0 rgba(0, 151, 215, 0);
+  }
+}
+
+@media (max-height: 820px) {
+  .dashboard-sidebar {
+    .sidebar-header {
+      padding: 14px 16px;
+
+      .logo-container .logo-svg {
+        width: 32px;
+        height: 32px;
+      }
+      .logo-container .logo-text .logo-title {
+        font-size: 16px;
+      }
+    }
+
+    .sidebar-nav-main {
+      padding: 8px 0;
+      gap: 2px;
+    }
+
+    .sidebar-footer {
+      padding: 10px 0 14px 0;
+    }
+
+    .nav-item {
+      margin: 2px 12px;
+
+      .nav-link {
+        padding: 7px 12px;
+        gap: 12px;
+        font-size: 13px;
+
+        .nav-icon {
+          font-size: 19px;
+          min-width: 19px;
+        }
+      }
+
+      &.main-item {
+        margin: 2px 12px;
+
+        .nav-link {
+          padding: 8px 12px;
+          font-size: 14px;
+
+          .nav-icon {
+            font-size: 20px;
+            min-width: 20px;
+          }
+        }
+      }
+    }
+
+    .nav-submenu {
+      padding-left: 24px;
+
+      .nav-item .nav-link {
+        padding: 4px 12px;
+        font-size: 12px;
+      }
+    }
+
+    &.is-collapsed {
+      .sidebar-header {
+        padding: 14px 12px;
+      }
+
+      .nav-item,
+      .nav-item.main-item {
+        margin: 3px 8px;
+
+        .nav-link {
+          padding: 8px;
+        }
+
+        &.active,
+        &.group-active {
+          width: 40px;
+          height: 40px;
+          min-width: 40px;
+          min-height: 40px;
+          margin: 3px auto;
+        }
+      }
+    }
+  }
+}
+
+@media (max-height: 720px) {
+  .dashboard-sidebar {
+    .sidebar-header {
+      padding: 10px 14px;
+
+      .logo-container .logo-svg {
+        width: 28px;
+        height: 28px;
+      }
+      .logo-container .logo-text .logo-title {
+        font-size: 15px;
+      }
+    }
+
+    .sidebar-nav-main {
+      padding: 4px 0;
+      gap: 1px;
+    }
+
+    .sidebar-footer {
+      padding: 6px 0 8px 0;
+    }
+
+    .nav-item {
+      margin: 1px 10px;
+
+      .nav-link {
+        padding: 5px 10px;
+        gap: 10px;
+        font-size: 13px;
+
+        .nav-icon {
+          font-size: 18px;
+          min-width: 18px;
+        }
+      }
+
+      &.main-item {
+        margin: 1px 10px;
+
+        .nav-link {
+          padding: 6px 10px;
+          font-size: 13px;
+
+          .nav-icon {
+            font-size: 19px;
+            min-width: 19px;
+          }
+        }
+      }
+    }
+
+    .nav-submenu {
+      padding-left: 20px;
+
+      .nav-item .nav-link {
+        padding: 3px 10px;
+        font-size: 11px;
+      }
+    }
+
+    &.is-collapsed {
+      .sidebar-header {
+        padding: 10px 8px;
+      }
+
+      .nav-item,
+      .nav-item.main-item {
+        margin: 2px 6px;
+
+        .nav-link {
+          padding: 6px;
+        }
+
+        &.active,
+        &.group-active {
+          width: 38px;
+          height: 38px;
+          min-width: 38px;
+          min-height: 38px;
+          margin: 2px auto;
+        }
+      }
+    }
   }
 }
 </style>

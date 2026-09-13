@@ -1,7 +1,7 @@
 <template>
   <v-slide-y-reverse-transition>
     <div v-if="module?.show" class="module-full-page dashboard-home d-flex flex-column">
-      <div class="search-header-container" :class="(searchQuery || shouldShowHistory) ? 'search-header d-flex align-center w-100' : 'hero-search-header d-flex flex-column align-center justify-center'" :style="(searchQuery || shouldShowHistory) ? 'padding: 24px 32px 10px 32px; position: relative;' : 'flex: 1; position: relative; padding: 32px; transition: all 0.5s ease;'">
+      <div class="search-header-container" :class="(searchQuery || shouldShowHistory) ? 'search-header d-flex align-center w-100' : 'hero-search-header d-flex flex-column align-center justify-center'" :style="(searchQuery || shouldShowHistory) ? 'position: relative;' : 'flex: 1; position: relative; padding: 32px; transition: all 0.5s ease;'">
         <div :style="(searchQuery || shouldShowHistory) ? 'flex: 1; display: flex; align-items: center;' : 'position: absolute; top: 24px; left: 32px;'">
           <MenuToggleButton style="margin: 0;" @toggle-sidebar="toggleSidebar" />
         </div>
@@ -611,7 +611,12 @@ export default defineComponent({
   flex-direction: column;
 }
 
-.search-header, .hero-search-header {
+.search-header {
+  background: transparent;
+  padding: 24px 32px 10px 32px;
+}
+
+.hero-search-header {
   background: transparent;
 }
 
@@ -655,10 +660,11 @@ export default defineComponent({
   box-sizing: border-box;
   max-width: 100%;
   flex: 1;
-  overflow: hidden;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 70px);
 }
 
 .dashboard-section {
@@ -895,7 +901,6 @@ export default defineComponent({
   
   .content-main {
     padding: 16px 20px 20px 20px;
-    height: calc(100vh - 60px);
   }
   
   .collections-grid {
@@ -949,7 +954,144 @@ export default defineComponent({
   
   .content-main {
     padding: 12px 16px 16px 16px;
-    height: calc(100vh - 50px);
+  }
+}
+
+@media (max-height: 820px) {
+  .search-header {
+    padding: 14px 24px 8px 24px;
+  }
+
+  .content-main {
+    padding: 14px 24px 20px 24px;
+  }
+
+  .dashboard-section {
+    margin-bottom: 20px;
+
+    &.collections-section {
+      min-height: auto;
+    }
+
+    &.music-section {
+      min-height: 180px;
+    }
+
+    .section-title {
+      font-size: 20px;
+      padding-bottom: 8px;
+    }
+  }
+
+  .collections-grid {
+    gap: 16px;
+    padding-bottom: 10px;
+
+    .collection-card {
+      width: clamp(120px, 16vh, 200px);
+
+      .card-content {
+        padding: 12px 14px;
+        min-height: 60px;
+
+        .card-title {
+          font-size: 14px;
+        }
+
+        .card-stats {
+          font-size: 11px;
+          margin-top: 4px;
+        }
+      }
+    }
+  }
+
+  .music-item {
+    padding: 10px 18px;
+
+    .music-number {
+      font-size: 14px;
+      min-width: 32px;
+      margin-right: 12px;
+    }
+
+    .music-info .music-title {
+      font-size: 14px;
+    }
+  }
+}
+
+@media (max-height: 720px) {
+  .search-header {
+    padding: 10px 20px 4px 20px;
+  }
+
+  .content-main {
+    padding: 8px 20px 14px 20px;
+  }
+
+  .dashboard-section {
+    margin-bottom: 14px;
+
+    &.collections-section {
+      min-height: auto;
+    }
+
+    &.music-section {
+      min-height: 150px;
+    }
+
+    .section-title {
+      font-size: 17px;
+      padding-bottom: 4px;
+    }
+  }
+
+  .collections-grid {
+    gap: 12px;
+    padding-bottom: 6px;
+
+    .collection-card {
+      width: clamp(105px, 14vh, 160px);
+
+      .card-content {
+        padding: 8px 10px;
+        min-height: 48px;
+
+        .card-title {
+          font-size: 13px;
+        }
+
+        .card-stats {
+          font-size: 10px;
+          margin-top: 2px;
+        }
+      }
+    }
+  }
+
+  .music-item {
+    padding: 8px 14px;
+
+    .music-number {
+      font-size: 13px;
+      min-width: 28px;
+      margin-right: 10px;
+    }
+
+    .music-info {
+      .music-title {
+        font-size: 13px;
+        margin-bottom: 2px;
+      }
+      .music-artist {
+        font-size: 12px;
+      }
+    }
+
+    .music-duration {
+      font-size: 12px;
+    }
   }
 }
 </style>

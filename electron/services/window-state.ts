@@ -31,7 +31,7 @@ export function loadWindowState(): SavedWindowState {
         x: typeof data.x === "number" ? data.x : undefined,
         y: typeof data.y === "number" ? data.y : undefined,
         width: typeof data.width === "number" ? Math.max(data.width, 920) : DEFAULT_STATE.width,
-        height: typeof data.height === "number" ? Math.max(data.height, 760) : DEFAULT_STATE.height,
+        height: typeof data.height === "number" ? Math.max(data.height, 600) : DEFAULT_STATE.height,
         isMaximized: !!data.isMaximized,
       };
     }
