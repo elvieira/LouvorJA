@@ -53,7 +53,10 @@
     "click_to_browse": "Haga clic para buscar en la computadora",
     "select_media": "Seleccionar Medio",
     "verses_placeholder": "Ej: 1-5, 8",
-    "url_placeholder": "https://..."
+    "url_placeholder": "https://...",
+    "music_mode": "Modo de Reproducción",
+    "music_mode_audio": "Cantado",
+    "music_mode_instrumental": "Playback"
   },
   "actions": {
     "save": "Guardar",
@@ -78,7 +81,8 @@
     "book_not_found": "Libro no encontrado",
     "chapter_not_found": "Capítulo no encontrado",
     "select_book_first": "Seleccione el libro primero",
-    "invalid_verse": "El capítulo tiene sólo {max} versículos. El versículo {num} no existe."
+    "invalid_verse": "El capítulo tiene sólo {max} versículos. El versículo {num} no existe.",
+    "playback_unavailable": "Playback no disponible para esta música"
   },
   "custom_liturgy": {
     "title": "Liturgias Personalizadas",

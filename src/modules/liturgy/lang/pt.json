@@ -53,7 +53,10 @@
     "click_to_browse": "Clique para buscar no computador",
     "select_media": "Selecionar Mídia",
     "verses_placeholder": "Ex: 1-5, 8",
-    "url_placeholder": "https://..."
+    "url_placeholder": "https://...",
+    "music_mode": "Modo de Reprodução",
+    "music_mode_audio": "Cantado",
+    "music_mode_instrumental": "Playback"
   },
   "actions": {
     "save": "Salvar",
@@ -78,7 +81,8 @@
     "book_not_found": "Livro não encontrado",
     "chapter_not_found": "Capítulo não encontrado",
     "select_book_first": "Selecione o livro primeiro",
-    "invalid_verse": "O capítulo possui apenas {max} versículos. O versículo {num} não existe."
+    "invalid_verse": "O capítulo possui apenas {max} versículos. O versículo {num} não existe.",
+    "playback_unavailable": "Playback não disponível para esta música"
   },
   "custom_liturgy": {
     "title": "Liturgias Avulsas",

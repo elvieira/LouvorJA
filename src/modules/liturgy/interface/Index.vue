@@ -983,7 +983,8 @@ export default defineComponent({
 
       if (item.type === "music") {
         if (item.musicId) {
-          const success = await this.$media.open({ id_music: item.musicId, mode: "audio" });
+          const mode = item.musicMode === "instrumental" ? "instrumental" : "audio";
+          const success = await this.$media.open({ id_music: item.musicId, mode });
           if (success !== false) {
             targetModule = "media";
           }

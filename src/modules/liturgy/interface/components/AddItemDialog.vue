@@ -246,6 +246,26 @@
                   </v-list-item>
                 </template>
               </v-autocomplete>
+
+              <!-- Seletor Modo da Música (Cantado / Playback) -->
+              <div class="mt-4">
+                <div class="text-body-2 font-weight-medium mb-1" style="color: var(--sidebar-text-secondary); margin-left: 4px;">
+                  {{ t('fields.music_mode') }}
+                </div>
+                <PillSwitch
+                  v-model="addForm.musicMode"
+                  block
+                  :items="musicModeItems"
+                />
+                <div
+                  v-if="selectedMusic && !selectedMusicHasPlayback"
+                  class="text-caption mt-1 ml-1 d-flex align-center"
+                  style="color: var(--sidebar-text-secondary); opacity: 0.7;"
+                >
+                  <v-icon size="13" class="mr-1" icon="mdi-information-outline" />
+                  {{ t('messages.playback_unavailable') }}
+                </div>
+              </div>
             </div>
 
             <!-- Verse selector -->
@@ -596,9 +616,13 @@
 
 <script lang="ts">
 import { defineComponent, PropType } from "vue";
+import PillSwitch from "@/components/inputs/PillSwitch.vue";
 
 export default defineComponent({
   name: "AddItemDialog",
+  components: {
+    PillSwitch,
+  },
   props: {
     modelValue: {
       type: Boolean,
@@ -735,6 +759,29 @@ export default defineComponent({
       if (!book) return [];
       return Array.from({ length: book.chapters }, (_, i) => i + 1);
     },
+    selectedMusic(): any {
+      if (!this.addForm.musicId) return null;
+      return this.musicList.find((m: any) => m.id_music === this.addForm.musicId) || null;
+    },
+    selectedMusicHasPlayback(): boolean {
+      if (!this.selectedMusic) return true;
+      return this.selectedMusic.has_instrumental_music === 1 || this.selectedMusic.has_instrumental_music === true;
+    },
+    musicModeItems(): any[] {
+      return [
+        {
+          value: "audio",
+          label: this.t("fields.music_mode_audio"),
+          icon: "mdi-account-voice",
+        },
+        {
+          value: "instrumental",
+          label: this.t("fields.music_mode_instrumental"),
+          icon: "mdi-music-note",
+          disabled: this.selectedMusic ? !this.selectedMusicHasPlayback : false,
+        },
+      ];
+    },
   },
   watch: {
     modelValue(val) {
@@ -753,6 +800,9 @@ export default defineComponent({
       }
       if (this.editData) {
         this.addForm = { ...this.editData };
+        if (!this.addForm.musicMode) {
+          this.addForm.musicMode = "audio";
+        }
         this.addStep = 2;
       } else {
         this.addStep = 1;
@@ -817,8 +867,14 @@ export default defineComponent({
     onMusicSelect(musicId: number | string | null) {
       if (!musicId) return;
       const music = this.musicList.find(m => m.id_music === musicId);
-      if (music && !this.addForm.name) {
-        this.addForm.name = music.hymnal_track ? `${music.hymnal_track} - ${music.name}` : music.name;
+      if (music) {
+        if (!this.addForm.name) {
+          this.addForm.name = music.hymnal_track ? `${music.hymnal_track} - ${music.name}` : music.name;
+        }
+        const hasPlayback = music.has_instrumental_music === 1 || music.has_instrumental_music === true;
+        if (!hasPlayback && this.addForm.musicMode === "instrumental") {
+          this.addForm.musicMode = "audio";
+        }
       }
     },
     onBookSelect(bookId: number | null) {
@@ -892,6 +948,8 @@ export default defineComponent({
               name: m.name,
               album_names: m.albums ? m.albums.map((a: any) => a.name).join(", ") : "",
               albums: m.albums,
+              has_instrumental_music: m.has_instrumental_music,
+              has_music: m.has_music,
             };
           });
         }

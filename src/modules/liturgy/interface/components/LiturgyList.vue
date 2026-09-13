@@ -210,6 +210,19 @@
                       >
                         {{ t('liturgy_list.placeholder') }}
                       </v-chip>
+                      <v-chip
+                        v-if="element.type === 'music'"
+                        size="x-small"
+                        :color="element.musicMode === 'instrumental' ? 'purple' : 'primary'"
+                        variant="tonal"
+                        class="ml-2 font-weight-bold px-2"
+                        style="height: 18px; font-size: 0.65rem;"
+                      >
+                        <v-icon start size="11" class="mr-1">
+                          {{ element.musicMode === 'instrumental' ? 'mdi-music-note' : 'mdi-account-voice' }}
+                        </v-icon>
+                        {{ element.musicMode === 'instrumental' ? t('fields.music_mode_instrumental') : t('fields.music_mode_audio') }}
+                      </v-chip>
                     </div>
                     <div v-if="element.subtitle && !isItemPlaceholder(element)" class="text-caption" style="color: rgba(var(--v-theme-on-surface), 0.5); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                       {{ element.subtitle }}
@@ -374,6 +387,9 @@ export default defineComponent({
         const audioExts = ["mp3", "wav", "flac", "aac", "ogg", "wma", "m4a"];
         if (audioExts.includes(ext)) return "mdi-headphones";
         return "mdi-video-outline";
+      }
+      if (element.type === "music") {
+        return element.musicMode === "instrumental" ? "mdi-music-note" : "mdi-account-voice";
       }
       return this.getTypeIcon(element.type);
     },

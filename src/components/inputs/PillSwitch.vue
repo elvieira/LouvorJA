@@ -105,6 +105,8 @@ const indicatorStyle = computed(() => {
 
 const selectItem = (val: string | number | boolean) => {
   if (props.disabled) return;
+  const item = props.items.find((i) => i.value === val);
+  if (item?.disabled) return;
   emit("update:modelValue", val);
 };
 
