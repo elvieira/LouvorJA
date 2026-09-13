@@ -47,6 +47,8 @@ export default {
 
     // Padrões Globais Estáticos
     const staticDefaults: Record<string, any> = {
+      remember_window_bounds: false,
+      "modules.config.remember_window_bounds": false,
       "modules.config.slide_fullscreen": true,
       "modules.config.slide_disable_main_if_extended": true,
       "modules.config.slide_minimize_player": false,

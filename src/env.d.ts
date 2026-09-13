@@ -82,6 +82,10 @@ interface ElectronAPI {
   searchBible: (versionId: number, query: string, mode: string, lang?: string) => Promise<Record<string, unknown>[]>
   validateInstallation: (lang?: string) => Promise<{ missingCovers: string[], missingMusic: string[], missingImages: string[], missingBins: string[], totalMissing: number }>
   repairSysdata: (filenames: string[], lang?: string) => Promise<boolean>
+  getLoginItemSettings?: () => Promise<{ openAtLogin: boolean }>
+  setLoginItemSettings?: (settings: Record<string, unknown>) => Promise<{ openAtLogin: boolean }>
+  getRememberWindowBounds?: () => Promise<boolean>
+  setRememberWindowBounds?: (enabled: boolean) => Promise<boolean>
   windowControl: (action: string) => Promise<void>
   onWindowMaximizedState: (callback: (isMaximized: boolean) => void) => void
   onRequestCloseApp: (callback: () => void) => void

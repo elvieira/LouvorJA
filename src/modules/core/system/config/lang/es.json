@@ -63,6 +63,8 @@
     "home_history_desc": "Activar modo historial (muestra elementos recientes)",
     "start_on_login": "Iniciar con el Sistema",
     "start_on_login_desc": "Abrir Louvor JA automáticamente al encender el equipo",
+    "remember_window_bounds": "Guardar Tamaño y Posición de la Ventana",
+    "remember_window_bounds_desc": "Reabrir la aplicación en el mismo tamaño y posición en que se cerró",
     "reset_history_desc": "Borra las colecciones recientes y las canciones más tocadas.",
     "reset_btn": "Borrar",
     "clear_data_desc": "Elimina bases de datos y archivos descargados.",

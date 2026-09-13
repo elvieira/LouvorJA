@@ -9,6 +9,7 @@ import { registerMediaHandlers } from "../services/media";
 import { registerUpdaterHandlers } from "../services/updater";
 import { registerValidatorHandlers } from "../services/validator";
 import { checkLegacyInstallation, selectLegacyFolder, importLegacyMedia } from "../services/legacy-importer";
+import { getRememberWindowBounds, setRememberWindowBounds } from "../services/window-state";
 
 interface SljaSlideInput {
   tipo: string;
@@ -539,5 +540,14 @@ export function registerIpcHandlers() {
   ipcMain.handle("set-login-item-settings", (event, settings: Electron.Settings) => {
     app.setLoginItemSettings(settings);
     return app.getLoginItemSettings();
+  });
+
+  ipcMain.handle("get-remember-window-bounds", () => {
+    return getRememberWindowBounds();
+  });
+
+  ipcMain.handle("set-remember-window-bounds", (_event, enabled: boolean) => {
+    const win = BrowserWindow.getAllWindows().find((w) => w.id === 1) || BrowserWindow.getAllWindows()[0];
+    return setRememberWindowBounds(enabled, win);
   });
 }

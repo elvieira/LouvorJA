@@ -63,6 +63,8 @@
     "home_history_desc": "Exibe itens recentes (Desative para usar o Modo Foco em Busca)",
     "start_on_login": "Iniciar com o Sistema",
     "start_on_login_desc": "Abrir o Louvor JA automaticamente ao iniciar o computador",
+    "remember_window_bounds": "Salvar Tamanho e Posição da Janela",
+    "remember_window_bounds_desc": "Reabrir o aplicativo no mesmo tamanho e posição em que foi fechado",
     "reset_history_desc": "Limpa as coletâneas recentes e as músicas mais tocadas.",
     "reset_btn": "Limpar",
     "clear_data_desc": "Exclui banco de dados e arquivos baixados.",

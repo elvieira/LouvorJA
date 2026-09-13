@@ -1,13 +1,16 @@
 import { BrowserWindow, Menu, screen, MenuItemConstructorOptions, BrowserWindowConstructorOptions, Display } from "electron";
 import * as path from "path";
 import { isDev } from "../config/constants";
+import { loadWindowState, isPositionVisible, setupWindowStateTracker } from "../services/window-state";
 
 export function createWindow(): void {
-  const mainWindow = new BrowserWindow({
-    width: 1300,
-    height: 900,
+  const windowState = loadWindowState();
+
+  const windowOptions: BrowserWindowConstructorOptions = {
+    width: windowState.enabled ? windowState.width : 1300,
+    height: windowState.enabled ? windowState.height : 900,
     minWidth: 920,
-    minHeight: 760,
+    minHeight: 600,
     title: "Louvor JA",
     icon: path.join(__dirname, "../public/ico/favicon.png"),
     webPreferences: {
@@ -17,7 +20,25 @@ export function createWindow(): void {
       backgroundThrottling: false,
     },
     frame: false,
-  });
+  };
+
+  if (
+    windowState.enabled &&
+    windowState.x !== undefined &&
+    windowState.y !== undefined &&
+    isPositionVisible(windowState.x, windowState.y, windowState.width, windowState.height)
+  ) {
+    windowOptions.x = windowState.x;
+    windowOptions.y = windowState.y;
+  }
+
+  const mainWindow = new BrowserWindow(windowOptions);
+
+  setupWindowStateTracker(mainWindow);
+
+  if (windowState.enabled && windowState.isMaximized) {
+    mainWindow.maximize();
+  }
 
   mainWindow.on("page-title-updated", (event) => {
     event.preventDefault();

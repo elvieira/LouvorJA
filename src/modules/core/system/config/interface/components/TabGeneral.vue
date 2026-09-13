@@ -24,6 +24,18 @@
             :title="t('start_on_login')"
             :subtitle="t('start_on_login_desc')"
             type="switch"
+            class="mb-8"
+          />
+
+          <v-divider v-if="isDesktop" class="mb-8" style="opacity: 0.1;" />
+
+          <SettingsActionRow
+            v-if="isDesktop"
+            v-model="remember_window_bounds"
+            icon="mdi-window-restore"
+            :title="t('remember_window_bounds')"
+            :subtitle="t('remember_window_bounds_desc')"
+            type="switch"
           />
         </v-card-text>
       </v-card>
@@ -205,6 +217,7 @@ export default defineComponent({
     primary_hymnal: "none",
 
     start_on_login: false as boolean,
+    remember_window_bounds: false as boolean,
     isDesktop: !!(window as any).electronAPI,
     isInitialized: false,
 
@@ -314,6 +327,13 @@ export default defineComponent({
         });
       }
     },
+    remember_window_bounds(val: boolean) {
+      if (!this.isInitialized) return;
+      this.$userdata.set("remember_window_bounds", val);
+      if ((window as any).electronAPI && (window as any).electronAPI.setRememberWindowBounds) {
+        (window as any).electronAPI.setRememberWindowBounds(val);
+      }
+    },
     hide_undownloaded(val: boolean) {
       this.$userdata.set("hide_undownloaded", val);
     },
@@ -346,6 +366,14 @@ export default defineComponent({
       (window as any).electronAPI.getLoginItemSettings().then((settings: any) => {
         this.start_on_login = settings.openAtLogin;
       });
+    }
+
+    if (this.isDesktop && (window as any).electronAPI.getRememberWindowBounds) {
+      (window as any).electronAPI.getRememberWindowBounds().then((enabled: boolean) => {
+        this.remember_window_bounds = enabled;
+      });
+    } else {
+      this.remember_window_bounds = this.$userdata.get("remember_window_bounds") || false;
     }
 
     const savedBibleConfig = this.$appdata.get("modules.bible.config") || this.$userdata.get("bible_config") || {};

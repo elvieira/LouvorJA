@@ -46,6 +46,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
   
   getLoginItemSettings: () => ipcRenderer.invoke("get-login-item-settings"),
   setLoginItemSettings: (settings: Record<string, unknown>) => ipcRenderer.invoke("set-login-item-settings", settings),
+  getRememberWindowBounds: () => ipcRenderer.invoke("get-remember-window-bounds"),
+  setRememberWindowBounds: (enabled: boolean) => ipcRenderer.invoke("set-remember-window-bounds", enabled),
   
   windowControl: (action: string) => ipcRenderer.invoke("window-control", action),
   onWindowMaximizedState: (callback: (isMaximized: boolean) => void) => {
