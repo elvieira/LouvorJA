@@ -14,14 +14,20 @@ export interface SavedWindowState {
 
 const windowStatePath = path.join(userDataPath, "window-state.json");
 
-const DEFAULT_STATE: SavedWindowState = {
-  enabled: false,
-  width: 1300,
-  height: 900,
-  isMaximized: false,
-};
+export function getDefaultWindowDimensions(): { width: number; height: number } {
+  try {
+    const primaryDisplay = screen.getPrimaryDisplay();
+    if (primaryDisplay && primaryDisplay.bounds.height < 1080) {
+      return { width: 1200, height: 700 };
+    }
+  } catch (e) {
+    console.error("Error getting primary display bounds:", e);
+  }
+  return { width: 1300, height: 900 };
+}
 
 export function loadWindowState(): SavedWindowState {
+  const defaultDim = getDefaultWindowDimensions();
   try {
     if (fs.existsSync(windowStatePath)) {
       const raw = fs.readFileSync(windowStatePath, "utf8");
@@ -30,15 +36,20 @@ export function loadWindowState(): SavedWindowState {
         enabled: !!data.enabled,
         x: typeof data.x === "number" ? data.x : undefined,
         y: typeof data.y === "number" ? data.y : undefined,
-        width: typeof data.width === "number" ? Math.max(data.width, 920) : DEFAULT_STATE.width,
-        height: typeof data.height === "number" ? Math.max(data.height, 600) : DEFAULT_STATE.height,
+        width: typeof data.width === "number" ? Math.max(data.width, 920) : defaultDim.width,
+        height: typeof data.height === "number" ? Math.max(data.height, 600) : defaultDim.height,
         isMaximized: !!data.isMaximized,
       };
     }
   } catch (e) {
     console.error("Error loading window state:", e);
   }
-  return { ...DEFAULT_STATE };
+  return {
+    enabled: false,
+    width: defaultDim.width,
+    height: defaultDim.height,
+    isMaximized: false,
+  };
 }
 
 export function isPositionVisible(x: number, y: number, width: number, height: number): boolean {

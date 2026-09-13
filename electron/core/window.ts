@@ -1,14 +1,15 @@
 import { BrowserWindow, Menu, screen, MenuItemConstructorOptions, BrowserWindowConstructorOptions, Display } from "electron";
 import * as path from "path";
 import { isDev } from "../config/constants";
-import { loadWindowState, isPositionVisible, setupWindowStateTracker } from "../services/window-state";
+import { loadWindowState, isPositionVisible, setupWindowStateTracker, getDefaultWindowDimensions } from "../services/window-state";
 
 export function createWindow(): void {
   const windowState = loadWindowState();
+  const defaultDimensions = getDefaultWindowDimensions();
 
   const windowOptions: BrowserWindowConstructorOptions = {
-    width: windowState.enabled ? windowState.width : 1300,
-    height: windowState.enabled ? windowState.height : 900,
+    width: windowState.enabled ? windowState.width : defaultDimensions.width,
+    height: windowState.enabled ? windowState.height : defaultDimensions.height,
     minWidth: 920,
     minHeight: 600,
     title: "Louvor JA",
