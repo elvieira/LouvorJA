@@ -21,26 +21,27 @@
           <!-- eslint-disable vue/no-v-html -->
           <div
             v-if="slide.cover"
-            class="cover-slide-hero d-flex flex-column align-center justify-center text-center"
-            :style="style_cover_container(slide)"
+            class="cover-slide-group d-flex flex-column align-center justify-center text-center w-100"
+            :style="{ maxWidth: '90%' }"
           >
-            <!-- Badge Superior caso exista texto auxiliar (ex: número do hino / coletânea) -->
+            <!-- Card Principal do Título -->
             <div
-              v-if="slide.aux_text"
-              class="cover-badge-pill d-inline-flex align-center justify-center"
-              :style="style_cover_badge(slide)"
+              class="cover-slide-hero d-flex flex-column align-center justify-center text-center"
+              :style="style_cover_container(slide)"
             >
-              <v-icon :size="Math.max(14, fontSizePc(3.2))" color="#f6c32a" class="mr-2">
-                mdi-music
-              </v-icon>
-              <span v-html="slide.aux_text" />
+              <div
+                class="cover-title-text"
+                :style="style_cover_title(slide)"
+                v-html="slide.text"
+              />
             </div>
 
-            <!-- Título Principal da Música -->
+            <!-- Subtítulo Independente Abaixo do Card do Título -->
             <div
-              class="cover-title-text"
-              :style="style_cover_title(slide)"
-              v-html="slide.text"
+              v-if="slide.aux_text"
+              class="cover-subtitle-pill d-inline-flex align-center justify-center"
+              :style="style_cover_subtitle(slide)"
+              v-html="slide.aux_text"
             />
           </div>
           <!-- eslint-enable vue/no-v-html -->
@@ -282,7 +283,9 @@ const style_cover_container = (_slide: any): any => {
   const isBgRemoved = customBg.value && removeTextBg.value;
   if (isBgRemoved) {
     return {
-      maxWidth: "88%",
+      width: "max-content",
+      maxWidth: "100%",
+      boxSizing: "border-box" as const,
       padding: `${fontSizePc(4)}px ${fontSizePc(6)}px`,
       backgroundColor: "transparent",
       border: "none",
@@ -302,7 +305,9 @@ const style_cover_container = (_slide: any): any => {
     : "none";
 
   return {
-    maxWidth: "88%",
+    width: "max-content",
+    maxWidth: "100%",
+    boxSizing: "border-box" as const,
     padding: `${fontSizePc(4)}px ${fontSizePc(8)}px`,
     borderRadius: `${Math.max(16, fontSizePc(4))}px`,
     backgroundColor: hasTextBg ? bgColor : "transparent",
@@ -315,35 +320,59 @@ const style_cover_container = (_slide: any): any => {
   };
 };
 
-const style_cover_badge = (_slide: any): any => {
+const style_cover_subtitle = (_slide: any): any => {
+  const baseColor = customTextFormat.value
+    ? customFontColor.value
+    : "#ffffff";
+  const baseSize = customTextFormat.value ? (4.2 * customFontSize.value) / 100 : 4.2;
+  const bgOpacity = customTextFormat.value ? hexToRgba(baseColor, 0.12) : "rgba(255, 255, 255, 0.12)";
+  const borderColor = customTextFormat.value ? hexToRgba(baseColor, 0.42) : "rgba(255, 255, 255, 0.42)";
+
   return {
-    backgroundColor: "rgba(246, 195, 42, 0.15)",
-    border: "1px solid rgba(246, 195, 42, 0.4)",
-    borderRadius: "9999px",
-    padding: `${fontSizePc(0.8)}px ${fontSizePc(2.8)}px`,
-    fontSize: `${fontSizePc(3.2)}px`,
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    maxWidth: "90%",
+    backgroundColor: bgOpacity,
+    border: `1px solid ${borderColor}`,
+    borderRadius: `${Math.max(8, fontSizePc(1.8))}px`,
+    padding: `${fontSizePc(0.7)}px ${fontSizePc(2.8)}px`,
+    fontSize: `${fontSizePc(baseSize)}px`,
     fontWeight: "700",
-    color: "#f6c32a",
-    letterSpacing: "0.15em",
+    color: baseColor,
+    letterSpacing: "0.1em",
     textTransform: "uppercase" as const,
-    marginBottom: `${fontSizePc(2.5)}px`,
-    backdropFilter: "blur(8px)",
-    WebkitBackdropFilter: "blur(8px)",
-    boxShadow: "0 2px 10px rgba(0, 0, 0, 0.2)",
+    marginTop: `${fontSizePc(2.8)}px`,
+    backdropFilter: "blur(12px)",
+    WebkitBackdropFilter: "blur(12px)",
+    boxShadow:
+      "0 10px 26px rgba(0, 0, 0, 0.65), 0 2px 6px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.25)",
+    textShadow: "0 1px 4px rgba(0, 0, 0, 0.7)",
+    lineHeight: "1.2",
+    whiteSpace: "nowrap" as const,
   };
 };
 
 const style_cover_title = (_slide: any): any => {
+  const baseColor = customTextFormat.value ? customFontColor.value : "#f6c32a";
+  const baseSize = customTextFormat.value ? (21 * customFontSize.value) / 100 : 21;
+  const fontWeight = customTextFormat.value ? customFontWeight.value : "900";
   return {
-    fontSize: `${fontSizePc(21)}px`,
-    color: "#f6c32a",
-    fontWeight: "900",
+    width: "max-content",
+    maxWidth: "100%",
+    boxSizing: "border-box" as const,
+    fontSize: `${fontSizePc(baseSize)}px`,
+    color: baseColor,
+    fontWeight,
     textTransform: "uppercase" as const,
     letterSpacing: "0.01em",
     textAlign: "center" as const,
     lineHeight: "1.15",
     margin: "0",
     padding: "0",
+    whiteSpace: "normal" as const,
+    overflowWrap: "break-word" as const,
+    wordBreak: "normal" as const,
     textShadow: "0 4px 20px rgba(0, 0, 0, 0.8), 0 2px 6px rgba(0, 0, 0, 0.6)",
   };
 };

@@ -3,9 +3,23 @@
     ref="playerContainer"
     :class="location === 'footer' ? 'footer-player-bar d-flex align-center w-100 px-4 py-2' : (location === 'fullscreen' ? 'fullscreen-player-bar d-flex align-center px-6 py-2 w-100' : 'modern-pill-player d-flex align-center px-6 py-2 mx-auto')" 
   >
-    <div v-if="playerWidth >= 880" class="player-info d-flex flex-column mr-6" :style="location === 'footer' ? 'max-width: 300px; min-width: 200px;' : 'max-width: 220px; min-width: 150px;'">
-      <span class="text-subtitle-2 font-weight-bold text-truncate" :class="defaultTextClass" style="line-height: 1.2;">{{ media.config.title }}</span>
-      <span class="text-caption text-truncate" :class="secondaryTextClass" style="line-height: 1.2;">{{ media.config.subtitle }}</span>
+    <div v-if="playerWidth >= 880" class="player-info d-flex flex-column mr-6" :style="location === 'footer' ? 'max-width: 320px; min-width: 200px;' : 'max-width: 280px; min-width: 150px;'">
+      <span
+        class="text-subtitle-2 font-weight-bold text-truncate"
+        :class="defaultTextClass"
+        style="line-height: 1.2;"
+        :title="media.config.title"
+      >
+        {{ media.config.title }}
+      </span>
+      <span
+        class="text-caption text-truncate"
+        :class="secondaryTextClass"
+        style="line-height: 1.2;"
+        :title="media.config.subtitle"
+      >
+        {{ media.config.subtitle }}
+      </span>
     </div>
 
     <div class="d-flex align-center mr-6">

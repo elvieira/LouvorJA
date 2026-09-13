@@ -99,9 +99,9 @@ export default {
       $appdata.set("modules.media.id_album", id_album);
       $appdata.set("modules.media.config.slide_index", 0);
       $appdata.set("modules.media.config.title", data.name);
+      this.setAlbumInfo(id_album);
       $appdata.set("modules.media.config.last_slide", this.slides().length);
       $appdata.set("modules.media.times", []);
-      this.setAlbumInfo(id_album);
     }
 
     // Restaura/atualiza as URLs externas (.slja) mesmo em modos sem áudio (ex.: Sem Áudio),
@@ -120,7 +120,7 @@ export default {
         id_music,
         mode: mode === "instrumental" && !data.has_instrumental_music ? "audio" : mode,
         name: data.name,
-        subtitle: data.albums && data.albums.length > 0 ? data.albums[0].name : "",
+        subtitle: this.getSubtitleFromData(data, id_album),
         url_image: data.url_image || "",
         id_album,
       }];
@@ -772,9 +772,13 @@ export default {
         };
       });
 
+    const id_album = $appdata.get("modules.media.id_album");
+    const subtitle = $appdata.get("modules.media.config.subtitle") || this.getSubtitleFromData(data, id_album);
+
     return [
       {
         lyric: showTitle ? data.name : "",
+        aux_lyric: showTitle ? (subtitle || "") : "",
         cover: true,
         time: "00:00:00",
         instrumental_time: "00:00:00",
@@ -916,9 +920,72 @@ export default {
     $appdata.set("modules.media.config.fullscreen", value);
   },
 
+  getSubtitleFromData(data: any, id_album?: any): string {
+    if (!data) return "";
+    if (data.albums && Array.isArray(data.albums) && data.albums.length > 0) {
+      let album = null;
+      if (id_album) {
+        album = data.albums.find((item: any) => String(item.id_album) === String(id_album));
+      }
+      if (!album && data.albums.length === 1) {
+        album = data.albums[0];
+      } else if (!album && data.albums.length > 1) {
+        const hymnalCategory = data.categories?.find((c: string) => c.startsWith("hymnal."));
+        if (hymnalCategory) {
+          const is1996 = hymnalCategory.includes("1996");
+          album =
+            data.albums.find((a: any) =>
+              a.type === "hymnal" && (is1996 ? /1996/.test(a.name || "") : !/1996/.test(a.name || "")),
+            ) ||
+            data.albums.find((a: any) => a.type === "hymnal") ||
+            data.albums.slice().sort((a: any, b: any) => (a.order || 0) - (b.order || 0))[0];
+        } else {
+          const primaryHymnal = $userdata.get("primary_hymnal") || "none";
+          if (primaryHymnal === "hymnal_1996") {
+            album = data.albums.find((a: any) => a.type === "hymnal" && a.name?.includes("1996"));
+          } else if (primaryHymnal === "hymnal") {
+            album = data.albums.find((a: any) => a.type === "hymnal" && !a.name?.includes("1996"));
+          }
+          if (!album) {
+            album =
+              data.albums.find((a: any) => a.type === "hymnal") ||
+              data.albums.slice().sort((a: any, b: any) => (a.order || 0) - (b.order || 0))[0];
+          }
+        }
+      }
+
+      if (album) {
+        let track = album.track ?? album.pivot?.track ?? data.track ?? 0;
+        if (!track && data.albums) {
+          const matchingWithTrack = data.albums.find(
+            (a: any) => (a.id_album === album.id_album || a.type === "hymnal") && (a.track || a.pivot?.track),
+          );
+          if (matchingWithTrack) {
+            track = matchingWithTrack.track ?? matchingWithTrack.pivot?.track ?? 0;
+          }
+        }
+        if (typeof track === "string") {
+          const parsed = parseInt(track, 10);
+          track = isNaN(parsed) ? 0 : parsed;
+        }
+
+        const isHymnal =
+          album.type === "hymnal" ||
+          (album.name && /hin[aá]rio|himnario/i.test(album.name)) ||
+          (data.categories && data.categories.some((c: string) => c.startsWith("hymnal.")));
+
+        if (isHymnal && track > 0) {
+          return `${track} - ${album.name}`;
+        }
+        return album.name || "";
+      }
+    }
+    return data.subtitle || data.collectionName || "";
+  },
+
   setAlbumInfo(id_album: any, module = "media") {
     const data = $appdata.get(`modules.${module}.data`);
-    if (data.albums.length <= 0) {
+    if (!data) {
       $appdata.set(`modules.${module}.config.subtitle`, "");
       $appdata.set(`modules.${module}.config.track`, 0);
       $appdata.set(`modules.${module}.config.image`, "");
@@ -926,24 +993,56 @@ export default {
     }
 
     let album = null;
-    if (id_album) {
-      album = data.albums.filter((item: any) => item.id_album === id_album)[0];
-    } else if (data.albums.length === 1) {
-      album = data.albums[0];
-    } else {
-      album = data.albums.sort((a: any, b: any) => a.order - b.order)[0];
+    if (data.albums && Array.isArray(data.albums) && data.albums.length > 0) {
+      if (id_album) {
+        album = data.albums.find((item: any) => String(item.id_album) === String(id_album));
+      }
+      if (!album && data.albums.length === 1) {
+        album = data.albums[0];
+      } else if (!album && data.albums.length > 1) {
+        const hymnalCategory = data.categories?.find((c: string) => c.startsWith("hymnal."));
+        if (hymnalCategory) {
+          const is1996 = hymnalCategory.includes("1996");
+          album =
+            data.albums.find((a: any) =>
+              a.type === "hymnal" && (is1996 ? /1996/.test(a.name || "") : !/1996/.test(a.name || "")),
+            ) ||
+            data.albums.find((a: any) => a.type === "hymnal") ||
+            data.albums.slice().sort((a: any, b: any) => (a.order || 0) - (b.order || 0))[0];
+        } else {
+          const primaryHymnal = $userdata.get("primary_hymnal") || "none";
+          if (primaryHymnal === "hymnal_1996") {
+            album = data.albums.find((a: any) => a.type === "hymnal" && a.name?.includes("1996"));
+          } else if (primaryHymnal === "hymnal") {
+            album = data.albums.find((a: any) => a.type === "hymnal" && !a.name?.includes("1996"));
+          }
+          if (!album) {
+            album =
+              data.albums.find((a: any) => a.type === "hymnal") ||
+              data.albums.slice().sort((a: any, b: any) => (a.order || 0) - (b.order || 0))[0];
+          }
+        }
+      }
     }
 
-    if (!album) {
-      $appdata.set(`modules.${module}.config.subtitle`, "");
-      $appdata.set(`modules.${module}.config.track`, 0);
-      $appdata.set(`modules.${module}.config.image`, "");
-      return;
+    const formattedSubtitle = this.getSubtitleFromData(data, id_album);
+    let track = album?.track ?? album?.pivot?.track ?? data.track ?? 0;
+    if (!track && data.albums) {
+      const matchingWithTrack = data.albums.find(
+        (a: any) => (a.id_album === album?.id_album || a.type === "hymnal") && (a.track || a.pivot?.track),
+      );
+      if (matchingWithTrack) {
+        track = matchingWithTrack.track ?? matchingWithTrack.pivot?.track ?? 0;
+      }
+    }
+    if (typeof track === "string") {
+      const parsed = parseInt(track, 10);
+      track = isNaN(parsed) ? 0 : parsed;
     }
 
-    $appdata.set(`modules.${module}.config.subtitle`, album.name);
-    $appdata.set(`modules.${module}.config.track`, album.track);
-    $appdata.set(`modules.${module}.config.image`, album.url_image);
+    $appdata.set(`modules.${module}.config.subtitle`, formattedSubtitle);
+    $appdata.set(`modules.${module}.config.track`, track);
+    $appdata.set(`modules.${module}.config.image`, album?.url_image || data.url_image || "");
   },
 
   timeUpdate() {
@@ -1146,13 +1245,14 @@ export default {
     const data: any = await $database.get(`music_${item.id_music}`);
     
     if (data) {
+      const queueAlbumId = data.albums && data.albums.length > 0 ? data.albums[0].id_album : null;
       const queueItem = {
         id_music: item.id_music,
         mode: item.mode,
         name: data.name,
-        subtitle: data.albums && data.albums.length > 0 ? data.albums[0].name : "",
+        subtitle: this.getSubtitleFromData(data, queueAlbumId),
         url_image: data.url_image,
-        id_album: data.albums && data.albums.length > 0 ? data.albums[0].id_album : null,
+        id_album: queueAlbumId,
       };
       
       queue.items.push(queueItem);

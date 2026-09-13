@@ -93,7 +93,7 @@
                 :key="item.id_music"
                 class="music-item"
                 style="cursor: pointer;"
-                @click="$media.open({ id_music: item.id_music, mode: 'audio' })"
+                @click="$media.open({ id_music: item.id_music, id_album: module?.data?.id_album, mode: 'audio' })"
               >
                 <td class="music-number text-center">
                   {{ item.track }}
