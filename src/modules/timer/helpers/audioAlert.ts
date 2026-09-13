@@ -216,3 +216,77 @@ export function playSchoolBellAlert() {
 
   tryNext();
 }
+
+export function playCultAlert(type: "start" | "5min" | "1min" | "end") {
+  if (type === "end") {
+    playSchoolBellAlert();
+    return;
+  }
+
+  stopSchoolBellAlert();
+
+  let fileNames: string[] = [];
+  if (type === "start") {
+    fileNames = ["abertura_escsb.mp3", "cult_start.mp3", "abertura.mp3"];
+  } else if (type === "5min") {
+    fileNames = ["5minutos_escsb.mp3", "cult_5min.mp3", "5minutos.mp3"];
+  } else if (type === "1min") {
+    fileNames = ["1minuto_escsb.mp3", "cult_1min.mp3", "1minuto.mp3"];
+  }
+
+  const candidateUrls: string[] = [];
+  fileNames.forEach((file) => {
+    candidateUrls.push(`./audio/${file}`, `/audio/${file}`, `./${file}`, `/${file}`);
+  });
+
+  let currentIdx = 0;
+  let played = false;
+
+  const tryNext = () => {
+    if (played || currentIdx >= candidateUrls.length) {
+      if (!played) {
+        // Fallback sintetizado caso os arquivos MP3 não existam
+        playSynthesizedAlert();
+      }
+      return;
+    }
+
+    const url = candidateUrls[currentIdx++];
+    const audio = new Audio(url);
+    activeAudioElement = audio;
+
+    let hasError = false;
+
+    const handleCanPlay = () => {
+      if (hasError || played) return;
+      played = true;
+      audio.volume = 0;
+      audio.play().then(() => {
+        startFadeIn(audio, 1200);
+      }).catch(() => {
+        played = false;
+        tryNext();
+      });
+    };
+
+    const handleError = () => {
+      hasError = true;
+      if (!played) {
+        tryNext();
+      }
+    };
+
+    audio.addEventListener("canplaythrough", handleCanPlay, { once: true });
+    audio.addEventListener("error", handleError, { once: true });
+
+    audio.load();
+
+    setTimeout(() => {
+      if (!played && !hasError && audio.readyState < 2) {
+        handleError();
+      }
+    }, 300);
+  };
+
+  tryNext();
+}
