@@ -5,11 +5,15 @@ export default {
   set(param: string, value: any) {
     store.commit("setData", [param, value]);
 
-    const popups = this.get("popups") || [];
+    const popups = [...(this.get("popups") || [])];
     // Also fallback to single popup just in case
     const singlePopup = this.get("popup");
     if (singlePopup && !popups.includes(singlePopup)) {
       popups.push(singlePopup);
+    }
+    const stageWindow = this.get("stage_monitor_window");
+    if (stageWindow && !stageWindow.closed && !popups.includes(stageWindow)) {
+      popups.push(stageWindow);
     }
 
     if (
@@ -17,7 +21,8 @@ export default {
       param !== "popup" &&
       param !== "popups" &&
       param !== "is_popup" &&
-      param !== "is_fullscreen"
+      param !== "is_fullscreen" &&
+      param !== "stage_monitor_window"
     ) {
       const activePopups: Window[] = [];
       popups.forEach((popup: Window) => {
@@ -31,8 +36,9 @@ export default {
         }
       });
       
-      if (activePopups.length !== popups.length) {
-        this.set("popups", activePopups);
+      const regularPopups = activePopups.filter((p: any) => p !== stageWindow);
+      if (regularPopups.length !== (this.get("popups") || []).length) {
+        this.set("popups", regularPopups);
       }
     }
   },
@@ -50,7 +56,21 @@ export default {
     delete data.popup;
     delete data.popups;
     delete data.is_popup;
-    data = JSON.parse(JSON.stringify(data));
+    delete data.stage_monitor_window;
+    try {
+      data = JSON.parse(JSON.stringify(data));
+    } catch (e) {
+      console.error("Erro ao serializar dados no getFlatten:", e);
+      for (const k in data) {
+        if (typeof data[k] === "object" && data[k] !== null) {
+          try {
+            JSON.stringify(data[k]);
+          } catch {
+            delete data[k];
+          }
+        }
+      }
+    }
     return this.flatten(data);
   },
 

@@ -1,6 +1,7 @@
 import { createRouter, createWebHashHistory, RouteRecordRaw } from "vue-router";
 import Main from "@/views/Main.vue";
 import Popup from "@/views/Popup.vue";
+import StageMonitor from "@/views/StageMonitor.vue";
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -12,6 +13,11 @@ const routes: Array<RouteRecordRaw> = [
     path: "/popup",
     name: "Popup",
     component: Popup,
+  },
+  {
+    path: "/stage-monitor",
+    name: "StageMonitor",
+    component: StageMonitor,
   },
 ];
 

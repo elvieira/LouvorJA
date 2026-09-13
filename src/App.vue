@@ -1,11 +1,11 @@
 <template>
   <v-app id="app-container">
-    <AppTitlebar />
+    <AppTitlebar v-if="!isPopupWindow" />
     <AppAlert v-if="!isPopupWindow" />
     <AppSnackbar v-if="!isPopupWindow" />
-    <FirstBootLoader @boot-complete="isAppReady = true" />
+    <FirstBootLoader v-if="!isPopupWindow" @boot-complete="isAppReady = true" />
     <template v-if="isAppReady">
-      <AppLoading />
+      <AppLoading v-if="!isPopupWindow" />
       <v-btn
         v-show="false"
         v-shortkey="['ctrl', 'alt', 'd']"
@@ -34,14 +34,15 @@ export default {
     AppSnackbar,
   },
   data() {
+    const isPopup = typeof window !== "undefined" && (window.location.href.includes("popup") || window.location.href.includes("stage-monitor"));
     return {
-      isAppReady: false,
-      isPopupWindow: false,
+      isAppReady: isPopup,
+      isPopupWindow: isPopup,
     };
   },
   watch: {
     isAppReady(newVal) {
-      if (newVal) {
+      if (newVal && !this.isPopupWindow) {
         this.initBackgroundTasks();
       }
     },
@@ -56,20 +57,20 @@ export default {
   async mounted() {
     window.addEventListener("keydown", this.handleGlobalKeydown);
     
-    this.isPopupWindow = window.location.href.includes("popup");
-    
-    if (!this.isPopupWindow && window.electronAPI && window.electronAPI.isElectron) {
-      const currentLang = this.$i18n.locale || "pt";
-      const isComplete = await window.electronAPI.getLocalDb(`sfbc_${currentLang}`);
-      if (isComplete && isComplete.complete) {
+    if (!this.isPopupWindow) {
+      if (window.electronAPI && window.electronAPI.isElectron) {
+        const currentLang = this.$i18n.locale || "pt";
+        const isComplete = await window.electronAPI.getLocalDb(`sfbc_${currentLang}`);
+        if (isComplete && isComplete.complete) {
+          this.isAppReady = true;
+        }
+      } else {
         this.isAppReady = true;
       }
-    } else {
-      this.isAppReady = true;
-    }
 
-    if (this.isAppReady) {
-      this.initBackgroundTasks();
+      if (this.isAppReady) {
+        this.initBackgroundTasks();
+      }
     }
   },
   unmounted() {
@@ -161,6 +162,10 @@ export default {
       this.$dev.toogle();
     },
     handleGlobalKeydown(e) {
+      if (this.isPopupWindow) {
+        return;
+      }
+
       if (["INPUT", "TEXTAREA"].includes(document.activeElement.tagName) || document.activeElement.isContentEditable) {
         return;
       }

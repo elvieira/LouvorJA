@@ -121,5 +121,10 @@
     "import_legacy_importing": "Importando archivos clásicos...",
     "import_legacy_success": "¡Importación completada con éxito! Se importaron {count} archivos de medios.",
     "import_legacy_invalid_folder": "La carpeta seleccionada no contiene las carpetas 'musicas' o 'imagens' de Louvor JA Clásico.",
-    "import_legacy_error": "Ocurrió un error al importar los archivos: {error}"
+    "import_legacy_error": "Ocurrió un error al importar los archivos: {error}",
+    "stage_monitor": "Pantalla de Retorno",
+    "stage_monitor_enable": "Activar Pantalla de Retorno",
+    "stage_monitor_desc": "Muestra la letra actual y una vista previa de la siguiente letra en una pantalla separada, ideal para quienes están en el escenario.",
+    "stage_monitor_screen": "Pantalla para el retorno:",
+    "stage_monitor_no_screens": "Active un monitor extendido en Múltiples Pantallas para usarlo como pantalla de retorno."
 }

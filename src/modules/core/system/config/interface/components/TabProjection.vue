@@ -152,6 +152,64 @@
             </v-alert>
           </div>
 
+          <!-- TELA DE RETORNO -->
+          <div class="mb-8 mt-4">
+            <div class="d-flex align-center mb-2">
+              <v-icon size="20" color="primary" class="mr-2">
+                mdi-monitor-eye
+              </v-icon>
+              <span class="text-subtitle-1 font-weight-bold" style="color: var(--sidebar-text);">{{ t('stage_monitor') }}</span>
+            </div>
+            <div class="text-body-2 font-weight-medium mb-3" style="color: var(--sidebar-text-secondary);">
+              {{ t('stage_monitor_desc') }}
+            </div>
+            <v-switch
+              v-model="stage_monitor_enabled"
+              :label="t('stage_monitor_enable')"
+              color="primary"
+              inset
+              hide-details
+              class="mb-3 font-weight-medium"
+            />
+            <v-expand-transition>
+              <div v-if="stage_monitor_enabled">
+                <div class="text-body-2 font-weight-medium mb-2" style="color: var(--sidebar-text-secondary);">
+                  {{ t('stage_monitor_screen') }}
+                </div>
+                <div v-if="stageMonitorScreenList.length > 0" class="d-flex flex-wrap mt-2" style="gap: 16px;">
+                  <v-card
+                    v-for="monitor in stageMonitorScreenList"
+                    :key="monitor.value"
+                    flat
+                    class="rounded-xl border cursor-pointer"
+                    :class="stage_monitor_display === monitor.value ? 'elevation-2' : ''"
+                    :style="stage_monitor_display === monitor.value ? 'background: rgba(0,151,215,0.08); border: 2px solid var(--accent-blue) !important; transition: all 0.2s;' : 'background: var(--main-bg); border: 2px solid transparent !important; transition: all 0.2s; box-shadow: inset 0 0 0 1px var(--border-color);'"
+                    width="160"
+                    @click="stage_monitor_display = stage_monitor_display === monitor.value ? null : monitor.value"
+                  >
+                    <div class="pa-4 d-flex flex-column align-center">
+                      <v-icon :color="stage_monitor_display === monitor.value ? 'primary' : 'grey'" size="32" class="mb-2 transition-all">
+                        {{ stage_monitor_display === monitor.value ? 'mdi-monitor-eye' : 'mdi-monitor-off' }}
+                      </v-icon>
+                      <span class="text-body-2 font-weight-bold text-center transition-all" :style="stage_monitor_display === monitor.value ? 'color: var(--accent-blue)' : 'color: var(--sidebar-text-secondary)'">
+                        {{ monitor.title }}
+                      </span>
+                    </div>
+                  </v-card>
+                </div>
+                <v-alert
+                  v-else
+                  type="info"
+                  variant="tonal"
+                  density="compact"
+                  class="mt-2 text-caption rounded-lg"
+                >
+                  {{ t('stage_monitor_no_screens') }}
+                </v-alert>
+              </div>
+            </v-expand-transition>
+          </div>
+
           <v-divider class="mb-8" style="opacity: 0.1;" />
 
           <!-- TELA ÚNICA / PRINCIPAL -->
@@ -694,6 +752,8 @@ export default defineComponent({
     slide_bg_image: null as string | null,
     slide_bg_opacity: 100 as number,
     slide_remove_text_bg: false as boolean,
+    stage_monitor_enabled: false as boolean,
+    stage_monitor_display: null as any,
   }),
   computed: {
     rawDisplays(): any[] {
@@ -715,14 +775,21 @@ export default defineComponent({
     slideMonitorList(): any[] {
       return this.monitorList.filter((m: any) => !m.isPrimary);
     },
+    stageMonitorScreenList(): any[] {
+      return this.slideMonitorList.filter((m: any) => this.slide_monitor && this.slide_monitor.includes(m.value));
+    },
   },
   watch: {
     slide_monitor(val: any[]) {
       if (val !== undefined && val !== null) {
         this.$userdata.set("modules.config.slide_monitor", val);
+        if (this.stage_monitor_display && !val.includes(this.stage_monitor_display)) {
+          this.stage_monitor_display = null;
+        }
         if (!this.isInitializing) {
           $media.syncMonitors();
           this.syncExternalMediaMonitors();
+          $media.syncStageMonitor();
         }
       }
     },
@@ -747,6 +814,18 @@ export default defineComponent({
     slide_bg_image(val: string | null) { this.$userdata.set("modules.config.slide_bg_image", val); },
     slide_bg_opacity(val: number) { this.$userdata.set("modules.config.slide_bg_opacity", val); },
     slide_remove_text_bg(val: boolean) { this.$userdata.set("modules.config.slide_remove_text_bg", val); },
+    stage_monitor_enabled(val: boolean) {
+      this.$userdata.set("modules.config.stage_monitor_enabled", val);
+      if (!this.isInitializing) {
+        $media.syncStageMonitor();
+      }
+    },
+    stage_monitor_display(val: any) {
+      this.$userdata.set("modules.config.stage_monitor_display", val);
+      if (!this.isInitializing) {
+        $media.syncStageMonitor();
+      }
+    },
     slideMonitorList: {
       handler(newList: any[]) {
         if (newList.length > 0 && this.rawDisplays.length > 0) {
@@ -788,6 +867,7 @@ export default defineComponent({
       "slide_custom_text_format", "slide_font_size", "slide_font_color", "slide_font_weight",
       "slide_text_bg_color", "slide_text_bg_intensity", "slide_text_bg_border",
       "slide_custom_bg", "slide_bg_color", "slide_bg_image", "slide_bg_opacity", "slide_remove_text_bg",
+      "stage_monitor_enabled", "stage_monitor_display",
     ];
     fields.forEach(field => {
       const val = this.$userdata.get(`modules.config.${field}`);
@@ -795,6 +875,11 @@ export default defineComponent({
         (this as any)[field] = val;
       }
     });
+
+    if (this.stage_monitor_display && !this.slide_monitor.includes(this.stage_monitor_display)) {
+      this.stage_monitor_display = null;
+      this.$userdata.set("modules.config.stage_monitor_display", null);
+    }
 
     setTimeout(() => {
       this.isInitializing = false;
@@ -849,6 +934,8 @@ export default defineComponent({
       this.slide_bg_color = "#000000";
       this.slide_bg_image = null;
       this.slide_bg_opacity = 100;
+      this.stage_monitor_enabled = false;
+      this.stage_monitor_display = null;
     },
     async syncExternalMediaMonitors() {
       const isExternalMediaActive = this.$appdata.get("modules.external_media.filePath") !== null;
@@ -873,6 +960,10 @@ export default defineComponent({
           await $popup.syncMonitors(selectedMonitors, "external_media", isExternalMediaActive);
         }
       }
+    },
+    async closeStageMonitor() {
+      const { default: $popup } = await import("@/helpers/ui/Popup");
+      $popup.closeStageMonitor();
     },
   },
 });

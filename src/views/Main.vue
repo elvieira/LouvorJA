@@ -330,13 +330,21 @@ export default defineComponent({
         if (event.data === "mounted") {
           const popupSource = event.source as Window;
           if (popupSource) {
-            const data = this.$appdata.getFlatten();
-            Object.keys(data).map((item) => {
-              popupSource.postMessage(
-                { param: item, value: data[item] },
-                "*",
-              );
-            });
+            try {
+              const data = this.$appdata.getFlatten();
+              Object.keys(data).map((item) => {
+                try {
+                  popupSource.postMessage(
+                    { param: item, value: data[item] },
+                    "*",
+                  );
+                } catch (err) {
+                  console.error("Falha ao enviar param para o popup:", item, err);
+                }
+              });
+            } catch (err) {
+              console.error("Erro ao obter dados para o popup:", err);
+            }
           }
         } else if (event.data === "escape-pressed") {
           import("@/helpers/ui/Popup").then(({ default: $popup }) => {

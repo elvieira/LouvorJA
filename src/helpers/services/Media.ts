@@ -9,9 +9,14 @@ import $snackbar from "@/helpers/ui/Snackbar";
 import $modules from "@/helpers/core/Modules";
 import $database from "@/helpers/services/Database";
 import $history from "@/helpers/services/History";
+import $popup from "@/helpers/ui/Popup";
 
 export default {
+  _sessionId: 0,
+
   async open(params: any) {
+    const currentSession = ++this._sessionId;
+
     if (typeof params !== "object") {
       params = { id_music: params };
     }
@@ -25,6 +30,7 @@ export default {
         }, (res) => resolve(res === "yes"));
       });
       if (!confirmed) return false;
+      if (this._sessionId !== currentSession) return false;
       
       $appdata.set("modules.external_media.filePath", "");
       $appdata.set("modules.external_media.show", false);
@@ -81,6 +87,7 @@ export default {
       : isSameSong && isExternal
         ? existingData
         : await $database.get<any>(`music_${id_music}`);
+    if (this._sessionId !== currentSession) return false;
     if (data === null) {
       this.close(true);
       return false;
@@ -361,11 +368,26 @@ export default {
         // Remove primary from selected monitors to avoid covering controls
         selectedMonitors = selectedMonitors.filter((m: any) => m !== (primary as any).id);
 
+        // Tela de Retorno (Stage Monitor)
+        const stageMonitorEnabled = $userdata.get("modules.config.stage_monitor_enabled");
+        const stageMonitorDisplay = $userdata.get("modules.config.stage_monitor_display");
+        const isDisplayInSlideMonitors = selectedMonitors.includes(stageMonitorDisplay);
+
+        // Se o monitor foi configurado para retorno e está ativo em múltiplas telas,
+        // remove da projeção de slides comum para não sobrepor janelas
+        if (stageMonitorEnabled && stageMonitorDisplay && isDisplayInSlideMonitors) {
+          selectedMonitors = selectedMonitors.filter((m: any) => m !== stageMonitorDisplay);
+        }
+
         if (selectedMonitors.length > 0) {
           if (!params.startPaused) {
-            const { default: $popup } = await import("@/helpers/ui/Popup");
             await $popup.syncMonitors(selectedMonitors, "media", true);
           }
+        }
+
+        // Abrir Tela de Retorno (Stage Monitor) se habilitada e ativa em múltiplas telas
+        if (stageMonitorEnabled && stageMonitorDisplay && isDisplayInSlideMonitors && !params.startPaused) {
+          await $popup.openStageMonitor(stageMonitorDisplay);
         }
       }
     }
@@ -465,10 +487,51 @@ export default {
         const primary = displays.find((d: any) => d.isPrimary) || displays[0];
         selectedMonitors = selectedMonitors.filter((m: any) => m !== (primary as any).id);
 
-        const isMediaActive = $appdata.get("modules.media.id_music") !== null;
+        const stageMonitorEnabled = $userdata.get("modules.config.stage_monitor_enabled");
+        const stageMonitorDisplay = $userdata.get("modules.config.stage_monitor_display");
+        if (stageMonitorEnabled && stageMonitorDisplay) {
+          selectedMonitors = selectedMonitors.filter((m: any) => m !== stageMonitorDisplay);
+        }
 
-        const { default: $popup } = await import("@/helpers/ui/Popup");
+        const isMediaActive = $appdata.get("modules.media.id_music") !== null || $appdata.get("modules.media.show");
+
         await $popup.syncMonitors(selectedMonitors, "media", isMediaActive);
+      }
+    }
+  },
+
+  async syncStageMonitor() {
+    if (window.electronAPI && window.electronAPI.getDisplays) {
+      const displays = await window.electronAPI.getDisplays();
+      if (displays && displays.length > 1) {
+        const stageMonitorEnabled = $userdata.get("modules.config.stage_monitor_enabled");
+        const stageMonitorDisplay = $userdata.get("modules.config.stage_monitor_display");
+        let slideMonitors = $userdata.get("modules.config.slide_monitor") || [];
+        if (!Array.isArray(slideMonitors)) {
+          slideMonitors = slideMonitors ? [slideMonitors] : [];
+        }
+        const isDisplayInSlideMonitors = slideMonitors.includes(stageMonitorDisplay);
+        const isMediaActive = $appdata.get("modules.media.id_music") !== null || $appdata.get("modules.media.show");
+
+        if (!stageMonitorEnabled || !stageMonitorDisplay || !isDisplayInSlideMonitors || !isMediaActive) {
+          $popup.closeStageMonitor();
+        } else {
+          const currentStageWindow: any = $appdata.get("stage_monitor_window");
+          if (currentStageWindow && !currentStageWindow.closed && currentStageWindow.monitorId !== stageMonitorDisplay) {
+            $popup.closeStageMonitor();
+          }
+        }
+
+        // Sincroniza também a projeção normal de slides para que o monitor
+        // volte para a projeção de slides comum (ou saia dela) instantaneamente
+        await this.syncMonitors();
+
+        if (stageMonitorEnabled && stageMonitorDisplay && isDisplayInSlideMonitors && isMediaActive) {
+          const currentStageWindow: any = $appdata.get("stage_monitor_window");
+          if (!currentStageWindow || currentStageWindow.closed || currentStageWindow.monitorId !== stageMonitorDisplay) {
+            await $popup.openStageMonitor(stageMonitorDisplay);
+          }
+        }
       }
     }
   },
@@ -484,6 +547,13 @@ export default {
       return;
     }
 
+    const sessionToClose = this._sessionId;
+
+    // Se uma nova música já começou a abrir/carregar enquanto esta fechava, não interfira!
+    if (this._sessionId !== sessionToClose) {
+      return;
+    }
+
     this.stopAudio();
     this.clearVariables();
     $appdata.set("modules.media.show", false);
@@ -491,11 +561,11 @@ export default {
     $appdata.set("modules.media.config.fullscreen", false);
 
     // Fechar a projeção se estiver aberta
-    import("@/helpers/ui/Popup").then(({ default: $popup }) => {
-      if ($appdata.get("popup_module") === "media") {
-        $popup.exit();
-      }
-    });
+    if ($appdata.get("popup_module") === "media") {
+      $popup.exit();
+    }
+    // Fechar a tela de retorno
+    $popup.closeStageMonitor();
 
     this.clearQueue();
   },
@@ -606,10 +676,29 @@ export default {
   stopAudio() {
     const audioA = this.getElement("a");
     const audioB = this.getElement("b");
-    this.pause(true, () => {
-      audioA.setAttribute("src", "");
-      audioB.setAttribute("src", "");
-    });
+    try {
+      audioA.pause();
+    } catch {
+      // Ignora erro ao pausar
+    }
+    try {
+      audioB.pause();
+    } catch {
+      // Ignora erro ao pausar
+    }
+    audioA.removeAttribute("src");
+    audioB.removeAttribute("src");
+    try {
+      audioA.load();
+    } catch {
+      // Ignora erro ao recarregar
+    }
+    try {
+      audioB.load();
+    } catch {
+      // Ignora erro ao recarregar
+    }
+    $appdata.set("modules.media.config.is_paused", true);
   },
 
   clearVariables() {
@@ -660,6 +749,7 @@ export default {
 
   slides(): any[] {
     const data = $appdata.get("modules.media.data");
+    if (!data) return [];
     const showTitle = $userdata.get("modules.config.slide_show_title") !== false;
 
     let prev_image = data.url_image;
@@ -908,6 +998,7 @@ export default {
     this.checkTime();
   },
   checkTime() {
+    if ($appdata.get("modules.media.loading")) return;
     const is_paused = $appdata.get("modules.media.config.is_paused");
     const current_time = $appdata.get("modules.media.config.current_time");
     const duration = $appdata.get("modules.media.config.duration");
@@ -985,8 +1076,10 @@ export default {
         }
       });
       el.addEventListener("ended", () => {
+        if (!el || !el.src || el.src === window.location.href) return;
+        if ($appdata.get("modules.media.loading")) return;
         const currentActive = $appdata.get("modules.media.config.active_audio") || "a";
-        if (el?.id === `__audio_${currentActive}`) {
+        if (el.id === `__audio_${currentActive}`) {
           const loopMode = $appdata.get("modules.media.config.loop") || "none";
           
           if (loopMode === "track" || loopMode === true) { // keep true for legacy compatibility
@@ -1114,6 +1207,7 @@ export default {
     }
   },
   playNext(stayOnCurrentIndex = false) {
+    if ($appdata.get("modules.media.loading")) return;
     const queue = $appdata.get("modules.media.queue");
     if (!queue || queue.items.length === 0) {
       this.close(true);

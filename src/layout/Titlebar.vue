@@ -81,7 +81,7 @@ export default defineComponent({
   },
   computed: {
     isMainApp(): boolean {
-      return this.$route.name !== "Popup";
+      return this.$route.name !== "Popup" && this.$route.name !== "StageMonitor";
     },
     version(): string {
       return `${packageJson.version}.${this.db_version}`;

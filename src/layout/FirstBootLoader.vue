@@ -125,7 +125,7 @@ export default defineComponent({
     this.statusText = this.$t("first_boot.status.starting");
     this.$appdata.set("system_first_boot_loading", true);
 
-    if (window.location.href.includes("popup")) {
+    if (window.location.href.includes("popup") || window.location.href.includes("stage-monitor")) {
       this.isOpen = false;
       this.$appdata.set("system_first_boot_loading", false);
       return;

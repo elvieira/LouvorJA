@@ -9,9 +9,9 @@
         v-if="!slide.destroy"
         v-show="slide.active"
         class="position-absolute top-0 left-0 w-100 h-100"
-        style="overflow: hidden; background-color: rgb(0,0,0);"
+        :style="{ overflow: 'hidden', backgroundColor: no_background ? 'transparent' : 'rgb(0,0,0)' }"
       >
-        <div class="position-absolute top-0 left-0 w-100 h-100" :style="style_bg(slide)" />
+        <div v-if="!no_background" class="position-absolute top-0 left-0 w-100 h-100" :style="style_bg(slide)" />
         <div
           class="position-absolute top-0 left-0 w-100 h-100 d-flex justify-center"
           :class="slideAlignClass"
@@ -105,6 +105,8 @@ const props = withDefaults(defineProps<{
   aux_text_color?: string;
   force_image?: boolean;
   all_slides?: any[];
+  no_background?: boolean;
+  reference_size?: { width: number; height: number };
 }>(), {
   slide_number: 0,
   cover: false,
@@ -118,6 +120,8 @@ const props = withDefaults(defineProps<{
   aux_text_color: undefined,
   force_image: false,
   all_slides: () => [],
+  no_background: false,
+  reference_size: undefined,
 });
 
 const userdata = useUserData();
@@ -157,7 +161,13 @@ const props_slide = computed(() => ({
 const screenSize = computed(() => ({ width: width.value, height: height.value }));
 
 const fontSizePc = (pc: number) => {
-  const effectiveWidth = Math.min(width.value, height.value * (16 / 9));
+  const refW = props.reference_size?.width && props.reference_size.width > 0
+    ? props.reference_size.width
+    : width.value;
+  const refH = props.reference_size?.height && props.reference_size.height > 0
+    ? props.reference_size.height
+    : height.value;
+  const effectiveWidth = Math.min(refW, refH * (16 / 9));
   const effectiveHeight = effectiveWidth / (16 / 9);
   
   return ((pc * effectiveHeight) / 100 / 2) * 1;
@@ -196,6 +206,7 @@ const updateSettings = () => {
 const setSlide = () => {
   updateSettings();
   if (
+    slides.value[1] &&
     stringHelper.clean(slides.value[1].text || "") === stringHelper.clean(props_slide.value.text || "") &&
     stringHelper.clean(slides.value[1].aux_text || "") === stringHelper.clean(props_slide.value.aux_text || "") &&
     slides.value[1].image === props_slide.value.image &&
@@ -206,11 +217,30 @@ const setSlide = () => {
     repeat.value = false;
   }
 
+  if (props.no_background) {
+    slides.value = [
+      {},
+      {
+        ...props_slide.value,
+        active: true,
+      },
+    ];
+    return;
+  }
+
   slides.value.unshift({});
   slides.value[1] = {
     ...props_slide.value,
     active: true,
   };
+
+  if (slides.value.length > 2) {
+    setTimeout(() => {
+      if (slides.value && slides.value.length > 2) {
+        slides.value[2].destroy = true;
+      }
+    }, 600);
+  }
 
   if (slides.value.length > 3) {
     slides.value[3].destroy = true;
