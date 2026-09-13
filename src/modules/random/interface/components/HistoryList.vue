@@ -1,5 +1,5 @@
 <template>
-  <div class="pa-4 pb-2" style="border-bottom: 1px solid var(--border-color, rgba(0,0,0,0.05));">
+  <div class="history-header pa-4 pb-2" style="border-bottom: 1px solid var(--border-color, rgba(0,0,0,0.05));">
     <h3 style="font-size: 1.1rem; color: var(--sidebar-text); font-weight: 600;">
       {{ t('drawn') }}
       <v-chip size="x-small" color="success" class="ml-2 font-weight-bold">
@@ -7,7 +7,7 @@
       </v-chip>
     </h3>
   </div>
-  <div class="flex-grow-1 px-2 py-2" style="overflow-y: auto; min-height: 0;">
+  <div class="history-items flex-grow-1 px-2 py-2" style="overflow-y: auto; min-height: 80px;">
     <div v-if="drawnNames.length === 0" class="d-flex flex-column align-center justify-center h-100 opacity-50 py-8">
       <v-icon size="40" class="mb-2">
         mdi-history
@@ -45,12 +45,12 @@
       </v-list-item>
     </v-list>
   </div>
-  <div class="pa-3" style="border-top: 1px solid var(--border-color, rgba(0,0,0,0.05));">
+  <div class="history-footer pa-3" style="border-top: 1px solid var(--border-color, rgba(0,0,0,0.05));">
     <v-btn
       block
       variant="tonal"
       color="error"
-      class="text-none font-weight-bold"
+      class="clear-btn text-none font-weight-bold"
       @click="clearHistory"
     >
       {{ t('clear_history') }}
@@ -94,3 +94,29 @@ export default defineComponent({
   },
 });
 </script>
+
+<style scoped>
+@media (max-height: 800px) {
+  .history-header {
+    padding: 10px 12px 6px 12px !important;
+
+    h3 {
+      font-size: 0.95rem !important;
+    }
+  }
+
+  .history-items {
+    padding: 4px 6px !important;
+  }
+
+  .history-footer {
+    padding: 6px 12px !important;
+
+    .clear-btn {
+      min-height: 32px !important;
+      height: 32px !important;
+      font-size: 0.85rem !important;
+    }
+  }
+}
+</style>

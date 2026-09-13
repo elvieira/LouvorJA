@@ -24,9 +24,9 @@
       </ModuleHeader>
 
       <!-- Main Layout -->
-      <div class="content-main d-flex" :class="compact ? 'flex-column' : 'flex-row'" style="overflow-x: hidden; padding: 24px; min-height: 0; gap: 24px; flex-grow: 1;">
+      <div class="content-main random-content-main d-flex" :class="compact ? 'flex-column' : 'flex-row'">
         <!-- =================== COMPACT TOP ROW (Left + Right) =================== -->
-        <div v-if="compact" class="d-flex w-100 flex-grow-1" style="gap: 24px; min-height: 0;">
+        <div v-if="compact" class="compact-top-row d-flex w-100 flex-grow-1">
           <!-- Left Panel -->
           <div class="participants-col d-flex flex-column flex-grow-1" style="width: calc(50% - 12px); min-height: 0; background: var(--card-bg, #fff); border-radius: 24px; box-shadow: var(--shadow); overflow: hidden; border: 1px solid var(--border-color, rgba(0,0,0,0.05));">
             <AvailableList
@@ -53,11 +53,12 @@
         </div>
 
         <!-- =================== THE STAGE (Both Modes) =================== -->
-        <div class="stage-col d-flex position-relative" :class="compact ? 'flex-row align-center flex-shrink-0' : 'flex-column flex-grow-1 align-center justify-center'" :style="[compact ? { width: '100%', height: '220px' } : { minWidth: '350px', height: '100%', minHeight: '0' }, { background: 'var(--card-bg, #fff)', borderRadius: '24px', boxShadow: 'var(--shadow)', overflow: 'hidden', border: '1px solid var(--border-color, rgba(0,0,0,0.05))' }]">
+        <div class="stage-col d-flex position-relative" :class="compact ? 'is-compact flex-row align-center flex-shrink-0' : 'flex-column flex-grow-1 align-center justify-center'">
           <!-- Background decoration -->
           <div class="position-absolute top-0 left-0 w-100 h-100" style="background: linear-gradient(135deg, rgba(0,151,215,0.05) 0%, rgba(0,151,215,0.01) 100%); pointer-events: none;" />
 
-          <div class="position-absolute top-0 right-0 ma-4 d-flex align-center" style="z-index: 2; gap: 8px;">
+          <!-- Actions in top-right (visible in standard height) -->
+          <div class="stage-top-actions position-absolute top-0 right-0 ma-4 d-flex align-center" style="z-index: 2; gap: 8px;">
             <v-btn
               variant="tonal"
               color="primary"
@@ -67,7 +68,9 @@
               class="config-palette-btn"
               @click="showConfig = true"
             >
-              <v-icon>mdi-palette</v-icon>
+              <v-icon size="18">
+                mdi-palette
+              </v-icon>
               <v-tooltip
                 activator="parent"
                 location="bottom"
@@ -77,7 +80,7 @@
                 {{ t('config') }}
               </v-tooltip>
             </v-btn>
-            <LScreenBtn module="random" />
+            <LScreenBtn module="random" class="stage-screen-btn" />
           </div>
 
           <!-- Name Display Area -->
@@ -90,27 +93,64 @@
           </div>
           
           <!-- Button Area -->
-          <div class="text-center flex-shrink-0 d-flex flex-column align-center justify-center" :class="compact ? 'pb-4 pt-12 px-8 h-100' : 'pa-6 w-100'" style="z-index: 1;">
-            <v-btn
-              :disabled="availableUndrawnNames.length === 0 || isDrawing"
-              :loading="isDrawing"
-              color="primary"
-              variant="flat"
-              rounded="xl"
-              size="x-large"
-              class="font-weight-bold text-none px-10"
-              style="height: 64px; font-size: 1.2rem; box-shadow: 0 8px 24px rgba(0,151,215,0.4);"
-              @click="startDraw"
-            >
-              <v-icon start size="28" class="mr-2">
-                mdi-play-circle
-              </v-icon>
-              {{ t('draw_button') }}
-            </v-btn>
-            
-            <div class="mt-4 opacity-70 text-caption font-weight-medium">
-              <span v-if="availableUndrawnNames.length === 0">{{ t('empty_list') }}</span>
-              <span v-else-if="!isDrawing">{{ t('ready_to_draw') }}</span>
+          <div class="stage-btn-area text-center flex-shrink-0 d-flex flex-column align-center justify-center" :class="compact ? 'pb-4 pt-12 px-8 h-100' : 'pa-6 w-100'" style="z-index: 1;">
+            <div class="d-flex align-center justify-center" style="gap: 12px;">
+              <!-- Action buttons on vertical column to the left -->
+              <div class="stage-side-actions d-flex flex-column align-center justify-center" style="gap: 8px;">
+                <v-btn
+                  variant="tonal"
+                  color="primary"
+                  icon
+                  size="small"
+                  style="width: 36px; height: 36px;"
+                  class="config-palette-btn"
+                  @click="showConfig = true"
+                >
+                  <v-icon size="18">
+                    mdi-palette
+                  </v-icon>
+                  <v-tooltip
+                    activator="parent"
+                    location="left"
+                    open-delay="300"
+                    content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+                  >
+                    {{ t('config') }}
+                  </v-tooltip>
+                </v-btn>
+                <LScreenBtn
+                  module="random"
+                  variant="tonal"
+                  size="small"
+                  style="width: 36px; height: 36px;"
+                  class="stage-screen-btn"
+                />
+              </div>
+
+              <!-- Draw Button and Caption Column -->
+              <div class="d-flex flex-column align-center justify-center">
+                <v-btn
+                  :disabled="availableUndrawnNames.length === 0 || isDrawing"
+                  :loading="isDrawing"
+                  color="primary"
+                  variant="flat"
+                  rounded="xl"
+                  size="x-large"
+                  class="draw-btn font-weight-bold text-none px-10"
+                  style="height: 64px; font-size: 1.2rem; box-shadow: 0 8px 24px rgba(0,151,215,0.4);"
+                  @click="startDraw"
+                >
+                  <v-icon start size="28" class="mr-2">
+                    mdi-play-circle
+                  </v-icon>
+                  {{ t('draw_button') }}
+                </v-btn>
+                
+                <div class="draw-caption mt-3 opacity-70 text-caption font-weight-medium text-center">
+                  <span v-if="availableUndrawnNames.length === 0">{{ t('empty_list') }}</span>
+                  <span v-else-if="!isDrawing">{{ t('ready_to_draw') }}</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -174,7 +214,7 @@ export default defineComponent({
       return [...this.drawnNames].reverse();
     },
     compact(): boolean {
-      return this.$vuetify.display.width < 1400;
+      return this.$vuetify.display.width < 1050;
     },
     config(): any {
       return this.$appdata.get(`modules.${this.module_id}.config`) || this.$userdata.get("sorteio_config") || this.defaultConfig;
@@ -293,5 +333,139 @@ export default defineComponent({
 .draw-text {
   line-height: 1.1;
   word-break: break-word;
+}
+
+.random-content-main {
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 24px;
+  min-height: 0;
+  gap: 24px;
+  flex-grow: 1;
+
+  @media (max-height: 800px) {
+    padding: 14px 16px;
+    gap: 12px;
+  }
+}
+
+.compact-top-row {
+  gap: 24px;
+  min-height: 200px;
+
+  @media (max-height: 800px) {
+    gap: 12px;
+    min-height: 160px;
+  }
+}
+
+.stage-top-actions {
+  display: flex !important;
+  gap: 8px !important;
+
+  .config-palette-btn,
+  .stage-screen-btn,
+  :deep(.stage-screen-btn),
+  :deep(.v-btn) {
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+    min-height: 36px !important;
+    border-radius: 50% !important;
+
+    .v-icon {
+      font-size: 18px !important;
+    }
+  }
+}
+
+.stage-side-actions {
+  display: none !important;
+  gap: 8px !important;
+
+  .config-palette-btn,
+  .stage-screen-btn,
+  :deep(.stage-screen-btn),
+  :deep(.v-btn) {
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+    min-height: 36px !important;
+    border-radius: 50% !important;
+
+    .v-icon {
+      font-size: 18px !important;
+    }
+  }
+}
+
+.stage-col {
+  background: var(--card-bg, #fff);
+  border-radius: 24px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  border: 1px solid var(--border-color, rgba(0,0,0,0.05));
+
+  &.is-compact {
+    width: 100%;
+    height: 220px;
+  }
+
+  @media (max-height: 800px) {
+    .stage-top-actions {
+      display: none !important;
+    }
+
+    .stage-side-actions {
+      display: flex !important;
+      gap: 8px !important;
+
+      .config-palette-btn,
+      .stage-screen-btn,
+      :deep(.stage-screen-btn),
+      :deep(.v-btn) {
+        width: 36px !important;
+        height: 36px !important;
+        min-width: 36px !important;
+        min-height: 36px !important;
+        border-radius: 50% !important;
+
+        .v-icon {
+          font-size: 18px !important;
+        }
+      }
+    }
+
+    &.is-compact {
+      height: 140px;
+
+      .draw-text {
+        min-height: 60px !important;
+        font-size: clamp(1.8rem, 3vw, 3rem) !important;
+      }
+
+      .stage-btn-area {
+        padding-top: 10px !important;
+        padding-bottom: 10px !important;
+
+        .draw-btn {
+          height: 46px !important;
+          font-size: 1rem !important;
+          padding-left: 20px !important;
+          padding-right: 20px !important;
+        }
+
+        .draw-caption {
+          margin-top: 4px !important;
+        }
+      }
+    }
+  }
+
+  &:not(.is-compact) {
+    min-width: 350px;
+    height: 100%;
+    min-height: 0;
+  }
 }
 </style>

@@ -1,5 +1,5 @@
 <template>
-  <div class="pa-4 pb-2" style="border-bottom: 1px solid var(--border-color, rgba(0,0,0,0.05));">
+  <div class="available-header pa-4 pb-2" style="border-bottom: 1px solid var(--border-color, rgba(0,0,0,0.05));">
     <div class="d-flex align-center justify-space-between mb-3">
       <h3 style="font-size: 1.1rem; color: var(--sidebar-text); font-weight: 600;">
         {{ t('available') }}
@@ -94,7 +94,7 @@
       </v-btn>
     </div>
   </div>
-  <div class="flex-grow-1 px-2 py-2" style="overflow-y: auto; min-height: 0;">
+  <div class="available-items flex-grow-1 px-2 py-2" style="overflow-y: auto; min-height: 80px;">
     <div v-if="availableNames.length === 0" class="d-flex flex-column align-center justify-center h-100 opacity-50 py-8">
       <v-icon size="40" class="mb-2">
         mdi-account-group-outline
@@ -127,12 +127,12 @@
       </v-list-item>
     </v-list>
   </div>
-  <div class="pa-3" style="border-top: 1px solid var(--border-color, rgba(0,0,0,0.05));">
+  <div class="available-footer pa-3" style="border-top: 1px solid var(--border-color, rgba(0,0,0,0.05));">
     <v-btn
       block
       variant="tonal"
       color="error"
-      class="text-none font-weight-bold"
+      class="clear-btn text-none font-weight-bold"
       @click="clearList"
     >
       {{ t('clear_list') }}
@@ -238,3 +238,41 @@ export default defineComponent({
   },
 });
 </script>
+
+<style scoped>
+@media (max-height: 800px) {
+  .available-header {
+    padding: 10px 12px 6px 12px !important;
+
+    h3 {
+      font-size: 0.95rem !important;
+      margin-bottom: 6px !important;
+    }
+
+    .v-input {
+      margin-bottom: 6px !important;
+    }
+
+    .v-btn {
+      margin-bottom: 4px !important;
+      min-height: 32px !important;
+      height: 32px !important;
+      font-size: 0.85rem !important;
+    }
+  }
+
+  .available-items {
+    padding: 4px 6px !important;
+  }
+
+  .available-footer {
+    padding: 6px 12px !important;
+
+    .clear-btn {
+      min-height: 32px !important;
+      height: 32px !important;
+      font-size: 0.85rem !important;
+    }
+  }
+}
+</style>
