@@ -16,7 +16,11 @@
       </ModuleHeader>
 
       <!-- Main Content -->
-      <div class="content-main flex-grow-1 w-100 pa-6 d-flex flex-column align-center justify-center" style="overflow-y: auto; background: transparent;">
+      <div
+        class="content-main flex-grow-1 w-100 pa-6 d-flex flex-column align-center justify-center"
+        :class="{ 'is-cult-mode': currentMode === 'cult' }"
+        style="overflow-y: auto; background: transparent;"
+      >
         <!-- PREVIEW TV -->
         <div
           class="preview-tv position-relative mb-8"
@@ -33,7 +37,7 @@
             transition: 'background 0.3s ease, border 0.3s ease, box-shadow 0.3s ease'
           }"
         >
-          <div class="position-absolute top-0 right-0 ma-4 d-flex align-center" style="z-index: 2; gap: 8px;">
+          <div class="preview-actions position-absolute top-0 right-0 ma-4 d-flex align-center" style="z-index: 2; gap: 8px;">
             <v-btn
               variant="tonal"
               color="primary"
@@ -53,7 +57,7 @@
           <template v-if="currentMode === 'cult'">
             <!-- Botão Diminuir (-) à Esquerda -->
             <div
-              class="position-absolute"
+              class="cult-side-btn cult-side-btn-left position-absolute"
               style="left: 24px; top: 50%; transform: translateY(-50%); z-index: 5;"
             >
               <v-menu
@@ -111,7 +115,7 @@
 
             <!-- Botão Aumentar (+) à Direita -->
             <div
-              class="position-absolute"
+              class="cult-side-btn cult-side-btn-right position-absolute"
               style="right: 24px; top: 50%; transform: translateY(-50%); z-index: 5;"
             >
               <v-menu
@@ -221,10 +225,10 @@
           <v-expand-transition>
             <div
               v-if="currentMode === 'cult' && !isRunning && !isPaused"
-              class="d-flex flex-column align-center mb-6"
+              class="cult-controls d-flex flex-column align-center mb-6"
             >
               <!-- Seletor de Tipo de Término -->
-              <div class="mb-4">
+              <div class="cult-switch-wrapper mb-4">
                 <PillSwitch
                   v-model="cultType"
                   :items="[
@@ -238,27 +242,26 @@
               <!-- Input: Por Duração em Minutos -->
               <div
                 v-if="cultType === 'duration'"
-                class="d-flex flex-column align-center"
+                class="cult-input-wrapper d-flex flex-column align-center"
               >
                 <div class="d-flex align-center">
                   <input
                     v-model="cultDurationMinutes"
                     type="number"
-                    class="time-input"
-                    style="width: 140px;"
+                    class="time-input time-input-duration"
                     min="1"
                     max="360"
                     @input="onCultDurationChange"
                   />
                 </div>
                 <span
-                  class="text-caption font-weight-bold mt-2"
+                  class="cult-label text-caption font-weight-bold mt-2"
                   style="color: var(--sidebar-text-secondary); text-transform: uppercase; letter-spacing: 1px;"
                 >
                   {{ t('cult_duration') }}
                 </span>
                 <div
-                  class="text-caption mt-1"
+                  class="cult-estimate-caption text-caption mt-1"
                   style="color: var(--sidebar-text-secondary); opacity: 0.85;"
                 >
                   Término estimado: <b>{{ expectedEndTimeByDuration }}</b>
@@ -268,7 +271,7 @@
               <!-- Input: Por Horário Final Fixo -->
               <div
                 v-else
-                class="d-flex flex-column align-center"
+                class="cult-input-wrapper d-flex flex-column align-center"
               >
                 <div class="d-flex align-center">
                   <div class="d-flex flex-column align-center">
@@ -281,14 +284,14 @@
                       @input="onCultTimeChange"
                     />
                     <span
-                      class="text-caption font-weight-bold mt-2"
+                      class="cult-label text-caption font-weight-bold mt-2"
                       style="color: var(--sidebar-text-secondary); text-transform: uppercase; letter-spacing: 1px;"
                     >
                       {{ t('hours_label') }}
                     </span>
                   </div>
                   <div
-                    class="text-h3 font-weight-bold mx-3 pb-6"
+                    class="time-separator text-h3 font-weight-bold mx-3 pb-6"
                     style="color: var(--sidebar-text-secondary);"
                   >
                     :
@@ -303,7 +306,7 @@
                       @input="onCultTimeChange"
                     />
                     <span
-                      class="text-caption font-weight-bold mt-2"
+                      class="cult-label text-caption font-weight-bold mt-2"
                       style="color: var(--sidebar-text-secondary); text-transform: uppercase; letter-spacing: 1px;"
                     >
                       {{ t('minutes_label') }}
@@ -311,7 +314,7 @@
                   </div>
                 </div>
                 <div
-                  class="text-caption mt-1"
+                  class="cult-estimate-caption text-caption mt-1"
                   style="color: var(--sidebar-text-secondary); opacity: 0.85;"
                 >
                   Tempo calculado: <b>{{ calculatedRemainingByTime }}</b>
@@ -321,7 +324,7 @@
           </v-expand-transition>
 
           <!-- Action Buttons -->
-          <div class="d-flex align-center" style="gap: 16px;">
+          <div class="timer-action-buttons d-flex align-center" style="gap: 16px;">
             <!-- Botão Parar Alerta Visual Ativo (modo padrão) -->
             <v-btn
               v-if="isAlerting"
@@ -903,5 +906,104 @@ export default defineComponent({
 
 .cult-adjust-btn:active {
   transform: scale(0.94);
+}
+
+.time-input-duration {
+  width: 140px;
+}
+
+@media (max-height: 800px) {
+  .content-main.is-cult-mode {
+    padding: 10px 16px !important;
+
+    .preview-tv {
+      margin-bottom: 10px !important;
+      max-height: 185px !important;
+      max-width: 680px !important;
+      border-radius: 24px !important;
+
+      .preview-actions {
+        margin: 8px !important;
+        gap: 6px !important;
+
+        :deep(.v-btn) {
+          width: 32px !important;
+          height: 32px !important;
+          min-width: 32px !important;
+          min-height: 32px !important;
+        }
+      }
+
+      .cult-side-btn {
+        &.cult-side-btn-left {
+          left: 12px !important;
+        }
+        &.cult-side-btn-right {
+          right: 12px !important;
+        }
+      }
+
+      .cult-adjust-btn {
+        width: 38px !important;
+        height: 38px !important;
+        min-width: 38px !important;
+
+        .v-icon {
+          font-size: 20px !important;
+        }
+      }
+    }
+
+    .cult-controls {
+      margin-bottom: 10px !important;
+
+      .cult-switch-wrapper {
+        margin-bottom: 8px !important;
+      }
+
+      .time-input {
+        width: 80px !important;
+        height: 64px !important;
+        font-size: 2.2rem !important;
+        border-radius: 14px !important;
+
+        &.time-input-duration {
+          width: 110px !important;
+        }
+      }
+
+      .time-separator {
+        font-size: 2rem !important;
+        padding-bottom: 8px !important;
+        margin-left: 8px !important;
+        margin-right: 8px !important;
+      }
+
+      .cult-label {
+        margin-top: 4px !important;
+        font-size: 0.72rem !important;
+      }
+
+      .cult-estimate-caption {
+        margin-top: 2px !important;
+        font-size: 0.75rem !important;
+      }
+    }
+
+    .timer-action-buttons {
+      gap: 12px !important;
+
+      .v-btn {
+        height: 48px !important;
+        font-size: 1rem !important;
+        padding-left: 28px !important;
+        padding-right: 28px !important;
+
+        .v-icon {
+          font-size: 22px !important;
+        }
+      }
+    }
+  }
 }
 </style>

@@ -2,7 +2,7 @@
   <div
     class="screen-container w-100 h-100 d-flex flex-column align-center justify-center position-relative"
     :style="backgroundStyle"
-    :class="{'blink-animation': isAlerting}"
+    :class="[{ 'blink-animation': isAlerting }, { 'is-preview': preview }]"
   >
     <!-- MODO PADRÃO (Regressivo / Progressivo) -->
     <template v-if="mode !== 'cult'">
@@ -385,5 +385,14 @@ export default defineComponent({
 
 .blink-animation {
   animation: alert-pulse 1s infinite ease-in-out !important;
+}
+
+@media (max-height: 800px) {
+  .screen-container.is-preview .cult-clock {
+    font-size: clamp(1.2rem, 2.5vw, 2rem) !important;
+  }
+  .screen-container.is-preview .cult-timer {
+    font-size: clamp(2.2rem, 4.5vw, 3.4rem) !important;
+  }
 }
 </style>
