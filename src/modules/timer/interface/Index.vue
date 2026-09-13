@@ -25,7 +25,21 @@
       <!-- Main Content -->
       <div class="content-main flex-grow-1 w-100 pa-6 d-flex flex-column align-center justify-center" style="overflow-y: auto; background: transparent;">
         <!-- PREVIEW TV -->
-        <div class="preview-tv position-relative mb-8" :style="{ width: '100%', maxWidth: '900px', aspectRatio: '21/9', maxHeight: '100%', background: 'var(--card-bg, #ffffff)', borderRadius: '40px', boxShadow: '0 20px 60px rgba(0,0,0,0.05)', border: '1px solid var(--border-color, rgba(0,0,0,0.05))', overflow: 'hidden' }">
+        <div
+          class="preview-tv position-relative mb-8"
+          :style="{
+            width: '100%',
+            maxWidth: '900px',
+            aspectRatio: '21/9',
+            maxHeight: '100%',
+            background: isAlerting ? '#78242c' : 'var(--card-bg, #ffffff)',
+            borderRadius: '40px',
+            boxShadow: isAlerting ? '0 20px 60px rgba(139, 30, 42, 0.35)' : '0 20px 60px rgba(0,0,0,0.05)',
+            border: isAlerting ? '1px solid rgba(239, 68, 68, 0.4)' : '1px solid var(--border-color, rgba(0,0,0,0.05))',
+            overflow: 'hidden',
+            transition: 'background 0.3s ease, border 0.3s ease, box-shadow 0.3s ease'
+          }"
+        >
           <div class="position-absolute top-0 right-0 ma-4 d-flex align-center" style="z-index: 2; gap: 8px;">
             <v-btn
               variant="tonal"
@@ -87,7 +101,26 @@
 
           <!-- Buttons -->
           <div class="d-flex align-center" style="gap: 16px;">
+            <!-- Quando estiver em alerta visual ativo: Botão Parar -->
             <v-btn
+              v-if="isAlerting"
+              size="x-large"
+              color="error"
+              variant="flat"
+              rounded="pill"
+              class="font-weight-bold px-10 text-none"
+              style="height: 64px; font-size: 1.2rem; box-shadow: 0 10px 30px rgba(239, 68, 68, 0.4);"
+              @click="stopAlert"
+            >
+              <v-icon start size="28" class="mr-2">
+                mdi-stop-circle
+              </v-icon>
+              {{ t('stop') }}
+            </v-btn>
+
+            <!-- Botão Iniciar / Pausar normal -->
+            <v-btn
+              v-else
               size="x-large"
               :color="isRunning ? 'warning' : 'primary'"
               variant="flat"
@@ -130,6 +163,7 @@ import LScreenBtn from "@/components/buttons/Screen.vue";
 import ConfigModal from "./components/ConfigModal.vue";
 import ModuleHeader from "@/components/ModuleHeader.vue";
 import manifest from "../manifest";
+import { stopSchoolBellAlert } from "../helpers/audioAlert";
 
 export default defineComponent({
   name: manifest.id,
@@ -162,70 +196,82 @@ export default defineComponent({
       return this.$appdata.get(`modules.${this.module_id}.data`) || {
         isStopwatch: false,
         isRunning: false,
+        isFinished: false,
         baseTime: 0,
         accumulatedTime: 0,
-        targetDuration: 5 * 60000, // 5 min default
+        targetDuration: 0,
+        configuredDuration: 0,
         isAlerting: false,
       };
     },
     isStopwatch(): boolean {
-      return this.timerData.isStopwatch;
+      return Boolean(this.timerData.isStopwatch);
     },
     isRunning(): boolean {
-      return this.timerData.isRunning;
+      return Boolean(this.timerData.isRunning);
+    },
+    isAlerting(): boolean {
+      return Boolean(this.timerData.isAlerting && this.config.visualAlert !== false);
     },
     targetDuration(): number {
-      return this.timerData.targetDuration;
+      return this.timerData.targetDuration || 0;
     },
     editHours: {
       get(): number {
-        const ms = this.isStopwatch ? this.timerData.accumulatedTime : this.timerData.targetDuration;
+        const ms = this.isStopwatch
+          ? this.timerData.accumulatedTime
+          : (this.timerData.configuredDuration ?? this.timerData.targetDuration ?? 0);
         return Math.floor(ms / 3600000);
       },
       set(val: string | number) {
-        const hrs = typeof val === "string" ? parseInt(val) : val;
-        const ms = ((hrs || 0) * 3600000) + (this.editMinutes * 60000) + (this.editSeconds * 1000);
+        const hrs = Math.max(0, typeof val === "string" ? (parseInt(val) || 0) : (val || 0));
+        const ms = (hrs * 3600000) + (this.editMinutes * 60000) + (this.editSeconds * 1000);
         if (this.isStopwatch) {
-          this.updateData({ accumulatedTime: ms });
+          this.updateData({ accumulatedTime: ms, configuredDuration: ms, isFinished: false });
         } else {
-          this.updateData({ targetDuration: ms });
+          this.updateData({ targetDuration: ms, configuredDuration: ms, isFinished: false });
         }
       },
     },
     editMinutes: {
       get(): number {
-        const ms = this.isStopwatch ? this.timerData.accumulatedTime : this.timerData.targetDuration;
+        const ms = this.isStopwatch
+          ? this.timerData.accumulatedTime
+          : (this.timerData.configuredDuration ?? this.timerData.targetDuration ?? 0);
         return Math.floor((ms % 3600000) / 60000);
       },
       set(val: string | number) {
-        const mins = typeof val === "string" ? parseInt(val) : val;
-        const ms = (this.editHours * 3600000) + ((mins || 0) * 60000) + (this.editSeconds * 1000);
+        const mins = Math.max(0, Math.min(59, typeof val === "string" ? (parseInt(val) || 0) : (val || 0)));
+        const ms = (this.editHours * 3600000) + (mins * 60000) + (this.editSeconds * 1000);
         if (this.isStopwatch) {
-          this.updateData({ accumulatedTime: ms });
+          this.updateData({ accumulatedTime: ms, configuredDuration: ms, isFinished: false });
         } else {
-          this.updateData({ targetDuration: ms });
+          this.updateData({ targetDuration: ms, configuredDuration: ms, isFinished: false });
         }
       },
     },
     editSeconds: {
       get(): number {
-        const ms = this.isStopwatch ? this.timerData.accumulatedTime : this.timerData.targetDuration;
+        const ms = this.isStopwatch
+          ? this.timerData.accumulatedTime
+          : (this.timerData.configuredDuration ?? this.timerData.targetDuration ?? 0);
         return Math.floor((ms % 60000) / 1000);
       },
       set(val: string | number) {
-        const secs = typeof val === "string" ? parseInt(val) : val;
-        const ms = (this.editHours * 3600000) + (this.editMinutes * 60000) + ((secs || 0) * 1000);
+        const secs = Math.max(0, Math.min(59, typeof val === "string" ? (parseInt(val) || 0) : (val || 0)));
+        const ms = (this.editHours * 3600000) + (this.editMinutes * 60000) + (secs * 1000);
         if (this.isStopwatch) {
-          this.updateData({ accumulatedTime: ms });
+          this.updateData({ accumulatedTime: ms, configuredDuration: ms, isFinished: false });
         } else {
-          this.updateData({ targetDuration: ms });
+          this.updateData({ targetDuration: ms, configuredDuration: ms, isFinished: false });
         }
       },
     },
   },
   mounted() {
-    // Initialize data if not present
-    if (!this.$appdata.get(`modules.${this.module_id}.data`)) {
+    // Inicializa zerado se não estiver rodando
+    const existing = this.$appdata.get(`modules.${this.module_id}.data`);
+    if (!existing || !existing.isRunning) {
       this.resetTimer();
     } else {
       this.isStopwatchStr = this.timerData.isStopwatch ? "true" : "false";
@@ -244,18 +290,28 @@ export default defineComponent({
       this.$appdata.set(`modules.${this.module_id}.data`, { ...current, ...updates });
     },
     onModeChange(val: string) {
+      stopSchoolBellAlert();
       const isStopwatch = val === "true";
       this.updateData({
         isStopwatch,
         isRunning: false,
+        isFinished: false,
+        isAlerting: false,
         accumulatedTime: 0,
-        baseTime: Date.now(),
+        baseTime: 0,
+        targetDuration: 0,
+        configuredDuration: 0,
+      });
+    },
+    stopAlert() {
+      stopSchoolBellAlert();
+      this.updateData({
         isAlerting: false,
       });
     },
     toggleTimer() {
       if (this.isRunning) {
-        // Pause
+        // Pausar
         const now = Date.now();
         let elapsed = 0;
         if (this.timerData.baseTime) {
@@ -267,31 +323,51 @@ export default defineComponent({
           baseTime: 0,
         });
       } else {
-        // Stop Alerting if we were
-        this.updateData({ isAlerting: false });
-        
-        // Check if timer is already finished, if so don't allow start
+        stopSchoolBellAlert();
+
+        if (this.isAlerting) {
+          this.stopAlert();
+          return;
+        }
+
         if (!this.isStopwatch) {
-          if (this.timerData.targetDuration <= this.timerData.accumulatedTime) {
+          const duration = this.timerData.configuredDuration || this.timerData.targetDuration;
+          if (!duration || duration <= 0) {
+            return;
+          }
+
+          if (this.timerData.isFinished || this.timerData.accumulatedTime >= duration) {
+            this.updateData({
+              isRunning: true,
+              isFinished: false,
+              isAlerting: false,
+              targetDuration: duration,
+              configuredDuration: duration,
+              accumulatedTime: 0,
+              baseTime: Date.now(),
+            });
             return;
           }
         }
-        
-        // Start
+
         this.updateData({
           isRunning: true,
-          baseTime: Date.now(),
+          isFinished: false,
           isAlerting: false,
+          baseTime: Date.now(),
         });
       }
     },
     resetTimer() {
+      stopSchoolBellAlert();
       this.updateData({
         isRunning: false,
+        isFinished: false,
+        isAlerting: false,
         accumulatedTime: 0,
         baseTime: 0,
-        isAlerting: false,
-        targetDuration: this.isStopwatch ? 0 : 5 * 60000, // Reset to 5 min for timer
+        targetDuration: 0,
+        configuredDuration: 0,
       });
     },
   },

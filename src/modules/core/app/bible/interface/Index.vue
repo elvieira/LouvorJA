@@ -241,7 +241,7 @@ export default defineComponent({
       searchResults: [] as any[],
       lastSearchQuery: "",
       
-      showPreview: true,
+      showPreview: false,
     };
   },
   computed: {
@@ -379,6 +379,17 @@ export default defineComponent({
       this.send("scriptural_reference", this.select_bible.scriptural_reference);
       this.send("text", this.select_bible.text);
     },
+    showPreview(val: boolean) {
+      // @ts-ignore
+      this.$userdata.set(`modules.${this.module_id}.show_preview`, val);
+    },
+  },
+  created() {
+    // @ts-ignore
+    const savedPreview = this.$userdata.get(`modules.${this.module_id}.show_preview`);
+    if (savedPreview !== null && savedPreview !== undefined) {
+      this.showPreview = Boolean(savedPreview);
+    }
   },
   async mounted() {
     await this.loadData();

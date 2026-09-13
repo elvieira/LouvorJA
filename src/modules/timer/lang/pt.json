@@ -4,6 +4,7 @@
   "config": "Configurações",
   "start": "Iniciar",
   "pause": "Pausar",
+  "stop": "Parar",
   "reset": "Zerar",
   "add_min": "+1 Min",
   "sub_min": "-1 Min",

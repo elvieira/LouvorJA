@@ -1,5 +1,9 @@
 <template>
-  <div class="screen-container w-100 h-100 d-flex flex-column align-center justify-center position-relative" :style="backgroundStyle" :class="{'blink-animation': isAlerting && config.visualAlert}">
+  <div
+    class="screen-container w-100 h-100 d-flex flex-column align-center justify-center position-relative"
+    :style="backgroundStyle"
+    :class="{'blink-animation': isAlerting}"
+  >
     <div 
       class="timer-text font-weight-black text-center" 
       :style="textStyle"
@@ -11,6 +15,7 @@
 
 <script lang="ts">
 import { defineComponent, PropType } from "vue";
+import { playSchoolBellAlert, stopSchoolBellAlert } from "../../helpers/audioAlert";
 
 export default defineComponent({
   name: "TimerScreen",
@@ -23,9 +28,7 @@ export default defineComponent({
   data: () => ({
     module_id: "timer",
     currentTimeMs: 0,
-    isAlerting: false,
     animationFrameId: null as number | null,
-    audioContext: null as AudioContext | null,
   }),
   computed: {
     config(): any {
@@ -40,11 +43,16 @@ export default defineComponent({
       return this.$appdata.get(`modules.${this.module_id}.data`) || {
         isStopwatch: false,
         isRunning: false,
+        isFinished: false,
         baseTime: 0,
         accumulatedTime: 0,
         targetDuration: 0,
+        configuredDuration: 0,
         isAlerting: false,
       };
+    },
+    isAlerting(): boolean {
+      return Boolean(this.timerData?.isAlerting && this.config?.visualAlert !== false);
     },
     formattedTime(): string {
       const totalSeconds = Math.floor(this.currentTimeMs / 1000);
@@ -63,13 +71,20 @@ export default defineComponent({
     },
     textStyle(): any {
       return {
-        color: this.preview ? "var(--sidebar-text)" : this.config.fontColor,
+        color: this.isAlerting
+          ? "#ffffff"
+          : (this.preview ? "var(--sidebar-text)" : this.config.fontColor),
         fontSize: this.preview ? "clamp(4rem, 8vw, 8rem)" : "25vmin",
         lineHeight: 1,
         textShadow: this.preview ? "none" : "0 10px 40px rgba(0,0,0,0.5)",
       };
     },
     backgroundStyle(): any {
+      if (this.isAlerting) {
+        return {
+          backgroundColor: "#78242c",
+        };
+      }
       if (this.preview) return { background: "transparent" };
       return {
         background: this.config.bgColor,
@@ -77,21 +92,20 @@ export default defineComponent({
     },
   },
   watch: {
-    "timerData.isAlerting"(newVal: boolean, oldVal: boolean) {
-      if (newVal && !oldVal && !this.preview) { // only trigger sound on projector/main instance if possible, or maybe both is fine but audio alert is better handled if preview plays it too? Actually let's let projector play it.
-        this.triggerAlert();
+    isAlerting(newVal: boolean, oldVal: boolean) {
+      if (!newVal && oldVal) {
+        stopSchoolBellAlert();
       }
-      this.isAlerting = newVal;
     },
   },
   mounted() {
-    this.isAlerting = this.timerData.isAlerting;
     this.startLoop();
   },
   beforeUnmount() {
     if (this.animationFrameId) {
       cancelAnimationFrame(this.animationFrameId);
     }
+    stopSchoolBellAlert();
   },
   methods: {
     startLoop() {
@@ -107,21 +121,48 @@ export default defineComponent({
             let remaining = data.targetDuration - elapsed;
             if (remaining <= 0) {
               remaining = 0;
-              if (!data.isAlerting) {
-                // We reached 0
-                this.$appdata.set(`modules.${this.module_id}.data.isAlerting`, true);
-                this.$appdata.set(`modules.${this.module_id}.data.isRunning`, false);
-                this.$appdata.set(`modules.${this.module_id}.data.accumulatedTime`, data.targetDuration);
+              if (data.isRunning) {
+                // Fim do tempo regressivo
+                const visualAlert = this.config.visualAlert !== false;
+                this.$appdata.set(`modules.${this.module_id}.data`, {
+                  ...data,
+                  isRunning: false,
+                  isFinished: true,
+                  isAlerting: visualAlert,
+                  accumulatedTime: data.targetDuration,
+                });
+                this.checkAndPlaySound();
               }
             }
             this.currentTimeMs = remaining;
           }
         } else {
-          // Paused or stopped
+          // Pausado ou parado
           if (data.isStopwatch) {
-            this.currentTimeMs = data.accumulatedTime;
+            this.currentTimeMs = data.accumulatedTime || 0;
           } else {
-            this.currentTimeMs = Math.max(0, data.targetDuration - data.accumulatedTime);
+            if (data.isFinished) {
+              if (this.preview) {
+                // Na janela principal (preview):
+                // Se o alerta visual estiver ativo, exibe 00:00 com efeito visual
+                // Quando o alerta visual para (ou se já estava desligado), reseta para o tempo que o usuário colocou
+                if (data.isAlerting) {
+                  this.currentTimeMs = 0;
+                } else {
+                  this.currentTimeMs = data.configuredDuration || 0;
+                }
+              } else {
+                // Na tela projetada:
+                // Continua zerado (00:00) até o usuário iniciar de novo
+                this.currentTimeMs = 0;
+              }
+            } else {
+              if (data.accumulatedTime > 0) {
+                this.currentTimeMs = Math.max(0, data.targetDuration - data.accumulatedTime);
+              } else {
+                this.currentTimeMs = data.configuredDuration || data.targetDuration || 0;
+              }
+            }
           }
         }
         
@@ -130,32 +171,12 @@ export default defineComponent({
       
       this.animationFrameId = requestAnimationFrame(updateTime);
     },
-    triggerAlert() {
-      if (!this.config.audioAlert) return;
-      
-      try {
-        if (!this.audioContext) {
-          this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-        }
-        
-        const oscillator = this.audioContext.createOscillator();
-        const gainNode = this.audioContext.createGain();
-        
-        oscillator.type = "sine";
-        oscillator.frequency.setValueAtTime(880, this.audioContext.currentTime); // A5
-        oscillator.frequency.exponentialRampToValueAtTime(440, this.audioContext.currentTime + 0.5);
-        
-        gainNode.gain.setValueAtTime(0.5, this.audioContext.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.5);
-        
-        oscillator.connect(gainNode);
-        gainNode.connect(this.audioContext.destination);
-        
-        oscillator.start();
-        oscillator.stop(this.audioContext.currentTime + 0.5);
-      } catch (e) {
-        console.error("Audio alert failed", e);
-      }
+    checkAndPlaySound() {
+      if (this.config.audioAlert === false) return;
+      const lastPlayed = this.timerData.lastAudioAlertTime || 0;
+      if (Date.now() - lastPlayed < 4000) return; // evita tocar em duplicidade
+      this.$appdata.set(`modules.${this.module_id}.data.lastAudioAlertTime`, Date.now());
+      playSchoolBellAlert();
     },
   },
 });
@@ -167,14 +188,18 @@ export default defineComponent({
   letter-spacing: -0.02em;
 }
 
-@keyframes blink {
-  0% { opacity: 1; }
-  50% { opacity: 0; }
-  100% { opacity: 1; }
+@keyframes alert-pulse {
+  0%, 100% {
+    opacity: 1;
+    background-color: #8b1e2a !important;
+  }
+  50% {
+    opacity: 0.65;
+    background-color: #4a1218 !important;
+  }
 }
 
 .blink-animation {
-  animation: blink 1s infinite;
-  background-color: rgba(255, 0, 0, 0.3) !important;
+  animation: alert-pulse 1s infinite ease-in-out !important;
 }
 </style>

@@ -169,9 +169,6 @@
                   <v-list-item-title class="font-weight-medium text-body-2">
                     {{ t('settings_visual_alert') }}
                   </v-list-item-title>
-                  <v-list-item-subtitle style="color: var(--sidebar-text-secondary);">
-                    {{ t('settings_visual_alert_desc') }}
-                  </v-list-item-subtitle>
                   <template #append>
                     <v-switch
                       v-model="localConfig.visualAlert"
@@ -187,17 +184,32 @@
                   <v-list-item-title class="font-weight-medium text-body-2">
                     {{ t('settings_audio_alert') }}
                   </v-list-item-title>
-                  <v-list-item-subtitle style="color: var(--sidebar-text-secondary);">
-                    {{ t('settings_audio_alert_desc') }}
-                  </v-list-item-subtitle>
                   <template #append>
-                    <v-switch
-                      v-model="localConfig.audioAlert"
-                      color="primary"
-                      hide-details
-                      inset
-                      density="compact"
-                    />
+                    <div class="d-flex align-center" style="gap: 8px;">
+                      <v-btn
+                        v-if="localConfig.audioAlert"
+                        icon
+                        size="x-small"
+                        variant="tonal"
+                        color="primary"
+                        class="mr-1"
+                        @click="testSound"
+                      >
+                        <v-icon size="18">
+                          mdi-volume-high
+                        </v-icon>
+                        <v-tooltip activator="parent" location="top">
+                          Testar Som
+                        </v-tooltip>
+                      </v-btn>
+                      <v-switch
+                        v-model="localConfig.audioAlert"
+                        color="primary"
+                        hide-details
+                        inset
+                        density="compact"
+                      />
+                    </div>
                   </template>
                 </v-list-item>
               </v-list>
@@ -219,8 +231,9 @@
           <div class="d-flex" style="gap: 12px;">
             <v-btn
               variant="tonal"
-              color="grey-darken-1"
-              class="rounded-lg text-none px-6 font-weight-bold flex-shrink-0"
+              color="white"
+              class="rounded-lg text-none px-6 font-weight-bold flex-shrink-0 text-white"
+              style="color: #ffffff !important;"
               @click="cancel"
             >
               Cancelar
@@ -243,6 +256,7 @@
 <script lang="ts">
 import { defineComponent, PropType } from "vue";
 import ModernColorPicker from "@/components/inputs/ModernColorPicker.vue";
+import { playSchoolBellAlert, stopSchoolBellAlert } from "../../helpers/audioAlert";
 
 export default defineComponent({
   name: "ConfigModal",
@@ -296,6 +310,9 @@ export default defineComponent({
   mounted() {
     this.loadConfig();
   },
+  beforeUnmount() {
+    stopSchoolBellAlert();
+  },
   methods: {
     t(text: string): string {
       return this.$t(`modules.${this.moduleId}.${text}`);
@@ -321,7 +338,11 @@ export default defineComponent({
       this.close();
     },
     close() {
+      stopSchoolBellAlert();
       this.internalValue = false;
+    },
+    testSound() {
+      playSchoolBellAlert();
     },
   },
 });
