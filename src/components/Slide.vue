@@ -36,13 +36,18 @@
               />
             </div>
 
-            <!-- Subtítulo Independente Abaixo do Card do Título -->
+            <!-- Subtítulo Abaixo do Card do Título (Aba com Whiskers) -->
             <div
               v-if="slide.aux_text"
-              class="cover-subtitle-pill d-inline-flex align-center justify-center"
+              class="cover-subtitle-tab d-inline-flex align-center justify-center"
               :style="style_cover_subtitle(slide)"
-              v-html="slide.aux_text"
-            />
+            >
+              <span class="subtitle-whisker" :style="style_subtitle_whisker" />
+              <span class="subtitle-text" :style="style_subtitle_text">
+                {{ formatCoverSubtitle(slide.aux_text) }}
+              </span>
+              <span class="subtitle-whisker" :style="style_subtitle_whisker" />
+            </div>
           </div>
           <!-- eslint-enable vue/no-v-html -->
 
@@ -305,6 +310,8 @@ const style_cover_container = (_slide: any): any => {
     : "none";
 
   return {
+    position: "relative" as const,
+    zIndex: 1,
     width: "max-content",
     maxWidth: "100%",
     boxSizing: "border-box" as const,
@@ -320,35 +327,103 @@ const style_cover_container = (_slide: any): any => {
   };
 };
 
+const formatCoverSubtitle = (text: string): string => {
+  if (!text) return "";
+  let str = text.trim();
+  str = str.replace(/^(\d+)\s*[-•·.:]\s*/, "$1  ·  ");
+  str = str.replace(/\s+-\s+/, "  ·  ");
+  return str;
+};
+
+const style_subtitle_whisker = computed(() => {
+  const isBgRemoved = customBg.value && removeTextBg.value;
+  const lineColor = isBgRemoved
+    ? (customTextFormat.value ? hexToRgba(customFontColor.value, 0.4) : "rgba(255, 255, 255, 0.4)")
+    : "rgba(255, 255, 255, 0.38)";
+  const whiskerWidth = Math.max(20, fontSizePc(8));
+  return {
+    display: "inline-block",
+    width: `${whiskerWidth}px`,
+    height: "1px",
+    backgroundColor: lineColor,
+    flexShrink: 0,
+  };
+});
+
+const style_subtitle_text = computed(() => {
+  const baseSize = customTextFormat.value ? (4.1 * customFontSize.value) / 100 : 4.1;
+  const textColor = customTextFormat.value
+    ? hexToRgba(customFontColor.value, 0.88)
+    : "rgba(255, 255, 255, 0.88)";
+  return {
+    margin: `0 ${fontSizePc(1.8)}px`,
+    fontSize: `${fontSizePc(baseSize)}px`,
+    fontWeight: "600",
+    color: textColor,
+    letterSpacing: "0.14em",
+    textTransform: "uppercase" as const,
+    textShadow: "0 1px 4px rgba(0, 0, 0, 0.8)",
+    lineHeight: "1",
+    whiteSpace: "nowrap" as const,
+  };
+});
+
 const style_cover_subtitle = (_slide: any): any => {
-  const baseColor = customTextFormat.value
-    ? customFontColor.value
-    : "#ffffff";
-  const baseSize = customTextFormat.value ? (4.2 * customFontSize.value) / 100 : 4.2;
-  const bgOpacity = customTextFormat.value ? hexToRgba(baseColor, 0.12) : "rgba(255, 255, 255, 0.12)";
-  const borderColor = customTextFormat.value ? hexToRgba(baseColor, 0.42) : "rgba(255, 255, 255, 0.42)";
+  const isBgRemoved = customBg.value && removeTextBg.value;
+
+  if (isBgRemoved) {
+    return {
+      display: "inline-flex",
+      alignItems: "center",
+      justifyContent: "center",
+      maxWidth: "90%",
+      backgroundColor: "transparent",
+      border: "none",
+      borderRadius: "0px",
+      padding: `${fontSizePc(0.85)}px ${fontSizePc(3)}px`,
+      marginTop: `${fontSizePc(1)}px`,
+      backdropFilter: "none",
+      WebkitBackdropFilter: "none",
+      boxShadow: "none",
+      whiteSpace: "nowrap" as const,
+    };
+  }
+
+  const hasTextBg = !customTextFormat.value || customTextBgIntensity.value > 0;
+  const intensity = customTextFormat.value ? customTextBgIntensity.value / 100 : 0.45;
+  const topColor = customTextFormat.value
+    ? hexToRgba(customTextBgColor.value, intensity * 0.45)
+    : "rgba(10, 16, 26, 0.20)";
+  const bottomColor = customTextFormat.value
+    ? hexToRgba(customTextBgColor.value, Math.min(1, intensity * 0.85 + 0.05))
+    : "rgba(6, 10, 18, 0.38)";
+  const bgGradient = `linear-gradient(180deg, ${topColor} 0%, ${bottomColor} 100%)`;
+  const hasBorder = !customTextFormat.value || customTextBgBorder.value;
+  const borderCol = "rgba(255, 255, 255, 0.18)";
 
   return {
+    position: "relative" as const,
     display: "inline-flex",
     alignItems: "center",
     justifyContent: "center",
     maxWidth: "90%",
-    backgroundColor: bgOpacity,
-    border: `1px solid ${borderColor}`,
-    borderRadius: `${Math.max(8, fontSizePc(1.8))}px`,
-    padding: `${fontSizePc(0.7)}px ${fontSizePc(2.8)}px`,
-    fontSize: `${fontSizePc(baseSize)}px`,
-    fontWeight: "700",
-    color: baseColor,
-    letterSpacing: "0.1em",
-    textTransform: "uppercase" as const,
-    marginTop: `${fontSizePc(2.8)}px`,
-    backdropFilter: "blur(12px)",
-    WebkitBackdropFilter: "blur(12px)",
-    boxShadow:
-      "0 10px 26px rgba(0, 0, 0, 0.65), 0 2px 6px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.25)",
-    textShadow: "0 1px 4px rgba(0, 0, 0, 0.7)",
-    lineHeight: "1.2",
+    background: hasTextBg ? bgGradient : "transparent",
+    borderLeft: hasBorder ? `1px solid ${borderCol}` : "none",
+    borderRight: hasBorder ? `1px solid ${borderCol}` : "none",
+    borderBottom: hasBorder ? `1px solid ${borderCol}` : "none",
+    borderTop: hasBorder ? `1px solid ${borderCol}` : "none",
+    borderBottomLeftRadius: `${Math.max(10, fontSizePc(2))}px`,
+    borderBottomRightRadius: `${Math.max(10, fontSizePc(2))}px`,
+    borderTopLeftRadius: "0px",
+    borderTopRightRadius: "0px",
+    padding: `${fontSizePc(0.85)}px ${fontSizePc(3.6)}px`,
+    marginTop: "-1px",
+    zIndex: 2,
+    backdropFilter: hasTextBg ? "blur(16px)" : "none",
+    WebkitBackdropFilter: hasTextBg ? "blur(16px)" : "none",
+    boxShadow: hasTextBg
+      ? "0 8px 20px rgba(0, 0, 0, 0.32)"
+      : "none",
     whiteSpace: "nowrap" as const,
   };
 };
