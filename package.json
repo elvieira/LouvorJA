@@ -97,8 +97,8 @@
     ],
     "publish": {
       "provider": "github",
-      "owner": "elvieira",
-      "repo": "LouvorJA"
+      "owner": "louvorja",
+      "repo": "flute-app"
     },
     "mac": {
       "target": [
