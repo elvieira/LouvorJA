@@ -22,17 +22,17 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-      - name: fetch CNAME from dist branch
+      - name: fetch CNAME from web branch
         run: |
-          git fetch origin dist:dist || echo "Branch dist não encontrada, pulando..."
-          git show dist:CNAME > CNAME || echo "CNAME not found, skipping"
+          git fetch origin web:web || echo "Branch web não encontrada, pulando..."
+          git show web:CNAME > CNAME || echo "CNAME not found, skipping"
       - name: install dependencies
         run: npm ci --ignore-scripts
       - name: build project
         run: npm run build
         env:
           NODE_ENV: production
-          VITE_BASE_URL: /
+          VITE_BASE_URL: ./
       - name: copy CNAME to dist (if exists)
         run: |
           if [ -f CNAME ]; then
@@ -41,12 +41,12 @@ jobs:
       - name: copy index.html to 404.html
         run: |
           cp dist/index.html dist/404.html
-      - name: deploy to dist
+      - name: deploy to web
         run: |
           cd dist
           git init
-          git checkout -b dist  # Cria a branch dist se não existir
+          git checkout -b web  # Cria a branch web se não existir
           git add -A
           git commit -m "🚀 Deploy id ${GITHUB_RUN_ID}"
           git remote add origin "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git"
-          git push -f origin dist  # Faz push forçado para a branch dist
+          git push -f origin web  # Faz push forçado para a branch web
