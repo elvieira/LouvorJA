@@ -31,14 +31,6 @@
       "links": [
         { "icon": "mdi-github", "url": "https://github.com/railsonmonteiro" }
       ]
-    },
-    {
-      "name": "Rafael Dias Zendron",
-      "role": "Desenvolvedor",
-      "avatar": "https://github.com/rafaumeu.png",
-      "links": [
-        { "icon": "mdi-github", "url": "https://github.com/rafaumeu" }
-      ]
     }
   ],
   "collaborators": [
