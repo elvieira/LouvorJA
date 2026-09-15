@@ -28,11 +28,21 @@ jobs:
           git show web:CNAME > CNAME || echo "CNAME not found, skipping"
       - name: install dependencies
         run: npm ci --ignore-scripts
+      - name: Create .env.production
+        run: |
+          echo "VITE_APP_MODE=production" >> .env.production
+          echo "VITE_URL_FILES=${{ secrets.VITE_URL_FILES }}" >> .env.production
+          echo "VITE_URL_DATABASE=${{ secrets.VITE_URL_DATABASE }}" >> .env.production
+          echo "VITE_API_TOKEN=${{ secrets.VITE_API_TOKEN }}" >> .env.production
       - name: build project
         run: npm run build
         env:
           NODE_ENV: production
           VITE_BASE_URL: ./
+          VITE_APP_MODE: production
+          VITE_URL_FILES: ${{ secrets.VITE_URL_FILES }}
+          VITE_URL_DATABASE: ${{ secrets.VITE_URL_DATABASE }}
+          VITE_API_TOKEN: ${{ secrets.VITE_API_TOKEN }}
       - name: copy CNAME to dist (if exists)
         run: |
           if [ -f CNAME ]; then
