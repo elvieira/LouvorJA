@@ -122,14 +122,16 @@ export default defineComponent({
     };
   },
   mounted() {
-    this.statusText = this.$t("first_boot.status.starting");
-    this.$appdata.set("system_first_boot_loading", true);
-
-    if (window.location.href.includes("popup") || window.location.href.includes("stage-monitor")) {
+    const isElectron = typeof window !== "undefined" && !!(window.electronAPI && window.electronAPI.isElectron);
+    if (!isElectron || window.location.href.includes("popup") || window.location.href.includes("stage-monitor")) {
       this.isOpen = false;
       this.$appdata.set("system_first_boot_loading", false);
+      this.$emit("boot-complete");
       return;
     }
+
+    this.statusText = this.$t("first_boot.status.starting");
+    this.$appdata.set("system_first_boot_loading", true);
 
     window.addEventListener("show-boot-screen", this.handleManualShow);
     
@@ -161,7 +163,12 @@ export default defineComponent({
       await this.runFirstBootSync();
     },
     async checkFirstBoot() {
-      if (!window.electronAPI || !window.electronAPI.isElectron) return;
+      if (!window.electronAPI || !window.electronAPI.isElectron) {
+        this.isOpen = false;
+        this.$appdata.set("system_first_boot_loading", false);
+        this.$emit("boot-complete");
+        return;
+      }
       
       this.isOpen = true;
       
