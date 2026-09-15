@@ -60,11 +60,60 @@
           <div v-show="element.type === 'category' || !isItemCollapsed(index)" class="timeline-row">
             <!-- Timeline Node (Dot & Line) -->
             <div v-if="!hideTimeline" class="timeline-node-wrapper">
-              <div class="timeline-node" :class="{ 'timeline-node-category': element.type === 'category' }">
-                <div v-if="element.type !== 'category'" class="timeline-node-inner" :style="{ borderColor: `rgb(var(--v-theme-${getTypeColor(element.type)}))` }" />
-                <v-icon v-else size="12" color="white">
-                  mdi-circle-small
-                </v-icon>
+              <!-- Category Circle: bolinha diferente que identifica o início de categoria (clean) -->
+              <div
+                v-if="element.type === 'category'"
+                class="timeline-node-category"
+                :class="{ 'is-completed': isCategoryComplete(element.id) }"
+              >
+                <v-tooltip
+                  activator="parent"
+                  location="left"
+                  open-delay="200"
+                  content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+                >
+                  {{ element.name }}
+                </v-tooltip>
+              </div>
+
+              <!-- Item Flow Circle: bolinha com estados dinâmicos (concluído, próximo no fluxo, pendente) -->
+              <div
+                v-else
+                class="timeline-node-item"
+                :class="`status-${getItemFlowState(element, index)}`"
+                @click.stop="$emit('select-item', index)"
+              >
+                <!-- 1. Que foi concluído: bolinha verde com check -->
+                <template v-if="getItemFlowState(element, index) === 'done'">
+                  <div class="timeline-circle-done">
+                    <v-icon size="10" color="white">
+                      mdi-check
+                    </v-icon>
+                  </div>
+                </template>
+
+                <!-- 2. Próximo no fluxo: bolinha pulsante na cor do programa (#0097d7) -->
+                <template v-else-if="getItemFlowState(element, index) === 'next'">
+                  <div class="timeline-circle-next">
+                    <div class="timeline-circle-core" />
+                  </div>
+                </template>
+
+                <!-- 3. Não concluído ainda: bolinha sutil vazada -->
+                <template v-else>
+                  <div class="timeline-circle-pending">
+                    <div class="timeline-circle-dot" />
+                  </div>
+                </template>
+
+                <v-tooltip
+                  activator="parent"
+                  location="left"
+                  open-delay="200"
+                  content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+                >
+                  {{ getItemFlowTooltip(element, index) }}
+                </v-tooltip>
               </div>
             </div>
 
@@ -89,6 +138,14 @@
                     <v-icon size="16">
                       {{ collapsedCategories.includes(element.id) ? 'mdi-chevron-right' : 'mdi-chevron-down' }}
                     </v-icon>
+                    <v-tooltip
+                      activator="parent"
+                      location="top"
+                      open-delay="300"
+                      content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+                    >
+                      {{ collapsedCategories.includes(element.id) ? t('liturgy_list.expand_category') : t('liturgy_list.collapse_category') }}
+                    </v-tooltip>
                   </v-btn>
                   <v-icon color="grey" size="18" class="mr-3">
                     mdi-flag-outline
@@ -104,18 +161,7 @@
 
                   <v-spacer />
 
-                  <div class="d-flex align-center category-actions">
-                    <v-btn
-                      v-if="hasPlayableItems(index)"
-                      icon
-                      size="x-small"
-                      variant="text"
-                      @click.stop="playCategory(index)"
-                    >
-                      <v-icon size="18">
-                        mdi-play-outline
-                      </v-icon>
-                    </v-btn>
+                  <div class="d-flex align-center category-actions" style="gap: 4px; flex-shrink: 0;">
                     <v-btn
                       icon
                       size="x-small"
@@ -125,6 +171,14 @@
                       <v-icon size="18">
                         mdi-plus
                       </v-icon>
+                      <v-tooltip
+                        activator="parent"
+                        location="top"
+                        open-delay="300"
+                        content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+                      >
+                        {{ t('actions.add') }}
+                      </v-tooltip>
                     </v-btn>
                     <v-btn
                       icon
@@ -135,6 +189,14 @@
                       <v-icon size="16">
                         mdi-content-copy
                       </v-icon>
+                      <v-tooltip
+                        activator="parent"
+                        location="top"
+                        open-delay="300"
+                        content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+                      >
+                        {{ t('actions.duplicate') }}
+                      </v-tooltip>
                     </v-btn>
                     <v-btn
                       icon
@@ -145,6 +207,14 @@
                       <v-icon size="16">
                         mdi-pencil-outline
                       </v-icon>
+                      <v-tooltip
+                        activator="parent"
+                        location="top"
+                        open-delay="300"
+                        content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+                      >
+                        {{ t('actions.edit') }}
+                      </v-tooltip>
                     </v-btn>
                     <v-btn
                       icon
@@ -155,6 +225,14 @@
                       <v-icon size="16">
                         mdi-trash-can-outline
                       </v-icon>
+                      <v-tooltip
+                        activator="parent"
+                        location="top"
+                        open-delay="300"
+                        content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+                      >
+                        {{ t('actions.delete') }}
+                      </v-tooltip>
                     </v-btn>
                   </div>
                 </div>
@@ -187,6 +265,14 @@
                     <v-icon size="20">
                       {{ element.done ? 'mdi-check-circle' : 'mdi-checkbox-blank-circle-outline' }}
                     </v-icon>
+                    <v-tooltip
+                      activator="parent"
+                      location="top"
+                      open-delay="300"
+                      content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+                    >
+                      {{ element.done ? t('liturgy_list.mark_undone') : t('liturgy_list.mark_done') }}
+                    </v-tooltip>
                   </v-btn>
                   
                   <div class="item-icon-wrapper mr-4">
@@ -233,16 +319,67 @@
                   </div>
 
                   <div class="d-flex align-center item-actions" style="gap: 4px; flex-shrink: 0;">
+                    <!-- Botão Reproduzir: Para música e mídia -->
                     <v-btn
-                      v-if="isExecutable(element)"
+                      v-if="(element.type === 'music' || element.type === 'media') && isExecutable(element)"
                       icon
                       size="x-small"
                       variant="text"
-                      @click.stop="$emit('execute-item', element)"
+                      @click.stop="$emit('execute-item', element, 'play')"
+                    >
+                      <v-icon size="18">
+                        mdi-play-outline
+                      </v-icon>
+                      <v-tooltip
+                        activator="parent"
+                        location="top"
+                        open-delay="300"
+                        content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+                      >
+                        {{ t('actions.play') }}
+                      </v-tooltip>
+                    </v-btn>
+
+                    <!-- Botão Visualizar: Exclusivo para músicas (projeção de letra) -->
+                    <v-btn
+                      v-if="element.type === 'music' && isExecutable(element)"
+                      icon
+                      size="x-small"
+                      variant="text"
+                      @click.stop="$emit('execute-item', element, 'view')"
                     >
                       <v-icon size="18">
                         mdi-eye-outline
                       </v-icon>
+                      <v-tooltip
+                        activator="parent"
+                        location="top"
+                        open-delay="300"
+                        content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+                      >
+                        {{ t('actions.view') }}
+                      </v-tooltip>
+                    </v-btn>
+
+                    <!-- Botão Abrir: Para link, item agendado, texto bíblico e arquivo/diretório -->
+                    <v-btn
+                      v-if="['link', 'scheduled_item', 'verse', 'file'].includes(element.type) && isExecutable(element)"
+                      icon
+                      size="x-small"
+                      variant="text"
+                      @click.stop="$emit('execute-item', element, 'open')"
+                    >
+                      <v-icon size="18">
+                        mdi-open-in-new
+                      </v-icon>
+                      <v-tooltip
+                        activator="parent"
+                        location="top"
+                        open-delay="300"
+                        content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+                      >
+                        {{ t('actions.open') }}
+                      </v-tooltip>
                     </v-btn>
                     <v-btn
                       icon
@@ -253,6 +390,14 @@
                       <v-icon size="16">
                         mdi-content-copy
                       </v-icon>
+                      <v-tooltip
+                        activator="parent"
+                        location="top"
+                        open-delay="300"
+                        content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+                      >
+                        {{ t('actions.duplicate') }}
+                      </v-tooltip>
                     </v-btn>
                     <v-btn
                       icon
@@ -263,6 +408,14 @@
                       <v-icon size="16">
                         mdi-pencil-outline
                       </v-icon>
+                      <v-tooltip
+                        activator="parent"
+                        location="top"
+                        open-delay="300"
+                        content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+                      >
+                        {{ t('actions.edit') }}
+                      </v-tooltip>
                     </v-btn>
                     <v-btn
                       icon
@@ -273,6 +426,14 @@
                       <v-icon size="16">
                         mdi-trash-can-outline
                       </v-icon>
+                      <v-tooltip
+                        activator="parent"
+                        location="top"
+                        open-delay="300"
+                        content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+                      >
+                        {{ t('actions.delete') }}
+                      </v-tooltip>
                     </v-btn>
                   </div>
                 </div>
@@ -450,6 +611,18 @@ export default defineComponent({
       if (item.type === "scheduled_item" && !item.categoryId) return true;
       return false;
     },
+    getItemActionIcon(element: any): string {
+      if (element.type === "music" || element.type === "media") {
+        return "mdi-play-outline";
+      }
+      return "mdi-eye-outline";
+    },
+    getItemActionTooltip(element: any): string {
+      if (element.type === "music" || element.type === "media") {
+        return this.t("actions.play");
+      }
+      return this.t("actions.view");
+    },
     getExecuteIcon(type: string): string {
       if ((type === "media" || type === "scheduled_item") && this.useInternalPlayer) {
         return "mdi-play";
@@ -476,6 +649,51 @@ export default defineComponent({
       };
       return this.t(map[type] || "actions.project");
     },
+    getItemFlowState(element: any, index: number): "done" | "next" | "pending" {
+      if (element.done) {
+        return "done";
+      }
+      if (this.selectedItemIndex === index) {
+        return "next";
+      }
+      const selectedItem = this.selectedItemIndex !== null ? this.items[this.selectedItemIndex] : null;
+      const hasActiveSelectedItem = selectedItem && selectedItem.type !== "category" && !selectedItem.done;
+
+      if (!hasActiveSelectedItem) {
+        const firstPendingIndex = this.items.findIndex(
+          (item) => item && item.type !== "category" && !item.done,
+        );
+        if (firstPendingIndex === index) {
+          return "next";
+        }
+      }
+      return "pending";
+    },
+    getItemFlowTooltip(element: any, index: number): string {
+      const state = this.getItemFlowState(element, index);
+      const name = element.name || "";
+      if (state === "done") {
+        return `${name} (${this.t("liturgy_list.flow_done")})`;
+      }
+      if (state === "next") {
+        const label = this.selectedItemIndex === index
+          ? this.t("liturgy_list.flow_active")
+          : this.t("liturgy_list.flow_next");
+        return `${name} (${label})`;
+      }
+      return `${name} (${this.t("liturgy_list.flow_pending")})`;
+    },
+    isCategoryComplete(categoryId: string): boolean {
+      const catIndex = this.items.findIndex((i) => i.id === categoryId);
+      if (catIndex === -1) return false;
+      let hasItems = false;
+      for (let i = catIndex + 1; i < this.items.length; i++) {
+        if (this.items[i].type === "category") break;
+        hasItems = true;
+        if (!this.items[i].done) return false;
+      }
+      return hasItems;
+    },
   },
 });
 </script>
@@ -492,8 +710,15 @@ export default defineComponent({
     top: 32px;
     bottom: 32px;
     left: 48px;
-    width: 1px;
-    background: rgba(var(--v-theme-on-surface), 0.1);
+    width: 2px;
+    background: linear-gradient(
+      180deg,
+      rgba(var(--v-theme-primary), 0.45) 0%,
+      rgba(var(--v-theme-on-surface), 0.15) 20%,
+      rgba(var(--v-theme-on-surface), 0.15) 80%,
+      rgba(var(--v-theme-primary), 0.35) 100%
+    );
+    border-radius: 1px;
     z-index: 0;
   }
 
@@ -519,32 +744,126 @@ export default defineComponent({
   justify-content: center;
   align-items: center;
   flex-shrink: 0;
+  position: relative;
+  z-index: 2;
 }
 
-.timeline-node {
-  width: 12px;
-  height: 12px;
+/* Bolinha de Categoria (Marco visual clean que identifica o início de uma categoria) */
+.timeline-node-category {
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
-  background: var(--v-theme-surface);
-  border: 2px solid rgba(var(--v-theme-on-surface), 0.2);
+  background: rgb(var(--v-theme-primary));
+  box-shadow: 0 0 0 3px var(--v-theme-surface, #1e212b), 0 0 10px rgba(var(--v-theme-primary), 0.5);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+  cursor: default;
+
+  &:hover {
+    transform: scale(1.2);
+    box-shadow: 0 0 0 3px var(--v-theme-surface, #1e212b), 0 0 14px rgba(var(--v-theme-primary), 0.8);
+  }
+
+  &.is-completed {
+    background: #22c55e;
+    box-shadow: 0 0 0 3px var(--v-theme-surface, #1e212b), 0 0 10px rgba(34, 197, 94, 0.5);
+
+    &:hover {
+      box-shadow: 0 0 0 3px var(--v-theme-surface, #1e212b), 0 0 14px rgba(34, 197, 94, 0.8);
+    }
+  }
+}
+
+/* Bolinhas dos Itens do Fluxo */
+.timeline-node-item {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 2;
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  user-select: none;
 
-  &.timeline-node-category {
-    width: 24px;
-    height: 24px;
-    border: none;
-    background: transparent;
+  // 1. Concluído (que foram feitos)
+  .timeline-circle-done {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #22c55e;
+    border: 2px solid #22c55e;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 8px rgba(34, 197, 94, 0.4);
+    transition: all 0.25s ease;
   }
 
-  .timeline-node-inner {
-    width: 6px;
-    height: 6px;
+  // 2. Próximo no fluxo (na cor do programa #0097d7)
+  .timeline-circle-next {
+    width: 18px;
+    height: 18px;
     border-radius: 50%;
-    border: 2px solid;
-    background: transparent;
+    border: 2px solid rgb(var(--v-theme-primary));
+    background: rgba(var(--v-theme-primary), 0.18);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 10px rgba(var(--v-theme-primary), 0.6);
+    animation: timeline-flow-pulse 2s infinite ease-in-out;
+
+    .timeline-circle-core {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgb(var(--v-theme-primary));
+      box-shadow: 0 0 6px rgb(var(--v-theme-primary));
+    }
+  }
+
+  // 3. Não concluído ainda (pendente / futuro)
+  .timeline-circle-pending {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid rgba(var(--v-theme-on-surface), 0.25);
+    background: var(--v-theme-surface, #1e212b);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.25s ease;
+
+    .timeline-circle-dot {
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: rgba(var(--v-theme-on-surface), 0.35);
+      transition: all 0.25s ease;
+    }
+  }
+
+  &:hover {
+    .timeline-circle-pending {
+      border-color: rgb(var(--v-theme-primary));
+      box-shadow: 0 0 8px rgba(var(--v-theme-primary), 0.4);
+      .timeline-circle-dot {
+        background: rgb(var(--v-theme-primary));
+      }
+    }
+    .timeline-circle-done {
+      transform: scale(1.1);
+      box-shadow: 0 0 12px rgba(34, 197, 94, 0.6);
+    }
+  }
+}
+
+@keyframes timeline-flow-pulse {
+  0%, 100% {
+    box-shadow: 0 0 8px rgba(var(--v-theme-primary), 0.5), 0 0 2px rgba(var(--v-theme-primary), 0.3);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 16px rgba(var(--v-theme-primary), 0.85), 0 0 5px rgba(var(--v-theme-primary), 0.6);
+    transform: scale(1.12);
   }
 }
 

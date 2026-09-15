@@ -894,6 +894,7 @@ export default defineComponent({
     },
     duplicateItem(index: number) {
       const original = this.currentItems[index];
+      if (!original) return;
       
       if (original.type === "category") {
         let endIndex = index + 1;
@@ -901,26 +902,103 @@ export default defineComponent({
           endIndex++;
         }
         
-        const itemsToDuplicate = this.currentItems.slice(index, endIndex);
-        const newItems = itemsToDuplicate.map((item: any) => ({
-          ...JSON.parse(JSON.stringify(item)),
-          id: Date.now() + Math.random(),
-          done: false,
-        }));
-        
-        this.currentItems.splice(endIndex, 0, ...newItems);
-      } else {
-        const newItem = {
+        const itemCount = endIndex - (index + 1);
+        if (itemCount > 0) {
+          this.$alert.show({
+            title: this.t("messages.duplicate_category_title"),
+            text: this.t("messages.duplicate_category_text"),
+            translate: false,
+            buttons: [
+              { text: "modules.liturgy.actions.cancel", color: "white", variant: "tonal", value: "cancel" },
+              { text: "modules.liturgy.messages.duplicate_category_only", color: "warning", variant: "tonal", value: "category_only" },
+              { text: "modules.liturgy.messages.duplicate_category_all", color: "primary", variant: "flat", value: "all" },
+            ],
+          }, (resp: any) => {
+            if (resp === "all") {
+              const itemsToDuplicate = this.currentItems.slice(index, endIndex);
+              const newItems = itemsToDuplicate.map((item: any) => ({
+                ...JSON.parse(JSON.stringify(item)),
+                id: Date.now() + Math.random(),
+                done: false,
+              }));
+              this.currentItems.splice(endIndex, 0, ...newItems);
+              this.saveLiturgy();
+            } else if (resp === "category_only") {
+              const newCategory = {
+                ...JSON.parse(JSON.stringify(original)),
+                id: Date.now() + Math.random(),
+              };
+              this.currentItems.splice(endIndex, 0, newCategory);
+              this.saveLiturgy();
+            }
+          });
+          return;
+        }
+
+        const newCategory = {
           ...JSON.parse(JSON.stringify(original)),
           id: Date.now() + Math.random(),
-          done: false,
         };
-        this.currentItems.splice(index + 1, 0, newItem);
+        this.currentItems.splice(index + 1, 0, newCategory);
+        this.saveLiturgy();
+        return;
       }
-      
+
+      const newItem = {
+        ...JSON.parse(JSON.stringify(original)),
+        id: Date.now() + Math.random(),
+        done: false,
+      };
+      this.currentItems.splice(index + 1, 0, newItem);
       this.saveLiturgy();
     },
     removeItem(index: number) {
+      const original = this.currentItems[index];
+      if (!original) return;
+
+      if (original.type === "category") {
+        let endIndex = index + 1;
+        while (endIndex < this.currentItems.length && this.currentItems[endIndex].type !== "category") {
+          endIndex++;
+        }
+        
+        const itemCount = endIndex - (index + 1);
+        if (itemCount > 0) {
+          this.$alert.show({
+            title: this.t("messages.confirm_delete_category_title"),
+            text: this.t("messages.confirm_delete_category_text"),
+            translate: false,
+            buttons: [
+              { text: "modules.liturgy.actions.cancel", color: "white", variant: "tonal", value: "cancel" },
+              { text: "modules.liturgy.messages.delete_category_only", color: "warning", variant: "tonal", value: "category_only" },
+              { text: "modules.liturgy.messages.delete_category_all", color: "error", variant: "flat", value: "all" },
+            ],
+          }, (resp: any) => {
+            if (resp === "all") {
+              const countToDelete = endIndex - index;
+              this.currentItems.splice(index, countToDelete);
+              if (this.selectedItemIndex !== null) {
+                if (this.selectedItemIndex >= index && this.selectedItemIndex < endIndex) {
+                  this.selectedItemIndex = null;
+                } else if (this.selectedItemIndex >= endIndex) {
+                  this.selectedItemIndex -= countToDelete;
+                }
+              }
+              this.saveLiturgy();
+            } else if (resp === "category_only") {
+              this.currentItems.splice(index, 1);
+              if (this.selectedItemIndex === index) {
+                this.selectedItemIndex = null;
+              } else if (this.selectedItemIndex !== null && this.selectedItemIndex > index) {
+                this.selectedItemIndex--;
+              }
+              this.saveLiturgy();
+            }
+          });
+          return;
+        }
+      }
+
       this.$alert.yesno(
         { text: this.t("messages.confirm_delete"), translate: false },
         (resp: string) => {
@@ -973,8 +1051,8 @@ export default defineComponent({
         this.saveLiturgy();
       }
     },
-    async executeItem(item: any): Promise<void> {
-      if (this.isItemProjecting(item)) {
+    async executeItem(item: any, action: string = "default"): Promise<void> {
+      if (this.isItemProjecting(item) && (action === "default" || action === "view")) {
         this.closeProjection(item.type);
         return;
       }
@@ -983,14 +1061,22 @@ export default defineComponent({
 
       if (item.type === "music") {
         if (item.musicId) {
-          const mode = item.musicMode === "instrumental" ? "instrumental" : "audio";
-          const success = await this.$media.open({ id_music: item.musicId, mode });
-          if (success !== false) {
-            targetModule = "media";
+          if (action === "view") {
+            // Visualizar: Abre a projeção da letra da música sem reproduzir áudio
+            await this.$media.openLyric(item.musicId);
+            targetModule = "lyric";
+          } else {
+            // Reproduzir: Executa áudio no modo configurado
+            const mode = item.musicMode === "instrumental" ? "instrumental" : "audio";
+            const success = await this.$media.open({ id_music: item.musicId, mode });
+            if (success !== false) {
+              targetModule = "media";
+            }
           }
         }
       } else if (item.type === "verse") {
         if (item.verseBookId && item.verseChapter) {
+          (this as any).$modules.open("bible");
           targetModule = "bible";
           this.$nextTick(() => {
             this.$appdata.set("modules.bible.data.navigate", {
@@ -1009,7 +1095,7 @@ export default defineComponent({
           const useInternal = this.$userdata.get("modules.config.media_use_internal_player");
           
           if (useInternal) {
-            if (this.$appdata.get("modules.media.id_music")) {
+            if (this.$appdata.get("modules.media.id_music") && action !== "view") {
               const confirmed = await new Promise((resolve) => {
                 this.$alert.yesno({
                   text: "Uma música está em reprodução no momento. Deseja encerrá-la e reproduzir esta mídia?",
@@ -1020,13 +1106,13 @@ export default defineComponent({
               this.$media.close(true);
             }
 
-            // Reproduz no reprodutor interno (external_media)
+            // Define arquivo de mídia no reprodutor interno (external_media)
             this.$appdata.set("modules.external_media.filePath", item.filePath);
             this.$appdata.set("modules.external_media.title", item.name || "");
             this.$appdata.set("modules.external_media.subtitle", item.subtitle || "");
             this.$appdata.set("modules.external_media.minimized", false);
             this.$appdata.set("modules.external_media.config", {
-              is_paused: true,
+              is_paused: action === "view",
               current_time: 0,
               progress: 0,
               duration: 0,
@@ -1037,11 +1123,11 @@ export default defineComponent({
             const ext = item.filePath.split(".").pop()?.toLowerCase() || "";
             const isAudio = ["mp3", "wav", "flac", "aac", "ogg", "wma", "m4a"].includes(ext);
 
-            if (isAudio) {
+            if (isAudio && action !== "view") {
               // Audio goes straight to footer bar (minimized)
               this.$appdata.set("modules.external_media.minimized", true);
             } else {
-              // Video opens the full module
+              // Video (ou Visualizar) opens the full module
               this.$appdata.set("modules.external_media.show", true);
               targetModule = "external_media";
             }
@@ -1096,7 +1182,7 @@ export default defineComponent({
           subtitle: category.name,
         };
         
-        return this.executeItem(mediaItem);
+        return this.executeItem(mediaItem, action);
       }
 
       if (targetModule) {
@@ -1201,13 +1287,13 @@ export default defineComponent({
       const currentModule = this.$appdata.get("popup_module");
       if (!currentModule) return false;
       
-      if (item.type === "lyric" && currentModule === "lyric") {
-        return this.$appdata.get("modules.lyric.id_music") === item.id_music && this.$appdata.get("modules.lyric.show") === true;
+      if ((item.type === "music" || item.type === "lyric") && (currentModule === "lyric" || currentModule === "media")) {
+        return (this.$appdata.get("modules.lyric.id_music") === item.musicId || this.$appdata.get("modules.media.id_music") === item.musicId) && 
+          (this.$appdata.get("modules.lyric.show") === true || this.$appdata.get("modules.media.show") === true);
       }
-      if (item.type === "bible" && currentModule === "bible") {
-        return this.$appdata.get("modules.bible.id_bible_book") === item.id_bible_book && 
-          this.$appdata.get("modules.bible.chapter") === item.chapter && 
-          JSON.stringify(this.$appdata.get("modules.bible.verses")) === JSON.stringify(item.verses) &&
+      if ((item.type === "verse" || item.type === "bible") && currentModule === "bible") {
+        return this.$appdata.get("modules.bible.id_bible_book") === item.verseBookId && 
+          this.$appdata.get("modules.bible.chapter") === item.verseChapter && 
           this.$appdata.get("modules.bible.show") === true;
       }
       if (item.type === "media" && currentModule === "external_media") {
@@ -1217,9 +1303,10 @@ export default defineComponent({
       return false;
     },
     closeProjection(type: string) {
-      if (type === "lyric") {
+      if (type === "music" || type === "lyric") {
         this.$appdata.set("modules.lyric.show", false);
-      } else if (type === "bible") {
+        this.$appdata.set("modules.media.show", false);
+      } else if (type === "verse" || type === "bible") {
         this.$appdata.set("modules.bible.show", false);
       } else if (type === "media") {
         this.$appdata.set("modules.external_media.show", false);

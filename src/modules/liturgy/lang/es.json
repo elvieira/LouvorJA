@@ -70,7 +70,8 @@
     "play": "Reproducir",
     "open": "Abrir",
     "new_liturgy": "Nueva Liturgia",
-    "change": "Cambiar"
+    "change": "Cambiar",
+    "view": "Visualizar"
   },
   "messages": {
     "confirm_delete": "¿Desea eliminar este elemento de la liturgia?",
@@ -82,7 +83,15 @@
     "chapter_not_found": "Capítulo no encontrado",
     "select_book_first": "Seleccione el libro primero",
     "invalid_verse": "El capítulo tiene sólo {max} versículos. El versículo {num} no existe.",
-    "playback_unavailable": "Playback no disponible para esta música"
+    "playback_unavailable": "Playback no disponible para esta música",
+    "confirm_delete_category_title": "Eliminar Categoría",
+    "confirm_delete_category_text": "¿Desea eliminar también todos los elementos dentro de esta categoría?",
+    "delete_category_only": "Solo Categoría",
+    "delete_category_all": "Eliminar Todo",
+    "duplicate_category_title": "Duplicar Categoría",
+    "duplicate_category_text": "¿Desea duplicar también todos los elementos dentro de esta categoría?",
+    "duplicate_category_only": "Solo Categoría",
+    "duplicate_category_all": "Duplicar Todo"
   },
   "custom_liturgy": {
     "title": "Liturgias Personalizadas",
@@ -142,7 +151,17 @@
   "liturgy_list": {
     "placeholder": "A COMPLETAR",
     "placeholder_hint": "Haga clic para editar y seleccionar el archivo",
-    "items_count": "{count} elementos"
+    "items_count": "{count} elementos",
+    "mark_done": "Marcar como completado",
+    "mark_undone": "Desmarcar como completado",
+    "expand_category": "Expandir categoría",
+    "collapse_category": "Contraer categoría",
+    "show_notes": "Mostrar notas",
+    "hide_notes": "Ocultar notas",
+    "flow_done": "Completado",
+    "flow_next": "Siguiente en el flujo",
+    "flow_active": "En ejecución",
+    "flow_pending": "Aún no completado"
   },
   "add_item_dialog": {
     "step1_subtitle": "Seleccione el tipo de elemento para agregar a la liturgia",

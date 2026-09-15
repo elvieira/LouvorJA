@@ -325,17 +325,110 @@ export default defineComponent({
     },
     duplicateItem(index: number) {
       if (!this.selectedTemplate) return;
-      const item = this.selectedTemplate.items[index];
-      if (!item) return;
-      const duplicated = JSON.parse(JSON.stringify(item));
+      const original = this.selectedTemplate.items[index];
+      if (!original) return;
+
+      if (original.type === "category") {
+        let endIndex = index + 1;
+        while (endIndex < this.selectedTemplate.items.length && this.selectedTemplate.items[endIndex].type !== "category") {
+          endIndex++;
+        }
+        const itemCount = endIndex - (index + 1);
+
+        if (itemCount > 0) {
+          this.$alert.show({
+            title: this.t("messages.duplicate_category_title"),
+            text: this.t("messages.duplicate_category_text"),
+            translate: false,
+            buttons: [
+              { text: "modules.liturgy.actions.cancel", color: "white", variant: "tonal", value: "cancel" },
+              { text: "modules.liturgy.messages.duplicate_category_only", color: "warning", variant: "tonal", value: "category_only" },
+              { text: "modules.liturgy.messages.duplicate_category_all", color: "primary", variant: "flat", value: "all" },
+            ],
+          }, (resp: any) => {
+            if (resp === "all") {
+              const itemsToDuplicate = this.selectedTemplate!.items.slice(index, endIndex);
+              const newItems = itemsToDuplicate.map((item: any) => ({
+                ...JSON.parse(JSON.stringify(item)),
+                id: crypto.randomUUID(),
+                done: false,
+              }));
+              const list = [...this.selectedTemplate!.items];
+              list.splice(endIndex, 0, ...newItems);
+              this.currentTemplateItems = list;
+              this.saveTemplatesData();
+            } else if (resp === "category_only") {
+              const newCategory = {
+                ...JSON.parse(JSON.stringify(original)),
+                id: crypto.randomUUID(),
+              };
+              const list = [...this.selectedTemplate!.items];
+              list.splice(endIndex, 0, newCategory);
+              this.currentTemplateItems = list;
+              this.saveTemplatesData();
+            }
+          });
+          return;
+        }
+
+        const newCategory = {
+          ...JSON.parse(JSON.stringify(original)),
+          id: crypto.randomUUID(),
+        };
+        const list = [...this.selectedTemplate.items];
+        list.splice(index + 1, 0, newCategory);
+        this.currentTemplateItems = list;
+        this.saveTemplatesData();
+        return;
+      }
+
+      const duplicated = JSON.parse(JSON.stringify(original));
       duplicated.id = crypto.randomUUID();
-      
       const newItems = [...this.selectedTemplate.items];
       newItems.splice(index + 1, 0, duplicated);
       this.currentTemplateItems = newItems;
+      this.saveTemplatesData();
     },
     removeItem(index: number) {
       if (!this.selectedTemplate) return;
+      const original = this.selectedTemplate.items[index];
+      if (!original) return;
+
+      if (original.type === "category") {
+        let endIndex = index + 1;
+        while (endIndex < this.selectedTemplate.items.length && this.selectedTemplate.items[endIndex].type !== "category") {
+          endIndex++;
+        }
+        const itemCount = endIndex - (index + 1);
+
+        if (itemCount > 0) {
+          this.$alert.show({
+            title: this.t("messages.confirm_delete_category_title"),
+            text: this.t("messages.confirm_delete_category_text"),
+            translate: false,
+            buttons: [
+              { text: "modules.liturgy.actions.cancel", color: "white", variant: "tonal", value: "cancel" },
+              { text: "modules.liturgy.messages.delete_category_only", color: "warning", variant: "tonal", value: "category_only" },
+              { text: "modules.liturgy.messages.delete_category_all", color: "error", variant: "flat", value: "all" },
+            ],
+          }, (resp: any) => {
+            if (resp === "all") {
+              const countToDelete = endIndex - index;
+              const list = [...this.selectedTemplate!.items];
+              list.splice(index, countToDelete);
+              this.currentTemplateItems = list;
+              this.saveTemplatesData();
+            } else if (resp === "category_only") {
+              const list = [...this.selectedTemplate!.items];
+              list.splice(index, 1);
+              this.currentTemplateItems = list;
+              this.saveTemplatesData();
+            }
+          });
+          return;
+        }
+      }
+
       this.$alert.yesno({
         text: this.t("messages.confirm_delete"),
         translate: false,
@@ -344,6 +437,7 @@ export default defineComponent({
           const newItems = [...this.selectedTemplate!.items];
           newItems.splice(index, 1);
           this.currentTemplateItems = newItems;
+          this.saveTemplatesData();
         }
       });
     },

@@ -63,14 +63,15 @@
     "cancel": "Cancelar",
     "add": "Adicionar",
     "edit": "Editar",
-    "delete": "Remover",
+    "delete": "Excluir",
     "duplicate": "Duplicar",
     "clear_all": "Limpar Tudo",
     "project": "Projetar",
     "play": "Reproduzir",
     "open": "Abrir",
     "new_liturgy": "Nova Liturgia",
-    "change": "Trocar"
+    "change": "Trocar",
+    "view": "Visualizar"
   },
   "messages": {
     "confirm_delete": "Deseja remover este item da liturgia?",
@@ -82,7 +83,15 @@
     "chapter_not_found": "Capítulo não encontrado",
     "select_book_first": "Selecione o livro primeiro",
     "invalid_verse": "O capítulo possui apenas {max} versículos. O versículo {num} não existe.",
-    "playback_unavailable": "Playback não disponível para esta música"
+    "playback_unavailable": "Playback não disponível para esta música",
+    "confirm_delete_category_title": "Excluir Categoria",
+    "confirm_delete_category_text": "Deseja excluir também todos os itens dentro desta categoria?",
+    "delete_category_only": "Apenas Categoria",
+    "delete_category_all": "Excluir Tudo",
+    "duplicate_category_title": "Duplicar Categoria",
+    "duplicate_category_text": "Deseja duplicar também todos os itens dentro desta categoria?",
+    "duplicate_category_only": "Apenas Categoria",
+    "duplicate_category_all": "Duplicar Tudo"
   },
   "custom_liturgy": {
     "title": "Liturgias Avulsas",
@@ -142,7 +151,17 @@
   "liturgy_list": {
     "placeholder": "A PREENCHER",
     "placeholder_hint": "Clique para editar e selecionar o arquivo",
-    "items_count": "{count} itens"
+    "items_count": "{count} itens",
+    "mark_done": "Marcar como concluído",
+    "mark_undone": "Desmarcar como concluído",
+    "expand_category": "Expandir categoria",
+    "collapse_category": "Recolher categoria",
+    "show_notes": "Mostrar Anotações",
+    "hide_notes": "Ocultar Anotações",
+    "flow_done": "Concluído",
+    "flow_next": "Próximo no fluxo",
+    "flow_active": "Em execução",
+    "flow_pending": "Não concluído ainda"
   },
   "add_item_dialog": {
     "step1_subtitle": "Selecione o tipo de item para adicionar à liturgia",
