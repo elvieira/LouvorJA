@@ -40,6 +40,13 @@ export function setupLifecycle(): void {
         if (process.platform === "win32" && filePath.match(/^\/[a-zA-Z]:\//)) {
           filePath = filePath.slice(1);
         }
+        if (fs.existsSync(filePath)) {
+          try {
+            filePath = fs.realpathSync(filePath);
+          } catch (e) {
+            console.warn("Erro ao resolver caminho real:", e);
+          }
+        }
         return callback({ path: filePath });
       }
 

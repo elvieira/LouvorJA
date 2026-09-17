@@ -12,7 +12,7 @@
         :style="{
           overflow: 'hidden',
           backgroundColor: no_background ? 'transparent' : 'rgb(0,0,0)',
-          zIndex: index + 1
+          isolation: 'isolate',
         }"
       >
         <div v-if="!no_background" class="position-absolute top-0 left-0 w-100 h-100" :style="style_bg(slide)" />
@@ -89,41 +89,6 @@
         :style="measureItemStyle(item)"
       >
         <div v-html="getMeasureText(item)" />
-      </div>
-
-      <!-- Elemento de medição específico para o título da música em linha única -->
-      <span
-        v-if="props_slide.cover && props_slide.text"
-        ref="coverSingleLineMeasureEl"
-        :style="style_cover_title_measure_single"
-        v-html="props_slide.text"
-      />
-
-      <!-- Elemento de medição específico para o título da música (Cover) -->
-      <div
-        v-if="props_slide.cover && props_slide.text"
-        ref="coverMeasureEl"
-        :style="coverMeasureContainerStyle"
-      >
-        <div
-          ref="coverMeasureTextEl"
-          :style="style_cover_title_measure_multi"
-          v-html="props_slide.text"
-        />
-      </div>
-
-      <!-- Elemento de medição para a aba de subtítulo do cover -->
-      <div
-        v-if="props_slide.cover && props_slide.aux_text"
-        ref="subtitleMeasureEl"
-        class="cover-subtitle-tab d-inline-flex align-center justify-center"
-        :style="style_cover_subtitle(props_slide)"
-      >
-        <span class="subtitle-whisker" :style="style_subtitle_whisker" />
-        <span class="subtitle-text" :style="style_subtitle_text">
-          {{ formatCoverSubtitle(props_slide.aux_text) }}
-        </span>
-        <span class="subtitle-whisker" :style="style_subtitle_whisker" />
       </div>
     </div>
     <!-- eslint-enable vue/no-v-html -->
@@ -277,14 +242,6 @@ const setSlide = () => {
     active: true,
   };
 
-  if (slides.value.length > 2) {
-    setTimeout(() => {
-      if (slides.value && slides.value.length > 2) {
-        slides.value[2].destroy = true;
-      }
-    }, 250);
-  }
-
   if (slides.value.length > 3) {
     slides.value[3].destroy = true;
   }
@@ -323,14 +280,11 @@ const style_bg = (slide: any) => {
 
 const style_cover_container = (_slide: any): any => {
   const isBgRemoved = customBg.value && removeTextBg.value;
-  const widthStyle = calculatedCoverWidth.value && calculatedCoverWidth.value > 0
-    ? `${calculatedCoverWidth.value}px`
-    : "max-content";
 
   if (isBgRemoved) {
     return {
-      width: widthStyle,
-      maxWidth: "100%",
+      width: "fit-content",
+      maxWidth: "90%",
       boxSizing: "border-box" as const,
       padding: `${fontSizePc(4)}px ${fontSizePc(6)}px`,
       backgroundColor: "transparent",
@@ -351,12 +305,11 @@ const style_cover_container = (_slide: any): any => {
     : "none";
 
   return {
-    position: "relative" as const,
-    width: widthStyle,
-    maxWidth: "100%",
+    width: "fit-content",
+    maxWidth: "90%",
     boxSizing: "border-box" as const,
     padding: `${fontSizePc(4)}px ${fontSizePc(8)}px`,
-    borderRadius: `${Math.max(4, Math.round(fontSizePc(4.5)))}px`,
+    borderRadius: `${Math.max(16, fontSizePc(4))}px`,
     backgroundColor: hasTextBg ? bgColor : "transparent",
     border: borderStyle,
     backdropFilter: hasTextBg ? "blur(16px)" : "none",
@@ -462,13 +415,6 @@ const style_cover_subtitle = (_slide: any): any => {
   };
 };
 
-const hasExplicitLineBreak = (text: string): boolean => {
-  if (!text) return false;
-  return /<br\s*\/?>/i.test(text) || text.includes("\n");
-};
-
-const shouldWrapTitle = ref(false);
-
 const style_cover_title = (_slide: any): any => {
   const baseColor = "#f6c32a";
   const baseSize = customTextFormat.value ? (21 * customFontSize.value) / 100 : 21;
@@ -486,9 +432,10 @@ const style_cover_title = (_slide: any): any => {
     lineHeight: "1.15",
     margin: "0",
     padding: "0",
-    whiteSpace: shouldWrapTitle.value ? ("normal" as const) : ("nowrap" as const),
+    whiteSpace: "normal" as const,
     overflowWrap: "break-word" as const,
     wordBreak: "normal" as const,
+    textWrap: "balance" as const,
     textShadow: "0 4px 20px rgba(0, 0, 0, 0.8), 0 2px 6px rgba(0, 0, 0, 0.6)",
   };
 };
@@ -557,129 +504,7 @@ const measureItemStyle = (_item: any): any => {
   };
 };
 
-const coverMeasureTextEl = ref<HTMLElement | null>(null);
-const coverSingleLineMeasureEl = ref<HTMLElement | null>(null);
-const subtitleMeasureEl = ref<HTMLElement | null>(null);
-const calculatedCoverWidth = ref<number | null>(null);
 
-const style_cover_title_measure_single = computed(() => {
-  const baseSize = customTextFormat.value ? (21 * customFontSize.value) / 100 : 21;
-  const fontWeight = customFontWeight.value ? customFontWeight.value : "900";
-  return {
-    display: "inline-block",
-    fontSize: `${fontSizePc(baseSize)}px`,
-    fontWeight,
-    textTransform: "uppercase" as const,
-    letterSpacing: "0.01em",
-    whiteSpace: "nowrap" as const,
-    lineHeight: "1.15",
-    padding: "0",
-    margin: "0",
-    boxSizing: "border-box" as const,
-  };
-});
-
-const style_cover_title_measure_multi = computed(() => {
-  const baseSize = customTextFormat.value ? (21 * customFontSize.value) / 100 : 21;
-  const fontWeight = customFontWeight.value ? customFontWeight.value : "900";
-  return {
-    width: "100%",
-    maxWidth: "100%",
-    boxSizing: "border-box" as const,
-    fontSize: `${fontSizePc(baseSize)}px`,
-    fontWeight,
-    textTransform: "uppercase" as const,
-    letterSpacing: "0.01em",
-    textAlign: "center" as const,
-    lineHeight: "1.15",
-    margin: "0",
-    padding: "0",
-    whiteSpace: "normal" as const,
-    overflowWrap: "break-word" as const,
-    wordBreak: "normal" as const,
-  };
-});
-
-const coverMeasureContainerStyle = computed(() => {
-  const refW = props.reference_size?.width && props.reference_size.width > 0
-    ? props.reference_size.width
-    : width.value;
-  const maxAvailable = refW > 0 ? Math.floor(refW * 0.9) : 900;
-  const paddingH = fontSizePc(8) * 2;
-  return {
-    display: "block",
-    boxSizing: "border-box" as const,
-    maxWidth: `${Math.max(100, maxAvailable - paddingH)}px`,
-    width: "max-content",
-    visibility: "hidden" as const,
-  };
-});
-
-const calculateCoverWidth = () => {
-  if (!props_slide.value.cover || !props_slide.value.text) {
-    calculatedCoverWidth.value = null;
-    shouldWrapTitle.value = false;
-    return;
-  }
-
-  const refW = props.reference_size?.width && props.reference_size.width > 0
-    ? props.reference_size.width
-    : width.value;
-  if (refW <= 0) {
-    return;
-  }
-
-  const maxAvailable = Math.floor(refW * 0.9);
-  const paddingH = fontSizePc(8) * 2;
-  const hasBr = hasExplicitLineBreak(props_slide.value.text);
-
-  let subtitleW = 0;
-  if (subtitleMeasureEl.value && typeof subtitleMeasureEl.value.getBoundingClientRect === "function") {
-    subtitleW = subtitleMeasureEl.value.getBoundingClientRect().width;
-  }
-
-  let singleLineW = 0;
-  if (coverSingleLineMeasureEl.value && typeof coverSingleLineMeasureEl.value.getBoundingClientRect === "function") {
-    singleLineW = coverSingleLineMeasureEl.value.getBoundingClientRect().width;
-  }
-
-  const singleLineNeeded = Math.ceil(singleLineW + paddingH + 8);
-
-  // Se não houver <br> e couber em uma linha só, não quebra
-  if (!hasBr && singleLineW > 0 && singleLineNeeded <= maxAvailable) {
-    shouldWrapTitle.value = false;
-    const finalWidth = Math.max(singleLineNeeded, Math.ceil(subtitleW + fontSizePc(4)));
-    calculatedCoverWidth.value = Math.min(finalWidth, maxAvailable);
-    return;
-  }
-
-  // Título longo ou com <br> explícito: precisa quebrar linha
-  shouldWrapTitle.value = true;
-
-  if (coverMeasureTextEl.value) {
-    const range = document.createRange();
-    range.selectNodeContents(coverMeasureTextEl.value);
-    const rects = range.getClientRects();
-
-    if (rects.length > 0) {
-      let maxLineW = 0;
-      for (let i = 0; i < rects.length; i++) {
-        if (rects[i].width > maxLineW) {
-          maxLineW = rects[i].width;
-        }
-      }
-
-      if (maxLineW > 0) {
-        const neededWidth = Math.ceil(maxLineW + paddingH + 8);
-        const finalWidth = Math.max(neededWidth, Math.ceil(subtitleW + fontSizePc(4)));
-        calculatedCoverWidth.value = Math.min(finalWidth, maxAvailable);
-        return;
-      }
-    }
-  }
-
-  calculatedCoverWidth.value = null;
-};
 
 const measureItems = ref<any[]>([]);
 const fixedCardWidth = ref(0);
@@ -810,9 +635,6 @@ const style_text = (_slide: any): any => {
   };
 };
 
-let resizeTimer: any = null;
-let animationCheckTimer: any = null;
-
 const windowResize = () => {
   if (container.value) {
     const newW = container.value.offsetWidth;
@@ -829,41 +651,14 @@ const windowResize = () => {
     height.value = newH;
 
     nextTick(() => {
-      calculateCoverWidth();
       calculateMaxCardSize();
     });
-
-    if (resizeTimer) clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(() => {
-      if (container.value) {
-        width.value = container.value.offsetWidth;
-        height.value = container.value.offsetHeight;
-      }
-      nextTick(() => {
-        calculateCoverWidth();
-        calculateMaxCardSize();
-      });
-    }, 150);
-
-    if (animationCheckTimer) clearTimeout(animationCheckTimer);
-    animationCheckTimer = setTimeout(() => {
-      if (container.value) {
-        width.value = container.value.offsetWidth;
-        height.value = container.value.offsetHeight;
-      }
-      nextTick(() => {
-        calculateCoverWidth();
-        calculateMaxCardSize();
-      });
-    }, 350);
   }
 };
 
 watch(props_slide, () => {
-  shouldWrapTitle.value = hasExplicitLineBreak(props_slide.value.text || "");
   setSlide();
   nextTick(() => {
-    calculateCoverWidth();
     if (fixedCardWidth.value === 0) {
       calculateMaxCardSize();
     }
@@ -872,7 +667,6 @@ watch(props_slide, () => {
 
 watch(slidesToMeasure, () => {
   nextTick(() => {
-    calculateCoverWidth();
     calculateMaxCardSize();
   });
 }, { deep: true, immediate: true });
@@ -880,7 +674,6 @@ watch(slidesToMeasure, () => {
 watch([width, height], ([newW, newH], [oldW, oldH]) => {
   if (newW > 0 && newH > 0 && (newW !== oldW || newH !== oldH)) {
     nextTick(() => {
-      calculateCoverWidth();
       calculateMaxCardSize();
     });
   }
@@ -893,12 +686,6 @@ watch(
       nextTick(() => {
         windowResize();
       });
-      setTimeout(() => {
-        windowResize();
-      }, 150);
-      setTimeout(() => {
-        windowResize();
-      }, 350);
     }
   },
 );
@@ -920,18 +707,11 @@ onMounted(() => {
   }
 
   setTimeout(() => {
-    calculateCoverWidth();
     calculateMaxCardSize();
   }, 120);
-  setTimeout(() => {
-    calculateCoverWidth();
-    calculateMaxCardSize();
-  }, 350);
 });
 
 onUnmounted(() => {
-  if (resizeTimer) clearTimeout(resizeTimer);
-  if (animationCheckTimer) clearTimeout(animationCheckTimer);
   window.removeEventListener("resize", windowResize);
   window.removeEventListener("storage", updateSettings);
   if (resizeObserver) {

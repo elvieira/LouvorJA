@@ -1439,6 +1439,7 @@ export default defineComponent({
         categories: [],
         duration: "0:00",
         instrumental_duration: "0:00",
+        has_instrumental_music: !!data.instrumentalPath,
       };
 
       const playMode = mode === "instrumental" ? "instrumental" : mode === "no_audio" ? "no_audio" : "audio";

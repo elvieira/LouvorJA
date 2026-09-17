@@ -84,8 +84,8 @@ function parseSljaIni(text: string): { geral: Record<string, string>; slides: Re
     if (currentSection === null) return;
     const eqIdx = line.indexOf("=");
     if (eqIdx === -1) return;
-    const key = line.slice(0, eqIdx);
-    const value = line.slice(eqIdx + 1);
+    const key = line.slice(0, eqIdx).trim().toLowerCase();
+    const value = line.slice(eqIdx + 1).trim();
     if (currentSection === "geral") {
       geral[key] = value;
     } else {
@@ -227,7 +227,8 @@ export function registerIpcHandlers() {
     try {
       const tempDir = path.join(app.getPath("temp"), "louvorja-slja");
       await fs.ensureDir(tempDir);
-      const safeName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${path.basename(suggestedName)}`;
+      const baseName = path.basename((suggestedName || "").replace(/\\/g, "/"));
+      const safeName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${baseName}`;
       const filePath = path.join(tempDir, safeName);
       await fs.writeFile(filePath, Buffer.from(base64, "base64"));
       return filePath;
@@ -329,19 +330,44 @@ export function registerIpcHandlers() {
       tempDir = path.join(app.getPath("temp"), "louvorja-slja");
       await fs.ensureDir(tempDir);
 
-      const extractEntry = (relPath: string): string | null => {
-        if (!isZip || !relPath) return null;
-        const normalized = relPath.replace(/\\/g, "/").toLowerCase();
-        const entry = entries.find((e) => e.entryName.replace(/\\/g, "/").toLowerCase() === normalized);
-        if (!entry) return null;
-        const safeName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${path.basename(relPath)}`;
-        const outPath = path.join(tempDir, safeName);
-        fs.writeFileSync(outPath, entry.getData());
-        return outPath;
+      // Limpeza preventiva de arquivos temporários com mais de 24 horas
+      try {
+        const now = Date.now();
+        const existingFiles = await fs.readdir(tempDir);
+        for (const file of existingFiles) {
+          const filePathFull = path.join(tempDir, file);
+          const stat = await fs.stat(filePathFull);
+          if (now - stat.mtimeMs > 24 * 60 * 60 * 1000) {
+            await fs.remove(filePathFull);
+          }
+        }
+      } catch (err) {
+        console.warn("Erro ao limpar temporários do .slja:", err);
+      }
+
+      const resolveMediaEntry = (relPath: string): string | null => {
+        if (!relPath) return null;
+        if (isZip) {
+          const cleanRel = relPath.replace(/\\/g, "/").replace(/^\/+/, "").toLowerCase();
+          const entry = entries.find((e) => e.entryName.replace(/\\/g, "/").replace(/^\/+/, "").toLowerCase() === cleanRel);
+          if (entry) {
+            const baseName = path.basename(relPath.replace(/\\/g, "/"));
+            const safeName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${baseName}`;
+            const outPath = path.join(tempDir, safeName);
+            fs.writeFileSync(outPath, entry.getData());
+            return outPath;
+          }
+        }
+        // Fallback para arquivos .lja não-zipados ou caminhos relativos ao arquivo .slja/.lja
+        const baseDir = path.dirname(filePath);
+        const candidate1 = path.join(baseDir, relPath.replace(/\\/g, "/"));
+        if (fs.existsSync(candidate1)) return candidate1;
+        if (fs.existsSync(relPath)) return relPath;
+        return null;
       };
 
-      const audioPath = extractEntry(geral.url_musica || "");
-      const instrumentalPath = extractEntry(geral.url_musica_instrumental || "");
+      const audioPath = resolveMediaEntry(geral.url_musica || "");
+      const instrumentalPath = resolveMediaEntry(geral.url_musica_instrumental || "");
 
       const imagePathByRel = new Map<string, string | null>();
       const resolvedSlides = slides.map((s) => {
@@ -351,7 +377,7 @@ export function registerIpcHandlers() {
           if (imagePathByRel.has(imgRel)) {
             imagePath = imagePathByRel.get(imgRel) as string | null;
           } else {
-            imagePath = extractEntry(imgRel);
+            imagePath = resolveMediaEntry(imgRel);
             imagePathByRel.set(imgRel, imagePath);
           }
         }
