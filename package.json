@@ -96,9 +96,7 @@
       "resources/**"
     ],
     "publish": {
-      "provider": "github",
-      "owner": "louvorja",
-      "repo": "flute-app"
+      "provider": "github"
     },
     "mac": {
       "target": [

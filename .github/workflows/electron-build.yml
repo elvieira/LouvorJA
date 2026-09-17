@@ -59,7 +59,10 @@ jobs:
       - name: Build Vite
         run: npx vite build --base=./
 
+      - name: Configure Publish Repository for CI
+        run: node -e "const p=require('./package.json'); p.build.publish={provider:'github',owner:'${{ github.repository_owner }}',repo:'${{ github.event.repository.name || 'LouvorJA' }}'}; require('fs').writeFileSync('./package.json',JSON.stringify(p,null,2))"
+
       - name: Build Electron
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx electron-builder --${{ matrix.platform }} --publish always -c.publish.provider=github -c.publish.owner=${{ github.repository_owner }} -c.publish.repo=${{ github.event.repository.name }}
+        run: npx electron-builder --${{ matrix.platform }} --publish always
