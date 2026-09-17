@@ -1285,9 +1285,6 @@ export default defineComponent({
           
           if (selectedMonitors.length > 0) {
             await (this as any).$popup.syncMonitors(selectedMonitors, targetModule, true);
-          } else if (targetModule !== "external_media") {
-            const fullscreen = this.$userdata.get("modules.config.slide_fullscreen") !== false;
-            await (this as any).$popup.open({ module: targetModule, fullscreen });
           }
         }
       }
