@@ -66,6 +66,7 @@
     "delete": "Excluir",
     "duplicate": "Duplicar",
     "clear_all": "Limpar Tudo",
+    "reset_checks": "Desmarcar Todos",
     "project": "Projetar",
     "play": "Reproduzir",
     "open": "Abrir",
@@ -76,6 +77,7 @@
   "messages": {
     "confirm_delete": "Deseja remover este item da liturgia?",
     "confirm_clear": "Deseja limpar todos os itens desta liturgia?",
+    "confirm_reset_checks": "Deseja desmarcar todos os itens desta liturgia?",
     "item_added": "Item adicionado com sucesso!",
     "liturgy_saved": "Liturgia salva com sucesso!",
     "music_not_found": "Música não encontrada",

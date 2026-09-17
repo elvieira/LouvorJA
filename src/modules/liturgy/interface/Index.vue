@@ -120,6 +120,7 @@
             @toggle-done="toggleItemDone"
             @execute-item="executeItem"
             @clear-all="confirmClearAll"
+            @reset-checks="confirmResetDoneItems"
             @add-item="openAddMenu"
             @add-item-to-category="openAddMenuWithCategory"
             @drag-end="saveLiturgy"
@@ -588,6 +589,43 @@ export default defineComponent({
       const dayMap = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
       this.selectedDay = dayMap[new Date().getDay()];
     },
+    getTodayDateString(): string {
+      const d = new Date();
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    },
+    cleanExpiredDoneItems(): boolean {
+      const today = this.getTodayDateString();
+      let hadReset = false;
+
+      const resetItem = (item: any) => {
+        if (item && item.done) {
+          if (item.doneDate !== today) {
+            item.done = false;
+            item.doneDate = null;
+            hadReset = true;
+          }
+        }
+      };
+
+      for (const day in this.liturgies) {
+        if (Array.isArray(this.liturgies[day])) {
+          this.liturgies[day].forEach(resetItem);
+        }
+      }
+
+      if (Array.isArray(this.customLiturgies)) {
+        this.customLiturgies.forEach((custom: any) => {
+          if (Array.isArray(custom.items)) {
+            custom.items.forEach(resetItem);
+          }
+        });
+      }
+
+      return hadReset;
+    },
     async importLiturgy() {
       const electronAPI = (window as any).electronAPI;
       let content: string | null = null;
@@ -743,6 +781,9 @@ export default defineComponent({
     },
     onDayChange() {
       this.selectedItemIndex = null;
+      if (this.cleanExpiredDoneItems()) {
+        this.saveLiturgy();
+      }
     },
 
     // CUSTOM LITURGY
@@ -844,6 +885,8 @@ export default defineComponent({
           const newItems = template.items.map((i: any) => {
             const newItem = JSON.parse(JSON.stringify(i));
             newItem.id = crypto.randomUUID();
+            newItem.done = false;
+            newItem.doneDate = null;
             return newItem;
           });
           this.currentItems = newItems;
@@ -920,6 +963,7 @@ export default defineComponent({
                 ...JSON.parse(JSON.stringify(item)),
                 id: Date.now() + Math.random(),
                 done: false,
+                doneDate: null,
               }));
               this.currentItems.splice(endIndex, 0, ...newItems);
               this.saveLiturgy();
@@ -948,6 +992,7 @@ export default defineComponent({
         ...JSON.parse(JSON.stringify(original)),
         id: Date.now() + Math.random(),
         done: false,
+        doneDate: null,
       };
       this.currentItems.splice(index + 1, 0, newItem);
       this.saveLiturgy();
@@ -1013,8 +1058,31 @@ export default defineComponent({
     },
     toggleItemDone(index: number) {
       const item = this.currentItems[index];
+      if (!item) return;
       item.done = !item.done;
+      item.doneDate = item.done ? this.getTodayDateString() : null;
       this.saveLiturgy();
+    },
+    confirmResetDoneItems() {
+      this.$alert.yesno(
+        { text: this.t("messages.confirm_reset_checks"), translate: false },
+        (resp: string) => {
+          if (resp === "yes") {
+            let changed = false;
+            this.currentItems.forEach((item: any) => {
+              if (item && item.done) {
+                item.done = false;
+                item.doneDate = null;
+                changed = true;
+              }
+            });
+            if (changed) {
+              this.selectedItemIndex = null;
+              this.saveLiturgy();
+            }
+          }
+        },
+      );
     },
     confirmClearAll() {
       this.$alert.yesno(
@@ -1031,6 +1099,7 @@ export default defineComponent({
     selectItem(index: number) {
       this.selectedItemIndex = index;
       const item = this.currentItems[index];
+      if (!item) return;
 
       if (this.isItemPlaceholder(item)) {
         this.editItem(index);
@@ -1040,6 +1109,7 @@ export default defineComponent({
       let changed = false;
       if (!item.done) {
         item.done = true;
+        item.doneDate = this.getTodayDateString();
         changed = true;
       }
 
@@ -1277,6 +1347,11 @@ export default defineComponent({
           }
           if (saved.templates) {
             this.extraData.templates = saved.templates;
+          }
+
+          const hadReset = this.cleanExpiredDoneItems();
+          if (hadReset) {
+            await this.saveLiturgy();
           }
         }
       } catch (e) {

@@ -1010,11 +1010,13 @@ export default defineComponent({
       }
 
       const item: any = {
-        id: Date.now() + Math.random(),
+        id: this.editData?.id || Date.now() + Math.random(),
         type: this.addForm.type,
         name: this.addForm.name.trim(),
         subtitle: this.addForm.subtitle?.trim() || "",
         color: this.addForm.color,
+        done: this.editData?.done || false,
+        doneDate: this.editData?.doneDate || null,
       };
 
       if (this.addForm.type === "music") {

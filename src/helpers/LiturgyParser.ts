@@ -112,6 +112,7 @@ export function parseClassicLiturgy(iniContent: string): Record<string, Record<s
         subtitle,
         color: convertClassicColor(itemData.cor),
         done: false,
+        doneDate: null,
       };
 
       if (newType === "music") {

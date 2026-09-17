@@ -5,7 +5,19 @@
       <h3 style="font-size: 1.25rem; color: var(--sidebar-text); font-weight: 700;">
         {{ title }}
       </h3>
-      <div class="d-flex" style="gap: 12px;">
+      <div class="d-flex align-center" style="gap: 12px;">
+        <v-btn
+          v-if="hasDoneItems"
+          variant="tonal"
+          color="warning"
+          rounded="lg"
+          class="text-none font-weight-bold px-4"
+          prepend-icon="mdi-restart"
+          @click="$emit('reset-checks')"
+        >
+          {{ t('actions.reset_checks') }}
+        </v-btn>
+
         <v-btn
           v-if="items.length > 0"
           variant="tonal"
@@ -510,6 +522,7 @@ export default defineComponent({
     "toggle-done", 
     "execute-item", 
     "clear-all", 
+    "reset-checks",
     "add-item",
     "add-item-to-category",
     "drag-end",
@@ -519,6 +532,11 @@ export default defineComponent({
     return {
       collapsedCategories: [] as string[],
     };
+  },
+  computed: {
+    hasDoneItems(): boolean {
+      return this.items.some((i: any) => i && i.done);
+    },
   },
   methods: {
     t(text: string): string {
