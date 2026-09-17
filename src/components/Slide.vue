@@ -12,7 +12,7 @@
         :style="{
           overflow: 'hidden',
           backgroundColor: no_background ? 'transparent' : 'rgb(0,0,0)',
-          isolation: 'isolate',
+          zIndex: index + 1
         }"
       >
         <div v-if="!no_background" class="position-absolute top-0 left-0 w-100 h-100" :style="style_bg(slide)" />
@@ -24,26 +24,26 @@
           <!-- Hero Design Exclusivo para o Título da Música (Cover Slide) -->
           <!-- eslint-disable vue/no-v-html -->
           <div
-            v-if="slide.cover && (hasCoverText || hasCoverAuxText)"
+            v-if="slide.cover && (hasText(slide.text) || hasText(slide.aux_text))"
             class="cover-slide-group d-flex flex-column align-center justify-center text-center w-100"
             :style="{ maxWidth: '90%' }"
           >
             <!-- Card Principal do Título -->
             <div
-              v-if="hasCoverText"
+              v-if="hasText(slide.text)"
               class="cover-slide-hero d-flex flex-column align-center justify-center text-center"
               :style="style_cover_container(slide)"
             >
               <div
                 class="cover-title-text"
                 :style="style_cover_title(slide)"
-                v-html="slide.text"
+                v-html="formatCoverTitle(slide.text)"
               />
             </div>
 
             <!-- Subtítulo Abaixo do Card do Título (Aba com Whiskers) -->
             <div
-              v-if="hasCoverAuxText"
+              v-if="hasText(slide.aux_text)"
               class="cover-subtitle-tab d-inline-flex align-center justify-center"
               :style="style_cover_subtitle(slide)"
             >
@@ -57,15 +57,15 @@
           <!-- eslint-enable vue/no-v-html -->
 
           <!-- Slide de Letra Padrão -->
-          <div v-else-if="hasSlideText || hasSlideAuxText" class="d-flex flex-column align-center justify-center w-100">
+          <div v-else-if="!slide.cover && (hasText(slide.text) || hasText(slide.aux_text))" class="d-flex flex-column align-center justify-center w-100">
             <!-- eslint-disable vue/no-v-html -->
             <div
-              v-if="hasSlideAuxText"
+              v-if="hasText(slide.aux_text)"
               :style="style_aux_text(slide)"
               v-html="slide.aux_text"
             />
             <div
-              v-if="hasSlideText"
+              v-if="hasText(slide.text)"
               class="slide-lyric-card"
               :style="style_text(slide)"
             >
@@ -142,8 +142,25 @@ const appdata = useAppData();
 
 const slides = ref<any[]>([{}, {}]);
 const repeat = ref(false);
-const width = ref(0);
-const height = ref(0);
+const getInitialDims = () => {
+  if (props.reference_size?.width && props.reference_size?.height) {
+    return {
+      w: props.reference_size.width,
+      h: props.reference_size.height,
+    };
+  }
+  if (typeof window !== "undefined" && window.innerWidth > 0 && window.innerHeight > 0) {
+    return {
+      w: Math.floor(window.innerWidth * 0.95),
+      h: Math.floor(window.innerHeight * 0.88),
+    };
+  }
+  return { w: 1280, h: 720 };
+};
+
+const initialDims = getInitialDims();
+const width = ref(initialDims.w);
+const height = ref(initialDims.h);
 const slideAlignClass = ref("align-center");
 const customTextFormat = ref(false);
 const customFontSize = ref(100);
@@ -175,10 +192,7 @@ const isTextEmpty = (val?: string) => {
   return stripped.length === 0;
 };
 
-const hasCoverText = computed(() => !isTextEmpty(props_slide.value?.text));
-const hasCoverAuxText = computed(() => !isTextEmpty(props_slide.value?.aux_text));
-const hasSlideText = computed(() => !isTextEmpty(props_slide.value?.text));
-const hasSlideAuxText = computed(() => !isTextEmpty(props_slide.value?.aux_text));
+const hasText = (val?: string) => !isTextEmpty(val);
 
 const fontSizePc = (pc: number) => {
   const refW = props.reference_size?.width && props.reference_size.width > 0
@@ -191,6 +205,90 @@ const fontSizePc = (pc: number) => {
   const effectiveHeight = effectiveWidth / (16 / 9);
   
   return ((pc * effectiveHeight) / 100 / 2) * 1;
+};
+
+const getStableDims = () => {
+  if (props.reference_size?.width && props.reference_size.width > 0 && props.reference_size?.height && props.reference_size.height > 0) {
+    return {
+      w: props.reference_size.width,
+      h: props.reference_size.height,
+    };
+  }
+  if (width.value > 0 && width.value < 500 && !(typeof window !== "undefined" && window.innerWidth > 800 && appdata?.get?.("modules.media.show") && !appdata?.get?.("modules.media.minimized"))) {
+    return {
+      w: width.value,
+      h: height.value || 180,
+    };
+  }
+  if (typeof window !== "undefined" && window.innerWidth > 0 && window.innerHeight > 0) {
+    return {
+      w: Math.floor(window.innerWidth * 0.95),
+      h: Math.floor(window.innerHeight * 0.88),
+    };
+  }
+  return { w: width.value || 1280, h: height.value || 720 };
+};
+
+const stableFontSizePc = (pc: number) => {
+  const dims = getStableDims();
+  const effectiveWidth = Math.min(dims.w, dims.h * (16 / 9));
+  const effectiveHeight = effectiveWidth / (16 / 9);
+  return ((pc * effectiveHeight) / 100 / 2) * 1;
+};
+
+let measureCanvas: HTMLCanvasElement | null = null;
+
+const measureTextWidth = (
+  text: string,
+  fontSizePx: number,
+  fontWeight: string = "900",
+  fontFamily: string = "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+): number => {
+  if (typeof document === "undefined") return 0;
+  if (!measureCanvas) {
+    measureCanvas = document.createElement("canvas");
+  }
+  const ctx = measureCanvas.getContext("2d");
+  if (!ctx) return 0;
+  ctx.font = `${fontWeight} ${fontSizePx}px ${fontFamily}`;
+  const clean = text
+    .replace(/<br\s*\/?>/gi, " ")
+    .replace(/<[^>]*>/g, "")
+    .replace(/&nbsp;/g, " ")
+    .trim();
+  return ctx.measureText(clean).width;
+};
+
+const hasExplicitLineBreak = (text?: string): boolean => {
+  if (!text) return false;
+  return /<br\s*\/?>/i.test(text) || /\r?\n/.test(text);
+};
+
+const shouldWrapTitle = computed(() => {
+  const text = props_slide.value?.text;
+  if (!text || isTextEmpty(text)) return false;
+
+  if (hasExplicitLineBreak(text)) return true;
+
+  const baseSize = customTextFormat.value ? (21 * customFontSize.value) / 100 : 21;
+  const fontWeight = customFontWeight.value ? customFontWeight.value : "900";
+  const titleFontSize = stableFontSizePc(baseSize);
+
+  const textWidth = measureTextWidth(text, titleFontSize, fontWeight);
+  const cardPaddingH = stableFontSizePc(8) * 2;
+  const dims = getStableDims();
+
+  const maxAvailableForText = Math.floor(dims.w * 0.85) - cardPaddingH;
+
+  return textWidth > maxAvailableForText;
+});
+
+const formatCoverTitle = (text?: string): string => {
+  if (!text) return "";
+  if (!text.includes("<br>") && text.includes("\n")) {
+    return text.replace(/[\r\n]+/g, "<br>");
+  }
+  return text;
 };
 
 const hexToRgba = (hex: string, alpha: number) => {
@@ -254,6 +352,14 @@ const setSlide = () => {
     active: true,
   };
 
+  if (slides.value.length > 2) {
+    setTimeout(() => {
+      if (slides.value && slides.value.length > 2) {
+        slides.value[2].destroy = true;
+      }
+    }, 250);
+  }
+
   if (slides.value.length > 3) {
     slides.value[3].destroy = true;
   }
@@ -293,10 +399,12 @@ const style_bg = (slide: any) => {
 const style_cover_container = (_slide: any): any => {
   const isBgRemoved = customBg.value && removeTextBg.value;
 
+  const widthStyle = shouldWrapTitle.value ? "fit-content" : "max-content";
+
   if (isBgRemoved) {
     return {
-      width: "fit-content",
-      maxWidth: "90%",
+      width: widthStyle,
+      maxWidth: "100%",
       boxSizing: "border-box" as const,
       padding: `${fontSizePc(4)}px ${fontSizePc(6)}px`,
       backgroundColor: "transparent",
@@ -317,11 +425,12 @@ const style_cover_container = (_slide: any): any => {
     : "none";
 
   return {
-    width: "fit-content",
-    maxWidth: "90%",
+    position: "relative" as const,
+    width: widthStyle,
+    maxWidth: "100%",
     boxSizing: "border-box" as const,
     padding: `${fontSizePc(4)}px ${fontSizePc(8)}px`,
-    borderRadius: `${Math.max(16, fontSizePc(4))}px`,
+    borderRadius: `${Math.max(4, Math.round(fontSizePc(4.5)))}px`,
     backgroundColor: hasTextBg ? bgColor : "transparent",
     border: borderStyle,
     backdropFilter: hasTextBg ? "blur(16px)" : "none",
@@ -432,7 +541,7 @@ const style_cover_title = (_slide: any): any => {
   const baseSize = customTextFormat.value ? (21 * customFontSize.value) / 100 : 21;
   const fontWeight = customFontWeight.value ? customFontWeight.value : "900";
   return {
-    width: "100%",
+    width: shouldWrapTitle.value ? "100%" : "max-content",
     maxWidth: "100%",
     boxSizing: "border-box" as const,
     fontSize: `${fontSizePc(baseSize)}px`,
@@ -444,10 +553,10 @@ const style_cover_title = (_slide: any): any => {
     lineHeight: "1.15",
     margin: "0",
     padding: "0",
-    whiteSpace: "normal" as const,
+    whiteSpace: shouldWrapTitle.value ? ("normal" as const) : ("nowrap" as const),
+    textWrap: "balance" as const,
     overflowWrap: "break-word" as const,
     wordBreak: "normal" as const,
-    textWrap: "balance" as const,
     textShadow: "0 4px 20px rgba(0, 0, 0, 0.8), 0 2px 6px rgba(0, 0, 0, 0.6)",
   };
 };
@@ -516,8 +625,6 @@ const measureItemStyle = (_item: any): any => {
   };
 };
 
-
-
 const measureItems = ref<any[]>([]);
 const fixedCardWidth = ref(0);
 const fixedCardHeight = ref(0);
@@ -552,15 +659,20 @@ const calculateMaxCardSize = () => {
 const style_text = (_slide: any): any => { 
   const isBgRemoved = customBg.value && removeTextBg.value;
 
-  const fixedDims: any = {
-    maxWidth: fixedCardWidth.value > 0 ? `${fixedCardWidth.value}px` : "90%",
-    maxHeight: fixedCardHeight.value > 0 ? `${fixedCardHeight.value}px` : "82%",
-    boxSizing: "border-box",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-  };
+  const fixedDims: any = {};
+  if (fixedCardWidth.value > 0) {
+    fixedDims.width = `${fixedCardWidth.value}px`;
+  }
+  if (fixedCardHeight.value > 0) {
+    fixedDims.height = `${fixedCardHeight.value}px`;
+  }
+  fixedDims.maxWidth = "90%";
+  fixedDims.maxHeight = "82%";
+  fixedDims.boxSizing = "border-box";
+  fixedDims.display = "flex";
+  fixedDims.flexDirection = "column";
+  fixedDims.alignItems = "center";
+  fixedDims.justifyContent = "center";
 
   if (isBgRemoved) {
     const bgStyles = {
@@ -642,6 +754,9 @@ const style_text = (_slide: any): any => {
   };
 };
 
+let resizeTimer: any = null;
+let animationCheckTimer: any = null;
+
 const windowResize = () => {
   if (container.value) {
     const newW = container.value.offsetWidth;
@@ -660,6 +775,28 @@ const windowResize = () => {
     nextTick(() => {
       calculateMaxCardSize();
     });
+
+    if (resizeTimer) clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      if (container.value) {
+        width.value = container.value.offsetWidth;
+        height.value = container.value.offsetHeight;
+      }
+      nextTick(() => {
+        calculateMaxCardSize();
+      });
+    }, 150);
+
+    if (animationCheckTimer) clearTimeout(animationCheckTimer);
+    animationCheckTimer = setTimeout(() => {
+      if (container.value) {
+        width.value = container.value.offsetWidth;
+        height.value = container.value.offsetHeight;
+      }
+      nextTick(() => {
+        calculateMaxCardSize();
+      });
+    }, 350);
   }
 };
 
@@ -693,6 +830,12 @@ watch(
       nextTick(() => {
         windowResize();
       });
+      setTimeout(() => {
+        windowResize();
+      }, 150);
+      setTimeout(() => {
+        windowResize();
+      }, 350);
     }
   },
 );
@@ -716,9 +859,14 @@ onMounted(() => {
   setTimeout(() => {
     calculateMaxCardSize();
   }, 120);
+  setTimeout(() => {
+    calculateMaxCardSize();
+  }, 350);
 });
 
 onUnmounted(() => {
+  if (resizeTimer) clearTimeout(resizeTimer);
+  if (animationCheckTimer) clearTimeout(animationCheckTimer);
   window.removeEventListener("resize", windowResize);
   window.removeEventListener("storage", updateSettings);
   if (resizeObserver) {
