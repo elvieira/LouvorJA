@@ -1,6 +1,22 @@
 <template>
   <v-slide-y-reverse-transition>
-    <div v-if="module?.show" class="module-full-page music-editor-module d-flex flex-column">
+    <div
+      v-show="module?.show"
+      class="module-full-page music-editor-module flex-column"
+      :style="{ display: module?.show ? 'flex' : 'none !important' }"
+    >
+      <!-- Dedicated Audio Element for Music Editor -->
+      <audio
+        ref="editorAudio"
+        :src="editorAudioSourceUrl"
+        preload="auto"
+        @timeupdate="onAudioTimeUpdate"
+        @loadedmetadata="onAudioLoadedMetadata"
+        @play="audioIsPaused = false"
+        @pause="audioIsPaused = true"
+        @ended="onAudioEnded"
+      />
+
       <!-- ========================================== -->
       <!-- HEADER / MODULE HEADER                    -->
       <!-- ========================================== -->
@@ -291,17 +307,17 @@
                   variant="text"
                   size="small"
                   :disabled="!externalAudioFilePath"
-                  :color="isPreviewingThisAudio ? 'var(--accent-blue)' : undefined"
-                  @click="previewAudio"
+                  :color="!audioIsPaused ? 'var(--accent-blue)' : undefined"
+                  @click="toggleEditorPlayPause"
                 >
-                  <v-icon :icon="isPreviewingThisAudio && !externalMediaIsPaused ? 'mdi-pause' : 'mdi-play'" size="20" />
+                  <v-icon :icon="!audioIsPaused ? 'mdi-pause' : 'mdi-play'" size="20" />
                   <v-tooltip
                     activator="parent"
                     location="bottom"
                     open-delay="300"
                     content-class="modern-glass-menu elevation-0 font-weight-medium"
                   >
-                    {{ t('ribbon_play') }}
+                    {{ !audioIsPaused ? t('pause') : t('ribbon_play') }}
                   </v-tooltip>
                 </v-btn>
 
@@ -768,189 +784,285 @@
         <!-- ========================================== -->
         <!-- PRESENTATION / PLAYBACK VIEW               -->
         <!-- ========================================== -->
+        <!-- ========================================== -->
+        <!-- PRESENTATION / PLAYBACK VIEW               -->
+        <!-- ========================================== -->
         <template v-if="mode === 'present'">
-          <div class="native-player-container position-relative w-100 h-100 d-flex flex-row overflow-hidden rounded-xl">
-            <div class="native-player-visual flex-grow-1 position-relative">
-              <LSlide
-                :text="currentSlideText"
-                :aux_text="currentSlideAuxText"
-                :image="currentSlideImageUrl || undefined"
-                :text_size_pc="currentSlideData?.fontSize"
-                :text_color="currentSlideData?.fontColor"
-                :aux_text_size_pc="currentSlideData?.auxFontSize"
-                :aux_text_color="currentSlideData?.auxFontColor"
-                :all_slides="presentingSong?.slides"
-                force_image
-                class="w-100 h-100"
-              />
-            </div>
-
-            <!-- Slide Playlist Drawer (Present Mode) -->
-            <div class="native-player-playlist" :class="{ open: showSlideList }">
-              <div ref="presentPlaylistPanel" class="native-playlist-scroll">
-                <div
-                  v-for="(slide, index) in presentingSong?.slides"
-                  :key="index"
-                  class="native-playlist-item mb-2"
-                  :class="{ active: index === presentSlideIndex }"
-                  :data-slide-index="index"
-                  @click="goToPresentSlide(index)"
-                >
-                  <div class="native-slide-chip mr-3">
-                    {{ index + 1 }}
-                  </div>
-                  <div class="native-slide-text text-truncate font-weight-medium">
-                    {{ slideRowLabel(slide) }}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Toolbar System Buttons -->
-            <div class="native-player-toolbar d-flex align-center">
-              <v-btn
-                icon
-                variant="flat"
-                size="small"
-                class="native-system-btn"
-                @click="exitPresentation"
-              >
-                <v-icon icon="mdi-arrow-left" />
-                <v-tooltip
-                  activator="parent"
-                  location="bottom"
-                  open-delay="300"
-                  content-class="modern-glass-menu elevation-0 font-weight-medium"
-                >
-                  Voltar ao Editor
-                </v-tooltip>
-              </v-btn>
-            </div>
-
-            <!-- Bottom Floating Player Bar -->
-            <div class="native-player-footer position-absolute w-100 d-flex justify-center">
-              <div class="native-footer-pill d-flex align-center px-6 py-2">
-                <div class="native-player-info d-flex flex-column mr-6">
-                  <span class="text-subtitle-2 font-weight-bold text-truncate text-white" style="line-height: 1.2;">
-                    {{ presentingSong?.name }}
-                  </span>
-                  <span class="text-caption text-truncate" style="line-height: 1.2; color: rgba(255,255,255,0.6);">
-                    Slide {{ presentSlideIndex + 1 }} de {{ presentingSong?.slides.length }}
-                  </span>
-                </div>
-
-                <div class="d-flex align-center mr-4">
-                  <v-btn
-                    icon
-                    variant="text"
-                    size="small"
-                    color="white"
-                    class="mx-1"
-                    :disabled="presentSlideIndex <= 0"
-                    @click="prevSlide"
-                  >
-                    <v-icon icon="mdi-skip-previous" />
-                  </v-btn>
-                  <v-btn
-                    v-if="presentingSong?.filePathAudio || presentingSong?.filePathInstrumental"
-                    icon
-                    variant="text"
-                    size="large"
-                    color="white"
-                    class="mx-1 native-play-btn"
-                    @click="togglePresentPlayPause"
-                  >
-                    <v-icon :icon="presentIsPaused ? 'mdi-play-circle' : 'mdi-pause-circle'" size="36" />
-                  </v-btn>
-                  <v-btn
-                    icon
-                    variant="text"
-                    size="small"
-                    color="white"
-                    class="mx-1"
-                    :disabled="presentSlideIndex >= (presentingSong?.slides.length || 1) - 1"
-                    @click="nextSlide"
-                  >
-                    <v-icon icon="mdi-skip-next" />
-                  </v-btn>
-                </div>
-
-                <div v-if="presentActiveMode" class="native-timeline d-flex align-center flex-grow-1 mr-4">
-                  <span class="text-caption mr-2" style="color: rgba(255,255,255,0.7);">{{ formatPresentTime(presentCurrentTime) }}</span>
-                  <v-slider
-                    v-model="presentProgress"
-                    :min="0"
-                    :max="100"
-                    step="0.1"
-                    hide-details
-                    color="white"
-                    track-color="rgba(255,255,255,0.3)"
-                    thumb-size="12"
-                    class="native-timeline-slider flex-grow-1"
-                    @end="seekPresentProgress"
-                  />
-                  <span class="text-caption ml-2" style="color: rgba(255,255,255,0.7);">{{ formatPresentTime(presentDuration) }}</span>
-                </div>
-
-                <div v-if="presentActiveMode" class="d-flex align-center mr-2">
-                  <v-btn
-                    :icon="presentVolumeIcon"
-                    variant="text"
-                    size="small"
-                    color="white"
-                    class="mx-1"
-                    @click="togglePresentMute"
-                  />
-                </div>
-
-                <v-btn
-                  v-if="presentingSong?.filePathAudio && presentingSong?.filePathInstrumental"
-                  icon
-                  variant="text"
-                  :color="presentActiveMode === 'audio' ? 'var(--accent-blue)' : 'white'"
-                  size="small"
-                  class="mx-1"
-                  @click="togglePresentMode"
-                >
-                  <v-icon icon="mdi-account-voice" />
-                  <v-tooltip
-                    activator="parent"
-                    location="top"
-                    open-delay="300"
-                    content-class="modern-glass-menu elevation-0 font-weight-medium"
-                  >
-                    {{ presentActiveMode === 'instrumental' ? t('external_instrumental_file') : t('external_audio_file') }}
-                  </v-tooltip>
-                </v-btn>
-
-                <ButtonScreen
-                  module="music_editor"
-                  variant="text"
-                  size="small"
-                  class="mx-1 text-white"
+          <fullscreen v-model="isFullscreen" class="position-relative w-100 h-100">
+            <div
+              class="native-player-container position-relative w-100 h-100 d-flex flex-row overflow-hidden"
+              :class="{ 'rounded-xl': !isFullscreen }"
+            >
+              <div class="native-player-visual flex-grow-1 position-relative">
+                <LSlide
+                  :slide_number="presentSlideIndex"
+                  :cover="presentSlideIndex === 0"
+                  :text="currentSlideText"
+                  :aux_text="currentSlideAuxText"
+                  :image="currentSlideImageUrl || undefined"
+                  :image_position="currentSlideData?.image_position || 5"
+                  :text_size_pc="currentSlideData?.fontSize"
+                  :text_color="currentSlideData?.fontColor"
+                  :aux_text_size_pc="currentSlideData?.auxFontSize"
+                  :aux_text_color="currentSlideData?.auxFontColor"
+                  :all_slides="presentingSong?.slides"
+                  force_image
+                  class="w-100 h-100"
                 />
+              </div>
 
+              <!-- Slide Playlist Drawer (Present Mode) -->
+              <div class="native-player-playlist" :class="{ open: showSlideList }">
+                <div ref="presentPlaylistPanel" class="native-playlist-scroll">
+                  <div
+                    v-for="(slide, index) in presentingSong?.slides"
+                    :key="index"
+                    class="native-playlist-item mb-2"
+                    :class="{ active: index === presentSlideIndex, 'title-slide': index === 0 }"
+                    :data-slide-index="index"
+                    @click="goToPresentSlide(index)"
+                  >
+                    <!-- Title Slide Chip -->
+                    <div v-if="index === 0" class="native-slide-chip title-chip mr-3">
+                      <v-icon icon="mdi-music" size="15" />
+                    </div>
+                    <!-- Standard Slide Chip -->
+                    <div v-else class="native-slide-chip mr-3">
+                      {{ index + 1 }}
+                    </div>
+
+                    <div class="d-flex flex-column text-truncate">
+                      <span v-if="index === 0" class="slide-badge-title">
+                        TÍTULO
+                      </span>
+                      <span class="native-slide-text text-truncate font-weight-medium">
+                        {{ slideRowLabel(slide) }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Toolbar System Buttons -->
+              <div class="native-player-toolbar d-flex align-center">
                 <v-btn
                   icon
-                  variant="text"
-                  :color="showSlideList ? 'var(--accent-blue)' : 'white'"
+                  variant="flat"
                   size="small"
-                  class="mx-1"
-                  @click="showSlideList = !showSlideList"
+                  class="native-system-btn"
+                  @click="exitPresentation"
                 >
-                  <v-icon icon="mdi-format-list-bulleted" />
+                  <v-icon icon="mdi-arrow-left" />
                   <v-tooltip
                     activator="parent"
-                    location="top"
+                    location="bottom"
                     open-delay="300"
                     content-class="modern-glass-menu elevation-0 font-weight-medium"
                   >
-                    Lista de Slides
+                    Voltar ao Editor
                   </v-tooltip>
                 </v-btn>
               </div>
+
+              <!-- Bottom Floating Player Bar -->
+              <div class="floating-pill-container position-absolute w-100 d-flex justify-center" style="bottom: 32px; z-index: 60; pointer-events: none;">
+                <div style="pointer-events: auto;">
+                  <div class="modern-pill-player d-flex align-center px-6 py-2 mx-auto">
+                    <div class="player-info d-flex flex-column mr-6" style="max-width: 280px; min-width: 150px;">
+                      <span
+                        class="text-subtitle-2 font-weight-bold text-truncate text-white"
+                        style="line-height: 1.2;"
+                        :title="presentingSong?.name"
+                      >
+                        {{ presentingSong?.name }}
+                      </span>
+                      <span
+                        class="text-caption text-truncate"
+                        style="line-height: 1.2; color: rgba(255, 255, 255, 0.7);"
+                      >
+                        Slide {{ presentSlideIndex + 1 }} de {{ presentingSong?.slides.length }}
+                      </span>
+                    </div>
+
+                    <div class="d-flex align-center mr-6">
+                      <v-btn
+                        icon
+                        variant="text"
+                        color="white"
+                        size="small"
+                        class="mx-1"
+                        :disabled="presentSlideIndex <= 0"
+                        @click="prevSlide"
+                      >
+                        <v-icon icon="mdi-skip-previous" />
+                        <v-tooltip
+                          activator="parent"
+                          location="top"
+                          open-delay="300"
+                          content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+                        >
+                          Anterior
+                        </v-tooltip>
+                      </v-btn>
+                      <v-btn
+                        v-if="presentingSong?.filePathAudio || presentingSong?.filePathInstrumental"
+                        icon
+                        variant="text"
+                        color="white"
+                        size="large"
+                        class="mx-1 play-btn"
+                        @click="togglePresentPlayPause"
+                      >
+                        <v-icon :icon="presentIsPaused ? 'mdi-play-circle' : 'mdi-pause-circle'" />
+                        <v-tooltip
+                          activator="parent"
+                          location="top"
+                          open-delay="300"
+                          content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+                        >
+                          {{ presentIsPaused ? 'Reproduzir' : 'Pausar' }}
+                        </v-tooltip>
+                      </v-btn>
+                      <v-btn
+                        icon
+                        variant="text"
+                        color="white"
+                        size="small"
+                        class="mx-1"
+                        :disabled="presentSlideIndex >= (presentingSong?.slides.length || 1) - 1"
+                        @click="nextSlide"
+                      >
+                        <v-icon icon="mdi-skip-next" />
+                        <v-tooltip
+                          activator="parent"
+                          location="top"
+                          open-delay="300"
+                          content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+                        >
+                          Próxima
+                        </v-tooltip>
+                      </v-btn>
+                    </div>
+
+                    <div v-if="presentActiveMode" class="player-timeline-wrapper d-flex align-center flex-grow-1 mr-6" style="min-width: 150px;">
+                      <span class="text-caption mr-3 font-weight-medium text-white" style="opacity: 0.8;">{{ formatPresentTime(presentCurrentTime) }}</span>
+                      <v-progress-linear
+                        v-model="presentProgress"
+                        clickable
+                        :height="4"
+                        color="white"
+                        :bg-opacity="0.3"
+                        rounded
+                        class="flex-grow-1 timeline-slider"
+                        @click="onTimelineClick"
+                        @update:model-value="seekPresentProgress"
+                      />
+                      <span class="text-caption ml-3 font-weight-medium text-white" style="opacity: 0.8;">{{ formatPresentTime(presentDuration) }}</span>
+                    </div>
+
+                    <div v-if="presentActiveMode" class="d-flex align-center mr-2">
+                      <v-menu
+                        location="top center"
+                        :close-on-content-click="false"
+                        open-on-hover
+                        :open-delay="50"
+                      >
+                        <template #activator="{ props: activatorProps }">
+                          <v-btn
+                            :icon="presentVolumeIcon"
+                            variant="text"
+                            color="white"
+                            size="small"
+                            v-bind="activatorProps"
+                            class="mx-1 volume-btn"
+                            @click="togglePresentMute"
+                          />
+                        </template>
+                        <v-card
+                          class="py-2 px-4 rounded-lg d-flex align-center modern-glass-menu elevation-0"
+                          theme="dark"
+                          min-width="130"
+                          height="40"
+                          style="overflow: hidden;"
+                        >
+                          <v-slider
+                            v-model="audioVolume"
+                            color="white"
+                            track-color="grey"
+                            hide-details
+                            thumb-size="12"
+                            step="1"
+                            min="0"
+                            max="100"
+                            class="ma-0 pa-0 w-100"
+                            @update:model-value="onVolumeUpdate"
+                          />
+                        </v-card>
+                      </v-menu>
+                    </div>
+
+                    <v-btn
+                      v-if="presentingSong?.filePathAudio && presentingSong?.filePathInstrumental"
+                      icon
+                      variant="text"
+                      :color="presentActiveMode === 'audio' ? 'var(--accent-blue)' : 'white'"
+                      size="small"
+                      class="mx-1"
+                      @click="togglePresentMode"
+                    >
+                      <v-icon :icon="presentActiveMode === 'instrumental' ? 'mdi-music-note' : 'mdi-account-voice'" />
+                      <v-tooltip
+                        activator="parent"
+                        location="top"
+                        open-delay="300"
+                        content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+                      >
+                        {{ presentActiveMode === 'instrumental' ? t('external_instrumental_file') : t('external_audio_file') }}
+                      </v-tooltip>
+                    </v-btn>
+
+                    <v-btn
+                      icon
+                      variant="text"
+                      size="small"
+                      color="white"
+                      class="mx-1"
+                      @click="isFullscreen = !isFullscreen"
+                    >
+                      <v-icon :icon="isFullscreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'" />
+                      <v-tooltip
+                        activator="parent"
+                        location="top"
+                        open-delay="300"
+                        content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+                      >
+                        {{ isFullscreen ? t('exit_fullscreen') : t('fullscreen') }}
+                      </v-tooltip>
+                    </v-btn>
+
+                    <v-btn
+                      icon
+                      variant="text"
+                      :color="showSlideList ? 'var(--accent-blue)' : 'white'"
+                      size="small"
+                      class="ml-2"
+                      @click="showSlideList = !showSlideList"
+                    >
+                      <v-icon icon="mdi-format-list-bulleted" />
+                      <v-tooltip
+                        activator="parent"
+                        location="top"
+                        open-delay="300"
+                        content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+                      >
+                        {{ t('slides') }}
+                      </v-tooltip>
+                    </v-btn>
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
+          </fullscreen>
         </template>
       </div>
     </div>
@@ -961,7 +1073,6 @@
 import { defineComponent } from "vue";
 import manifest from "../manifest";
 import ModuleHeader from "@/components/ModuleHeader.vue";
-import ButtonScreen from "@/components/buttons/Screen.vue";
 import LSlide from "@/components/Slide.vue";
 import ModernColorPicker from "@/components/inputs/ModernColorPicker.vue";
 
@@ -969,6 +1080,7 @@ interface EditorSlide {
   text: string;
   auxText: string;
   image: string | null;
+  image_position?: number;
   fontSize: number;
   fontColor: string;
   auxFontSize: number;
@@ -976,11 +1088,12 @@ interface EditorSlide {
   time: number | null;
 }
 
-const DEFAULT_SLIDE = (): EditorSlide => ({
+const DEFAULT_SLIDE = (index: number = 0): EditorSlide => ({
   text: "",
   auxText: "",
   image: null,
-  fontSize: 18,
+  image_position: 5,
+  fontSize: index === 0 ? 18 : 14,
   fontColor: "#ffffff",
   auxFontSize: 10,
   auxFontColor: "#ffffff",
@@ -1024,15 +1137,16 @@ function formatSlideText(raw: string): string {
 }
 
 function normalizeSlides(rawSlides: any[]): EditorSlide[] {
-  if (!Array.isArray(rawSlides) || rawSlides.length === 0) return [DEFAULT_SLIDE()];
-  return rawSlides.map((s) => {
-    const base = DEFAULT_SLIDE();
+  if (!Array.isArray(rawSlides) || rawSlides.length === 0) return [DEFAULT_SLIDE(0)];
+  return rawSlides.map((s, index) => {
+    const base = DEFAULT_SLIDE(index);
     if (typeof s === "string") return { ...base, text: s };
     return {
       ...base,
       text: s.text || "",
       auxText: s.auxText || "",
       image: s.image || null,
+      image_position: typeof s.image_position === "number" ? s.image_position : base.image_position,
       fontSize: s.fontSize || base.fontSize,
       fontColor: s.fontColor || base.fontColor,
       auxFontSize: s.auxFontSize || base.auxFontSize,
@@ -1062,13 +1176,12 @@ export default defineComponent({
   name: "MusicEditorModule",
   components: {
     ModuleHeader,
-    ButtonScreen,
     LSlide,
     ModernColorPicker,
   },
   data() {
     return {
-      slidesInput: [DEFAULT_SLIDE()] as EditorSlide[],
+      slidesInput: [DEFAULT_SLIDE(0)] as EditorSlide[],
       activeSlideIndex: 0,
       ribbonTab: "file" as "file" | "format" | "sync",
       currentFilePath: null as string | null,
@@ -1079,7 +1192,19 @@ export default defineComponent({
       externalInstrumentalFileName: "",
       presentingSong: null as PresentedSong | null,
       presentSlideIndex: 0,
-      showSlideList: true,
+      showSlideList: false,
+      isFullscreen: false,
+      saveDraftTimer: null as any,
+
+      // Dedicated Audio Controller State
+      audioCurrentTime: 0,
+      audioDuration: 0,
+      audioProgress: 0,
+      audioIsPaused: true,
+      audioVolume: 100,
+      savedAudioVolume: 100,
+      presentAudioKind: "audio" as "audio" | "instrumental",
+      lastManualNavTime: 0,
     };
   },
   computed: {
@@ -1128,15 +1253,39 @@ export default defineComponent({
     activeSlideImageUrl(): string {
       return toLocalFileUrl(this.activeSlide?.image || null);
     },
+    editorAudioSourceUrl(): string {
+      if (this.mode === "present") {
+        if (this.presentAudioKind === "instrumental" && this.presentingSong?.filePathInstrumental) {
+          return toLocalFileUrl(this.presentingSong.filePathInstrumental);
+        }
+        if (this.presentingSong?.filePathAudio) {
+          return toLocalFileUrl(this.presentingSong.filePathAudio);
+        }
+        if (this.presentingSong?.filePathInstrumental) {
+          return toLocalFileUrl(this.presentingSong.filePathInstrumental);
+        }
+        return "";
+      }
+      return this.externalAudioFilePath ? toLocalFileUrl(this.externalAudioFilePath) : "";
+    },
+    hasAudioInPresentation(): boolean {
+      return !!(this.presentingSong?.filePathAudio || this.presentingSong?.filePathInstrumental);
+    },
+    audioVolumeIcon(): string {
+      const v = this.audioVolume;
+      if (v <= 0) return "mdi-volume-mute";
+      if (v <= 20) return "mdi-volume-low";
+      if (v <= 70) return "mdi-volume-medium";
+      return "mdi-volume-high";
+    },
     externalMediaCurrentTime(): number {
-      return (this as any).$appdata.get("modules.external_media.config.current_time") || 0;
+      return this.audioCurrentTime;
     },
     externalMediaIsPaused(): boolean {
-      return (this as any).$appdata.get("modules.external_media.config.is_paused") !== false;
+      return this.audioIsPaused;
     },
     isPreviewingThisAudio(): boolean {
-      const appdata = (this as any).$appdata;
-      return !!this.externalAudioFilePath && appdata.get("modules.external_media.filePath") === this.externalAudioFilePath;
+      return !!this.externalAudioFilePath && (!this.audioIsPaused || this.audioCurrentTime > 0);
     },
     hasRecordedTimes(): boolean {
       return this.slidesInput.some((s) => typeof s.time === "number");
@@ -1147,10 +1296,10 @@ export default defineComponent({
         : this.activeSlideIndex === 0 ? 0 : null;
       if (start === null) return 0;
       const next = this.slidesInput[this.activeSlideIndex + 1]?.time;
-      const duration = (this as any).$appdata.get("modules.external_media.config.duration") || 0;
+      const duration = this.audioDuration || 0;
       const end = typeof next === "number" ? next : duration;
       if (end <= start) return 0;
-      const progress = ((this.externalMediaCurrentTime - start) / (end - start)) * 100;
+      const progress = ((this.audioCurrentTime - start) / (end - start)) * 100;
       return Math.min(100, Math.max(0, progress));
     },
     currentSlideText(): string {
@@ -1170,39 +1319,31 @@ export default defineComponent({
       return this.presentingSong.slides[this.presentSlideIndex] || null;
     },
     presentActiveMode(): "audio" | "instrumental" | null {
-      if (!this.presentingSong) return null;
-      const activePath = (this as any).$appdata.get("modules.external_media.filePath");
-      if (!activePath) return null;
-      if (activePath === this.presentingSong.filePathAudio) return "audio";
-      if (activePath === this.presentingSong.filePathInstrumental) return "instrumental";
-      return null;
+      if (!this.hasAudioInPresentation) return null;
+      return this.presentAudioKind;
     },
     presentIsPaused(): boolean {
-      return (this as any).$appdata.get("modules.external_media.config.is_paused") !== false;
+      return this.audioIsPaused;
     },
     presentCurrentTime(): number {
-      return (this as any).$appdata.get("modules.external_media.config.current_time") || 0;
+      return this.audioCurrentTime;
     },
     presentDuration(): number {
-      return (this as any).$appdata.get("modules.external_media.config.duration") || 0;
+      return this.audioDuration;
     },
     presentProgress: {
       get(): number {
-        return (this as any).$appdata.get("modules.external_media.config.progress") || 0;
+        return this.audioProgress;
       },
       set(val: number) {
-        (this as any).$appdata.set("modules.external_media.config.progress", val);
+        this.audioProgress = val;
       },
     },
     presentVolume(): number {
-      return (this as any).$appdata.get("modules.external_media.config.volume") ?? 100;
+      return this.audioVolume;
     },
     presentVolumeIcon(): string {
-      const v = this.presentVolume;
-      if (v <= 0) return "mdi-volume-mute";
-      if (v <= 20) return "mdi-volume-low";
-      if (v <= 70) return "mdi-volume-medium";
-      return "mdi-volume-high";
+      return this.audioVolumeIcon;
     },
   },
   watch: {
@@ -1213,37 +1354,8 @@ export default defineComponent({
         this.exitPresentation();
       }
     },
-    externalMediaCurrentTime(val: number) {
-      if (this.mode !== "edit" || this.recordingMode || !this.isPreviewingThisAudio || !this.hasRecordedTimes) return;
-      let bestIndex = -1;
-      let bestTime = -1;
-      this.slidesInput.forEach((s, index) => {
-        if (typeof s.time === "number" && s.time <= val && s.time > bestTime) {
-          bestTime = s.time;
-          bestIndex = index;
-        }
-      });
-      if (bestIndex >= 0 && bestIndex !== this.activeSlideIndex) {
-        this.activeSlideIndex = bestIndex;
-      }
-    },
     activeSlideIndex() {
       this.scrollActiveSlideIntoView();
-    },
-    presentCurrentTime(val: number) {
-      if (this.mode !== "present" || !this.presentingSong) return;
-      let bestIndex = -1;
-      let bestTime = -1;
-      this.presentingSong.slides.forEach((s, index) => {
-        if (typeof s.time === "number" && s.time <= val && s.time > bestTime) {
-          bestTime = s.time;
-          bestIndex = index;
-        }
-      });
-      if (bestIndex >= 0 && bestIndex !== this.presentSlideIndex) {
-        this.presentSlideIndex = bestIndex;
-        this.syncSlideToScreen();
-      }
     },
     ribbonTab(val: string) {
       const valid = this.ribbonTabs.some((t) => t.key === val);
@@ -1267,10 +1379,20 @@ export default defineComponent({
     if (this.module?.show) {
       this.openNewSong();
     }
+    const appdata = (this as any).$appdata;
+    if (appdata.get("modules.external_media.minimized") && !appdata.get("modules.external_media.show")) {
+      appdata.set("modules.external_media.minimized", false);
+      appdata.set("modules.external_media.filePath", null);
+    }
     window.addEventListener("keydown", this.handlePresentKeydown);
   },
   beforeUnmount() {
     window.removeEventListener("keydown", this.handlePresentKeydown);
+    const audio = this.$refs.editorAudio as HTMLAudioElement | undefined;
+    if (audio) {
+      audio.pause();
+      audio.src = "";
+    }
   },
   methods: {
     /* METHODS OBRIGATÓRIOS - INÍCIO */
@@ -1304,11 +1426,19 @@ export default defineComponent({
     },
 
     openNewSong() {
-      this.slidesInput = [DEFAULT_SLIDE()];
+      const audio = this.$refs.editorAudio as HTMLAudioElement | undefined;
+      if (audio) {
+        audio.pause();
+      }
+      this.slidesInput = [DEFAULT_SLIDE(0)];
       this.activeSlideIndex = 0;
       this.ribbonTab = "file";
       this.currentFilePath = null;
       this.resetExternalPick();
+      this.audioCurrentTime = 0;
+      this.audioDuration = 0;
+      this.audioProgress = 0;
+      this.audioIsPaused = true;
     },
     clearAll() {
       (this as any).$alert.yesno(
@@ -1344,10 +1474,10 @@ export default defineComponent({
         letra: s.text.replace(/\r?\n/g, "|"),
         letraAux: s.auxText.replace(/\r?\n/g, "|"),
         fundoLetra: 1,
-        tamanhoLetra: s.fontSize,
+        tamanhoLetra: s.fontSize || (index === 0 ? 18 : 14),
         corLetra: toOpaqueHex(s.fontColor),
         corFundo: "#000000",
-        tamanhoLetraAux: s.auxFontSize,
+        tamanhoLetraAux: s.auxFontSize || 10,
         corLetraAux: toOpaqueHex(s.auxFontColor),
         imagemSourcePath: s.image,
         imagemPosicao: 5,
@@ -1496,11 +1626,12 @@ export default defineComponent({
         .filter((l: string) => l.length > 0);
       if (lines.length === 0) return;
 
-      this.slidesInput = lines.map((l: string) => ({ ...DEFAULT_SLIDE(), text: l }));
+      this.slidesInput = lines.map((l: string, idx: number) => ({ ...DEFAULT_SLIDE(idx), text: l }));
       this.activeSlideIndex = 0;
     },
     addSlide() {
-      this.slidesInput.push(DEFAULT_SLIDE());
+      const newIndex = this.slidesInput.length;
+      this.slidesInput.push(DEFAULT_SLIDE(newIndex));
       this.activeSlideIndex = this.slidesInput.length - 1;
     },
     duplicateSlide() {
@@ -1532,50 +1663,115 @@ export default defineComponent({
       if (this.activeSlideIndex < this.slidesInput.length - 1) this.activeSlideIndex++;
     },
     resetExternalPick() {
+      const audio = this.$refs.editorAudio as HTMLAudioElement | undefined;
+      if (audio) {
+        audio.pause();
+      }
       this.externalAudioFilePath = null;
       this.externalAudioFileName = "";
       this.externalInstrumentalFilePath = null;
       this.externalInstrumentalFileName = "";
+      this.audioCurrentTime = 0;
+      this.audioDuration = 0;
+      this.audioProgress = 0;
+      this.audioIsPaused = true;
     },
-    previewAudio() {
-      if (!this.externalAudioFilePath) return;
-      this.recordingMode = false;
+    onAudioTimeUpdate() {
+      const audio = this.$refs.editorAudio as HTMLAudioElement | undefined;
+      if (!audio) return;
+      this.audioCurrentTime = audio.currentTime;
+      this.audioDuration = audio.duration || 0;
+      if (this.audioDuration > 0) {
+        this.audioProgress = (this.audioCurrentTime / this.audioDuration) * 100;
+      }
+
+      // Do not auto-advance if user navigated manually in the last 800ms
+      if (Date.now() - this.lastManualNavTime < 800) {
+        return;
+      }
+
+      // In presentation mode, sync slide index to audio timestamp
+      if (this.mode === "present" && this.presentingSong) {
+        let bestIndex = -1;
+        let bestTime = -1;
+        this.presentingSong.slides.forEach((s, index) => {
+          if (typeof s.time === "number" && s.time <= this.audioCurrentTime && s.time >= bestTime) {
+            bestTime = s.time;
+            bestIndex = index;
+          }
+        });
+        if (bestIndex >= 0 && bestIndex !== this.presentSlideIndex) {
+          this.presentSlideIndex = bestIndex;
+          this.syncSlideToScreen();
+        }
+      } else if (this.mode === "edit" && !this.recordingMode && this.hasRecordedTimes) {
+        let bestIndex = -1;
+        let bestTime = -1;
+        this.slidesInput.forEach((s, index) => {
+          if (typeof s.time === "number" && s.time <= this.audioCurrentTime && s.time >= bestTime) {
+            bestTime = s.time;
+            bestIndex = index;
+          }
+        });
+        if (bestIndex >= 0 && bestIndex !== this.activeSlideIndex) {
+          this.activeSlideIndex = bestIndex;
+        }
+      }
+    },
+    onAudioLoadedMetadata() {
+      const audio = this.$refs.editorAudio as HTMLAudioElement | undefined;
+      if (!audio) return;
+      this.audioDuration = audio.duration || 0;
+      audio.volume = this.audioVolume / 100;
+    },
+    onAudioEnded() {
+      this.audioIsPaused = true;
+      this.audioProgress = 100;
+    },
+    toggleEditorPlayPause() {
+      const audio = this.$refs.editorAudio as HTMLAudioElement | undefined;
+      if (!audio) return;
       const appdata = (this as any).$appdata;
       if (appdata.get("modules.media.id_music")) {
         (this as any).$media.close(true);
       }
-      appdata.set("modules.external_media.filePath", this.externalAudioFilePath);
-      appdata.set("modules.external_media.title", this.nameInput.trim() || this.t("new_song"));
-      appdata.set("modules.external_media.subtitle", "");
-      appdata.set("modules.external_media.minimized", true);
-      appdata.set("modules.external_media.show", false);
-      appdata.set("modules.external_media.config", {
-        is_paused: false,
-        current_time: 0,
-        progress: 0,
-        duration: 0,
-        volume: 100,
-      });
+      if (audio.paused) {
+        audio.play().catch((err) => console.warn("Audio play failed:", err));
+      } else {
+        audio.pause();
+      }
     },
     recordAndAdvance() {
       if (!this.externalAudioFilePath) return;
-      if (!this.isPreviewingThisAudio) {
-        this.previewAudio();
-        this.recordingMode = true;
-        return;
+      const audio = this.$refs.editorAudio as HTMLAudioElement | undefined;
+      if (!audio) return;
+      const appdata = (this as any).$appdata;
+      if (appdata.get("modules.media.id_music")) {
+        (this as any).$media.close(true);
+      }
+      if (audio.paused) {
+        audio.play().catch((err) => console.warn("Audio play failed:", err));
       }
       this.recordingMode = true;
       if (this.activeSlideIndex < this.slidesInput.length - 1) {
         this.activeSlideIndex++;
-        this.activeSlide.time = this.externalMediaCurrentTime;
+        this.activeSlide.time = Math.round(audio.currentTime * 100) / 100;
       }
     },
     resetRecordedTimes() {
       this.slidesInput.forEach((s) => { s.time = null; });
+      const audio = this.$refs.editorAudio as HTMLAudioElement | undefined;
+      if (audio) {
+        audio.currentTime = 0;
+        this.audioCurrentTime = 0;
+        this.audioProgress = 0;
+      }
+      this.activeSlideIndex = 0;
+      this.recordingMode = false;
     },
     async pickExternalFile(kind: "audio" | "instrumental") {
       if (this.mode === "present") {
-        this.playExternalFile(kind);
+        this.togglePresentMode();
         return;
       }
       if (!(window as any).electronAPI?.openFileDialog) return;
@@ -1623,7 +1819,7 @@ export default defineComponent({
         .map((s, index) => ({ 
           ...s, 
           text: s.text.trim(), 
-          auxText: index === 0 ? "" : s.auxText.trim(),
+          auxText: s.auxText.trim(),
           cover: index === 0,
         }))
         .filter((s) => this.hasSlideContent(s));
@@ -1638,12 +1834,22 @@ export default defineComponent({
         filePathInstrumental: this.externalInstrumentalFilePath,
       };
       this.presentSlideIndex = Math.min(this.activeSlideIndex, slides.length - 1);
+      this.presentAudioKind = this.presentingSong.filePathAudio ? "audio" : "instrumental";
       this.syncSlideToScreen();
+
+      const audio = this.$refs.editorAudio as HTMLAudioElement | undefined;
+      if (audio) {
+        audio.pause();
+        audio.currentTime = 0;
+        this.audioCurrentTime = 0;
+        this.audioProgress = 0;
+        this.audioIsPaused = true;
+      }
     },
     syncSlideToScreen() {
       (this as any).$appdata.set("modules.music_editor.data", {
         text: this.currentSlideText,
-        auxText: this.presentSlideIndex === 0 ? "" : this.currentSlideAuxText,
+        auxText: this.currentSlideAuxText,
         image: this.currentSlideImageUrl,
         fontSize: this.currentSlideData?.fontSize,
         fontColor: this.currentSlideData?.fontColor,
@@ -1655,6 +1861,10 @@ export default defineComponent({
     exitPresentation() {
       this.presentingSong = null;
       this.presentSlideIndex = 0;
+      const audio = this.$refs.editorAudio as HTMLAudioElement | undefined;
+      if (audio) {
+        audio.pause();
+      }
       const appdata = (this as any).$appdata;
       if (appdata.get("popup_module") === "music_editor") {
         import("@/helpers/ui/Popup").then(({ default: $popup }) => {
@@ -1662,58 +1872,68 @@ export default defineComponent({
         });
       }
     },
-    playExternalFile(kind: "audio" | "instrumental") {
-      const filePath = kind === "audio"
-        ? this.presentingSong?.filePathAudio
-        : this.presentingSong?.filePathInstrumental;
-      if (!filePath) return;
-      const appdata = (this as any).$appdata;
-      if (appdata.get("modules.media.id_music")) {
-        (this as any).$media.close(true);
-      }
-      appdata.set("modules.external_media.filePath", filePath);
-      appdata.set("modules.external_media.title", this.presentingSong?.name || "");
-      appdata.set("modules.external_media.subtitle", "");
-      appdata.set("modules.external_media.minimized", true);
-      appdata.set("modules.external_media.show", false);
-      appdata.set("modules.external_media.config", {
-        is_paused: false,
-        current_time: 0,
-        progress: 0,
-        duration: 0,
-        volume: 100,
-      });
-    },
     togglePresentPlayPause() {
-      const appdata = (this as any).$appdata;
-      const activePath = appdata.get("modules.external_media.filePath");
-      if (!activePath) {
-        if (this.presentingSong?.filePathAudio) {
-          this.playExternalFile("audio");
-        } else if (this.presentingSong?.filePathInstrumental) {
-          this.playExternalFile("instrumental");
-        }
-        return;
-      }
-      appdata.set("modules.external_media.config.is_paused", !this.presentIsPaused);
+      this.toggleEditorPlayPause();
     },
-    togglePresentMode() {
-      if (this.presentActiveMode === "audio" && this.presentingSong?.filePathInstrumental) {
-        this.playExternalFile("instrumental");
-      } else if (this.presentingSong?.filePathAudio) {
-        this.playExternalFile("audio");
+    async togglePresentMode() {
+      const nextKind = this.presentAudioKind === "audio" ? "instrumental" : "audio";
+      const targetPath = nextKind === "instrumental"
+        ? this.presentingSong?.filePathInstrumental
+        : this.presentingSong?.filePathAudio;
+      if (!targetPath) return;
+
+      const audio = this.$refs.editorAudio as HTMLAudioElement | undefined;
+      const currentTime = audio?.currentTime || 0;
+      const wasPlaying = !this.audioIsPaused;
+
+      this.presentAudioKind = nextKind;
+      await this.$nextTick();
+
+      if (audio) {
+        audio.currentTime = currentTime;
+        if (wasPlaying) {
+          audio.play().catch(() => {});
+        }
+      }
+    },
+    toggleAudioMute() {
+      const audio = this.$refs.editorAudio as HTMLAudioElement | undefined;
+      if (!audio) return;
+      if (this.audioVolume > 0) {
+        this.savedAudioVolume = this.audioVolume;
+        this.audioVolume = 0;
+        audio.volume = 0;
+      } else {
+        this.audioVolume = this.savedAudioVolume > 0 ? this.savedAudioVolume : 100;
+        audio.volume = this.audioVolume / 100;
       }
     },
     togglePresentMute() {
-      const appdata = (this as any).$appdata;
-      const current = this.presentVolume;
-      appdata.set("modules.external_media.config.volume", current > 0 ? 0 : 100);
+      this.toggleAudioMute();
+    },
+    seekAudioProgress(val: number) {
+      const audio = this.$refs.editorAudio as HTMLAudioElement | undefined;
+      if (!audio || this.audioDuration <= 0) return;
+      const targetTime = (val / 100) * this.audioDuration;
+      audio.currentTime = targetTime;
+      this.audioCurrentTime = targetTime;
+      this.audioProgress = val;
+      this.lastManualNavTime = Date.now();
     },
     seekPresentProgress(val: number) {
-      const duration = this.presentDuration;
-      if (duration <= 0) return;
-      const target = (val / 100) * duration;
-      (this as any).$appdata.set("modules.external_media.config.current_time", target);
+      this.seekAudioProgress(val);
+    },
+    onTimelineClick() {
+      this.$nextTick(() => {
+        this.seekPresentProgress(this.presentProgress);
+      });
+    },
+    onVolumeUpdate(val: number) {
+      this.audioVolume = val;
+      const audio = this.$refs.editorAudio as HTMLAudioElement | undefined;
+      if (audio) {
+        audio.volume = val / 100;
+      }
     },
     formatPresentTime(seconds: number): string {
       const s = Math.max(0, Math.floor(seconds || 0));
@@ -1725,19 +1945,33 @@ export default defineComponent({
       if (!this.presentingSong || index < 0 || index >= this.presentingSong.slides.length) return;
       this.presentSlideIndex = index;
       this.syncSlideToScreen();
+      const slide = this.presentingSong.slides[index];
+      const audio = this.$refs.editorAudio as HTMLAudioElement | undefined;
+      this.lastManualNavTime = Date.now();
+      if (audio) {
+        if (typeof slide?.time === "number") {
+          audio.currentTime = slide.time;
+          this.audioCurrentTime = slide.time;
+          if (this.audioDuration > 0) {
+            this.audioProgress = (slide.time / this.audioDuration) * 100;
+          }
+        } else if (index === 0) {
+          audio.currentTime = 0;
+          this.audioCurrentTime = 0;
+          this.audioProgress = 0;
+        }
+      }
     },
     nextSlide() {
       if (!this.presentingSong) return;
       if (this.presentSlideIndex < this.presentingSong.slides.length - 1) {
-        this.presentSlideIndex++;
-        this.syncSlideToScreen();
+        this.goToPresentSlide(this.presentSlideIndex + 1);
       }
     },
     prevSlide() {
       if (!this.presentingSong) return;
       if (this.presentSlideIndex > 0) {
-        this.presentSlideIndex--;
-        this.syncSlideToScreen();
+        this.goToPresentSlide(this.presentSlideIndex - 1);
       }
     },
     handlePresentKeydown(e: KeyboardEvent) {
@@ -2269,6 +2503,35 @@ export default defineComponent({
         font-weight: 600;
       }
     }
+
+    &.title-slide {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      margin-bottom: 14px;
+      padding: 10px 16px;
+
+      .title-chip {
+        background: rgba(246, 195, 42, 0.2);
+        color: #f6c32a;
+        border: 1px solid rgba(246, 195, 42, 0.4);
+      }
+
+      .slide-badge-title {
+        font-size: 9px;
+        font-weight: 700;
+        color: #f6c32a;
+        letter-spacing: 0.12em;
+        line-height: 1;
+        margin-bottom: 3px;
+        text-transform: uppercase;
+      }
+
+      .native-slide-text {
+        font-size: 13px;
+        font-weight: 700;
+        color: white;
+      }
+    }
   }
 
   .native-slide-chip {
@@ -2291,62 +2554,72 @@ export default defineComponent({
     text-transform: uppercase;
   }
 
-  .native-player-footer {
+  .floating-pill-container {
     bottom: 32px;
     z-index: 60;
     pointer-events: none;
   }
 
-  .native-footer-pill {
+  .modern-pill-player {
     pointer-events: auto;
-    background: rgba(15, 15, 20, 0.55);
+    background: rgba(15, 15, 20, 0.45) !important;
     backdrop-filter: blur(28px) saturate(160%);
     -webkit-backdrop-filter: blur(28px) saturate(160%);
     border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 9999px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     min-height: 60px;
-    max-width: calc(100% - 48px);
-  }
+    width: auto !important;
+    display: inline-flex !important;
+    align-items: center;
+    position: relative;
+    overflow: visible;
 
-  .native-player-info {
-    max-width: 220px;
-    min-width: 140px;
-  }
+    .player-info {
+      max-width: 280px;
+      min-width: 150px;
+    }
 
-  .native-play-btn {
-    transform: scale(1.1);
-    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    .play-btn {
+      transform: scale(1.1);
+      transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
 
-    &:hover {
-      transform: scale(1.25);
+      &:hover {
+        transform: scale(1.25);
+      }
+      &:active {
+        transform: scale(1);
+      }
+    }
+
+    .player-timeline-wrapper {
+      min-width: 150px;
+    }
+
+    .timeline-slider {
+      transition: height 0.2s ease;
+      cursor: pointer;
+
+      &:hover {
+        height: 6px !important;
+      }
+    }
+
+    .volume-btn, .v-btn {
+      transition: all 0.2s ease;
+      &:hover {
+        opacity: 0.8;
+        background: rgba(255, 255, 255, 0.05);
+      }
     }
   }
 
-  .native-timeline {
-    min-width: 150px;
-  }
-
-  .native-timeline-slider {
-    cursor: pointer;
-
-    &.v-input {
-      margin: 0;
-    }
-
-    :deep(.v-input__control) {
-      min-height: 0;
-    }
-
-    :deep(.v-slider-track__background),
-    :deep(.v-slider-track__fill) {
-      height: 4px;
-    }
-
-    :deep(.v-slider-thumb__surface) {
-      width: 12px;
-      height: 12px;
-    }
+  .modern-glass-menu {
+    background: rgba(15, 15, 20, 0.45) !important;
+    backdrop-filter: blur(28px) saturate(160%);
+    -webkit-backdrop-filter: blur(28px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   }
 }
 

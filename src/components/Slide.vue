@@ -24,12 +24,13 @@
           <!-- Hero Design Exclusivo para o Título da Música (Cover Slide) -->
           <!-- eslint-disable vue/no-v-html -->
           <div
-            v-if="slide.cover"
+            v-if="slide.cover && (hasCoverText || hasCoverAuxText)"
             class="cover-slide-group d-flex flex-column align-center justify-center text-center w-100"
             :style="{ maxWidth: '90%' }"
           >
             <!-- Card Principal do Título -->
             <div
+              v-if="hasCoverText"
               class="cover-slide-hero d-flex flex-column align-center justify-center text-center"
               :style="style_cover_container(slide)"
             >
@@ -42,7 +43,7 @@
 
             <!-- Subtítulo Abaixo do Card do Título (Aba com Whiskers) -->
             <div
-              v-if="slide.aux_text"
+              v-if="hasCoverAuxText"
               class="cover-subtitle-tab d-inline-flex align-center justify-center"
               :style="style_cover_subtitle(slide)"
             >
@@ -56,15 +57,15 @@
           <!-- eslint-enable vue/no-v-html -->
 
           <!-- Slide de Letra Padrão -->
-          <div v-else class="d-flex flex-column align-center justify-center w-100">
+          <div v-else-if="hasSlideText || hasSlideAuxText" class="d-flex flex-column align-center justify-center w-100">
             <!-- eslint-disable vue/no-v-html -->
             <div
-              v-if="slide.aux_text"
+              v-if="hasSlideAuxText"
               :style="style_aux_text(slide)"
               v-html="slide.aux_text"
             />
             <div
-              v-if="slide.text"
+              v-if="hasSlideText"
               class="slide-lyric-card"
               :style="style_text(slide)"
             >
@@ -167,6 +168,17 @@ const props_slide = computed(() => ({
   image: props.image,
   image_position: props.image_position,
 }));
+
+const isTextEmpty = (val?: string) => {
+  if (!val || typeof val !== "string") return true;
+  const stripped = val.replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").trim();
+  return stripped.length === 0;
+};
+
+const hasCoverText = computed(() => !isTextEmpty(props_slide.value?.text));
+const hasCoverAuxText = computed(() => !isTextEmpty(props_slide.value?.aux_text));
+const hasSlideText = computed(() => !isTextEmpty(props_slide.value?.text));
+const hasSlideAuxText = computed(() => !isTextEmpty(props_slide.value?.aux_text));
 
 const fontSizePc = (pc: number) => {
   const refW = props.reference_size?.width && props.reference_size.width > 0
@@ -540,20 +552,15 @@ const calculateMaxCardSize = () => {
 const style_text = (_slide: any): any => { 
   const isBgRemoved = customBg.value && removeTextBg.value;
 
-  const fixedDims: any = {};
-  if (fixedCardWidth.value > 0) {
-    fixedDims.width = `${fixedCardWidth.value}px`;
-  }
-  if (fixedCardHeight.value > 0) {
-    fixedDims.height = `${fixedCardHeight.value}px`;
-  }
-  fixedDims.maxWidth = "90%";
-  fixedDims.maxHeight = "82%";
-  fixedDims.boxSizing = "border-box";
-  fixedDims.display = "flex";
-  fixedDims.flexDirection = "column";
-  fixedDims.alignItems = "center";
-  fixedDims.justifyContent = "center";
+  const fixedDims: any = {
+    maxWidth: fixedCardWidth.value > 0 ? `${fixedCardWidth.value}px` : "90%",
+    maxHeight: fixedCardHeight.value > 0 ? `${fixedCardHeight.value}px` : "82%",
+    boxSizing: "border-box",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+  };
 
   if (isBgRemoved) {
     const bgStyles = {

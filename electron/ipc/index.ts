@@ -51,6 +51,14 @@ function buildSljaIni(slides: Array<SljaSlideInput & { imagemRelPath: string }>,
     if (s.imagemRelPath) lines.push(`imagem=${s.imagemRelPath}`);
     lines.push(`imagem_posicao=${s.imagemPosicao}`);
     lines.push(`tempo=${s.tempo}`);
+    if (typeof s.tempo === "number" && s.tempo > 0) {
+      const tempoSeconds = s.tempo / 1000000;
+      const mins = Math.floor(tempoSeconds / 60);
+      const secs = Math.floor(tempoSeconds % 60);
+      lines.push(`tempo_hms=${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`);
+    } else if (i === 0) {
+      lines.push("tempo_hms=00:00");
+    }
     lines.push("");
   });
   return lines.join("\r\n");
@@ -97,6 +105,45 @@ function parseSljaIni(text: string): { geral: Record<string, string>; slides: Re
     .sort((a, b) => a - b)
     .map((k) => slidesMap.get(k) as Record<string, string>);
   return { geral, slides: orderedSlides };
+}
+
+function parseSlideTime(s: Record<string, string>, slideIndex: number): number | null {
+  let hmsSeconds: number | null = null;
+  if (s.tempo_hms) {
+    const parts = s.tempo_hms.trim().split(":").map((p) => parseFloat(p.replace(/,/g, "")));
+    if (!parts.some((p) => isNaN(p))) {
+      if (parts.length === 2) {
+        hmsSeconds = parts[0] * 60 + parts[1];
+      } else if (parts.length === 3) {
+        hmsSeconds = parts[0] * 3600 + parts[1] * 60 + parts[2];
+      }
+    }
+  }
+
+  const rawTempo = s.tempo !== undefined && s.tempo !== "" ? parseInt(s.tempo, 10) : NaN;
+  const tempoSeconds = !isNaN(rawTempo) ? rawTempo / 1000000 : null;
+
+  if (hmsSeconds !== null) {
+    // Se não for o primeiro slide e tempo_hms for 00:00 com tempo <= 0, significa que não tem tempo definido
+    if (slideIndex > 0 && hmsSeconds === 0 && (isNaN(rawTempo) || rawTempo <= 0)) {
+      return null;
+    }
+    // Se tempo foi salvo em microssegundos pela versão moderna, tempoSeconds e hmsSeconds serão quase iguais (< 1.5s)
+    if (tempoSeconds !== null && Math.abs(tempoSeconds - hmsSeconds) < 1.5) {
+      return tempoSeconds;
+    }
+    // Caso contrário, tempo era posição em bytes do BASS (versão clássica); usamos o tempo_hms calculado pelo BASS
+    return hmsSeconds;
+  }
+
+  if (tempoSeconds !== null) {
+    if (slideIndex > 0 && tempoSeconds === 0) {
+      return null;
+    }
+    return tempoSeconds;
+  }
+
+  return null;
 }
 
 export function registerIpcHandlers() {
@@ -370,7 +417,7 @@ export function registerIpcHandlers() {
       const instrumentalPath = resolveMediaEntry(geral.url_musica_instrumental || "");
 
       const imagePathByRel = new Map<string, string | null>();
-      const resolvedSlides = slides.map((s) => {
+      const resolvedSlides = slides.map((s, index) => {
         const imgRel = s.imagem || "";
         let imagePath: string | null = null;
         if (imgRel) {
@@ -381,16 +428,15 @@ export function registerIpcHandlers() {
             imagePathByRel.set(imgRel, imagePath);
           }
         }
-        const tempoUs = parseInt(s.tempo, 10);
         return {
           text: (s.letra || "").split("|").join("\n"),
           auxText: (s.letra_aux || "").split("|").join("\n"),
           image: imagePath,
-          fontSize: parseInt(s.tamanho_letra, 10) || 18,
+          fontSize: parseInt(s.tamanho_letra, 10) || (index === 0 ? 18 : 14),
           fontColor: s.cor_letra || "#ffffff",
           auxFontSize: parseInt(s.tamanho_letra_aux, 10) || 10,
           auxFontColor: s.cor_letra_aux || "#ffffff",
-          time: isNaN(tempoUs) ? null : tempoUs / 1000000,
+          time: parseSlideTime(s, index),
         };
       });
 

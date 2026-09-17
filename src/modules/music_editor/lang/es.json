@@ -27,6 +27,7 @@
     "ribbon_slide_controls": "Controles de Diapositivas",
     "ribbon_remove_audio": "Quitar Audio",
     "ribbon_play": "Reproducir",
+    "pause": "Pausar",
     "ribbon_record_advance": "Grabar y Avanzar",
     "ribbon_record_start": "Grabar desde el Inicio",
     "clear_all": "Limpiar Todo",
@@ -52,5 +53,7 @@
     "font_size": "Tamaño de Fuente",
     "font_color": "Color de Fuente",
     "aux_font_size": "Fuente Auxiliar",
-    "aux_font_color": "Color Auxiliar"
+    "aux_font_color": "Color Auxiliar",
+    "fullscreen": "Pantalla completa",
+    "exit_fullscreen": "Salir de pantalla completa"
 }

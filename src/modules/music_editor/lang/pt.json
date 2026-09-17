@@ -27,6 +27,7 @@
     "ribbon_slide_controls": "Controles de Slides",
     "ribbon_remove_audio": "Remover Áudio",
     "ribbon_play": "Reproduzir",
+    "pause": "Pausar",
     "ribbon_record_advance": "Gravar e Avançar",
     "ribbon_record_start": "Gravar do Início",
     "clear_all": "Limpar Tudo",
@@ -52,5 +53,7 @@
     "font_size": "Tamanho da Fonte",
     "font_color": "Cor da Fonte",
     "aux_font_size": "Fonte Auxiliar",
-    "aux_font_color": "Cor Auxiliar"
+    "aux_font_color": "Cor Auxiliar",
+    "fullscreen": "Tela Cheia",
+    "exit_fullscreen": "Sair da Tela Cheia"
 }
