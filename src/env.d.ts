@@ -105,6 +105,13 @@ interface ElectronAPI {
   onUpdateDownloadProgress: (callback: (progress: unknown) => void) => void
   onUpdateDownloaded: (callback: (info: unknown) => void) => void
   onUpdateError: (callback: (error: unknown) => void) => void
+  streamingGetStatus?: () => Promise<{ running: boolean; port: number; host: string; token: string; urls: Record<string, string> }>
+  streamingGetInterfaces?: () => Promise<Array<{ name: string; ip: string; isLocal: boolean }>>
+  streamingStart?: (config?: Record<string, unknown>) => Promise<{ running: boolean; port: number; host: string; token: string; urls: Record<string, string> }>
+  streamingStop?: () => Promise<{ running: boolean; port: number; host: string; token: string; urls: Record<string, string> }>
+  streamingPushSlide?: (data: Record<string, unknown>) => Promise<boolean>
+  streamingClearSlide?: () => Promise<boolean>
+  onStreamingRemoteAction?: (callback: (data: { action: string; params: Record<string, string> }) => void) => void
 }
 
 declare global {

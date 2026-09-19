@@ -95,6 +95,47 @@ export default {
           });
         }
       }
+
+      // Auto-iniciar Servidor de Streaming (se configurado) e registrar ações remotas
+      if (window.electronAPI && window.electronAPI.streamingStart) {
+        const autoStart = this.$userdata.get("modules.streaming.autostart") === true;
+        if (autoStart) {
+          const port = Number(this.$userdata.get("modules.streaming.port")) || 7070;
+          const host = this.$userdata.get("modules.streaming.host") || "0.0.0.0";
+          const token = this.$userdata.get("modules.streaming.token") || "";
+          window.electronAPI.streamingStart({ port, host, token }).catch((err) => {
+            console.error("[Streaming] Erro ao auto-iniciar servidor:", err);
+          });
+        }
+      }
+
+      if (window.electronAPI && window.electronAPI.onStreamingRemoteAction) {
+        window.electronAPI.onStreamingRemoteAction(async (data) => {
+          const { action, params } = data;
+          if (action === "song-slides") {
+            if (params.action === "next") {
+              this.$media.nextSlide();
+            } else if (params.action === "previous") {
+              this.$media.prevSlide();
+            } else if (params.action === "close") {
+              this.$media.close();
+            }
+          } else if (action === "keyboard") {
+            const key = Number(params.key);
+            if (key === 39) this.$media.nextSlide();
+            else if (key === 37) this.$media.prevSlide();
+            else if (key === 32) this.$media.playPause();
+            else if (key === 27) this.$media.close();
+          } else if (action === "open-song") {
+            const songId = Number(params.id);
+            if (songId) {
+              const tag = params.tag || "1";
+              const mode = tag === "2" ? "playback" : tag === "3" ? "no_audio" : "vocal";
+              this.$media.open({ id_music: songId, mode });
+            }
+          }
+        });
+      }
       
       // Inicia a sincronização silenciosa em background (se necessária)
       setTimeout(async () => {

@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LouvorJA - Overlay Transmissão (OBS / vMix)</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      width: 100vw;
+      height: 100vh;
+      background: transparent !important;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    .overlay-container {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      display: flex;
+      padding: 30px;
+    }
+
+    /* MODO LOWER-THIRD (PADRÃO) */
+    .mode-lower-third {
+      align-items: flex-end;
+      justify-content: center;
+      padding-bottom: 45px;
+    }
+
+    .mode-lower-third .card {
+      width: 90%;
+      max-width: 1200px;
+      min-height: 110px;
+      background: rgba(15, 17, 23, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-radius: 18px;
+      padding: 20px 36px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* MODO FULLSCREEN */
+    .mode-fullscreen {
+      align-items: center;
+      justify-content: center;
+    }
+
+    .mode-fullscreen .card {
+      width: 92%;
+      max-width: 1300px;
+      background: rgba(15, 17, 23, 0.85);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-radius: 24px;
+      padding: 40px 60px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* TEMA TOTALMENTE TRANSPARENTE (SOMENTE TEXTO COM SOMBRA) */
+    .theme-transparent .card {
+      background: transparent !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      border: none !important;
+      box-shadow: none !important;
+    }
+
+    /* TEMA CLARO */
+    .theme-light .card {
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    }
+    .theme-light .main-text {
+      color: #111 !important;
+      text-shadow: 0 2px 8px rgba(255, 255, 255, 0.8) !important;
+    }
+    .theme-light .sub-text, .theme-light .header-meta {
+      color: #444 !important;
+    }
+
+    /* ESTILOS DE TEXTO */
+    .main-text {
+      font-size: 34px;
+      line-height: 1.35;
+      font-weight: 700;
+      color: #ffffff;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+      white-space: pre-line;
+      text-align: center;
+      transition: color 0.3s ease;
+    }
+
+    .main-text.is-cover {
+      color: #ffca28;
+    }
+
+    .sub-text {
+      font-size: 22px;
+      line-height: 1.3;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.85);
+      margin-top: 8px;
+      text-align: center;
+      text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8);
+    }
+
+    .bible-ref {
+      font-size: 20px;
+      font-weight: 700;
+      color: #ffb300;
+      text-align: right;
+      margin-top: 10px;
+      letter-spacing: 0.5px;
+      text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8);
+    }
+
+    .header-meta {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: rgba(255, 255, 255, 0.5);
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* ESTADOS OCULTO / VISÍVEL */
+    .hidden {
+      opacity: 0 !important;
+      transform: translateY(24px) scale(0.98);
+      pointer-events: none;
+    }
+
+    .visible {
+      opacity: 1 !important;
+      transform: translateY(0) scale(1);
+    }
+  </style>
+</head>
+<body>
+  <div id="container" class="overlay-container mode-lower-third">
+    <div id="card" class="card hidden">
+      <div id="meta" class="header-meta"></div>
+      <div id="main-text" class="main-text"></div>
+      <div id="sub-text" class="sub-text" style="display: none;"></div>
+      <div id="bible-ref" class="bible-ref" style="display: none;"></div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const params = new URLSearchParams(window.location.search);
+      const mode = params.get("mode") || "lower-third";
+      const theme = params.get("theme") || "dark";
+      const customFontSize = params.get("fontSize");
+      const customAlign = params.get("align");
+
+      const container = document.getElementById("container");
+      const card = document.getElementById("card");
+      const metaEl = document.getElementById("meta");
+      const mainTextEl = document.getElementById("main-text");
+      const subTextEl = document.getElementById("sub-text");
+      const bibleRefEl = document.getElementById("bible-ref");
+
+      // Aplica classes de modo e tema
+      if (mode === "fullscreen") {
+        container.classList.remove("mode-lower-third");
+        container.classList.add("mode-fullscreen");
+      }
+      if (theme === "transparent") {
+        container.classList.add("theme-transparent");
+      } else if (theme === "light") {
+        container.classList.add("theme-light");
+      }
+
+      if (customFontSize) {
+        mainTextEl.style.fontSize = customFontSize.includes("px") ? customFontSize : customFontSize + "px";
+      }
+      if (customAlign) {
+        mainTextEl.style.textAlign = customAlign;
+        subTextEl.style.textAlign = customAlign;
+      }
+
+      let currentData = null;
+
+      function render(data) {
+        if (!data || data.type === "idle") {
+          card.classList.remove("visible");
+          card.classList.add("hidden");
+          return;
+        }
+
+        if (data.type === "media") {
+          const text = (data.currentLyric || "").trim();
+          if (!text) {
+            card.classList.remove("visible");
+            card.classList.add("hidden");
+            return;
+          }
+
+          metaEl.textContent = data.title || "";
+          mainTextEl.textContent = text;
+          mainTextEl.className = "main-text" + (data.isCover ? " is-cover" : "");
+
+          if (data.auxLyric && data.auxLyric.trim() !== "") {
+            subTextEl.textContent = data.auxLyric.trim();
+            subTextEl.style.display = "block";
+          } else {
+            subTextEl.style.display = "none";
+          }
+
+          bibleRefEl.style.display = "none";
+          card.classList.remove("hidden");
+          card.classList.add("visible");
+        } else if (data.type === "bible") {
+          const text = (data.bibleText || "").trim();
+          if (!text) {
+            card.classList.remove("visible");
+            card.classList.add("hidden");
+            return;
+          }
+
+          metaEl.textContent = data.bibleVersion ? "BÍBLIA SAGRADA (" + data.bibleVersion + ")" : "BÍBLIA SAGRADA";
+          mainTextEl.textContent = text;
+          mainTextEl.className = "main-text";
+          subTextEl.style.display = "none";
+
+          if (data.bibleReference) {
+            bibleRefEl.textContent = data.bibleReference;
+            bibleRefEl.style.display = "block";
+          } else {
+            bibleRefEl.style.display = "none";
+          }
+
+          card.classList.remove("hidden");
+          card.classList.add("visible");
+        }
+      }
+
+      // Conexão via Server-Sent Events (SSE)
+      function connectSSE() {
+        const token = params.get("token") || "";
+        const sseUrl = "/api/events" + (token ? "?token=" + encodeURIComponent(token) : "");
+        const evtSource = new EventSource(sseUrl);
+
+        evtSource.addEventListener("state", function (e) {
+          try {
+            const data = JSON.parse(e.data);
+            currentData = data;
+            render(data);
+          } catch (err) {
+            console.error("[SSE] Erro ao parsear dados:", err);
+          }
+        });
+
+        evtSource.onerror = function () {
+          console.warn("[SSE] Conexão perdida. Tentando reconectar...");
+          evtSource.close();
+          setTimeout(connectSSE, 3000);
+        };
+      }
+
+      // Fallback para polling a cada 500ms caso SSE não esteja disponível
+      if (typeof EventSource !== "undefined") {
+        connectSSE();
+      } else {
+        setInterval(function () {
+          fetch("/api/status")
+            .then(function (res) { return res.json(); })
+            .then(function (res) {
+              if (res && res.data) render(res.data);
+            })
+            .catch(function () {});
+        }, 500);
+      }
+    })();
+  </script>
+</body>
+</html>

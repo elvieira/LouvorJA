@@ -94,4 +94,15 @@ contextBridge.exposeInMainWorld("electronAPI", {
   onUpdateError: (callback: (error: unknown) => void) => {
     ipcRenderer.on("update-error", (_event, error: unknown) => callback(error));
   },
+
+  // Streaming Server / OBS / vMix
+  streamingGetStatus: () => ipcRenderer.invoke("streaming-get-status"),
+  streamingGetInterfaces: () => ipcRenderer.invoke("streaming-get-interfaces"),
+  streamingStart: (config?: Record<string, unknown>) => ipcRenderer.invoke("streaming-start", config),
+  streamingStop: () => ipcRenderer.invoke("streaming-stop"),
+  streamingPushSlide: (data: Record<string, unknown>) => ipcRenderer.invoke("streaming-push-slide", data),
+  streamingClearSlide: () => ipcRenderer.invoke("streaming-clear-slide"),
+  onStreamingRemoteAction: (callback: (data: { action: string; params: Record<string, string> }) => void) => {
+    ipcRenderer.on("streaming-remote-action", (_event, data) => callback(data));
+  },
 });

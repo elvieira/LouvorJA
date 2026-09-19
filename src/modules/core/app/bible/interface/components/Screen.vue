@@ -81,6 +81,27 @@ export default defineComponent({
       return this.config.background;
     },
   },
+  watch: {
+    bible: {
+      deep: true,
+      immediate: true,
+      handler(val) {
+        if (typeof window !== "undefined" && window.electronAPI?.streamingPushSlide) {
+          if (val && val.text) {
+            window.electronAPI.streamingPushSlide({
+              type: "bible",
+              bibleText: val.text,
+              bibleReference: val.scriptural_reference || "",
+              bibleVersion: val.version || "",
+              updatedAt: Date.now(),
+            });
+          } else {
+            window.electronAPI.streamingClearSlide?.();
+          }
+        }
+      },
+    },
+  },
   mounted() {
     this.windowResize();
     window.addEventListener("resize", this.windowResize);

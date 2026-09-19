@@ -392,6 +392,7 @@ export default {
       }
     }
     
+    this.syncStreaming();
     return true;
   },
 
@@ -703,6 +704,9 @@ export default {
   },
 
   clearVariables() {
+    if (typeof window !== "undefined" && window.electronAPI?.streamingClearSlide) {
+      window.electronAPI.streamingClearSlide();
+    }
     $appdata.set("modules.media.data", {});
     $appdata.set("modules.media.id_music", null);
     $appdata.set("modules.media.external_audio_url", "");
@@ -796,6 +800,35 @@ export default {
     return slides[index];
   },
 
+  syncStreaming() {
+    if (typeof window !== "undefined" && window.electronAPI?.streamingPushSlide) {
+      const slide = this.slide();
+      const slides = this.slides() || [];
+      const config = this.config();
+      const slideIndex = config?.slide_index ?? 0;
+      const nextSlide = slides[slideIndex + 1];
+
+      if (!slide) {
+        window.electronAPI.streamingClearSlide?.();
+        return;
+      }
+
+      window.electronAPI.streamingPushSlide({
+        type: "media",
+        title: config?.title || "",
+        subtitle: config?.subtitle || "",
+        author: config?.author || "",
+        slideIndex,
+        totalSlides: slides.length,
+        isCover: slide.cover === true,
+        currentLyric: slide.lyric || "",
+        auxLyric: slide.aux_lyric || "",
+        nextLyric: nextSlide ? nextSlide.lyric || "" : "",
+        updatedAt: Date.now(),
+      });
+    }
+  },
+
   goToSlide(index: number) {
     const last_slide = $appdata.get("modules.media.config.last_slide");
 
@@ -815,6 +848,7 @@ export default {
     } else {
       $appdata.set("modules.media.config.slide_index", index);
     }
+    this.syncStreaming();
   },
   goToTime(time: number) {
     const audio = this.getElement();
@@ -1083,10 +1117,12 @@ export default {
       times && times?.length
         ? times.filter((time: number) => time <= current_time).length - 1
         : 0;
-    $appdata.set(
-      "modules.media.config.slide_index",
-      slide_index <= 0 ? 0 : slide_index,
-    );
+    const prevIndex = $appdata.get("modules.media.config.slide_index");
+    const nextIndex = slide_index <= 0 ? 0 : slide_index;
+    $appdata.set("modules.media.config.slide_index", nextIndex);
+    if (prevIndex !== nextIndex) {
+      this.syncStreaming();
+    }
 
     const start_time = times && times?.length ? times[slide_index] : 0;
     const end_time =
