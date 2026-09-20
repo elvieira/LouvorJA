@@ -40,6 +40,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.on("import-legacy-progress", (_event, data: unknown) => callback(data));
   },
   searchBible: (versionId: number, query: string, mode: string, lang?: string) => ipcRenderer.invoke("search-bible", versionId, query, mode, lang),
+  fetchYoutubePlaylist: (playlistId: string) => ipcRenderer.invoke("fetch-youtube-playlist", playlistId),
   
   validateInstallation: (lang?: string) => ipcRenderer.invoke("validate-installation", lang),
   repairSysdata: (filenames: string[], lang?: string) => ipcRenderer.invoke("repair-sysdata", filenames, lang),

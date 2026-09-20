@@ -22,6 +22,9 @@
         "musics": {
             "title": "Álbuns e Coletâneas"
         },
+        "online_collection": {
+            "title": "Coletânea Online"
+        },
         "bible": {
             "title": "Bíblia"
         },
@@ -49,7 +52,9 @@
         "no": "Não",
         "wait": "Aguarde...",
         "close_app_title": "Encerrar Aplicativo?",
-        "close_app_text": "Existe uma mídia ativa ou projeção em andamento. Deseja realmente sair?"
+        "close_app_text": "Existe uma mídia ativa ou projeção em andamento. Deseja realmente sair?",
+        "exit_projection_title": "Parar projeção?",
+        "exit_projection_text": "Deseja realmente parar de projetar na segunda tela?"
     },
     "messages": {
         "file_database_not_found": "Arquivo de dados não encontrado!",

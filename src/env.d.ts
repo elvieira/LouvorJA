@@ -64,6 +64,11 @@ interface ElectronAPI {
     }>
   } | null>
   openExternal: (url: string) => Promise<void>
+  fetchYoutubePlaylist: (playlistId: string) => Promise<{
+    playlistId: string
+    title: string
+    videos: Array<{ videoId: string; title: string }>
+  } | null>
   openPath: (filePath: string) => Promise<void>
   clearAllData: () => Promise<void>
   clearSysData: (lang?: string) => Promise<void>

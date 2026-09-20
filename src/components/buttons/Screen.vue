@@ -65,6 +65,13 @@ const popup = async () => {
         }
         const primary = displays.find((d: any) => d.isPrimary) || displays[0];
         selectedMonitors = configMonitors.filter((m: any) => m !== primary.id);
+
+        // Vídeos/mídia externa: se o usuário não configurou um monitor específico
+        // em Ajustes, projeta automaticamente na tela estendida por padrão, já que
+        // abrir um vídeo sem projetá-lo em lugar nenhum não tem utilidade.
+        if (selectedMonitors.length === 0 && props.module === "external_media") {
+          selectedMonitors = displays.filter((d: any) => d.id !== primary.id).map((d: any) => d.id);
+        }
       }
     }
     
@@ -105,7 +112,10 @@ const handleGlobalKeydown = (e: KeyboardEvent) => {
       popup();
     }
   } else if (e.key === "Escape") {
-    if (is_selected.value) {
+    // Para "external_media" (vídeos), o Escape é tratado de forma centralizada
+    // pelo handler global do App.vue, que pede confirmação antes de fechar/parar
+    // a projeção. Tratar aqui também causaria fechamento duplicado/instantâneo.
+    if (is_selected.value && props.module !== "external_media") {
       e.preventDefault();
       popupHelper.exit();
     }
@@ -118,6 +128,11 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener("keydown", handleGlobalKeydown);
+});
+
+defineExpose({
+  popup,
+  is_selected,
 });
 </script>
 

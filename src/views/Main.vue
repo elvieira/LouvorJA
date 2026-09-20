@@ -77,7 +77,7 @@
 
       <!-- External Media MiniPlayer -->
       <transition name="fade-slide">
-        <div v-if="isExternalMediaMinimized && showExternalMiniPlayer && isExternalVideo" class="mini-player-popup elevation-12">
+        <div v-if="isExternalMediaMinimized && showExternalMiniPlayer && (isExternalVideo || isExternalYoutube)" class="mini-player-popup elevation-12">
           <v-card
             theme="dark"
             rounded="lg"
@@ -85,13 +85,13 @@
             width="320"
           >
             <div class="mini-player-toolbar d-flex justify-end pa-1 position-absolute w-100" style="z-index: 10;">
-              <v-btn 
+              <v-btn
                 icon
-                size="x-small" 
-                variant="flat" 
-                color="rgba(0,0,0,0.6)" 
+                size="x-small"
+                variant="flat"
+                color="rgba(0,0,0,0.6)"
                 class="mx-1 hover-btn"
-                @click="maximizeExternalPlayer" 
+                @click="maximizeExternalPlayer"
               >
                 <v-icon>mdi-arrow-expand-all</v-icon>
                 <v-tooltip
@@ -103,13 +103,13 @@
                   Maximizar
                 </v-tooltip>
               </v-btn>
-              <v-btn 
+              <v-btn
                 icon
-                size="x-small" 
-                variant="flat" 
-                color="rgba(0,0,0,0.6)" 
+                size="x-small"
+                variant="flat"
+                color="rgba(0,0,0,0.6)"
                 class="hover-btn"
-                @click="showExternalMiniPlayer = false" 
+                @click="showExternalMiniPlayer = false"
               >
                 <v-icon>mdi-minus</v-icon>
                 <v-tooltip
@@ -123,8 +123,13 @@
               </v-btn>
             </div>
             <div class="position-relative w-100 bg-black" style="height: 180px;">
+              <div
+                v-if="isExternalYoutube"
+                ref="youtubeMiniPlayerEl"
+                class="w-100 h-100"
+              />
               <video
-                v-if="externalFilePath"
+                v-else-if="externalFilePath"
                 ref="externalMiniPlayerVideo"
                 :src="externalFilePath"
                 class="w-100 h-100"
@@ -146,7 +151,8 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
+import { defineComponent, markRaw } from "vue";
+import { loadYoutubeApi } from "@/helpers/services/YoutubeApi";
 import AppFooter from "@/layout/Footer.vue";
 import AppSidebar from "@/layout/Sidebar.vue";
 import AppModules from "@/layout/Modules.vue";
@@ -172,6 +178,7 @@ export default defineComponent({
       sidebarPinned: false,
       showQuickSearch: false,
       showBibleSearch: false,
+      youtubeMiniPlayer: null as any,
     };
   },
   computed: {
@@ -212,6 +219,14 @@ export default defineComponent({
       const ext = raw.split(".").pop()?.toLowerCase();
       return !!ext && ["mp4", "mkv", "avi", "mov", "wmv", "webm"].includes(ext);
     },
+    isExternalYoutube(): boolean {
+      const raw = this.$appdata.get("modules.external_media.filePath") || "";
+      return raw.startsWith("youtube:");
+    },
+    youtubeVideoId(): string {
+      const raw = this.$appdata.get("modules.external_media.filePath") || "";
+      return raw.startsWith("youtube:") ? raw.slice("youtube:".length) : "";
+    },
     externalMediaCurrentTime(): number {
       return this.$appdata.get("modules.external_media.config.current_time");
     },
@@ -230,6 +245,9 @@ export default defineComponent({
     isSidebarCollapsed(): boolean {
       return !this.sidebarPinned && !this.sidebarOpen;
     },
+    showYoutubeMiniPlayer(): boolean {
+      return this.isExternalMediaMinimized && this.showExternalMiniPlayer && this.isExternalYoutube;
+    },
   },
   watch: {
     externalMediaCurrentTime(val: number) {
@@ -237,6 +255,16 @@ export default defineComponent({
         const video = this.$refs.externalMiniPlayerVideo as HTMLVideoElement;
         if (!video.seeking && Math.abs(video.currentTime - val) > 0.5) {
           video.currentTime = val;
+        }
+      }
+      if (this.showYoutubeMiniPlayer && this.youtubeMiniPlayer) {
+        try {
+          const current = this.youtubeMiniPlayer.getCurrentTime?.() || 0;
+          if (Math.abs(current - val) > 0.8) {
+            this.youtubeMiniPlayer.seekTo(val, true);
+          }
+        } catch {
+          // player ainda não está pronto
         }
       }
     },
@@ -247,6 +275,14 @@ export default defineComponent({
         else video.play().catch((err: any) => {
           console.error("[MiniPlayer] play() failed:", err.message);
         });
+      }
+      if (this.showYoutubeMiniPlayer && this.youtubeMiniPlayer) {
+        try {
+          if (val) this.youtubeMiniPlayer.pauseVideo();
+          else this.youtubeMiniPlayer.playVideo();
+        } catch {
+          // player ainda não está pronto
+        }
       }
     },
     showExternalMiniPlayer(newVal: boolean) {
@@ -260,6 +296,20 @@ export default defineComponent({
             });
           }
         });
+      }
+    },
+    showYoutubeMiniPlayer(val: boolean) {
+      if (val) {
+        this.$nextTick(() => {
+          this.initYoutubeMiniPlayer();
+        });
+      } else {
+        this.destroyYoutubeMiniPlayer();
+      }
+    },
+    youtubeVideoId(val: string) {
+      if (this.showYoutubeMiniPlayer && this.youtubeMiniPlayer && val) {
+        this.youtubeMiniPlayer.loadVideoById(val);
       }
     },
     isMinimized(val: boolean) {
@@ -282,7 +332,7 @@ export default defineComponent({
       },
     },
     isExternalMediaMinimized(val: boolean) {
-      if (val && this.isExternalVideo) {
+      if (val && (this.isExternalVideo || this.isExternalYoutube)) {
         this.showExternalMiniPlayer = true;
       }
     },
@@ -347,9 +397,19 @@ export default defineComponent({
             }
           }
         } else if (event.data === "escape-pressed") {
-          import("@/helpers/ui/Popup").then(({ default: $popup }) => {
-            $popup.exit();
-          });
+          if (this.$appdata.get("popup_module") === "external_media") {
+            this.$alert.yesno({
+              title: "alert.exit_projection_title",
+              text: "alert.exit_projection_text",
+              translate: true,
+            }, (resp: unknown) => {
+              if (resp === "yes") {
+                this.$popup.exit();
+              }
+            });
+          } else {
+            this.$popup.exit();
+          }
         }
       }
     });
@@ -387,9 +447,16 @@ export default defineComponent({
     document.addEventListener("sidebar-pinned-changed", (e: any) => {
       this.sidebarPinned = e.detail;
     });
+
+    if (this.showYoutubeMiniPlayer) {
+      this.$nextTick(() => {
+        this.initYoutubeMiniPlayer();
+      });
+    }
   },
   unmounted() {
     window.removeEventListener("keydown", this.onGlobalSearchShortcut);
+    this.destroyYoutubeMiniPlayer();
   },
   methods: {
     onPinnedChange(val: boolean) {
@@ -444,6 +511,63 @@ export default defineComponent({
       this.$appdata.set("modules.external_media.show", true);
       this.$appdata.set("modules.external_media.minimized", false);
       this.showExternalMiniPlayer = false;
+    },
+    async initYoutubeMiniPlayer() {
+      if (this.youtubeMiniPlayer || !this.youtubeVideoId) return;
+      const container = this.$refs.youtubeMiniPlayerEl as HTMLElement;
+      if (!container) return;
+      const YT = await loadYoutubeApi();
+      // O player pode ter sido fechado/trocado enquanto a API carregava.
+      if (!this.showYoutubeMiniPlayer) return;
+      this.youtubeMiniPlayer = markRaw(new YT.Player(container, {
+        videoId: this.youtubeVideoId,
+        playerVars: {
+          autoplay: 1,
+          mute: 1,
+          controls: 0,
+          modestbranding: 1,
+          rel: 0,
+          iv_load_policy: 3,
+          disablekb: 1,
+          fs: 0,
+          playsinline: 1,
+          cc_load_policy: 0,
+        },
+        events: {
+          onReady: () => {
+            if (!this.youtubeMiniPlayer) return;
+            this.youtubeMiniPlayer.mute();
+            try {
+              this.youtubeMiniPlayer.setOption("captions", "track", {});
+            } catch {
+              // ignora se o módulo de legendas não existir nessa versão do player
+            }
+            this.youtubeMiniPlayer.seekTo(this.externalMediaCurrentTime || 0, true);
+            if (this.externalMediaIsPaused) {
+              this.youtubeMiniPlayer.pauseVideo();
+            } else {
+              this.youtubeMiniPlayer.playVideo();
+            }
+          },
+          onApiChange: () => {
+            try {
+              this.youtubeMiniPlayer?.setOption?.("captions", "track", {});
+            } catch {
+              // ignora se o módulo de legendas não existir nessa versão do player
+            }
+          },
+        },
+      }));
+    },
+    destroyYoutubeMiniPlayer() {
+      if (this.youtubeMiniPlayer) {
+        try {
+          this.youtubeMiniPlayer.destroy();
+        } catch {
+          // ignora se já estiver destruído
+        }
+        this.youtubeMiniPlayer = null;
+      }
     },
   },
 });

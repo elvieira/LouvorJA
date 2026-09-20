@@ -8,6 +8,7 @@ import { registerDatabaseHandlers } from "../services/database";
 import { registerMediaHandlers } from "../services/media";
 import { registerUpdaterHandlers } from "../services/updater";
 import { registerValidatorHandlers } from "../services/validator";
+import { registerYoutubeHandlers } from "../services/youtube";
 import { checkLegacyInstallation, selectLegacyFolder, importLegacyMedia } from "../services/legacy-importer";
 import { getRememberWindowBounds, setRememberWindowBounds } from "../services/window-state";
 
@@ -104,6 +105,7 @@ export function registerIpcHandlers() {
   registerMediaHandlers();
   registerUpdaterHandlers();
   registerValidatorHandlers();
+  registerYoutubeHandlers();
 
   ipcMain.handle("check-legacy-installation", async () => {
     return checkLegacyInstallation();

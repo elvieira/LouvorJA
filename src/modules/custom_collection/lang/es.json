@@ -43,5 +43,9 @@
     "remove_no_audio": "Quitar Sin Audio",
     "no_audio_file": "Archivo Sin Audio",
     "add": "Agregar",
-    "file_open_error": "No se pudo abrir ese archivo."
+    "file_open_error": "No se pudo abrir ese archivo.",
+    "actions": {
+        "change": "Cambiar",
+        "delete": "Quitar"
+    }
 }

@@ -7,7 +7,7 @@
       :class="!isDark ? 'bg-light' : 'bg-dark'"
     >
       <div class="queue-panel-header d-flex align-center px-6 pt-4 pb-2 flex-shrink-0">
-        <span class="text-button font-weight-bold opacity-70">{{ $t('modules.media.queue.title') }}</span>
+        <span class="text-button font-weight-bold opacity-70" :class="isDark ? 'text-white' : 'text-black'">{{ $t('modules.media.queue.title') }}</span>
         
         <v-spacer />
         
@@ -25,7 +25,7 @@
       </div>
       
       <div class="queue-panel-content overflow-y-auto px-4 pb-4 flex-grow-1">
-        <div v-if="queueItems.length === 0" class="d-flex flex-column align-center justify-center h-100 py-10 opacity-60">
+        <div v-if="queueItems.length === 0" class="d-flex flex-column align-center justify-center h-100 py-10 opacity-60" :class="isDark ? 'text-white' : 'text-black'">
           <v-icon size="48" class="mb-2">
             mdi-music-note-off-outline
           </v-icon>
@@ -46,10 +46,10 @@
               class="queue-item rounded-lg d-flex align-center pa-2 mb-2"
               :class="{ 'playing': index === currentIndex }"
             >
-              <v-icon size="18" class="drag-handle mr-2 cursor-grab opacity-40">
+              <v-icon size="18" class="drag-handle mr-2 cursor-grab opacity-40" :class="isDark ? 'text-white' : 'text-black'">
                 mdi-drag-vertical
               </v-icon>
-              
+
               <div class="queue-cover rounded overflow-hidden mr-3 position-relative d-flex align-center justify-center">
                 <v-img
                   v-if="element.url_image"
@@ -58,7 +58,12 @@
                   height="40"
                   cover
                 />
-                <v-icon v-else size="24" class="opacity-50">
+                <v-icon
+                  v-else
+                  size="24"
+                  class="opacity-50"
+                  :class="isDark ? 'text-white' : 'text-black'"
+                >
                   mdi-music
                 </v-icon>
                 
@@ -75,10 +80,13 @@
               </div>
               
               <div class="queue-info flex-grow-1 overflow-hidden" style="cursor: pointer;" @click="playFromQueue(index)">
-                <div class="text-body-2 font-weight-medium text-truncate" :class="{'text-primary': index === currentIndex}">
+                <div
+                  class="text-body-2 font-weight-medium text-truncate"
+                  :class="index === currentIndex ? 'text-primary' : (isDark ? 'text-white' : 'text-black')"
+                >
                   {{ element.name }}
                 </div>
-                <div class="text-caption text-truncate opacity-70">
+                <div class="text-caption text-truncate opacity-70" :class="isDark ? 'text-grey' : 'text-grey-darken-1'">
                   {{ element.subtitle }}
                 </div>
               </div>
