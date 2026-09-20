@@ -35,7 +35,14 @@ export default defineComponent({
       const target = e.target as HTMLElement;
       if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable)) return;
 
-      if (e.key === "Escape" || ((e.ctrlKey || e.metaKey) && e.key === "Enter")) {
+      if (e.key === "Escape") {
+        // Não fecha a janela diretamente aqui: quem decide (e pode pedir
+        // confirmação, no caso de projeção de vídeo) é a janela principal,
+        // que responde mandando a mensagem "close" quando for o caso.
+        if (window.opener) {
+          window.opener.postMessage("escape-pressed", "*");
+        }
+      } else if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
         if (window.opener) {
           window.opener.postMessage("escape-pressed", "*");
         }

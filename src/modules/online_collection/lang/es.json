@@ -1,0 +1,11 @@
+{
+    "title": "Videos Online",
+    "back": "Volver",
+    "retry": "Intentar de nuevo",
+    "load_error": "No se pudo cargar. Verifica tu conexión a internet.",
+    "empty_channels": "Ningún canal disponible por el momento.",
+    "empty_playlists": "Ninguna playlist encontrada en ese canal.",
+    "empty_videos": "Ningún video encontrado en esa playlist.",
+    "search_placeholder": "Buscar colección...",
+    "no_results": "Ningún resultado encontrado para esa búsqueda."
+}

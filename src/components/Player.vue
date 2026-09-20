@@ -270,6 +270,26 @@
       </v-btn>
 
       <v-btn
+        v-if="location === 'footer' && queueCount > 0"
+        variant="text"
+        size="small"
+        icon
+        :color="defaultTextColor"
+        class="mx-1"
+        @click="openSaveQueueDialog"
+      >
+        <v-icon>mdi-content-save-outline</v-icon>
+        <v-tooltip
+          activator="parent"
+          location="top"
+          open-delay="300"
+          content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+        >
+          Salvar fila como coletânea
+        </v-tooltip>
+      </v-btn>
+
+      <v-btn
         v-if="location === 'footer'"
         variant="text"
         size="small"
@@ -353,14 +373,50 @@
   <v-expand-transition>
     <QueuePanel v-if="location === 'footer'" />
   </v-expand-transition>
+
+  <v-dialog v-model="showSaveQueueDialog" max-width="440" persistent>
+    <v-card class="rounded-xl pa-2">
+      <v-card-title class="font-weight-bold">
+        Salvar fila como coletânea
+      </v-card-title>
+      <v-card-text>
+        <v-text-field
+          v-model="saveQueueName"
+          label="Nome da coletânea"
+          placeholder="Ex.: Louvor"
+          variant="outlined"
+          density="comfortable"
+          autofocus
+          hide-details
+          @keydown.enter="saveQueueAsCollection"
+        />
+      </v-card-text>
+      <v-card-actions>
+        <v-spacer />
+        <v-btn variant="text" class="text-none" @click="showSaveQueueDialog = false">
+          Cancelar
+        </v-btn>
+        <v-btn
+          color="primary"
+          variant="flat"
+          class="text-none font-weight-bold"
+          :disabled="!saveQueueName.trim()"
+          @click="saveQueueAsCollection"
+        >
+          Salvar
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import { useTheme } from "vuetify";
-import { useMedia, useAppData, useModules } from "@/composables/useHelpers";
+import { useMedia, useAppData, useModules, useUserData } from "@/composables/useHelpers";
 import { useI18n } from "vue-i18n";
 import QueuePanel from "@/components/QueuePanel.vue";
+import $snackbar from "@/helpers/ui/Snackbar";
 
 defineOptions({ name: "MediaPlayer" });
 
@@ -374,6 +430,7 @@ const theme = useTheme();
 const mediaHelper = useMedia();
 const appdata = useAppData();
 const modules = useModules();
+const userdata = useUserData();
 // Note: datetime is used in the template via $datetime
 const { t } = useI18n();
 
@@ -536,6 +593,40 @@ const toggleQueue = () => {
   if (appdata.get("modules.media.queue_highlight")) {
     appdata.set("modules.media.queue_highlight", false);
   }
+};
+
+const showSaveQueueDialog = ref(false);
+const saveQueueName = ref("");
+
+const openSaveQueueDialog = () => {
+  saveQueueName.value = "";
+  showSaveQueueDialog.value = true;
+};
+
+const saveQueueAsCollection = () => {
+  const name = saveQueueName.value.trim();
+  if (!name) return;
+
+  const items = appdata.get("modules.media.queue")?.items || [];
+  const songs = items
+    .filter((item: any) => !!item.id_music)
+    .map((item: any) => ({
+      id: crypto.randomUUID(),
+      type: "internal",
+      id_music: item.id_music,
+    }));
+
+  const collections = userdata.get("modules.custom_collection.list") || [];
+  collections.push({
+    id: crypto.randomUUID(),
+    name,
+    coverImage: null,
+    songs,
+  });
+  userdata.set("modules.custom_collection.list", collections);
+
+  showSaveQueueDialog.value = false;
+  $snackbar.show({ text: `Coletânea "${name}" salva com sucesso!`, color: "success" });
 };
 
 onMounted(() => {

@@ -1,7 +1,7 @@
 <template>
   <div class="w-100 h-100 bg-black d-flex align-center justify-center">
     <video
-      v-if="isVideo"
+      v-if="isVideo && !isYoutube"
       ref="popupVideo"
       class="w-100 h-100"
       style="object-fit: contain;"
@@ -9,19 +9,23 @@
       muted
       @error="onError"
     />
+    <div v-else-if="isYoutube" ref="youtubePlayerEl" class="w-100 h-100" />
     <div v-else />
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
+import { defineComponent, markRaw } from "vue";
 import manifest from "../manifest";
+import { loadYoutubeApi } from "@/helpers/services/YoutubeApi";
 
 export default defineComponent({
   name: "PopupExternalMediaPage",
   data: () => ({
     retryTimer: null as any,
     attached: false,
+    youtubePlayer: null as any,
+    youtubeReady: false,
   }),
   computed: {
     module_id(): string {
@@ -35,6 +39,7 @@ export default defineComponent({
     },
     filePath(): string {
       if (!this.rawFilePath) return "";
+      if (this.isYoutube) return this.rawFilePath;
       if (window.electronAPI) {
         // Usa o dummy host 'app' para evitar que o Chromium altere o case do path no macOS/Linux
         const prefix = this.rawFilePath.startsWith("/") ? "local://app" : "local://app/";
@@ -42,8 +47,15 @@ export default defineComponent({
       }
       return this.rawFilePath;
     },
+    isYoutube(): boolean {
+      return this.rawFilePath.startsWith("youtube:");
+    },
+    youtubeVideoId(): string {
+      return this.isYoutube ? this.rawFilePath.slice("youtube:".length) : "";
+    },
     isVideo(): boolean {
       if (!this.rawFilePath) return false;
+      if (this.isYoutube) return true;
       const ext = this.rawFilePath.split(".").pop()?.toLowerCase() || "";
       return ["mp4", "mkv", "avi", "mov", "wmv", "webm"].includes(ext);
     },
@@ -59,21 +71,52 @@ export default defineComponent({
   },
   watch: {
     rawFilePath() {
+      if (this.isYoutube) {
+        this.$nextTick(() => {
+          this.initYoutubePlayer();
+        });
+        return;
+      }
       // Quando o arquivo muda, re-attach ao novo stream
       this.attached = false;
       this.$nextTick(() => {
         this.tryAttachStream();
       });
     },
+    isPaused(val: boolean) {
+      if (!this.isYoutube || !this.youtubePlayer || !this.youtubeReady) return;
+      if (val) {
+        this.youtubePlayer.pauseVideo();
+      } else {
+        this.youtubePlayer.playVideo();
+      }
+    },
+    currentTime(val: number) {
+      if (!this.isYoutube || !this.youtubePlayer || !this.youtubeReady) return;
+      const current = this.youtubePlayer.getCurrentTime?.() || 0;
+      // Só corrige se o desvio for perceptível, pra não travar o player com seeks constantes.
+      if (Math.abs(val - current) > 0.8) {
+        this.youtubePlayer.seekTo(val, true);
+      }
+    },
+    forceSyncTime(val: number) {
+      if (!this.isYoutube || !this.youtubePlayer || !this.youtubeReady) return;
+      this.youtubePlayer.seekTo(val, true);
+    },
   },
   mounted() {
-    this.tryAttachStream();
+    if (this.isYoutube) {
+      this.initYoutubePlayer();
+    } else {
+      this.tryAttachStream();
+    }
   },
   beforeUnmount() {
     if (this.retryTimer) {
       clearTimeout(this.retryTimer);
     }
     this.cleanupStream();
+    this.destroyYoutubePlayer();
   },
   methods: {
     tryAttachStream() {
@@ -171,6 +214,78 @@ export default defineComponent({
       const error = el?.error;
       if (error) {
         console.error("Video error:", error);
+      }
+    },
+
+    // --- YouTube (player independente, sincronizado via appdata) ---
+    // Um iframe do YouTube é de outra origem — não dá pra usar captureStream()
+    // como no vídeo local. Em vez disso, essa janela roda seu próprio player,
+    // mudo, e mantém a posição/estado sincronizados com a janela principal.
+
+    // cc_load_policy nem sempre é suficiente: se o usuário já tiver a preferência
+    // "sempre mostrar legenda" salva na conta/navegador do YouTube, o player pode
+    // reativar a legenda sozinho depois de carregar. "onApiChange" dispara toda
+    // vez que o player carrega/recarrega um módulo interno (incluindo o de
+    // legendas), então limpamos a track sempre que isso acontece.
+    disableYoutubeCaptions() {
+      try {
+        this.youtubePlayer?.setOption?.("captions", "track", {});
+      } catch {
+        // ignora se o módulo de legendas não existir nessa versão do player
+      }
+    },
+
+    async initYoutubePlayer() {
+      if (this.youtubePlayer) {
+        this.youtubeReady = false;
+        this.youtubePlayer.loadVideoById(this.youtubeVideoId);
+        this.disableYoutubeCaptions();
+        return;
+      }
+      const container = this.$refs.youtubePlayerEl as HTMLElement;
+      if (!container) return;
+      const YT = await loadYoutubeApi();
+      if (!this.isYoutube) return;
+      this.youtubePlayer = markRaw(new YT.Player(container, {
+        videoId: this.youtubeVideoId,
+        playerVars: {
+          autoplay: 1,
+          mute: 1,
+          controls: 0,
+          modestbranding: 1,
+          rel: 0,
+          iv_load_policy: 3,
+          disablekb: 1,
+          fs: 0,
+          playsinline: 1,
+          cc_load_policy: 0,
+        },
+        events: {
+          onReady: () => {
+            this.youtubeReady = true;
+            this.youtubePlayer.mute();
+            this.disableYoutubeCaptions();
+            if (this.currentTime > 0) {
+              this.youtubePlayer.seekTo(this.currentTime, true);
+            }
+            if (this.isPaused) {
+              this.youtubePlayer.pauseVideo();
+            } else {
+              this.youtubePlayer.playVideo();
+            }
+          },
+          onApiChange: this.disableYoutubeCaptions,
+        },
+      }));
+    },
+
+    destroyYoutubePlayer() {
+      this.youtubeReady = false;
+      if (this.youtubePlayer) {
+        try {
+          this.youtubePlayer.destroy();
+        } catch (_e) { /* ignore */ }
+        this.youtubePlayer = null;
       }
     },
   },

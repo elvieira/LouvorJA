@@ -95,7 +95,7 @@
             <div class="w-100 h-100 position-absolute d-flex align-center justify-center bg-black">
               <!-- VIDEO: This is the MAIN player for video files -->
               <video
-                v-if="isVideo && filePath"
+                v-if="isVideo && !isYoutube && filePath"
                 ref="videoEl"
                 class="w-100 h-100"
                 style="object-fit: contain;"
@@ -112,8 +112,13 @@
                 @stalled="onStalled"
               />
 
+              <!-- YOUTUBE: player embutido via YT.Player (IFrame API) -->
+              <div v-if="isYoutube && filePath" class="w-100 h-100 youtube-player-wrapper">
+                <div ref="youtubePlayerEl" class="w-100 h-100" />
+              </div>
+
               <!-- Audio-only visual placeholder -->
-              <div v-if="!isVideo && filePath" class="d-flex flex-column align-center justify-center text-white" style="gap: 16px;">
+              <div v-if="!isVideo && !isYoutube && filePath" class="d-flex flex-column align-center justify-center text-white" style="gap: 16px;">
                 <v-icon size="80" color="white" style="opacity: 0.6;">
                   mdi-music-circle
                 </v-icon>
@@ -164,12 +169,13 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
+import { defineComponent, markRaw } from "vue";
 import manifest from "../manifest";
 import Window from "@/components/Window.vue";
 import ButtonScreen from "@/components/buttons/Screen.vue";
 import FullscreenControls from "./components/FullscreenControls.vue";
 import PlayerControls from "./components/PlayerControls.vue";
+import { loadYoutubeApi } from "@/helpers/services/YoutubeApi";
 
 export default defineComponent({
   name: "ExternalMediaComponent",
@@ -193,6 +199,8 @@ export default defineComponent({
     userPaused: false,
     fullscreenTimer: null as any,
     lastTimeUpdate: 0,
+    youtubePlayer: null as any,
+    youtubePollTimer: null as any,
   }),
   computed: {
     requestAction(): string {
@@ -212,6 +220,7 @@ export default defineComponent({
     },
     filePath() {
       if (!this.rawFilePath) return "";
+      if (this.isYoutube) return this.rawFilePath;
       if (window.electronAPI) {
         // Usa o dummy host 'app' para evitar que o Chromium altere o case do path no macOS/Linux
         const prefix = this.rawFilePath.startsWith("/") ? "local://app" : "local://app/";
@@ -225,8 +234,15 @@ export default defineComponent({
     mediaSubtitle() {
       return this.$appdata.get("modules.external_media.subtitle") || "";
     },
+    isYoutube() {
+      return this.rawFilePath.startsWith("youtube:");
+    },
+    youtubeVideoId() {
+      return this.isYoutube ? this.rawFilePath.slice("youtube:".length) : "";
+    },
     isVideo() {
       if (!this.rawFilePath) return false;
+      if (this.isYoutube) return true;
       const ext = this.rawFilePath.split(".").pop()?.toLowerCase() || "";
       return ["mp4", "mkv", "avi", "mov", "wmv", "webm"].includes(ext);
     },
@@ -243,18 +259,29 @@ export default defineComponent({
       if (req.action === "toggle_play") {
         this.togglePlay();
       } else if (req.action === "seek") {
+        if (this.isYoutube) {
+          if (this.youtubePlayer && this.duration) {
+            this.youtubePlayer.seekTo((this.duration * req.value) / 100, true);
+          }
+          return;
+        }
         const el = this.getMediaEl();
         if (el && this.duration) {
           el.currentTime = (this.duration * req.value) / 100;
         }
       } else if (req.action === "set_volume") {
+        if (this.isYoutube) {
+          if (this.youtubePlayer) this.youtubePlayer.setVolume(req.value);
+          this.volume = req.value;
+          return;
+        }
         const el = this.getMediaEl();
         if (el) el.volume = req.value / 100;
         this.volume = req.value;
       } else if (req.action === "minimize") {
         this.minimizeMedia();
       } else if (req.action === "close") {
-        this.closeMedia(true);
+        this.closeMedia();
       }
     },
     "module.show"(newVal) {
@@ -297,6 +324,13 @@ export default defineComponent({
         this.$nextTick(() => {
           this.initPlayback();
         });
+      }
+    },
+    isYoutube(newVal, oldVal) {
+      // Saiu do YouTube para outra mídia (ou fechou): garante que o player e o
+      // polling do YouTube não fiquem "zumbis" rodando em segundo plano.
+      if (oldVal && !newVal) {
+        this.destroyYoutubePlayer();
       }
     },
   },
@@ -348,12 +382,16 @@ export default defineComponent({
 
     // Initialize playback - waits for canplay before playing
     initPlayback() {
-      const el = this.getMediaEl();
-      if (!el) {
-        return;
+      if (this.isYoutube) {
+        this.initYoutubePlayer();
+      } else {
+        const el = this.getMediaEl();
+        if (!el) {
+          return;
+        }
+        el.volume = this.volume / 100;
       }
-      el.volume = this.volume / 100;
-      
+
       if (this.autoProject && this.$refs.btnScreen) {
         const btn = this.$refs.btnScreen as any;
         if (this.isVideo && !btn.is_selected) {
@@ -412,6 +450,10 @@ export default defineComponent({
     },
 
     stopPlayback() {
+      if (this.isYoutube) {
+        this.destroyYoutubePlayer();
+        return;
+      }
       const el = this.getMediaEl();
       if (el) {
         el.pause();
@@ -421,6 +463,17 @@ export default defineComponent({
     },
 
     togglePlay() {
+      if (this.isYoutube) {
+        if (!this.youtubePlayer) return;
+        if (this.isPaused) {
+          this.userPaused = false;
+          this.youtubePlayer.playVideo();
+        } else {
+          this.userPaused = true;
+          this.youtubePlayer.pauseVideo();
+        }
+        return;
+      }
       const el = this.getMediaEl();
       if (!el) {
         return;
@@ -516,10 +569,15 @@ export default defineComponent({
     // --- Controls ---
 
     seekFromProgressVal(val: number) {
-      const el = this.getMediaEl();
-      if (!el || !this.duration) return;
+      if (!this.duration) return;
       const time = (this.duration * val) / 100;
-      el.currentTime = time;
+      if (this.isYoutube) {
+        if (this.youtubePlayer) this.youtubePlayer.seekTo(time, true);
+      } else {
+        const el = this.getMediaEl();
+        if (!el) return;
+        el.currentTime = time;
+      }
       this.currentTime = time;
       this.$appdata.set("modules.external_media.config.current_time", time);
       this.$appdata.set("modules.external_media.config.force_sync_time", time);
@@ -527,6 +585,11 @@ export default defineComponent({
 
     setVolume(val: number) {
       this.volume = val;
+      if (this.isYoutube) {
+        if (this.youtubePlayer) this.youtubePlayer.setVolume(this.volume);
+        this.$appdata.set("modules.external_media.config.volume", this.volume);
+        return;
+      }
       const el = this.getMediaEl();
       if (el) {
         el.volume = this.volume / 100;
@@ -577,6 +640,7 @@ export default defineComponent({
       this.$appdata.set("modules.external_media.filePath", null);
       this.$appdata.set("modules.external_media.title", "");
       this.$appdata.set("modules.external_media.subtitle", "");
+      this.$appdata.set("modules.external_media.image", "");
 
       // Fechar a projeção se estiver aberta
       import("@/helpers/ui/Popup").then(({ default: $popup }) => {
@@ -606,6 +670,122 @@ export default defineComponent({
           stream.getTracks().forEach(track => track.stop());
         } catch (_e) { /* ignore */ }
         (window as any)._externalMediaStream = null;
+      }
+    },
+
+    // --- YouTube (via YT.Player / IFrame API) ---
+
+    async initYoutubePlayer() {
+      if (this.youtubePlayer) {
+        // Player já existe (troca de vídeo dentro do YouTube): só recarrega o vídeo.
+        this.youtubePlayer.loadVideoById(this.youtubeVideoId);
+        this.mediaReady = false;
+        return;
+      }
+      const container = this.$refs.youtubePlayerEl as HTMLElement;
+      if (!container) return;
+      const YT = await loadYoutubeApi();
+      // A mídia pode ter mudado enquanto a API carregava.
+      if (!this.isYoutube) return;
+      this.youtubePlayer = markRaw(new YT.Player(container, {
+        videoId: this.youtubeVideoId,
+        playerVars: {
+          autoplay: 1,
+          controls: 0,
+          modestbranding: 1,
+          rel: 0,
+          iv_load_policy: 3,
+          disablekb: 1,
+          fs: 0,
+          playsinline: 1,
+          cc_load_policy: 0,
+        },
+        events: {
+          onReady: this.onYoutubeReady,
+          onStateChange: this.onYoutubeStateChange,
+          onApiChange: this.disableYoutubeCaptions,
+        },
+      }));
+    },
+
+    // cc_load_policy nem sempre é suficiente: se o usuário já tiver a preferência
+    // "sempre mostrar legenda" salva na conta/navegador do YouTube, o player pode
+    // reativar a legenda sozinho depois de carregar. "onApiChange" dispara toda
+    // vez que o player carrega/recarrega um módulo interno (incluindo o de
+    // legendas), então limpamos a track sempre que isso acontece.
+    disableYoutubeCaptions() {
+      try {
+        this.youtubePlayer?.setOption?.("captions", "track", {});
+      } catch {
+        // ignora se o módulo de legendas não existir nessa versão do player
+      }
+    },
+
+    onYoutubeReady() {
+      this.mediaReady = true;
+      if (!this.youtubePlayer) return;
+      this.youtubePlayer.setVolume(this.volume);
+      this.disableYoutubeCaptions();
+      if (!this.userPaused) {
+        this.youtubePlayer.playVideo();
+      }
+    },
+
+    onYoutubeStateChange(event: any) {
+      // YT.PlayerState: -1 não iniciado, 0 terminado, 1 tocando, 2 pausado, 3 buffering, 5 sugerido
+      if (event.data === 1) {
+        this.isPaused = false;
+        this.$appdata.set("modules.external_media.config.is_paused", false);
+        this.duration = this.youtubePlayer?.getDuration() || 0;
+        this.$appdata.set("modules.external_media.config.duration", this.duration);
+        this.startYoutubePolling();
+      } else if (event.data === 2) {
+        this.isPaused = true;
+        this.$appdata.set("modules.external_media.config.is_paused", true);
+        this.stopYoutubePolling();
+      } else if (event.data === 0) {
+        this.isPaused = true;
+        this.progress = 0;
+        this.currentTime = 0;
+        this.$appdata.set("modules.external_media.config.is_paused", true);
+        this.stopYoutubePolling();
+      }
+    },
+
+    startYoutubePolling() {
+      this.stopYoutubePolling();
+      this.youtubePollTimer = setInterval(() => {
+        if (!this.youtubePlayer) return;
+        const current = this.youtubePlayer.getCurrentTime?.() || 0;
+        const duration = this.youtubePlayer.getDuration?.() || 0;
+        this.currentTime = current;
+        if (duration > 0) {
+          this.duration = duration;
+          this.progress = (current / duration) * 100;
+        }
+        const now = Date.now();
+        if (!this.lastTimeUpdate || now - this.lastTimeUpdate > 200) {
+          this.$appdata.set("modules.external_media.config.current_time", this.currentTime);
+          this.$appdata.set("modules.external_media.config.progress", this.progress);
+          this.lastTimeUpdate = now;
+        }
+      }, 250);
+    },
+
+    stopYoutubePolling() {
+      if (this.youtubePollTimer) {
+        clearInterval(this.youtubePollTimer);
+        this.youtubePollTimer = null;
+      }
+    },
+
+    destroyYoutubePlayer() {
+      this.stopYoutubePolling();
+      if (this.youtubePlayer) {
+        try {
+          this.youtubePlayer.destroy();
+        } catch (_e) { /* ignore */ }
+        this.youtubePlayer = null;
       }
     },
 

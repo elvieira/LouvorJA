@@ -80,6 +80,10 @@ const state: AppState = {
       title: "module_group.utilities.title",
       modules: [],
     },
+    online_collection: {
+      title: "module_group.online_collection.title",
+      modules: [],
+    },
     personalized: {
       title: "module_group.personalized.title",
       modules: [],

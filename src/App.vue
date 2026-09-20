@@ -180,15 +180,32 @@ export default {
         // com a caixa de confirmação.
         if (!isMediaActive && (externalMediaOpen || popupModule)) {
           e.preventDefault();
-          if (externalMediaOpen) {
-            this.$appdata.set("modules.external_media.show", false);
-            this.$appdata.set("modules.external_media.minimized", false);
-            this.$appdata.set("modules.external_media.filePath", null);
-          }
-          if (popupModule) {
-            import("@/helpers/ui/Popup").then(({ default: $popup }) => {
-              $popup.exit();
+
+          const performClose = () => {
+            if (externalMediaOpen) {
+              this.$appdata.set("modules.external_media.show", false);
+              this.$appdata.set("modules.external_media.minimized", false);
+              this.$appdata.set("modules.external_media.filePath", null);
+            }
+            if (popupModule) {
+              import("@/helpers/ui/Popup").then(({ default: $popup }) => {
+                $popup.exit();
+              });
+            }
+          };
+
+          // Vídeo/mídia externa: pede confirmação antes de fechar/parar a projeção,
+          // já que o Esc é fácil de apertar sem querer durante um culto.
+          if (externalMediaOpen || popupModule === "external_media") {
+            this.$alert.yesno({
+              title: externalMediaOpen ? null : "alert.exit_projection_title",
+              text: externalMediaOpen ? "modules.external_media.alerts.close" : "alert.exit_projection_text",
+              translate: true,
+            }, (btn) => {
+              if (btn === "yes") performClose();
             });
+          } else {
+            performClose();
           }
           return;
         }

@@ -1386,6 +1386,7 @@ export default defineComponent({
       appdata.set("modules.external_media.filePath", filePath);
       appdata.set("modules.external_media.title", item.name);
       appdata.set("modules.external_media.subtitle", mode === "instrumental" ? "Playback" : mode === "no_audio" ? "Sem Áudio" : "");
+      appdata.set("modules.external_media.image", "");
       appdata.set("modules.external_media.minimized", isAudio);
       appdata.set("modules.external_media.show", !isAudio);
       appdata.set("modules.external_media.config", {

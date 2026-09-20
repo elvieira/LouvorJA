@@ -2073,6 +2073,10 @@ export default defineComponent({
     }
 
     .editor-actions-pill {
+      // Largura fixa (a do conteúdo mais largo, a aba "Formatar") para que trocar de aba
+      // não mude a largura desse bloco e, com isso, não empurre o pill de abas ao lado.
+      min-width: 375px;
+      justify-content: center;
       background: var(--card-bg);
       border: 1px solid var(--border-color);
       border-radius: 20px;
