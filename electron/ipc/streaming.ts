@@ -1,33 +1,48 @@
 import { ipcMain, BrowserWindow } from "electron";
 import { streamingServer, StreamingSlideData, StreamingServerConfig } from "../services/streaming-server";
+import { searchMusics } from "../services/database";
 
 export function registerStreamingIpcHandlers() {
   // Configura o handler de ações vindas das requisições HTTP da API (controle remoto, bitfocus companion, etc.)
   streamingServer.setActionHandler(async (action: string, params: Record<string, string>) => {
-    const mainWindow = BrowserWindow.getAllWindows().find((w) => w.id === 1) || BrowserWindow.getAllWindows()[0];
-    if (!mainWindow || mainWindow.isDestroyed()) {
+    const allWindows = BrowserWindow.getAllWindows();
+    if (allWindows.length === 0) {
       return { status: "error", message: "Aplicação principal indisponível" };
     }
 
+    for (const win of allWindows) {
+      if (!win.isDestroyed()) {
+        win.webContents.send("streaming-remote-action", { action, params });
+      }
+    }
+
     if (action === "song-slides") {
-      mainWindow.webContents.send("streaming-remote-action", { action: "song-slides", params });
       return { status: "ok", action: params.action || "slide" };
     }
 
     if (action === "keyboard") {
-      mainWindow.webContents.send("streaming-remote-action", { action: "keyboard", params });
       return { status: "ok", key: params.key };
     }
 
+    if (action === "close-media") {
+      return { status: "ok", action: "close-media" };
+    }
+
+    if (action === "play-pause") {
+      return { status: "ok", action: "play-pause" };
+    }
+
+    if (action === "volume") {
+      return { status: "ok", action: params.action || "volume" };
+    }
+
     if (action === "open-song") {
-      mainWindow.webContents.send("streaming-remote-action", { action: "open-song", params });
       return { status: "ok", action: "open-song", id: params.id };
     }
 
     if (action === "search-songs") {
-      // Solicita busca para a janela principal via canal bidirecional síncrono/assíncrono ou envia o evento
-      mainWindow.webContents.send("streaming-remote-action", { action: "search-songs", params });
-      return { status: "ok", message: "Buscando..." };
+      const results = await searchMusics(params.q || "");
+      return { status: "ok", musicas: results, results };
     }
 
     return { status: "ok" };
@@ -39,6 +54,11 @@ export function registerStreamingIpcHandlers() {
 
   ipcMain.handle("streaming-get-interfaces", () => {
     return streamingServer.getNetworkInterfaces();
+  });
+
+  ipcMain.handle("streaming-set-config", (_event, config: Partial<StreamingServerConfig>) => {
+    streamingServer.setConfig(config);
+    return streamingServer.getStatus();
   });
 
   ipcMain.handle("streaming-start", async (_event, config: Partial<StreamingServerConfig>) => {

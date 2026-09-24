@@ -400,3 +400,140 @@ export function registerDatabaseHandlers() {
     }
   });
 }
+
+interface MusicItem {
+  id_music: number;
+  name: string;
+  has_instrumental_music?: number;
+  duration?: number;
+  lyric?: string;
+  albums?: Array<{ id_album?: number; name?: string; type?: string; pivot?: { track?: number } }>;
+}
+
+export interface SearchResultMusic {
+  id_music: number;
+  name: string;
+  artist: string;
+  hymnal_track: number | null;
+  has_instrumental: boolean;
+  score?: number;
+}
+
+const cachedMusics: Record<string, MusicItem[]> = {};
+const cachedTime: Record<string, number> = {};
+
+export async function searchMusics(query: string, lang = "pt", limit = 40): Promise<SearchResultMusic[]> {
+  const q = (query || "").trim();
+  if (!q) return [];
+
+  const now = Date.now();
+  let musics = cachedMusics[lang];
+  if (!musics || now - (cachedTime[lang] || 0) > 60000) {
+    try {
+      const sysDbPath = getSysDbPath(lang);
+      const binFile = path.join(sysDbPath, `${lang}_musics.bin`);
+      const plainFile = path.join(sysDbPath, `${lang}_musics`);
+      if (fs.existsSync(binFile)) {
+        const encrypted = fs.readFileSync(binFile, "utf8");
+        const dec = decryptData(encrypted);
+        if (dec) musics = JSON.parse(dec) as MusicItem[];
+      } else if (fs.existsSync(plainFile)) {
+        const plain = fs.readFileSync(plainFile, "utf8");
+        musics = JSON.parse(plain) as MusicItem[];
+      }
+
+      if (!musics) {
+        const dbPath = path.join(app.getPath("userData"), `database_${lang}.db`);
+        if (fs.existsSync(dbPath)) {
+          const extractor = new DbExtractor(dbPath, lang);
+          musics = (await extractor.repairFile(`${lang}_musics`)) as MusicItem[];
+        }
+      }
+
+      if (musics && Array.isArray(musics)) {
+        cachedMusics[lang] = musics;
+        cachedTime[lang] = now;
+      }
+    } catch (e) {
+      console.error("[searchMusics] Erro ao carregar músicas:", e);
+    }
+  }
+
+  if (!musics || !Array.isArray(musics)) return [];
+
+  const normalize = (str: string) =>
+    (str || "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase();
+
+  const normQ = normalize(q);
+  const isNum = /^\d+$/.test(q);
+  const numVal = isNum ? parseInt(q, 10) : null;
+
+  const results: SearchResultMusic[] = [];
+
+  for (const m of musics) {
+    let matched = false;
+    let score = 0;
+    let hymnalTrack: number | null = null;
+
+    if (m.albums && Array.isArray(m.albums)) {
+      for (const al of m.albums) {
+        if (al.type === "hymnal" && al.pivot?.track) {
+          hymnalTrack = al.pivot.track;
+          if (isNum && hymnalTrack === numVal) {
+            matched = true;
+            score += 100;
+          }
+        }
+      }
+    }
+
+    const normName = normalize(m.name);
+    if (normName === normQ) {
+      matched = true;
+      score += 90;
+    } else if (normName.startsWith(normQ)) {
+      matched = true;
+      score += 70;
+    } else if (normName.includes(normQ)) {
+      matched = true;
+      score += 50;
+    }
+
+    if (!matched && m.albums && Array.isArray(m.albums)) {
+      for (const al of m.albums) {
+        const normAl = normalize(al.name || "");
+        if (normAl.includes(normQ)) {
+          matched = true;
+          score += 30;
+          break;
+        }
+      }
+    }
+
+    if (!matched && normQ.length >= 3 && m.lyric) {
+      const normLyric = normalize(m.lyric);
+      if (normLyric.includes(normQ)) {
+        matched = true;
+        score += 10;
+      }
+    }
+
+    if (matched) {
+      results.push({
+        id_music: m.id_music,
+        name: m.name,
+        artist: m.albums?.[0]?.name || "",
+        hymnal_track: hymnalTrack,
+        has_instrumental: Boolean(m.has_instrumental_music),
+        score,
+      });
+    }
+  }
+
+  results.sort((a, b) => (b.score || 0) - (a.score || 0));
+  return results.slice(0, limit);
+}
+

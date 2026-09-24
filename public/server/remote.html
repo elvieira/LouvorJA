@@ -13,7 +13,7 @@
     }
 
     body {
-      background: #0f1117;
+      background: #0d0f15;
       color: #e0e0e0;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
       min-height: 100vh;
@@ -25,12 +25,15 @@
     }
 
     header {
-      padding: 16px 20px;
+      padding: 14px 20px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background: #161922;
+      background: #141722;
       border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      position: sticky;
+      top: 0;
+      z-index: 10;
     }
 
     .brand {
@@ -41,21 +44,25 @@
     }
 
     .brand h1 {
-      font-size: 19px;
-      font-weight: 700;
-      letter-spacing: 0.5px;
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: 1.2px;
       color: #ffffff;
+      text-transform: uppercase;
     }
 
     .brand h2 {
-      font-size: 13px;
-      font-weight: 500;
-      color: #90a4ae;
+      font-size: 11px;
+      font-weight: 600;
+      color: #0097d7;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-top: 1px;
     }
 
     .dot {
-      width: 12px;
-      height: 12px;
+      width: 10px;
+      height: 10px;
       border-radius: 50%;
       background: #ffb300;
       box-shadow: 0 0 10px rgba(255, 179, 0, 0.7);
@@ -74,36 +81,69 @@
 
     /* CARD DE STATUS ATUAL */
     .now-playing {
-      margin: 16px 20px;
-      padding: 16px;
-      background: #181b26;
-      border-radius: 14px;
-      border: 1px solid rgba(255, 255, 255, 0.07);
+      margin: 14px 20px;
+      padding: 16px 20px;
+      background: #171b26;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
       text-align: center;
-      min-height: 80px;
+      min-height: 84px;
       display: flex;
       flex-direction: column;
       justify-content: center;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .now-playing-header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 4px;
     }
 
     .now-playing-title {
       font-size: 16px;
       font-weight: 700;
       color: #64b5f6;
-      margin-bottom: 4px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      max-width: 85%;
+    }
+
+    .status-badge {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .status-badge.playing {
+      background: rgba(76, 175, 80, 0.2);
+      color: #81c784;
+      border: 1px solid rgba(76, 175, 80, 0.4);
+    }
+
+    .status-badge.paused {
+      background: rgba(255, 179, 0, 0.2);
+      color: #ffb74d;
+      border: 1px solid rgba(255, 179, 0, 0.4);
     }
 
     .now-playing-lyric {
-      font-size: 14px;
+      font-size: 13px;
       color: #b0bec5;
       display: -webkit-box;
       -webkit-line-clamp: 2;
+      line-clamp: 2;
       -webkit-box-orient: vertical;
       overflow: hidden;
-      line-height: 1.35;
+      line-height: 1.4;
     }
 
     /* BOTÕES PRINCIPAIS */
@@ -113,110 +153,376 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 20px;
+      gap: 22px;
       padding: 10px 20px;
     }
 
     .top-actions {
       display: flex;
       width: 100%;
-      max-width: 340px;
+      max-width: 320px;
       justify-content: space-between;
-      gap: 16px;
+      gap: 14px;
     }
 
     .btn {
-      background: #1c202d;
+      background: #1b1f2c;
       color: #ffffff;
       border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 20px;
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 600;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: transform 0.1s ease, background 0.15s ease, box-shadow 0.15s ease;
-      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+      transition: transform 0.1s ease, background 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
       outline: none;
     }
 
     .btn:active {
       transform: scale(0.92);
       background: #252b3d;
+      border-color: rgba(255, 255, 255, 0.25);
     }
 
     .btn-action {
       flex: 1;
-      height: 52px;
+      height: 50px;
       border-radius: 14px;
       gap: 8px;
     }
 
     .btn-close {
-      background: rgba(244, 67, 54, 0.15);
+      background: rgba(244, 67, 54, 0.12);
       border-color: rgba(244, 67, 54, 0.3);
       color: #ef5350;
+    }
+
+    .btn-close:active {
+      background: rgba(244, 67, 54, 0.25);
+    }
+
+    .btn-search {
+      background: rgba(0, 151, 215, 0.12);
+      border-color: rgba(0, 151, 215, 0.3);
+      color: #29b6f6;
+    }
+
+    .btn-search:active {
+      background: rgba(0, 151, 215, 0.25);
     }
 
     /* CONTROLE CRUCIFORME */
     .controls-grid {
       display: grid;
-      grid-template-columns: repeat(3, 85px);
-      grid-template-rows: repeat(3, 85px);
+      grid-template-columns: repeat(3, 86px);
+      grid-template-rows: repeat(3, 86px);
       gap: 14px;
       align-items: center;
       justify-content: center;
     }
 
     .btn-arrow {
-      width: 85px;
-      height: 85px;
+      width: 86px;
+      height: 86px;
       border-radius: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+    }
+
+    .btn-arrow span {
+      font-size: 10px;
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.6);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .btn-vol {
+      background: #171b26;
+      border-color: rgba(255, 255, 255, 0.12);
+    }
+
+    .btn-vol:active {
+      background: #23293a;
     }
 
     .btn-center {
-      width: 85px;
-      height: 85px;
+      width: 86px;
+      height: 86px;
       border-radius: 50%;
-      background: #1976d2;
-      border-color: #2196f3;
-      box-shadow: 0 8px 24px rgba(25, 118, 210, 0.4);
+      background: linear-gradient(135deg, #0097d7 0%, #1565c0 100%);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      box-shadow: 0 10px 25px rgba(0, 151, 215, 0.45);
     }
 
     .btn-center:active {
-      background: #1565c0;
+      background: linear-gradient(135deg, #0084c1 0%, #0d47a1 100%);
+      transform: scale(0.92);
+    }
+
+    .btn.disabled,
+    .btn[disabled] {
+      opacity: 0.35 !important;
+      cursor: not-allowed !important;
+      pointer-events: none !important;
+      filter: grayscale(0.85) !important;
+      box-shadow: none !important;
     }
 
     svg {
-      width: 32px;
-      height: 32px;
+      width: 28px;
+      height: 28px;
       fill: currentColor;
     }
 
     footer {
-      padding: 16px;
-      background: #161922;
+      padding: 14px 20px;
+      background: #141722;
       border-top: 1px solid rgba(255, 255, 255, 0.08);
-      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       font-size: 12px;
       color: #78909c;
     }
 
-    /* MODAL DE TOKEN */
+    /* TOAST DE FEEDBACK FLUTUANTE */
+    .toast {
+      position: fixed;
+      bottom: 74px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: rgba(20, 24, 34, 0.94);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      color: #ffffff;
+      padding: 10px 22px;
+      border-radius: 24px;
+      font-size: 13px;
+      font-weight: 600;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(10px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease, transform 0.25s ease;
+      z-index: 999;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* MODAL DE PESQUISA MODERNO */
+    .search-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(10, 12, 18, 0.96);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.98); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .search-header {
+      padding: 16px 20px;
+      background: #141722;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .search-input-wrapper {
+      flex: 1;
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .search-input-wrapper svg {
+      position: absolute;
+      left: 14px;
+      width: 20px;
+      height: 20px;
+      fill: #78909c;
+      pointer-events: none;
+    }
+
+    .search-input {
+      width: 100%;
+      height: 46px;
+      background: #1c202d;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 12px;
+      padding: 0 40px 0 44px;
+      color: #ffffff;
+      font-size: 15px;
+      outline: none;
+      transition: border-color 0.2s ease;
+    }
+
+    .search-input:focus {
+      border-color: #0097d7;
+      box-shadow: 0 0 0 2px rgba(0, 151, 215, 0.25);
+    }
+
+    .search-clear-btn {
+      position: absolute;
+      right: 12px;
+      background: transparent;
+      border: none;
+      color: #90a4ae;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px;
+    }
+
+    .search-close-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 0 16px;
+      height: 46px;
+      border-radius: 12px;
+      cursor: pointer;
+    }
+
+    .search-results {
+      flex: 1;
+      overflow-y: auto;
+      padding: 14px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .search-item {
+      background: #161924;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      cursor: pointer;
+      transition: background 0.15s ease, transform 0.1s ease;
+    }
+
+    .search-item:active {
+      background: #202534;
+      transform: scale(0.98);
+    }
+
+    .search-item-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      overflow: hidden;
+    }
+
+    .search-item-title-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .hymn-badge {
+      background: rgba(0, 151, 215, 0.18);
+      color: #29b6f6;
+      border: 1px solid rgba(0, 151, 215, 0.35);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 6px;
+      flex-shrink: 0;
+    }
+
+    .search-item-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: #ffffff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .search-item-artist {
+      font-size: 12px;
+      color: #90a4ae;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .search-item-play-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(0, 151, 215, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #0097d7;
+      flex-shrink: 0;
+    }
+
+    .search-empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 20px;
+      color: #78909c;
+      gap: 12px;
+      text-align: center;
+    }
+
+    .search-empty svg {
+      width: 48px;
+      height: 48px;
+      fill: #455a64;
+    }
+
+    /* MODAL DE CONFIRMAÇÃO E MODAL DE TOKEN */
     .modal-overlay {
       position: fixed;
       top: 0;
       left: 0;
       width: 100vw;
       height: 100vh;
-      background: rgba(0, 0, 0, 0.75);
+      background: rgba(0, 0, 0, 0.82);
       backdrop-filter: blur(8px);
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 20px;
-      z-index: 1000;
+      z-index: 2000;
+      animation: fadeIn 0.18s ease-out;
     }
 
     .modal-card {
@@ -232,8 +538,44 @@
 
     .modal-card h3 {
       font-size: 18px;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
       color: #fff;
+    }
+
+    .btn-modal-action {
+      flex: 1;
+      height: 46px;
+      border: none;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s ease, transform 0.1s ease;
+    }
+
+    .btn-modal-action:active {
+      transform: scale(0.96);
+    }
+
+    .btn-cancel {
+      background: rgba(255, 255, 255, 0.08);
+      color: #cfd8dc;
+    }
+
+    .btn-cancel:active {
+      background: rgba(255, 255, 255, 0.14);
+    }
+
+    .btn-danger {
+      background: #d32f2f;
+      color: #ffffff;
+    }
+
+    .btn-danger:active {
+      background: #c62828;
     }
 
     .token-input {
@@ -252,14 +594,14 @@
     }
 
     .token-input:focus {
-      border-color: #2196f3;
-      box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.25);
+      border-color: #0097d7;
+      box-shadow: 0 0 0 3px rgba(0, 151, 215, 0.25);
     }
 
     .btn-submit {
       width: 100%;
       height: 48px;
-      background: #1976d2;
+      background: #0097d7;
       border: none;
       border-radius: 12px;
       color: #fff;
@@ -271,7 +613,7 @@
 </head>
 <body>
   <header>
-    <div style="width: 16px;"></div>
+    <div style="width: 10px;"></div>
     <div class="brand">
       <h1>LOUVOR JA</h1>
       <h2>Controle Remoto</h2>
@@ -279,59 +621,118 @@
     <div id="dot" class="dot"></div>
   </header>
 
+  <!-- CARD STATUS ATUAL -->
   <div class="now-playing">
-    <div id="now-title" class="now-playing-title">LouvorJA Conectado</div>
-    <div id="now-lyric" class="now-playing-lyric">Toque nos botões abaixo para controlar a projeção.</div>
+    <div class="now-playing-header">
+      <div id="now-title" class="now-playing-title">LouvorJA Conectado</div>
+      <span id="now-badge" class="status-badge" style="display: none;"></span>
+    </div>
+    <div id="now-lyric" class="now-playing-lyric">Toque nos botões para controlar a projeção.</div>
   </div>
 
+  <!-- CONTROLES -->
   <main>
     <div class="top-actions">
-      <button class="btn btn-action" onclick="Remote.sendKey(27)">
+      <button id="btn-close" class="btn btn-action btn-close disabled" disabled onclick="Remote.requestClose()">
         <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
         <span>Fechar</span>
       </button>
-      <button class="btn btn-action" onclick="Remote.openSearch()">
+      <button class="btn btn-action btn-search" onclick="Remote.openSearch()">
         <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
         <span>Buscar</span>
       </button>
     </div>
 
     <div class="controls-grid">
+      <!-- LINHA 1: VOLUME AUMENTAR -->
       <div></div>
-      <button class="btn btn-arrow" onclick="Remote.sendKey(38)">
-        <svg viewBox="0 0 24 24"><path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/></svg>
+      <button class="btn btn-arrow btn-vol" onclick="Remote.volumeUp()" title="Aumentar Volume">
+        <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+        <span>Vol +</span>
       </button>
       <div></div>
 
-      <button class="btn btn-arrow" onclick="Remote.sendSlide('previous')">
+      <!-- LINHA 2: SLIDE ANTERIOR | PLAY-PAUSE | SLIDE PRÓXIMO -->
+      <button class="btn btn-arrow" onclick="Remote.sendSlide('previous')" title="Slide Anterior">
         <svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+        <span>Anterior</span>
       </button>
 
-      <button class="btn btn-center" onclick="Remote.sendKey(32)">
-        <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+      <button id="btn-play-pause" class="btn btn-center disabled" disabled onclick="Remote.playPause()" title="Play / Pause">
+        <svg id="icon-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+        <svg id="icon-pause" viewBox="0 0 24 24" style="display: none;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
       </button>
 
-      <button class="btn btn-arrow" onclick="Remote.sendSlide('next')">
+      <button class="btn btn-arrow" onclick="Remote.sendSlide('next')" title="Próximo Slide">
         <svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+        <span>Próximo</span>
       </button>
 
+      <!-- LINHA 3: VOLUME DIMINUIR -->
       <div></div>
-      <button class="btn btn-arrow" onclick="Remote.sendKey(40)">
-        <svg viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6z"/></svg>
+      <button class="btn btn-arrow btn-vol" onclick="Remote.volumeDown()" title="Diminuir Volume">
+        <svg viewBox="0 0 24 24"><path d="M7 9v6h4l5 5V4L11 9H7zm11.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
+        <span>Vol -</span>
       </button>
       <div></div>
     </div>
   </main>
 
   <footer>
+    <span id="volume-indicator">Volume: --</span>
     <span id="footer-token"></span>
   </footer>
+
+  <!-- TOAST FLUTUANTE DE FEEDBACK -->
+  <div id="toast" class="toast"></div>
+
+  <!-- MODAL DE CONFIRMAÇÃO DE FECHAMENTO -->
+  <div id="modal-confirm-close" class="modal-overlay" style="display: none;">
+    <div class="modal-card">
+      <div style="width: 48px; height: 48px; border-radius: 50%; background: rgba(244, 67, 54, 0.15); display: flex; align-items: center; justify-content: center; margin: 0 auto 14px auto; color: #ef5350;">
+        <svg viewBox="0 0 24 24" style="width: 28px; height: 28px;"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+      </div>
+      <h3>Encerrar Apresentação?</h3>
+      <p style="font-size: 13px; color: #90a4ae; margin-bottom: 22px;">Deseja realmente fechar a música/projeção atual?</p>
+      <div style="display: flex; gap: 12px;">
+        <button class="btn-modal-action btn-cancel" onclick="Remote.cancelClose()">Cancelar</button>
+        <button class="btn-modal-action btn-danger" onclick="Remote.confirmClose()">Sim, Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE BUSCA DE MÚSICAS -->
+  <div id="search-modal" class="search-overlay" style="display: none;">
+    <div class="search-header">
+      <div class="search-input-wrapper">
+        <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+        <input 
+          type="text" 
+          id="search-input" 
+          class="search-input" 
+          placeholder="Nome da música, hino ou trecho..." 
+          autocomplete="off" 
+        />
+        <button id="search-clear" class="search-clear-btn" style="display: none;" onclick="Remote.clearSearch()">
+          <svg viewBox="0 0 24 24" style="width: 18px; height: 18px;"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </div>
+      <button class="search-close-btn" onclick="Remote.closeSearch()">Fechar</button>
+    </div>
+
+    <div id="search-results" class="search-results">
+      <div class="search-empty">
+        <svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+        <span>Digite o nome da música, número do hino ou trecho da letra para buscar.</span>
+      </div>
+    </div>
+  </div>
 
   <!-- MODAL DE TOKEN -->
   <div id="modal-token" class="modal-overlay" style="display: none;">
     <div class="modal-card">
       <h3>Digite o Token de Acesso</h3>
-      <p style="font-size: 13px; color: #90a4ae; margin-bottom: 16px;">Consulte o token na tela de Transmissão do LouvorJA.</p>
+      <p style="font-size: 13px; color: #90a4ae; margin-bottom: 16px;">Consulte o token na tela de Transmissão do Louvor JA.</p>
       <input type="text" id="token-input" class="token-input" maxlength="10" placeholder="TOKEN" autocomplete="off" />
       <button class="btn-submit" onclick="Remote.saveToken()">Conectar</button>
     </div>
@@ -341,10 +742,38 @@
     (function () {
       const dotEl = document.getElementById("dot");
       const titleEl = document.getElementById("now-title");
+      const badgeEl = document.getElementById("now-badge");
       const lyricEl = document.getElementById("now-lyric");
-      const footerTokenEl = document.getElementById("footer-token");
+      const volIndicatorEl = document.getElementById("volume-indicator");
+      const toastEl = document.getElementById("toast");
       const modalTokenEl = document.getElementById("modal-token");
+      const modalConfirmCloseEl = document.getElementById("modal-confirm-close");
       const tokenInputEl = document.getElementById("token-input");
+
+      const iconPlay = document.getElementById("icon-play");
+      const iconPause = document.getElementById("icon-pause");
+
+      // Modal de Busca
+      const searchModal = document.getElementById("search-modal");
+      const searchInput = document.getElementById("search-input");
+      const searchClear = document.getElementById("search-clear");
+      const searchResults = document.getElementById("search-results");
+
+      let currentVolume = 100;
+      let isPlaying = false;
+      let hasMedia = false;
+      let toastTimer = null;
+      let searchDebounceTimer = null;
+      let isTogglingPlay = false;
+
+      function showToast(msg) {
+        toastEl.textContent = msg;
+        toastEl.classList.add("show");
+        if (toastTimer) clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => {
+          toastEl.classList.remove("show");
+        }, 1800);
+      }
 
       function getToken() {
         const urlParams = new URLSearchParams(window.location.search);
@@ -357,6 +786,48 @@
 
       function updateStatus(connected) {
         dotEl.className = "dot " + (connected ? "connected" : "disconnected");
+      }
+
+      function updatePlayState(paused) {
+        isPlaying = !paused;
+        if (isPlaying) {
+          iconPlay.style.display = "none";
+          iconPause.style.display = "block";
+          badgeEl.textContent = "Reproduzindo";
+          badgeEl.className = "status-badge playing";
+          badgeEl.style.display = "inline-block";
+        } else {
+          iconPlay.style.display = "block";
+          iconPause.style.display = "none";
+          badgeEl.textContent = "Pausado";
+          badgeEl.className = "status-badge paused";
+          badgeEl.style.display = "inline-block";
+        }
+      }
+
+      function setMediaActive(active) {
+        hasMedia = Boolean(active);
+        const playPauseBtn = document.getElementById("btn-play-pause");
+        const closeBtn = document.getElementById("btn-close") || document.querySelector(".btn-close");
+        if (hasMedia) {
+          if (playPauseBtn) {
+            playPauseBtn.classList.remove("disabled");
+            playPauseBtn.removeAttribute("disabled");
+          }
+          if (closeBtn) {
+            closeBtn.classList.remove("disabled");
+            closeBtn.removeAttribute("disabled");
+          }
+        } else {
+          if (playPauseBtn) {
+            playPauseBtn.classList.add("disabled");
+            playPauseBtn.setAttribute("disabled", "true");
+          }
+          if (closeBtn) {
+            closeBtn.classList.add("disabled");
+            closeBtn.setAttribute("disabled", "true");
+          }
+        }
       }
 
       async function callApi(endpoint, params = {}) {
@@ -385,20 +856,81 @@
 
       window.Remote = {
         async sendSlide(action) {
-          await callApi("song-slides", { action: action });
+          await callApi("song-slides", { action });
         },
         async sendKey(keyCode) {
           await callApi("keyboard", { key: keyCode });
         },
-        openSearch() {
-          const termo = prompt("Digite o nome da música ou número do hino:");
-          if (termo && termo.trim()) {
-            callApi("search-songs", { q: termo.trim() });
+        async playPause() {
+          if (!hasMedia || isTogglingPlay) return;
+          isTogglingPlay = true;
+          try {
+            updatePlayState(isPlaying);
+            await callApi("play-pause");
+          } finally {
+            setTimeout(() => { isTogglingPlay = false; }, 350);
           }
         },
-        saveToken() {
-          const val = tokenInputEl.value.trim();
+        async volumeUp() {
+          currentVolume = Math.min(100, currentVolume + 5);
+          volIndicatorEl.textContent = "Volume: " + currentVolume + "%";
+          showToast("🔊 Volume: " + currentVolume + "%");
+          await callApi("volume", { action: "up" });
+        },
+        async volumeDown() {
+          currentVolume = Math.max(0, currentVolume - 5);
+          volIndicatorEl.textContent = "Volume: " + currentVolume + "%";
+          showToast("🔉 Volume: " + currentVolume + "%");
+          await callApi("volume", { action: "down" });
+        },
+        requestClose() {
+          if (!hasMedia) return;
+          modalConfirmCloseEl.style.display = "flex";
+        },
+        cancelClose() {
+          modalConfirmCloseEl.style.display = "none";
+        },
+        async confirmClose() {
+          modalConfirmCloseEl.style.display = "none";
+          showToast("Apresentação encerrada");
+          await callApi("close-media", { force: "true" });
+        },
+        openSearch() {
+          searchModal.style.display = "flex";
+          setTimeout(() => searchInput.focus(), 100);
+        },
+        closeSearch() {
+          searchModal.style.display = "none";
+          searchInput.value = "";
+          searchClear.style.display = "none";
+        },
+        clearSearch() {
+          searchInput.value = "";
+          searchClear.style.display = "none";
+          searchResults.innerHTML = `
+            <div class="search-empty">
+              <svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+              <span>Digite o nome da música, número do hino ou trecho da letra para buscar.</span>
+            </div>
+          `;
+          searchInput.focus();
+        },
+        async openSong(id, name) {
+          showToast("Iniciando: " + (name || "Música"));
+          Remote.closeSearch();
+          await callApi("open-song", { id: id, tag: "1" });
+        },
+        async saveToken() {
+          const val = tokenInputEl.value.trim().toUpperCase();
           if (val) {
+            try {
+              const res = await fetch("/api/verify-token?token=" + encodeURIComponent(val));
+              if (res.status === 401) {
+                alert("Token incorreto! Verifique o token no Louvor JA.");
+                tokenInputEl.focus();
+                return;
+              }
+            } catch (err) {}
             setToken(val);
             modalTokenEl.style.display = "none";
             callApi("ping");
@@ -406,7 +938,85 @@
         }
       };
 
-      // EventSource para receber atualização de estado
+      // Busca com debounce enquanto digita
+      searchInput.addEventListener("input", function () {
+        const q = searchInput.value.trim();
+        searchClear.style.display = q ? "flex" : "none";
+
+        if (searchDebounceTimer) clearTimeout(searchDebounceTimer);
+
+        if (!q) {
+          Remote.clearSearch();
+          return;
+        }
+
+        searchDebounceTimer = setTimeout(async () => {
+          searchResults.innerHTML = `
+            <div class="search-empty">
+              <span style="color: #64b5f6;">Buscando músicas...</span>
+            </div>
+          `;
+
+          const res = await callApi("search-songs", { q });
+          const items = (res && (res.musicas || res.results)) || [];
+
+          if (items.length === 0) {
+            searchResults.innerHTML = `
+              <div class="search-empty">
+                <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                <span>Nenhuma música encontrada para "${q}".</span>
+              </div>
+            `;
+            return;
+          }
+
+          let html = "";
+          for (const item of items) {
+            const hBadge = item.hymnal_track ? `<span class="hymn-badge">Hino ${item.hymnal_track}</span>` : "";
+            const artist = item.artist ? `<span class="search-item-artist">${item.artist}</span>` : "";
+            const safeName = (item.name || "").replace(/"/g, '&quot;');
+
+            html += `
+              <div class="search-item" onclick="Remote.openSong(${item.id_music}, '${safeName}')">
+                <div class="search-item-info">
+                  <div class="search-item-title-row">
+                    ${hBadge}
+                    <span class="search-item-name">${item.name}</span>
+                  </div>
+                  ${artist}
+                </div>
+                <div class="search-item-play-icon">
+                  <svg viewBox="0 0 24 24" style="width: 20px; height: 20px;"><path d="M8 5v14l11-7z"/></svg>
+                </div>
+              </div>
+            `;
+          }
+          searchResults.innerHTML = html;
+        }, 220);
+      });
+
+      // Fechar modais com tecla ESC
+      window.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") {
+          if (searchModal.style.display !== "none") {
+            Remote.closeSearch();
+          } else if (modalConfirmCloseEl.style.display !== "none") {
+            Remote.cancelClose();
+          }
+        }
+      });
+
+      function formatLyricHtml(raw) {
+        if (!raw) return "";
+        let text = String(raw).trim();
+        text = text.replace(/&lt;br\s*\/?&gt;[\r\n]*/gi, " ");
+        text = text.replace(/<\s*br\s*\/?>[\r\n]*/gi, " ");
+        const div = document.createElement("div");
+        div.textContent = text;
+        return div.innerHTML;
+      }
+
+      // EventSource para receber atualização de estado em tempo real
       function connectSSE() {
         const token = getToken();
         const url = "/api/events" + (token ? "?token=" + encodeURIComponent(token) : "");
@@ -416,15 +1026,31 @@
           try {
             const data = JSON.parse(e.data);
             updateStatus(true);
+
+            if (data.volume !== undefined) {
+              currentVolume = data.volume;
+              volIndicatorEl.textContent = "Volume: " + currentVolume + "%";
+            }
+
             if (data.type === "media") {
+              setMediaActive(true);
               titleEl.textContent = data.title || "Música em reprodução";
-              lyricEl.textContent = (data.currentLyric || "").trim() || "---";
+              lyricEl.innerHTML = formatLyricHtml((data.currentLyric || "").trim()) || "---";
+              updatePlayState(data.isPaused === true);
             } else if (data.type === "bible") {
+              setMediaActive(false);
               titleEl.textContent = data.bibleReference || "Bíblia Sagrada";
-              lyricEl.textContent = data.bibleText || "---";
+              lyricEl.innerHTML = formatLyricHtml(data.bibleText || "") || "---";
+              badgeEl.style.display = "none";
+              iconPlay.style.display = "block";
+              iconPause.style.display = "none";
             } else {
-              titleEl.textContent = "LouvorJA";
-              lyricEl.textContent = "Nenhuma mídia em reprodução.";
+              setMediaActive(false);
+              titleEl.textContent = "LouvorJA Conectado";
+              lyricEl.textContent = "Nenhuma mídia em reprodução no momento.";
+              badgeEl.style.display = "none";
+              iconPlay.style.display = "block";
+              iconPause.style.display = "none";
             }
           } catch (err) {}
         });
@@ -436,6 +1062,30 @@
         };
       }
 
+      async function checkAuth() {
+        try {
+          const res = await fetch("/api/ping");
+          const data = await res.json();
+          if (data && data.tokenRequired) {
+            const token = getToken();
+            if (!token) {
+              modalTokenEl.style.display = "flex";
+              tokenInputEl.focus();
+            } else {
+              const vRes = await fetch("/api/verify-token?token=" + encodeURIComponent(token));
+              if (vRes.status === 401) {
+                setToken("");
+                modalTokenEl.style.display = "flex";
+                tokenInputEl.value = "";
+                tokenInputEl.focus();
+              }
+            }
+          }
+        } catch (e) {}
+      }
+
+      setMediaActive(false);
+      checkAuth();
       connectSSE();
       callApi("ping");
     })();

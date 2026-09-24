@@ -78,6 +78,9 @@ export default {
   },
   methods: {
     initBackgroundTasks() {
+      if (this._backgroundTasksInitialized) return;
+      this._backgroundTasksInitialized = true;
+
       if (window.electronAPI && window.electronAPI.getDisplays) {
         window.electronAPI.getDisplays().then(displays => {
           this.$appdata.set("system_displays", displays);
@@ -100,7 +103,8 @@ export default {
       if (window.electronAPI && window.electronAPI.streamingStart) {
         const autoStart = this.$userdata.get("modules.streaming.autostart") === true;
         if (autoStart) {
-          const port = Number(this.$userdata.get("modules.streaming.port")) || 7070;
+          const savedPort = this.$userdata.get("modules.streaming.port");
+          const port = savedPort && Number(savedPort) !== 7070 ? Number(savedPort) : 7071;
           const host = this.$userdata.get("modules.streaming.host") || "0.0.0.0";
           const token = this.$userdata.get("modules.streaming.token") || "";
           window.electronAPI.streamingStart({ port, host, token }).catch((err) => {
@@ -118,19 +122,37 @@ export default {
             } else if (params.action === "previous") {
               this.$media.prevSlide();
             } else if (params.action === "close") {
-              this.$media.close();
+              const force = params.force === "true";
+              this.$media.close(force);
             }
+          } else if (action === "play-pause") {
+            const hasMedia = Boolean(this.$appdata.get("modules.media.id_music") || this.$appdata.get("modules.media.data")?.name);
+            if (hasMedia) {
+              this.$media.playPause();
+            }
+          } else if (action === "close-media") {
+            const force = params.force === "true";
+            this.$media.close(force);
           } else if (action === "keyboard") {
             const key = Number(params.key);
             if (key === 39) this.$media.nextSlide();
             else if (key === 37) this.$media.prevSlide();
+            else if (key === 38) this.$media.volumeUp();
+            else if (key === 40) this.$media.volumeDown();
             else if (key === 32) this.$media.playPause();
-            else if (key === 27) this.$media.close();
+            else if (key === 27) {
+              const force = params.force === "true";
+              this.$media.close(force);
+            }
+          } else if (action === "volume") {
+            if (params.action === "up") this.$media.volumeUp();
+            else if (params.action === "down") this.$media.volumeDown();
+            else if (params.value !== undefined) this.$media.setVolume(Number(params.value));
           } else if (action === "open-song") {
             const songId = Number(params.id);
             if (songId) {
               const tag = params.tag || "1";
-              const mode = tag === "2" ? "playback" : tag === "3" ? "no_audio" : "vocal";
+              const mode = tag === "2" ? "instrumental" : tag === "3" ? "no_audio" : "audio";
               this.$media.open({ id_music: songId, mode });
             }
           }
@@ -245,8 +267,7 @@ export default {
 
       if (e.code === "Space") {
         e.preventDefault();
-        const isPaused = this.$appdata.get("modules.media.config.is_paused");
-        this.$media.pause(!isPaused);
+        this.$media.playPause();
       } else if (e.code === "ArrowRight" || e.code === "ArrowDown" || e.code === "PageDown") {
         e.preventDefault();
         this.$media.nextSlide();

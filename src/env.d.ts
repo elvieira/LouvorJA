@@ -107,6 +107,7 @@ interface ElectronAPI {
   onUpdateError: (callback: (error: unknown) => void) => void
   streamingGetStatus?: () => Promise<{ running: boolean; port: number; host: string; token: string; urls: Record<string, string> }>
   streamingGetInterfaces?: () => Promise<Array<{ name: string; ip: string; isLocal: boolean }>>
+  streamingSetConfig?: (config?: Record<string, unknown>) => Promise<{ running: boolean; port: number; host: string; token: string; urls: Record<string, string> }>
   streamingStart?: (config?: Record<string, unknown>) => Promise<{ running: boolean; port: number; host: string; token: string; urls: Record<string, string> }>
   streamingStop?: () => Promise<{ running: boolean; port: number; host: string; token: string; urls: Record<string, string> }>
   streamingPushSlide?: (data: Record<string, unknown>) => Promise<boolean>

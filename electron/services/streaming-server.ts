@@ -3,6 +3,7 @@ import * as os from "os";
 import * as path from "path";
 import * as fs from "fs";
 import { app } from "electron";
+import { mediaPath, coversPath, musicPath, slidesPath } from "../config/constants";
 
 export interface StreamingSlideData {
   type: "media" | "bible" | "idle";
@@ -15,9 +16,16 @@ export interface StreamingSlideData {
   currentLyric?: string;
   auxLyric?: string;
   nextLyric?: string;
+  nextAuxLyric?: string;
+  isNextCover?: boolean;
+  image?: string | null;
+  imagePosition?: number;
+  slideSettings?: Record<string, unknown>;
   bibleText?: string;
   bibleReference?: string;
   bibleVersion?: string;
+  isPaused?: boolean;
+  volume?: number;
   updatedAt: number;
 }
 
@@ -57,7 +65,7 @@ class StreamingServerService {
   private heartbeatTimer: NodeJS.Timeout | null = null;
   private isRunning: boolean = false;
   private currentConfig: StreamingServerConfig = {
-    port: 7070,
+    port: 7071,
     host: "0.0.0.0",
     token: "",
   };
@@ -104,7 +112,6 @@ class StreamingServerService {
     const ip = this.currentConfig.host === "0.0.0.0" ? this.getPrimaryIp() : this.currentConfig.host;
     const port = this.currentConfig.port;
     const baseUrl = `http://${ip}:${port}`;
-    const tokenParam = this.currentConfig.token ? `?token=${encodeURIComponent(this.currentConfig.token)}` : "";
 
     return {
       running: this.isRunning,
@@ -113,9 +120,9 @@ class StreamingServerService {
       token: this.currentConfig.token || "",
       urls: {
         overlay: `${baseUrl}/overlay`,
-        overlayFullscreen: `${baseUrl}/overlay?mode=fullscreen`,
-        stage: `${baseUrl}/stage${tokenParam}`,
-        remote: `${baseUrl}/remote${tokenParam}`,
+        overlayFullscreen: `${baseUrl}/fullscreen`,
+        stage: `${baseUrl}/stage`,
+        remote: `${baseUrl}/remote`,
         music: `${baseUrl}/musica`,
         bible: `${baseUrl}/biblia`,
       },
@@ -162,6 +169,18 @@ class StreamingServerService {
     }
   }
 
+  public setConfig(config: Partial<StreamingServerConfig>) {
+    if (config.port && config.port > 0) {
+      this.currentConfig.port = config.port;
+    }
+    if (config.host !== undefined) {
+      this.currentConfig.host = config.host;
+    }
+    if (config.token !== undefined) {
+      this.currentConfig.token = config.token;
+    }
+  }
+
   public start(config: Partial<StreamingServerConfig> = {}): Promise<StreamingServerStatus> {
     return new Promise((resolve, reject) => {
       if (this.isRunning && this.server) {
@@ -169,7 +188,7 @@ class StreamingServerService {
       }
 
       this.currentConfig = {
-        port: config.port && config.port > 0 ? config.port : 7070,
+        port: config.port && config.port > 0 ? config.port : 7071,
         host: config.host || "0.0.0.0",
         token: config.token || "",
       };
@@ -179,6 +198,20 @@ class StreamingServerService {
       this.server.on("error", (error: unknown) => {
         console.error("[StreamingServer] Server error:", error);
         this.isRunning = false;
+        try {
+          this.server?.close();
+        } catch {
+          // ignore
+        }
+        this.server = null;
+        const err = error as NodeJS.ErrnoException;
+        if (err && err.code === "EADDRINUSE") {
+          const customError: NodeJS.ErrnoException = new Error(
+            `A porta ${this.currentConfig.port} já está em uso por outro aplicativo no computador. Altere a porta para ${this.currentConfig.port === 7070 ? 7071 : this.currentConfig.port + 1} nas configurações.`,
+          );
+          customError.code = "EADDRINUSE";
+          return reject(customError);
+        }
         reject(error);
       });
 
@@ -293,7 +326,24 @@ class StreamingServerService {
     // 3. Health check
     if (pathname === "/api/ping") {
       res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
-      res.end(JSON.stringify({ status: "ok", app: "LouvorJA", running: this.isRunning }));
+      res.end(JSON.stringify({
+        status: "ok",
+        app: "LouvorJA",
+        running: this.isRunning,
+        tokenRequired: !isLocalRequest && Boolean(this.currentConfig.token && this.currentConfig.token.trim() !== ""),
+      }));
+      return;
+    }
+
+    // 3.1 Verificação de token
+    if (pathname === "/api/verify-token") {
+      if (!isLocalRequest && tokenRequired && clientToken !== this.currentConfig.token) {
+        res.writeHead(401, { "Content-Type": "application/json; charset=utf-8" });
+        res.end(JSON.stringify({ status: "error", message: "Token inválido", valid: false }));
+        return;
+      }
+      res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
+      res.end(JSON.stringify({ status: "ok", valid: true }));
       return;
     }
 
@@ -352,13 +402,28 @@ class StreamingServerService {
         return;
       }
 
+      const force = parsedUrl.searchParams.get("force") || "false";
+
       if (this.actionHandler) {
-        const result = await this.actionHandler("song-slides", { action, slide });
+        const result = await this.actionHandler("song-slides", { action, slide, force });
         res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
         res.end(JSON.stringify(result || { status: "ok", action }));
       } else {
         res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
         res.end(JSON.stringify({ status: "ok", action }));
+      }
+      return;
+    }
+
+    if (pathname === "/api/close-media") {
+      const force = parsedUrl.searchParams.get("force") !== "false" ? "true" : "false";
+      if (this.actionHandler) {
+        const result = await this.actionHandler("close-media", { force });
+        res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
+        res.end(JSON.stringify(result || { status: "ok" }));
+      } else {
+        res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
+        res.end(JSON.stringify({ status: "ok" }));
       }
       return;
     }
@@ -372,6 +437,32 @@ class StreamingServerService {
       } else {
         res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
         res.end(JSON.stringify({ status: "ok", key }));
+      }
+      return;
+    }
+
+    if (pathname === "/api/play-pause") {
+      if (this.actionHandler) {
+        const result = await this.actionHandler("play-pause", {});
+        res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
+        res.end(JSON.stringify(result || { status: "ok" }));
+      } else {
+        res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
+        res.end(JSON.stringify({ status: "ok" }));
+      }
+      return;
+    }
+
+    if (pathname === "/api/volume") {
+      const action = parsedUrl.searchParams.get("action") || "";
+      const value = parsedUrl.searchParams.get("value") || "";
+      if (this.actionHandler) {
+        const result = await this.actionHandler("volume", { action, value });
+        res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
+        res.end(JSON.stringify(result || { status: "ok", action, value }));
+      } else {
+        res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
+        res.end(JSON.stringify({ status: "ok", action, value }));
       }
       return;
     }
@@ -403,7 +494,47 @@ class StreamingServerService {
       return;
     }
 
-    // 8. Servir arquivos estáticos (páginas HTML, CSS, JS)
+    // 8. Servir arquivos de mídia (imagens e papéis de parede do LouvorJA)
+    if (pathname.startsWith("/media/")) {
+      const relPath = decodeURIComponent(pathname.substring(7));
+      let filePath = path.normalize(path.join(mediaPath, relPath));
+      if (!fs.existsSync(filePath)) {
+        const altPaths = [
+          path.join(coversPath, relPath),
+          path.join(musicPath, relPath),
+          path.join(slidesPath, relPath),
+        ];
+        for (const alt of altPaths) {
+          if (fs.existsSync(alt)) {
+            filePath = alt;
+            break;
+          }
+        }
+      }
+
+      if (fs.existsSync(filePath) && !fs.statSync(filePath).isDirectory()) {
+        const ext = path.extname(filePath).toLowerCase();
+        const mimeTypes: Record<string, string> = {
+          ".png": "image/png",
+          ".jpg": "image/jpeg",
+          ".jpeg": "image/jpeg",
+          ".webp": "image/webp",
+          ".gif": "image/gif",
+          ".bmp": "image/bmp",
+          ".svg": "image/svg+xml",
+          ".mp4": "video/mp4",
+          ".webm": "video/webm",
+        };
+        const contentType = mimeTypes[ext] || "application/octet-stream";
+        res.writeHead(200, { "Content-Type": contentType, "Cache-Control": "public, max-age=86400" });
+        return fs.createReadStream(filePath).pipe(res);
+      }
+      res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
+      res.end("Arquivo de mídia não encontrado");
+      return;
+    }
+
+    // 9. Servir arquivos estáticos (páginas HTML, CSS, JS)
     this.serveStaticFile(pathname, res);
   }
 
@@ -411,9 +542,16 @@ class StreamingServerService {
     const baseDir = this.getStaticBaseDir();
 
     let targetFile = reqPath;
-    if (targetFile === "/" || targetFile === "/remote") {
+    if (targetFile === "/" || targetFile === "/remote" || targetFile === "/controle") {
       targetFile = "/remote.html";
-    } else if (targetFile === "/overlay" || targetFile === "/musica" || targetFile === "/biblia") {
+    } else if (
+      targetFile === "/overlay" ||
+      targetFile === "/fullscreen" ||
+      targetFile === "/projetor" ||
+      targetFile === "/tela" ||
+      targetFile === "/musica" ||
+      targetFile === "/biblia"
+    ) {
       targetFile = "/overlay.html";
     } else if (targetFile === "/stage" || targetFile === "/retorno") {
       targetFile = "/stage.html";

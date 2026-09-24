@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LouvorJA - Overlay Transmissão (OBS / vMix)</title>
+  <title>LouvorJA - Transmissão (OBS / vMix)</title>
   <style>
     * {
       box-sizing: border-box;
@@ -14,27 +14,28 @@
     html, body {
       width: 100vw;
       height: 100vh;
-      background: transparent !important;
       overflow: hidden;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     }
 
-    .overlay-container {
-      width: 100%;
-      height: 100%;
+    /* =======================================================
+       1. MODO TERÇO INFERIOR (LOWER THIRD PARA CÂMERAS)
+       ======================================================= */
+    .mode-lower-third-body {
+      background: transparent !important;
+    }
+
+    .lower-third-container {
+      width: 100vw;
+      height: 100vh;
       position: relative;
       display: flex;
-      padding: 30px;
-    }
-
-    /* MODO LOWER-THIRD (PADRÃO) */
-    .mode-lower-third {
       align-items: flex-end;
       justify-content: center;
-      padding-bottom: 45px;
+      padding: 30px 30px 45px 30px;
     }
 
-    .mode-lower-third .card {
+    .lower-third-container .card {
       width: 90%;
       max-width: 1200px;
       min-height: 110px;
@@ -51,68 +52,40 @@
       transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    /* MODO FULLSCREEN */
-    .mode-fullscreen {
-      align-items: center;
-      justify-content: center;
+    .lower-third-container .header-meta {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: rgba(255, 255, 255, 0.5);
+      margin-bottom: 6px;
     }
 
-    .mode-fullscreen .card {
-      width: 92%;
-      max-width: 1300px;
-      background: rgba(15, 17, 23, 0.85);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      border-radius: 24px;
-      padding: 40px 60px;
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+    .lt-inner {
+      width: 100%;
       display: flex;
       flex-direction: column;
       justify-content: center;
-      transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: opacity 0.2s ease-out, transform 0.2s ease-out;
     }
 
-    /* TEMA TOTALMENTE TRANSPARENTE (SOMENTE TEXTO COM SOMBRA) */
-    .theme-transparent .card {
-      background: transparent !important;
-      backdrop-filter: none !important;
-      -webkit-backdrop-filter: none !important;
-      border: none !important;
-      box-shadow: none !important;
-    }
-
-    /* TEMA CLARO */
-    .theme-light .card {
-      background: rgba(255, 255, 255, 0.9);
-      border: 1px solid rgba(0, 0, 0, 0.1);
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-    }
-    .theme-light .main-text {
-      color: #111 !important;
-      text-shadow: 0 2px 8px rgba(255, 255, 255, 0.8) !important;
-    }
-    .theme-light .sub-text, .theme-light .header-meta {
-      color: #444 !important;
-    }
-
-    /* ESTILOS DE TEXTO */
-    .main-text {
+    .lower-third-container .main-text {
       font-size: 34px;
       line-height: 1.35;
       font-weight: 700;
       color: #ffffff;
       text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
-      white-space: pre-line;
+      white-space: normal;
       text-align: center;
-      transition: color 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
     }
 
-    .main-text.is-cover {
+    .lower-third-container .main-text.is-cover {
       color: #ffca28;
     }
 
-    .sub-text {
+    .lower-third-container .sub-text {
       font-size: 22px;
       line-height: 1.3;
       font-weight: 500;
@@ -120,9 +93,11 @@
       margin-top: 8px;
       text-align: center;
       text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
     }
 
-    .bible-ref {
+    .lower-third-container .bible-ref {
       font-size: 20px;
       font-weight: 700;
       color: #ffb300;
@@ -130,24 +105,267 @@
       margin-top: 10px;
       letter-spacing: 0.5px;
       text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8);
+      text-transform: uppercase;
     }
 
-    .header-meta {
-      font-size: 13px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 1.2px;
-      color: rgba(255, 255, 255, 0.5);
-      margin-bottom: 6px;
+    .theme-transparent .lower-third-container .card {
+      background: transparent !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      border: none !important;
+      box-shadow: none !important;
+    }
+    .theme-light .lower-third-container .card {
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    }
+    .theme-light .lower-third-container .main-text {
+      color: #111 !important;
+      text-shadow: 0 2px 8px rgba(255, 255, 255, 0.8) !important;
+    }
+    .theme-light .lower-third-container .sub-text,
+    .theme-light .lower-third-container .header-meta {
+      color: #444 !important;
+    }
+
+    /* =======================================================
+       2. MODO TELA CHEIA (FULLSCREEN — REPLICA EXATAMENTE O PROJETOR E PLAYER)
+       ======================================================= */
+    .mode-fullscreen-body {
+      background: #000000 !important;
+    }
+
+    .mode-fullscreen-body.theme-transparent {
+      background: transparent !important;
+    }
+
+    .fullscreen-presentation-view {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: center;
     }
 
-    /* ESTADOS OCULTO / VISÍVEL */
+    /* Camada de Papel de Parede / Fundo do Slide com crossfade suave */
+    .fs-background {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #000000;
+      background-size: cover;
+      background-position: center center;
+      background-repeat: no-repeat;
+      transition: opacity 0.5s ease-in-out;
+      opacity: 0;
+      z-index: 1;
+    }
+
+    .fs-background.active {
+      opacity: 1;
+    }
+
+    .theme-transparent .fs-background {
+      background-color: transparent !important;
+    }
+
+    /* Camada de Conteúdo do Slide */
+    .fs-content-layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4%;
+      z-index: 2;
+      transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* --- Capa / Título da Música (Cover Slide Hero) --- */
+    .cover-slide-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      width: 100%;
+      max-width: 90%;
+    }
+
+    .cover-slide-hero {
+      position: relative;
+      width: fit-content;
+      max-width: 100%;
+      box-sizing: border-box;
+      padding: clamp(20px, 4.5vh, 48px) clamp(28px, 6vw, 68px);
+      border-radius: clamp(16px, 3vh, 32px);
+      background-color: rgba(10, 16, 26, 0.45);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .cover-title-text {
+      font-size: clamp(32px, 5.5vw, 64px);
+      color: #f6c32a;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.01em;
+      line-height: 1.15;
+      margin: 0;
+      padding: 0;
+      text-shadow: 0 4px 20px rgba(0, 0, 0, 0.8), 0 2px 6px rgba(0, 0, 0, 0.6);
+      text-wrap: balance;
+      overflow-wrap: break-word;
+      word-break: normal;
+    }
+
+    .cover-subtitle-tab {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      max-width: 90%;
+      background: linear-gradient(180deg, rgba(10, 16, 26, 0.20) 0%, rgba(6, 10, 18, 0.38) 100%);
+      border-left: 1px solid rgba(255, 255, 255, 0.18);
+      border-right: 1px solid rgba(255, 255, 255, 0.18);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+      border-top: none;
+      border-bottom-left-radius: clamp(10px, 1.8vh, 18px);
+      border-bottom-right-radius: clamp(10px, 1.8vh, 18px);
+      padding: clamp(4px, 1vh, 10px) clamp(16px, 3vw, 36px);
+      margin-top: -1px;
+      z-index: 2;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.32);
+      white-space: nowrap;
+    }
+
+    .subtitle-whisker {
+      display: inline-block;
+      width: clamp(24px, 4vw, 56px);
+      height: 1px;
+      background-color: rgba(255, 255, 255, 0.38);
+      flex-shrink: 0;
+    }
+
+    .subtitle-text {
+      margin: 0 clamp(8px, 1.5vw, 18px);
+      font-size: clamp(14px, 2vw, 24px);
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.88);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    /* --- Slide de Letra Padrão (Lyric Card) --- */
+    .fs-lyric-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+    }
+
+    .slide-aux-text {
+      font-size: clamp(16px, 2.2vw, 26px);
+      color: rgba(255, 255, 255, 0.8);
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      margin-bottom: clamp(10px, 2vh, 20px);
+      text-shadow: 0px 1px 4px rgba(0, 0, 0, 0.5);
+      text-align: center;
+    }
+
+    .slide-lyric-card {
+      position: relative;
+      max-width: 90%;
+      max-height: 82vh;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: clamp(24px, 4vh, 48px) clamp(32px, 5vw, 68px);
+      border-radius: clamp(16px, 3vh, 32px);
+      background-color: rgba(10, 16, 26, 0.45);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    }
+
+    .slide-lyric-content {
+      width: 100%;
+      text-align: center;
+      font-size: clamp(28px, 4.2vw, 54px);
+      font-weight: 700;
+      color: #ffffff;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      line-height: 1.4;
+      text-shadow: 0px 2px 10px rgba(0, 0, 0, 0.8);
+      word-break: break-word;
+      white-space: normal;
+    }
+
+    /* --- Projeção da Bíblia --- */
+    .fs-bible-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 90%;
+      max-width: 1300px;
+      padding: clamp(24px, 4vh, 48px);
+      box-sizing: border-box;
+    }
+
+    .bible-verse-text {
+      font-size: clamp(26px, 3.8vw, 48px);
+      font-weight: 600;
+      color: #ffffff;
+      line-height: 1.45;
+      text-align: center;
+      text-shadow: 0px 2px 10px rgba(0, 0, 0, 0.8);
+      white-space: normal;
+      width: 100%;
+    }
+
+    .bible-reference-text {
+      font-size: clamp(18px, 2.4vw, 30px);
+      font-weight: 700;
+      color: #fb8c00;
+      text-align: right;
+      width: 100%;
+      margin-top: clamp(14px, 2.5vh, 28px);
+      letter-spacing: 0.5px;
+      text-shadow: 0px 2px 8px rgba(0, 0, 0, 0.8);
+    }
+
+    /* Estados de transição */
     .hidden {
       opacity: 0 !important;
-      transform: translateY(24px) scale(0.98);
+      transform: translateY(14px) scale(0.98);
       pointer-events: none;
     }
 
@@ -158,102 +376,401 @@
   </style>
 </head>
 <body>
-  <div id="container" class="overlay-container mode-lower-third">
-    <div id="card" class="card hidden">
-      <div id="meta" class="header-meta"></div>
-      <div id="main-text" class="main-text"></div>
-      <div id="sub-text" class="sub-text" style="display: none;"></div>
-      <div id="bible-ref" class="bible-ref" style="display: none;"></div>
+  <!-- MODO 1: TERÇO INFERIOR (LOWER THIRD) -->
+  <div id="lower-third-view" class="lower-third-container" style="display: none;">
+    <div id="lt-card" class="card hidden">
+      <div id="lt-inner" class="lt-inner">
+        <div id="lt-meta" class="header-meta"></div>
+        <div id="lt-main-text" class="main-text"></div>
+        <div id="lt-sub-text" class="sub-text" style="display: none;"></div>
+        <div id="lt-bible-ref" class="bible-ref" style="display: none;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODO 2: TELA CHEIA (FULLSCREEN — REPLICA EXATAMENTE O PROJETOR E PLAYER) -->
+  <div id="fullscreen-view" class="fullscreen-presentation-view" style="display: none;">
+    <div id="fs-bg-1" class="fs-background active"></div>
+    <div id="fs-bg-2" class="fs-background"></div>
+    <div id="fs-content" class="fs-content-layer hidden">
+      <!-- Capa / Título da Música -->
+      <div id="fs-cover-group" class="cover-slide-group" style="display: none;">
+        <div class="cover-slide-hero">
+          <div id="fs-cover-title" class="cover-title-text"></div>
+        </div>
+        <div id="fs-subtitle-tab" class="cover-subtitle-tab" style="display: none;">
+          <span class="subtitle-whisker"></span>
+          <span id="fs-subtitle-text" class="subtitle-text"></span>
+          <span class="subtitle-whisker"></span>
+        </div>
+      </div>
+
+      <!-- Letra da Música -->
+      <div id="fs-lyric-group" class="fs-lyric-group" style="display: none;">
+        <div id="fs-aux-text" class="slide-aux-text" style="display: none;"></div>
+        <div class="slide-lyric-card">
+          <div id="fs-lyric-content" class="slide-lyric-content"></div>
+        </div>
+      </div>
+
+      <!-- Projeção da Bíblia -->
+      <div id="fs-bible-group" class="fs-bible-group" style="display: none;">
+        <div id="fs-bible-text" class="bible-verse-text"></div>
+        <div id="fs-bible-ref" class="bible-reference-text"></div>
+      </div>
     </div>
   </div>
 
   <script>
     (function () {
       const params = new URLSearchParams(window.location.search);
-      const mode = params.get("mode") || "lower-third";
+      const pathname = (window.location.pathname || "").toLowerCase();
+      const isFullscreenPath = pathname.includes("fullscreen") || pathname.includes("projetor") || pathname.includes("tela");
+      const mode = params.get("mode") || (isFullscreenPath ? "fullscreen" : "lower-third");
       const theme = params.get("theme") || "dark";
-      const customFontSize = params.get("fontSize");
-      const customAlign = params.get("align");
 
-      const container = document.getElementById("container");
-      const card = document.getElementById("card");
-      const metaEl = document.getElementById("meta");
-      const mainTextEl = document.getElementById("main-text");
-      const subTextEl = document.getElementById("sub-text");
-      const bibleRefEl = document.getElementById("bible-ref");
+      const isFullscreen = mode === "fullscreen" || isFullscreenPath;
 
-      // Aplica classes de modo e tema
-      if (mode === "fullscreen") {
-        container.classList.remove("mode-lower-third");
-        container.classList.add("mode-fullscreen");
+      const ltView = document.getElementById("lower-third-view");
+      const ltCard = document.getElementById("lt-card");
+      const ltInner = document.getElementById("lt-inner");
+      const ltMeta = document.getElementById("lt-meta");
+      const ltMainText = document.getElementById("lt-main-text");
+      const ltSubText = document.getElementById("lt-sub-text");
+      const ltBibleRef = document.getElementById("lt-bible-ref");
+
+      const fsView = document.getElementById("fullscreen-view");
+      const fsBg1 = document.getElementById("fs-bg-1");
+      const fsBg2 = document.getElementById("fs-bg-2");
+      const fsContent = document.getElementById("fs-content");
+      const fsCoverGroup = document.getElementById("fs-cover-group");
+      const fsCoverTitle = document.getElementById("fs-cover-title");
+      const fsSubtitleTab = document.getElementById("fs-subtitle-tab");
+      const fsSubtitleText = document.getElementById("fs-subtitle-text");
+      const fsLyricGroup = document.getElementById("fs-lyric-group");
+      const fsAuxText = document.getElementById("fs-aux-text");
+      const fsLyricContent = document.getElementById("fs-lyric-content");
+      const fsBibleGroup = document.getElementById("fs-bible-group");
+      const fsBibleText = document.getElementById("fs-bible-text");
+      const fsBibleRef = document.getElementById("fs-bible-ref");
+
+      if (isFullscreen) {
+        document.body.classList.add("mode-fullscreen-body");
+        fsView.style.display = "flex";
+        ltView.style.display = "none";
+      } else {
+        document.body.classList.add("mode-lower-third-body");
+        ltView.style.display = "flex";
+        fsView.style.display = "none";
       }
+
       if (theme === "transparent") {
-        container.classList.add("theme-transparent");
+        document.body.classList.add("theme-transparent");
       } else if (theme === "light") {
-        container.classList.add("theme-light");
+        document.body.classList.add("theme-light");
       }
 
-      if (customFontSize) {
-        mainTextEl.style.fontSize = customFontSize.includes("px") ? customFontSize : customFontSize + "px";
-      }
-      if (customAlign) {
-        mainTextEl.style.textAlign = customAlign;
-        subTextEl.style.textAlign = customAlign;
+      // Converte tags <br> e quebras de linha em tags <br> reais do HTML com sanitização XSS
+      function formatLyricHtml(raw) {
+        if (!raw) return "";
+        let text = String(raw).trim();
+
+        // Substitui qualquer variação de <br>, <br/>, <BR>, <BR/>, &lt;br&gt; por quebra \n
+        text = text.replace(/&lt;br\s*\/?&gt;[\r\n]*/gi, "\n");
+        text = text.replace(/<\s*br\s*\/?>[\r\n]*/gi, "\n");
+
+        // Escapar HTML perigoso básico
+        const div = document.createElement("div");
+        div.textContent = text;
+        let safe = div.innerHTML;
+
+        // Converte as quebras (\r\n ou \n) para tags <br> reais
+        safe = safe.replace(/\r?\n/g, "<br>");
+        return safe;
       }
 
-      let currentData = null;
+      function formatCoverSubtitle(text) {
+        if (!text) return "";
+        let str = text.trim();
+        str = str.replace(/^(\d+)\s*[-•·.:]\s*/, "$1  ·  ");
+        str = str.replace(/\s+-\s+/, "  ·  ");
+        return str;
+      }
 
-      function render(data) {
-        if (!data || data.type === "idle") {
-          card.classList.remove("visible");
-          card.classList.add("hidden");
+      // Gerenciador de Wallpaper com Crossfade no Fullscreen
+      let currentBgIndex = 1;
+      let currentBgUrl = "";
+
+      function updateFullscreenBg(targetUrl) {
+        if (targetUrl === currentBgUrl) return;
+        currentBgUrl = targetUrl;
+
+        const activeBg = currentBgIndex === 1 ? fsBg1 : fsBg2;
+        const nextBg = currentBgIndex === 1 ? fsBg2 : fsBg1;
+
+        if (targetUrl === "none" || !targetUrl) {
+          activeBg.classList.remove("active");
+          nextBg.classList.remove("active");
+          setTimeout(() => {
+            activeBg.style.backgroundImage = "none";
+            nextBg.style.backgroundImage = "none";
+          }, 500);
           return;
         }
+
+        nextBg.style.backgroundImage = targetUrl;
+        nextBg.classList.add("active");
+        activeBg.classList.remove("active");
+
+        currentBgIndex = currentBgIndex === 1 ? 2 : 1;
+      }
+
+      // Identificador de estado para detectar transição de slide
+      function getFsKey(data) {
+        if (!data || data.type === "idle") return "idle";
+        return `${data.type}|${data.title || ""}|${data.subtitle || ""}|${data.isCover ? "1" : "0"}|${data.slideIndex ?? ""}|${data.currentLyric || ""}|${data.auxLyric || ""}|${data.bibleText || ""}|${data.image || ""}`;
+      }
+
+      function getLtKey(data) {
+        if (!data || data.type === "idle") return "idle";
+        return `${data.type}|${data.title || ""}|${data.isCover ? "1" : "0"}|${data.slideIndex ?? ""}|${data.currentLyric || ""}|${data.auxLyric || ""}|${data.bibleText || ""}`;
+      }
+
+      // Aplicação DOM no Fullscreen
+      function applyFullscreenDOM(data) {
+        if (!data || data.type === "idle") return;
+
+        let targetBg = "none";
+        if (data.type === "media") {
+          if (data.image) {
+            const imgPath = data.image.startsWith("/") ? data.image : "/" + data.image;
+            targetBg = "url(/media" + encodeURI(imgPath) + ")";
+          } else if (data.slideSettings && data.slideSettings.bgImage) {
+            targetBg = "url(" + data.slideSettings.bgImage + ")";
+          }
+        }
+        updateFullscreenBg(targetBg);
+
+        if (data.type === "media") {
+          if (data.isCover) {
+            const title = (data.title || data.currentLyric || "").trim();
+            fsCoverTitle.innerHTML = formatLyricHtml(title);
+            fsCoverGroup.style.display = "flex";
+            fsLyricGroup.style.display = "none";
+            fsBibleGroup.style.display = "none";
+
+            const subtitle = (data.subtitle || data.auxLyric || "").trim();
+            if (subtitle) {
+              fsSubtitleText.textContent = formatCoverSubtitle(subtitle);
+              fsSubtitleTab.style.display = "inline-flex";
+            } else {
+              fsSubtitleTab.style.display = "none";
+            }
+          } else {
+            fsCoverGroup.style.display = "none";
+            fsLyricGroup.style.display = "flex";
+            fsBibleGroup.style.display = "none";
+
+            if (data.auxLyric && data.auxLyric.trim() !== "") {
+              fsAuxText.innerHTML = formatLyricHtml(data.auxLyric.trim());
+              fsAuxText.style.display = "block";
+            } else {
+              fsAuxText.style.display = "none";
+            }
+
+            fsLyricContent.innerHTML = formatLyricHtml(data.currentLyric || "");
+          }
+        } else if (data.type === "bible") {
+          updateFullscreenBg("none");
+          fsCoverGroup.style.display = "none";
+          fsLyricGroup.style.display = "none";
+          fsBibleGroup.style.display = "flex";
+
+          fsBibleText.innerHTML = formatLyricHtml(data.bibleText || "");
+          if (data.bibleReference) {
+            fsBibleRef.textContent = data.bibleReference + (data.bibleVersion ? " (" + data.bibleVersion + ")" : "");
+            fsBibleRef.style.display = "block";
+          } else {
+            fsBibleRef.style.display = "none";
+          }
+        }
+      }
+
+      // Aplicação DOM no Terço Inferior
+      function applyLowerThirdDOM(data) {
+        if (!data || data.type === "idle") return;
 
         if (data.type === "media") {
           const text = (data.currentLyric || "").trim();
           if (!text) {
-            card.classList.remove("visible");
-            card.classList.add("hidden");
+            ltCard.classList.remove("visible");
+            ltCard.classList.add("hidden");
             return;
           }
 
-          metaEl.textContent = data.title || "";
-          mainTextEl.textContent = text;
-          mainTextEl.className = "main-text" + (data.isCover ? " is-cover" : "");
+          ltMeta.textContent = data.title || "";
+          ltMainText.innerHTML = formatLyricHtml(text);
+          ltMainText.className = "main-text" + (data.isCover ? " is-cover" : "");
 
           if (data.auxLyric && data.auxLyric.trim() !== "") {
-            subTextEl.textContent = data.auxLyric.trim();
-            subTextEl.style.display = "block";
+            ltSubText.innerHTML = formatLyricHtml(data.auxLyric.trim());
+            ltSubText.style.display = "block";
           } else {
-            subTextEl.style.display = "none";
+            ltSubText.style.display = "none";
           }
 
-          bibleRefEl.style.display = "none";
-          card.classList.remove("hidden");
-          card.classList.add("visible");
+          ltBibleRef.style.display = "none";
         } else if (data.type === "bible") {
           const text = (data.bibleText || "").trim();
           if (!text) {
-            card.classList.remove("visible");
-            card.classList.add("hidden");
+            ltCard.classList.remove("visible");
+            ltCard.classList.add("hidden");
             return;
           }
 
-          metaEl.textContent = data.bibleVersion ? "BÍBLIA SAGRADA (" + data.bibleVersion + ")" : "BÍBLIA SAGRADA";
-          mainTextEl.textContent = text;
-          mainTextEl.className = "main-text";
-          subTextEl.style.display = "none";
+          ltMeta.textContent = data.bibleVersion ? "BÍBLIA SAGRADA (" + data.bibleVersion + ")" : "BÍBLIA SAGRADA";
+          ltMainText.innerHTML = formatLyricHtml(text);
+          ltMainText.className = "main-text";
+          ltSubText.style.display = "none";
 
           if (data.bibleReference) {
-            bibleRefEl.textContent = data.bibleReference;
-            bibleRefEl.style.display = "block";
+            ltBibleRef.textContent = data.bibleReference;
+            ltBibleRef.style.display = "block";
           } else {
-            bibleRefEl.style.display = "none";
+            ltBibleRef.style.display = "none";
           }
+        }
+      }
 
-          card.classList.remove("hidden");
-          card.classList.add("visible");
+      let lastFsKey = null;
+      let isTransitioningFs = false;
+      let pendingFsData = null;
+
+      function renderFullscreen(data) {
+        const newKey = getFsKey(data);
+        if (newKey === lastFsKey && !isTransitioningFs) {
+          return;
+        }
+
+        if (newKey === "idle") {
+          lastFsKey = "idle";
+          fsContent.classList.remove("visible");
+          fsContent.classList.add("hidden");
+          updateFullscreenBg("none");
+          return;
+        }
+
+        // Primeira carga ou reativação a partir de idle
+        if (lastFsKey === null || lastFsKey === "idle") {
+          lastFsKey = newKey;
+          applyFullscreenDOM(data);
+          fsContent.classList.remove("hidden");
+          fsContent.classList.add("visible");
+          return;
+        }
+
+        // Transição suave de mudança de slide (fade out 200ms -> atualiza -> fade in 260ms)
+        lastFsKey = newKey;
+        if (isTransitioningFs) {
+          pendingFsData = data;
+          return;
+        }
+
+        isTransitioningFs = true;
+        fsContent.style.transition = "opacity 0.2s ease-out, transform 0.2s ease-out";
+        fsContent.style.opacity = "0";
+        fsContent.style.transform = "scale(0.985)";
+
+        setTimeout(() => {
+          const targetData = pendingFsData || data;
+          pendingFsData = null;
+          applyFullscreenDOM(targetData);
+
+          void fsContent.offsetHeight;
+          fsContent.style.transition = "opacity 0.26s ease-in, transform 0.26s cubic-bezier(0.16, 1, 0.3, 1)";
+          fsContent.style.opacity = "1";
+          fsContent.style.transform = "scale(1)";
+
+          setTimeout(() => {
+            isTransitioningFs = false;
+            if (pendingFsData) {
+              renderFullscreen(pendingFsData);
+            }
+          }, 270);
+        }, 200);
+      }
+
+      let lastLtKey = null;
+      let isTransitioningLt = false;
+      let pendingLtData = null;
+
+      function renderLowerThird(data) {
+        const newKey = getLtKey(data);
+        if (newKey === lastLtKey && !isTransitioningLt) {
+          return;
+        }
+
+        if (newKey === "idle") {
+          lastLtKey = "idle";
+          ltCard.classList.remove("visible");
+          ltCard.classList.add("hidden");
+          return;
+        }
+
+        // Primeira carga ou reativação a partir de idle (o card sobe na tela)
+        if (lastLtKey === null || lastLtKey === "idle") {
+          lastLtKey = newKey;
+          applyLowerThirdDOM(data);
+          ltCard.classList.remove("hidden");
+          ltCard.classList.add("visible");
+          return;
+        }
+
+        // Transição suave de mudança de slide dentro do card (fade out 180ms -> atualiza -> fade in 240ms)
+        lastLtKey = newKey;
+        if (isTransitioningLt) {
+          pendingLtData = data;
+          return;
+        }
+
+        isTransitioningLt = true;
+        ltInner.style.transition = "opacity 0.18s ease-out, transform 0.18s ease-out";
+        ltInner.style.opacity = "0";
+        ltInner.style.transform = "translateY(4px)";
+
+        setTimeout(() => {
+          const targetData = pendingLtData || data;
+          pendingLtData = null;
+          applyLowerThirdDOM(targetData);
+
+          void ltInner.offsetHeight;
+          ltInner.style.transition = "opacity 0.24s ease-in, transform 0.24s cubic-bezier(0.16, 1, 0.3, 1)";
+          ltInner.style.opacity = "1";
+          ltInner.style.transform = "translateY(0)";
+
+          setTimeout(() => {
+            isTransitioningLt = false;
+            if (pendingLtData) {
+              renderLowerThird(pendingLtData);
+            }
+          }, 250);
+        }, 180);
+      }
+
+      function render(data) {
+        if (!data || data.type === "idle") {
+          if (isFullscreen) {
+            renderFullscreen({ type: "idle" });
+          } else {
+            renderLowerThird({ type: "idle" });
+          }
+          return;
+        }
+
+        if (isFullscreen) {
+          renderFullscreen(data);
+        } else {
+          renderLowerThird(data);
         }
       }
 
@@ -266,7 +783,6 @@
         evtSource.addEventListener("state", function (e) {
           try {
             const data = JSON.parse(e.data);
-            currentData = data;
             render(data);
           } catch (err) {
             console.error("[SSE] Erro ao parsear dados:", err);
@@ -280,7 +796,6 @@
         };
       }
 
-      // Fallback para polling a cada 500ms caso SSE não esteja disponível
       if (typeof EventSource !== "undefined") {
         connectSSE();
       } else {

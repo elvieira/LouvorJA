@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LouvorJA - Retorno de Palco (Stage Monitor)</title>
+  <title>LouvorJA - Retorno de Palco</title>
   <style>
     * {
       box-sizing: border-box;
@@ -11,233 +11,709 @@
       padding: 0;
     }
 
-    body {
-      background: #0d0e12;
+    html, body {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background: #000000;
       color: #ffffff;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
       user-select: none;
     }
 
-    /* BARRA SUPERIOR */
-    header {
-      height: 60px;
-      padding: 0 24px;
-      background: #14161d;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    .stage-monitor {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: #000000;
+    }
+
+    /* Background Crossfade Layers (Idêntico ao StageMonitor do programa) */
+    .stage-bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-size: cover;
+      background-position: center center;
+      background-repeat: no-repeat;
+      opacity: 0;
+      transition: opacity 0.5s ease-in-out;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .stage-bg.active {
+      opacity: 1;
+    }
+
+    /* =======================================================
+       1. SEÇÃO SUPERIOR: SLIDE ATUAL (60% da tela / flex: 1.8)
+       ======================================================= */
+    .stage-current {
+      flex: 1.8;
+      position: relative;
+      overflow: hidden;
+      z-index: 1;
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: center;
+      width: 100%;
+      padding: clamp(14px, 2.5vh, 28px) clamp(24px, 4vw, 48px);
+    }
+
+    .stage-current-inner {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.2s ease-out, transform 0.2s ease-out;
+    }
+
+    /* =======================================================
+       2. DIVISOR VISUAL (Exato do StageMonitor.vue)
+       ======================================================= */
+    .stage-divider {
+      height: 3px;
+      background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.2) 20%, rgba(0, 151, 215, 0.5) 50%, rgba(255, 255, 255, 0.2) 80%, transparent 100%);
       flex-shrink: 0;
+      z-index: 2;
+      width: 100%;
     }
 
-    .song-title {
-      font-size: 18px;
-      font-weight: 600;
-      color: #e0e0e0;
-      white-space: nowrap;
+    /* =======================================================
+       3. SEÇÃO INFERIOR: PRÓXIMO SLIDE (40% da tela / flex: 1.2)
+       ======================================================= */
+    .stage-next {
+      flex: 1.2;
+      position: relative;
       overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 65%;
+      z-index: 1;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(0, 0, 0, 0.35);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      padding: clamp(10px, 1.8vh, 20px) clamp(24px, 4vw, 48px);
+      opacity: 0.9;
     }
 
-    .status-badge {
+    .stage-next-inner {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.2s ease-out, transform 0.2s ease-out;
+    }
+
+    /* =======================================================
+       DESIGN DOS SLIDES (Replicando Slide.vue do programa)
+       ======================================================= */
+
+    /* --- Hero Design Exclusivo para o Título (Cover Slide) --- */
+    .cover-slide-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      width: 100%;
+      max-width: 90%;
+    }
+
+    .cover-slide-hero {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      max-width: 100%;
+      box-sizing: border-box;
+      padding: clamp(16px, 3vh, 32px) clamp(28px, 4.5vw, 60px);
+      border-radius: clamp(14px, 2.5vh, 26px);
+      background-color: rgba(10, 16, 26, 0.45);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    }
+
+    .cover-title-text {
+      font-size: clamp(26px, 4.2vw, 54px);
+      color: #f6c32a;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.01em;
+      line-height: 1.18;
+      margin: 0;
+      padding: 0;
+      text-shadow: 0 4px 20px rgba(0, 0, 0, 0.8), 0 2px 6px rgba(0, 0, 0, 0.6);
+      text-wrap: balance;
+      overflow-wrap: break-word;
+      word-break: normal;
+      text-align: center;
+    }
+
+    .cover-subtitle-tab {
+      position: relative;
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      font-size: 13px;
-      font-weight: 500;
-      color: #9e9e9e;
-    }
-
-    .clock {
-      font-size: 20px;
-      font-weight: 700;
-      color: #64b5f6;
-      letter-spacing: 1px;
-    }
-
-    /* ÁREA PRINCIPAL: SLIDE ATUAL */
-    .current-section {
-      flex: 1.6;
-      display: flex;
-      flex-direction: column;
       justify-content: center;
-      align-items: center;
-      padding: 30px;
-      text-align: center;
-      background: radial-gradient(circle at center, #1b1e28 0%, #0d0e12 100%);
-      position: relative;
+      max-width: 90%;
+      background: linear-gradient(180deg, rgba(10, 16, 26, 0.20) 0%, rgba(6, 10, 18, 0.38) 100%);
+      border-left: 1px solid rgba(255, 255, 255, 0.18);
+      border-right: 1px solid rgba(255, 255, 255, 0.18);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+      border-top: none;
+      border-bottom-left-radius: clamp(10px, 1.8vh, 18px);
+      border-bottom-right-radius: clamp(10px, 1.8vh, 18px);
+      padding: clamp(4px, 0.8vh, 8px) clamp(16px, 2.5vw, 32px);
+      margin-top: -1px;
+      z-index: 2;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.32);
+      white-space: nowrap;
     }
 
-    .current-text {
-      font-size: clamp(28px, 4.5vw, 64px);
-      line-height: 1.35;
-      font-weight: 700;
-      color: #ffffff;
-      white-space: pre-line;
-      text-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
-      transition: opacity 0.25s ease;
-    }
-
-    .current-text.cover {
-      color: #ffd54f;
-    }
-
-    .current-aux {
-      font-size: clamp(18px, 2.8vw, 36px);
-      font-weight: 500;
-      color: #b0bec5;
-      margin-top: 14px;
-      white-space: pre-line;
-    }
-
-    /* DIVISOR */
-    .divider {
-      height: 2px;
-      background: linear-gradient(90deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.02) 100%);
+    .subtitle-whisker {
+      display: inline-block;
+      width: clamp(20px, 3.5vw, 48px);
+      height: 1px;
+      background-color: rgba(255, 255, 255, 0.38);
       flex-shrink: 0;
     }
 
-    /* ÁREA INFERIOR: PRÓXIMO SLIDE */
-    .next-section {
-      flex: 1;
-      padding: 20px 30px;
-      background: #111319;
+    .subtitle-text {
+      margin: 0 clamp(8px, 1.2vw, 16px);
+      font-size: clamp(12px, 1.6vw, 20px);
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.88);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    /* --- Slide de Letra Padrão (Lyric Card) --- */
+    .fs-lyric-group {
       display: flex;
       flex-direction: column;
-      justify-content: center;
       align-items: center;
-      text-align: center;
-      position: relative;
-      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      justify-content: center;
+      width: 100%;
     }
 
-    .next-label {
-      position: absolute;
-      top: 10px;
-      left: 24px;
-      font-size: 11px;
-      font-weight: 700;
+    .slide-aux-text {
+      font-size: clamp(15px, 2vw, 24px);
+      color: rgba(255, 255, 255, 0.8);
       text-transform: uppercase;
-      letter-spacing: 1.5px;
-      color: #ffb74d;
-      background: rgba(255, 183, 77, 0.12);
-      padding: 4px 10px;
-      border-radius: 6px;
-    }
-
-    .next-text {
-      font-size: clamp(18px, 2.5vw, 36px);
-      line-height: 1.35;
       font-weight: 600;
-      color: rgba(255, 255, 255, 0.65);
-      white-space: pre-line;
+      letter-spacing: 0.1em;
+      margin-bottom: clamp(8px, 1.5vh, 16px);
+      text-shadow: 0px 1px 4px rgba(0, 0, 0, 0.5);
+      text-align: center;
     }
 
-    .empty-state {
-      font-size: 20px;
-      color: rgba(255, 255, 255, 0.3);
+    .slide-lyric-card {
+      position: relative;
+      max-width: 90%;
+      max-height: 82%;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: clamp(18px, 3vh, 38px) clamp(28px, 4.5vw, 58px);
+      border-radius: clamp(14px, 2.5vh, 26px);
+      background-color: rgba(10, 16, 26, 0.45);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    }
+
+    .slide-lyric-content {
+      width: 100%;
+      text-align: center;
+      font-size: clamp(24px, 3.6vw, 46px);
+      font-weight: 700;
+      color: #ffffff;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      line-height: 1.4;
+      text-shadow: 0px 2px 10px rgba(0, 0, 0, 0.8);
+      word-break: break-word;
+      white-space: normal;
+    }
+
+    /* --- Versão Reduzida para a Seção Inferior (Next Slide) --- */
+    .stage-next .cover-slide-hero {
+      padding: clamp(10px, 1.8vh, 18px) clamp(18px, 3vw, 36px);
+      border-radius: clamp(10px, 1.8vh, 18px);
+    }
+
+    .stage-next .cover-title-text {
+      font-size: clamp(17px, 2.5vw, 30px);
+    }
+
+    .stage-next .cover-subtitle-tab {
+      padding: clamp(3px, 0.6vh, 6px) clamp(12px, 2vw, 24px);
+    }
+
+    .stage-next .subtitle-text {
+      font-size: clamp(10px, 1.2vw, 14px);
+    }
+
+    .stage-next .slide-aux-text {
+      font-size: clamp(12px, 1.4vw, 17px);
+      margin-bottom: clamp(4px, 0.8vh, 8px);
+    }
+
+    .stage-next .slide-lyric-card {
+      padding: clamp(10px, 1.8vh, 22px) clamp(18px, 3vw, 40px);
+      border-radius: clamp(10px, 1.8vh, 18px);
+    }
+
+    .stage-next .slide-lyric-content {
+      font-size: clamp(16px, 2.3vw, 28px);
+      line-height: 1.35;
+    }
+
+    /* --- Bíblia Sagrada --- */
+    .fs-bible-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 90%;
+      max-width: 1200px;
+      padding: clamp(16px, 3vh, 32px);
+      box-sizing: border-box;
+    }
+
+    .bible-verse-text {
+      font-size: clamp(22px, 3.2vw, 40px);
+      font-weight: 600;
+      color: #ffffff;
+      line-height: 1.45;
+      text-align: center;
+      text-shadow: 0px 2px 10px rgba(0, 0, 0, 0.8);
+      white-space: normal;
+      width: 100%;
+    }
+
+    .bible-reference-text {
+      font-size: clamp(16px, 2vw, 24px);
+      font-weight: 700;
+      color: #fb8c00;
+      text-align: right;
+      width: 100%;
+      margin-top: clamp(10px, 1.8vh, 20px);
+      letter-spacing: 0.5px;
+      text-shadow: 0px 2px 8px rgba(0, 0, 0, 0.8);
+      text-transform: uppercase;
+    }
+
+    /* --- Estados de Fim e Espera (Exato do StageMonitor.vue) --- */
+    .stage-end-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      opacity: 0.35;
+      gap: 10px;
+    }
+
+    .stage-end-state svg {
+      width: 44px;
+      height: 44px;
+      fill: #ffffff;
+    }
+
+    .stage-end-state span {
+      color: #ffffff;
+      font-size: 16px;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+    }
+
+    .stage-idle-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      opacity: 0.35;
+      font-size: 18px;
       font-style: italic;
+      color: #ffffff;
+      text-align: center;
     }
   </style>
 </head>
 <body>
-  <header>
-    <div id="title" class="song-title">LouvorJA - Retorno de Palco</div>
-    <div class="status-badge">
-      <span id="slide-count"></span>
-      <span id="clock" class="clock">--:--:--</span>
+  <div class="stage-monitor">
+    <!-- Camadas de Wallpaper com Crossfade Suave -->
+    <div id="stage-bg-1" class="stage-bg"></div>
+    <div id="stage-bg-2" class="stage-bg"></div>
+
+    <!-- SEÇÃO SUPERIOR: SLIDE ATUAL (60%) -->
+    <div class="stage-current">
+      <div id="curr-inner" class="stage-current-inner">
+        <!-- 1. Capa / Título -->
+        <div id="curr-cover-group" class="cover-slide-group" style="display: none;">
+          <div class="cover-slide-hero">
+            <div id="curr-cover-title" class="cover-title-text"></div>
+          </div>
+          <div id="curr-cover-subtitle-tab" class="cover-subtitle-tab" style="display: none;">
+            <span class="subtitle-whisker"></span>
+            <span id="curr-cover-subtitle" class="subtitle-text"></span>
+            <span class="subtitle-whisker"></span>
+          </div>
+        </div>
+
+        <!-- 2. Letra Normal -->
+        <div id="curr-lyric-group" class="fs-lyric-group" style="display: none;">
+          <div id="curr-aux-text" class="slide-aux-text" style="display: none;"></div>
+          <div class="slide-lyric-card">
+            <div id="curr-lyric-content" class="slide-lyric-content"></div>
+          </div>
+        </div>
+
+        <!-- 3. Bíblia Sagrada -->
+        <div id="curr-bible-group" class="fs-bible-group" style="display: none;">
+          <div id="curr-bible-text" class="bible-verse-text"></div>
+          <div id="curr-bible-ref" class="bible-reference-text" style="display: none;"></div>
+        </div>
+
+        <!-- 4. Esperando Apresentação -->
+        <div id="curr-idle-group" class="stage-idle-state">
+          <span>Aguardando início da apresentação...</span>
+        </div>
+      </div>
     </div>
-  </header>
 
-  <main class="current-section">
-    <div id="current-text" class="current-text empty-state">Aguardando início da apresentação...</div>
-    <div id="current-aux" class="current-aux" style="display: none;"></div>
-  </main>
+    <!-- DIVISOR VISUAL -->
+    <div class="stage-divider"></div>
 
-  <div class="divider"></div>
+    <!-- SEÇÃO INFERIOR: PRÓXIMO SLIDE (40%) -->
+    <div class="stage-next">
+      <div id="next-inner" class="stage-next-inner">
+        <!-- 1. Próximo: Capa / Título -->
+        <div id="next-cover-group" class="cover-slide-group" style="display: none;">
+          <div class="cover-slide-hero">
+            <div id="next-cover-title" class="cover-title-text"></div>
+          </div>
+          <div id="next-cover-subtitle-tab" class="cover-subtitle-tab" style="display: none;">
+            <span class="subtitle-whisker"></span>
+            <span id="next-cover-subtitle" class="subtitle-text"></span>
+            <span class="subtitle-whisker"></span>
+          </div>
+        </div>
 
-  <section class="next-section">
-    <span class="next-label">Próxima Estrofe</span>
-    <div id="next-text" class="next-text empty-state">Nenhum próximo slide</div>
-  </section>
+        <!-- 2. Próximo: Letra -->
+        <div id="next-lyric-group" class="fs-lyric-group" style="display: none;">
+          <div id="next-aux-text" class="slide-aux-text" style="display: none;"></div>
+          <div class="slide-lyric-card">
+            <div id="next-lyric-content" class="slide-lyric-content"></div>
+          </div>
+        </div>
+
+        <!-- 3. Fim da Música (Ícone Music-off + "Fim") -->
+        <div id="next-end-group" class="stage-end-state" style="display: none;">
+          <svg viewBox="0 0 24 24">
+            <path d="M12 3V10.55C11.41 10.21 10.73 10 10 10C7.79 10 6 11.79 6 14S7.79 18 10 18 14 16.21 14 14V6H18V3H12M4.27 3L3 4.27L12 13.27V14C12 16.21 10.21 18 8 18S4 16.21 4 14 5.79 10 8 10C8.55 10 9.07 10.12 9.55 10.33L10.73 11.51L19.73 20.51L21 19.24L4.27 3Z"/>
+          </svg>
+          <span>Fim</span>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script>
     (function () {
-      const titleEl = document.getElementById("title");
-      const currentTextEl = document.getElementById("current-text");
-      const currentAuxEl = document.getElementById("current-aux");
-      const nextTextEl = document.getElementById("next-text");
-      const slideCountEl = document.getElementById("slide-count");
-      const clockEl = document.getElementById("clock");
+      // Elementos do DOM
+      const bg1 = document.getElementById("stage-bg-1");
+      const bg2 = document.getElementById("stage-bg-2");
+      const currInner = document.getElementById("curr-inner");
+      const nextInner = document.getElementById("next-inner");
 
-      function updateClock() {
-        const now = new Date();
-        clockEl.textContent = now.toLocaleTimeString("pt-BR", { hour12: false });
-      }
-      setInterval(updateClock, 1000);
-      updateClock();
+      // Seção Superior
+      const currCoverGroup = document.getElementById("curr-cover-group");
+      const currCoverTitle = document.getElementById("curr-cover-title");
+      const currCoverSubtitleTab = document.getElementById("curr-cover-subtitle-tab");
+      const currCoverSubtitle = document.getElementById("curr-cover-subtitle");
+      const currLyricGroup = document.getElementById("curr-lyric-group");
+      const currAuxText = document.getElementById("curr-aux-text");
+      const currLyricContent = document.getElementById("curr-lyric-content");
+      const currBibleGroup = document.getElementById("curr-bible-group");
+      const currBibleText = document.getElementById("curr-bible-text");
+      const currBibleRef = document.getElementById("curr-bible-ref");
+      const currIdleGroup = document.getElementById("curr-idle-group");
 
-      function render(data) {
-        if (!data || data.type === "idle") {
-          titleEl.textContent = "LouvorJA - Retorno de Palco";
-          currentTextEl.textContent = "Aguardando início da apresentação...";
-          currentTextEl.className = "current-text empty-state";
-          currentAuxEl.style.display = "none";
-          nextTextEl.textContent = "Nenhum próximo slide";
-          nextTextEl.className = "next-text empty-state";
-          slideCountEl.textContent = "";
+      // Seção Inferior
+      const nextCoverGroup = document.getElementById("next-cover-group");
+      const nextCoverTitle = document.getElementById("next-cover-title");
+      const nextCoverSubtitleTab = document.getElementById("next-cover-subtitle-tab");
+      const nextCoverSubtitle = document.getElementById("next-cover-subtitle");
+      const nextLyricGroup = document.getElementById("next-lyric-group");
+      const nextAuxText = document.getElementById("next-aux-text");
+      const nextLyricContent = document.getElementById("next-lyric-content");
+      const nextEndGroup = document.getElementById("next-end-group");
+
+      // Gerenciador de Background Wallpaper com Crossfade
+      let currentBgIndex = 1;
+      let currentBgUrl = "";
+
+      function updateStageBg(targetUrl) {
+        if (targetUrl === currentBgUrl) return;
+        currentBgUrl = targetUrl;
+
+        const activeBg = currentBgIndex === 1 ? bg1 : bg2;
+        const nextBg = currentBgIndex === 1 ? bg2 : bg1;
+
+        if (targetUrl === "none" || !targetUrl) {
+          activeBg.classList.remove("active");
+          nextBg.classList.remove("active");
+          setTimeout(() => {
+            activeBg.style.backgroundImage = "none";
+            nextBg.style.backgroundImage = "none";
+          }, 500);
           return;
         }
 
+        nextBg.style.backgroundImage = targetUrl;
+        nextBg.classList.add("active");
+        activeBg.classList.remove("active");
+
+        currentBgIndex = currentBgIndex === 1 ? 2 : 1;
+      }
+
+      function formatLyricHtml(raw) {
+        if (!raw) return "";
+        let text = String(raw).trim();
+        text = text.replace(/&lt;br\s*\/?&gt;[\r\n]*/gi, "\n");
+        text = text.replace(/<\s*br\s*\/?>[\r\n]*/gi, "\n");
+        const div = document.createElement("div");
+        div.textContent = text;
+        let safe = div.innerHTML;
+        safe = safe.replace(/\r?\n/g, "<br>");
+        return safe;
+      }
+
+      function formatCoverSubtitle(text) {
+        if (!text) return "";
+        let str = text.trim();
+        str = str.replace(/^(\d+)\s*[-•·.:]\s*/, "$1  ·  ");
+        str = str.replace(/\s+-\s+/, "  ·  ");
+        return str;
+      }
+
+      function applyStageDOM(data) {
+        if (!data || data.type === "idle") {
+          updateStageBg("none");
+          currCoverGroup.style.display = "none";
+          currLyricGroup.style.display = "none";
+          currBibleGroup.style.display = "none";
+          currIdleGroup.style.display = "flex";
+
+          nextCoverGroup.style.display = "none";
+          nextLyricGroup.style.display = "none";
+          nextEndGroup.style.display = "none";
+          return;
+        }
+
+        // 1. Atualização do Background Wallpaper
+        let targetBg = "none";
         if (data.type === "media") {
-          titleEl.textContent = data.title || "Mídia em Reprodução";
-
-          if (data.totalSlides && data.totalSlides > 0) {
-            slideCountEl.textContent = "Slide " + ((data.slideIndex || 0) + 1) + "/" + data.totalSlides;
-          } else {
-            slideCountEl.textContent = "";
+          if (data.image) {
+            const imgPath = data.image.startsWith("/") ? data.image : "/" + data.image;
+            targetBg = "url(/media" + encodeURI(imgPath) + ")";
+          } else if (data.slideSettings && data.slideSettings.bgImage) {
+            targetBg = "url(" + data.slideSettings.bgImage + ")";
           }
+        }
+        updateStageBg(targetBg);
 
-          const current = (data.currentLyric || "").trim();
-          if (current) {
-            currentTextEl.textContent = current;
-            currentTextEl.className = "current-text" + (data.isCover ? " cover" : "");
-          } else {
-            currentTextEl.textContent = "---";
-            currentTextEl.className = "current-text empty-state";
-          }
+        // 2. Seção Superior: Slide Atual
+        currIdleGroup.style.display = "none";
 
-          if (data.auxLyric && data.auxLyric.trim() !== "") {
-            currentAuxEl.textContent = data.auxLyric.trim();
-            currentAuxEl.style.display = "block";
-          } else {
-            currentAuxEl.style.display = "none";
-          }
+        if (data.type === "media") {
+          currBibleGroup.style.display = "none";
 
-          const next = (data.nextLyric || "").trim();
-          if (next) {
-            nextTextEl.textContent = next;
-            nextTextEl.className = "next-text";
+          if (data.isCover) {
+            const title = (data.title || data.currentLyric || "").trim();
+            currCoverTitle.innerHTML = formatLyricHtml(title);
+            currCoverGroup.style.display = "flex";
+            currLyricGroup.style.display = "none";
+
+            const subtitle = (data.subtitle || data.auxLyric || "").trim();
+            if (subtitle) {
+              currCoverSubtitle.textContent = formatCoverSubtitle(subtitle);
+              currCoverSubtitleTab.style.display = "inline-flex";
+            } else {
+              currCoverSubtitleTab.style.display = "none";
+            }
           } else {
-            nextTextEl.textContent = "Fim da música";
-            nextTextEl.className = "next-text empty-state";
+            currCoverGroup.style.display = "none";
+            currLyricGroup.style.display = "flex";
+
+            if (data.auxLyric && data.auxLyric.trim() !== "") {
+              currAuxText.innerHTML = formatLyricHtml(data.auxLyric.trim());
+              currAuxText.style.display = "block";
+            } else {
+              currAuxText.style.display = "none";
+            }
+
+            currLyricContent.innerHTML = formatLyricHtml(data.currentLyric || "");
           }
         } else if (data.type === "bible") {
-          titleEl.textContent = data.bibleReference ? "Bíblia Sagrada - " + data.bibleReference : "Bíblia Sagrada";
-          slideCountEl.textContent = data.bibleVersion || "";
-          currentTextEl.textContent = data.bibleText || "";
-          currentTextEl.className = "current-text";
-          currentAuxEl.style.display = "none";
-          nextTextEl.textContent = data.bibleReference ? "Referência: " + data.bibleReference : "";
-          nextTextEl.className = "next-text empty-state";
+          currCoverGroup.style.display = "none";
+          currLyricGroup.style.display = "none";
+          currBibleGroup.style.display = "flex";
+
+          currBibleText.innerHTML = formatLyricHtml(data.bibleText || "");
+          if (data.bibleReference) {
+            currBibleRef.textContent = data.bibleReference + (data.bibleVersion ? " (" + data.bibleVersion + ")" : "");
+            currBibleRef.style.display = "block";
+          } else {
+            currBibleRef.style.display = "none";
+          }
+        }
+
+        // 3. Seção Inferior: Próximo Slide
+        if (data.type === "media") {
+          const nextText = (data.nextLyric || "").trim();
+
+          if (nextText) {
+            nextEndGroup.style.display = "none";
+
+            if (data.isNextCover) {
+              nextLyricGroup.style.display = "none";
+              nextCoverGroup.style.display = "flex";
+              nextCoverTitle.innerHTML = formatLyricHtml(nextText);
+
+              const nextSub = (data.nextAuxLyric || "").trim();
+              if (nextSub) {
+                nextCoverSubtitle.textContent = formatCoverSubtitle(nextSub);
+                nextCoverSubtitleTab.style.display = "inline-flex";
+              } else {
+                nextCoverSubtitleTab.style.display = "none";
+              }
+            } else {
+              nextCoverGroup.style.display = "none";
+              nextLyricGroup.style.display = "flex";
+
+              if (data.nextAuxLyric && data.nextAuxLyric.trim() !== "") {
+                nextAuxText.innerHTML = formatLyricHtml(data.nextAuxLyric.trim());
+                nextAuxText.style.display = "block";
+              } else {
+                nextAuxText.style.display = "none";
+              }
+
+              nextLyricContent.innerHTML = formatLyricHtml(nextText);
+            }
+          } else {
+            // Fim da Música
+            nextCoverGroup.style.display = "none";
+            nextLyricGroup.style.display = "none";
+            nextEndGroup.style.display = "flex";
+          }
+        } else if (data.type === "bible") {
+          nextCoverGroup.style.display = "none";
+          nextLyricGroup.style.display = "none";
+          nextEndGroup.style.display = "none";
         }
       }
 
+      // Identificador de estado e transição suave de slide
+      function getStageKey(data) {
+        if (!data || data.type === "idle") return "idle";
+        return `${data.type}|${data.title || ""}|${data.subtitle || ""}|${data.isCover ? "1" : "0"}|${data.slideIndex ?? ""}|${data.currentLyric || ""}|${data.auxLyric || ""}|${data.nextLyric || ""}|${data.isNextCover ? "1" : "0"}|${data.nextAuxLyric || ""}|${data.bibleText || ""}|${data.image || ""}`;
+      }
+
+      let lastStageKey = null;
+      let isTransitioning = false;
+      let pendingData = null;
+
+      function render(data) {
+        const newKey = getStageKey(data);
+        if (newKey === lastStageKey && !isTransitioning) {
+          return;
+        }
+
+        if (newKey === "idle") {
+          lastStageKey = "idle";
+          applyStageDOM({ type: "idle" });
+          return;
+        }
+
+        // Primeira carga ou reativação a partir de idle
+        if (lastStageKey === null || lastStageKey === "idle") {
+          lastStageKey = newKey;
+          applyStageDOM(data);
+          currInner.style.opacity = "1";
+          currInner.style.transform = "scale(1)";
+          nextInner.style.opacity = "1";
+          nextInner.style.transform = "scale(1)";
+          return;
+        }
+
+        // Transição suave de mudança de slide (fade out 180ms -> atualiza -> fade in 240ms)
+        lastStageKey = newKey;
+        if (isTransitioning) {
+          pendingData = data;
+          return;
+        }
+
+        isTransitioning = true;
+        currInner.style.transition = "opacity 0.18s ease-out, transform 0.18s ease-out";
+        currInner.style.opacity = "0";
+        currInner.style.transform = "scale(0.985)";
+
+        nextInner.style.transition = "opacity 0.18s ease-out, transform 0.18s ease-out";
+        nextInner.style.opacity = "0";
+        nextInner.style.transform = "scale(0.985)";
+
+        setTimeout(() => {
+          const targetData = pendingData || data;
+          pendingData = null;
+          applyStageDOM(targetData);
+
+          void currInner.offsetHeight;
+          void nextInner.offsetHeight;
+
+          currInner.style.transition = "opacity 0.24s cubic-bezier(0.16, 1, 0.3, 1), transform 0.24s cubic-bezier(0.16, 1, 0.3, 1)";
+          currInner.style.opacity = "1";
+          currInner.style.transform = "scale(1)";
+
+          nextInner.style.transition = "opacity 0.24s cubic-bezier(0.16, 1, 0.3, 1), transform 0.24s cubic-bezier(0.16, 1, 0.3, 1)";
+          nextInner.style.opacity = "1";
+          nextInner.style.transform = "scale(1)";
+
+          setTimeout(() => {
+            isTransitioning = false;
+            if (pendingData) {
+              render(pendingData);
+            }
+          }, 250);
+        }, 180);
+      }
+
+      // Conexão SSE com reconexão automática
       function connectSSE() {
         const params = new URLSearchParams(window.location.search);
         const token = params.get("token") || "";
@@ -248,7 +724,7 @@
           try {
             render(JSON.parse(e.data));
           } catch (err) {
-            console.error("[SSE Stage] Erro:", err);
+            console.error("[SSE Stage] Erro ao processar dados:", err);
           }
         });
 

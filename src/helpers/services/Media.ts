@@ -815,8 +815,8 @@ export default {
 
       window.electronAPI.streamingPushSlide({
         type: "media",
-        title: config?.title || "",
-        subtitle: config?.subtitle || "",
+        title: config?.title || slide?.lyric || "",
+        subtitle: config?.subtitle || slide?.aux_lyric || "",
         author: config?.author || "",
         slideIndex,
         totalSlides: slides.length,
@@ -824,6 +824,21 @@ export default {
         currentLyric: slide.lyric || "",
         auxLyric: slide.aux_lyric || "",
         nextLyric: nextSlide ? nextSlide.lyric || "" : "",
+        nextAuxLyric: nextSlide ? nextSlide.aux_lyric || "" : "",
+        isNextCover: nextSlide ? nextSlide.cover === true : false,
+        image: slide.url_image || null,
+        imagePosition: slide.image_position,
+        slideSettings: {
+          customBg: $userdata.get("modules.config.slide_custom_bg") || false,
+          bgColor: $userdata.get("modules.config.slide_bg_color") || "#000000",
+          bgImage: $userdata.get("modules.config.slide_bg_image") || null,
+          fontColor: $userdata.get("modules.config.slide_font_color") || "#FFFFFF",
+          fontWeight: $userdata.get("modules.config.slide_font_weight") || "700",
+          align: $userdata.get("modules.config.slide_align") || "Centro",
+          removeTextBg: $userdata.get("modules.config.slide_remove_text_bg") || false,
+        },
+        isPaused: $appdata.get("modules.media.config.is_paused") === true,
+        volume: $appdata.get("modules.media.config.volume") ?? 100,
         updatedAt: Date.now(),
       });
     }
@@ -871,6 +886,10 @@ export default {
   },
 
   play() {
+    const hasMedia = Boolean($appdata.get("modules.media.id_music") || $appdata.get("modules.media.data")?.name);
+    if (!hasMedia) {
+      return;
+    }
     // Restore mini player popup if it was hidden (e.g. loaded via addToQueue with startPaused)
     if ($appdata.get("modules.media.show_mini_player") === false) {
       $appdata.set("modules.media.show_mini_player", true);
@@ -884,10 +903,19 @@ export default {
     if (bool) {
       audio.pause();
       $appdata.set("modules.media.config.is_paused", bool);
+      this.syncStreaming();
       if (callback) callback();
     } else {
       audio.play().catch((e: unknown) => {
         const errorMsg = e instanceof Error ? e.message : String(e || "");
+        if (
+          errorMsg.includes("interrupted by a call to pause") ||
+          (e instanceof DOMException && e.name === "AbortError") ||
+          (typeof e === "object" && e !== null && (e as { name?: string }).name === "AbortError")
+        ) {
+          // Chamada de play interrompida intencionalmente por pause, ignorar sem exibir alerta
+          return;
+        }
         if (errorMsg.includes("NotSupportedError") || errorMsg.includes("network") || errorMsg.includes("failed")) {
           const currentMode = $appdata.get("modules.media.config.mode");
           const musicData = $appdata.get("modules.media.data");
@@ -920,8 +948,9 @@ export default {
       });
       const volume = $appdata.get("modules.media.config.volume") / 100;
       audio.volume = volume;
-      if (callback) callback();
       $appdata.set("modules.media.config.is_paused", bool);
+      this.syncStreaming();
+      if (callback) callback();
     }
   },
 
@@ -940,10 +969,41 @@ export default {
     const last_slide = $appdata.get("modules.media.config.last_slide");
     this.goToSlide(last_slide - 1);
   },
+  playPause() {
+    const hasMedia = Boolean($appdata.get("modules.media.id_music") || $appdata.get("modules.media.data")?.name);
+    if (!hasMedia) {
+      return false;
+    }
+    const audio = this.getElement();
+    const isAudioPaused = (audio && audio.src && audio.src !== window.location.href) ? audio.paused : false;
+    const isConfigPaused = $appdata.get("modules.media.config.is_paused") === true;
+    const isPaused = isAudioPaused || isConfigPaused;
+
+    if (isPaused) {
+      this.play();
+    } else {
+      this.pause(true);
+    }
+    this.syncStreaming();
+    return !isPaused;
+  },
   setVolume(val: number) {
     const audio = this.getElement();
     audio.volume = val / 100;
     $appdata.set("modules.media.config.volume", val);
+    this.syncStreaming();
+  },
+  volumeUp(step = 5) {
+    const current = $appdata.get("modules.media.config.volume") ?? 100;
+    const next = Math.min(100, current + step);
+    this.setVolume(next);
+    return next;
+  },
+  volumeDown(step = 5) {
+    const current = $appdata.get("modules.media.config.volume") ?? 100;
+    const next = Math.max(0, current - step);
+    this.setVolume(next);
+    return next;
   },
   toogleVolume() {
     let volume = $appdata.get("modules.media.config.volume");

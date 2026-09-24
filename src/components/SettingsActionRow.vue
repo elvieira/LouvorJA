@@ -50,17 +50,18 @@
           <template #activator="{ props: activatorProps }">
             <v-btn
               v-bind="activatorProps"
+              :disabled="buttonDisabled"
               variant="tonal"
               color="primary"
               rounded="lg"
               class="text-none px-4"
-              style="height: 44px; min-width: 140px;"
+              style="height: 44px; min-width: 140px; max-width: 320px;"
             >
-              <div class="d-flex align-center justify-space-between w-100">
+              <div class="d-flex align-center justify-space-between w-100" style="min-width: 0;">
                 <span class="text-truncate font-weight-bold text-body-2 mr-2">
                   {{ selectedItemLabel }}
                 </span>
-                <v-icon size="small">
+                <v-icon size="small" class="flex-shrink-0">
                   mdi-menu-down
                 </v-icon>
               </div>
