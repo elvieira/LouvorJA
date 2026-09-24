@@ -2,17 +2,15 @@
   <div
     ref="container"
     class="d-flex align-center justify-center overflow-hidden"
-    :style="{
-      background: previewBackground,
-      width: '100%',
-      height: height ? height + 'px' : '100%',
-      color: forceStandardColors ? '#ffffff' : config.color,
-    }"
+    :style="containerStyle"
   >
     <div v-if="bible" class="d-flex flex-column w-100 pa-4" :class="[config.align]">
       <div
         v-if="bible.text"
-        :style="{ fontSize: `${fontSizePc(config.fontSizePc)}px` }"
+        :style="{
+          fontSize: `${fontSizePc(config.fontSizePc)}px`,
+          textShadow: (!forceStandardColors && config.bgImage) ? '0 2px 10px rgba(0,0,0,0.85)' : 'none'
+        }"
       >
         {{ bible.text }}
       </div>
@@ -20,7 +18,11 @@
         v-if="bible.scriptural_reference"
         class="mt-4 font-weight-bold"
         :class="[config.refAlign || 'text-right']"
-        :style="{ fontSize: `${fontSizePc(config.refFontSizePc)}px`, color: forceStandardColors ? '#fb8c00' : config.refColor }"
+        :style="{
+          fontSize: `${fontSizePc(config.refFontSizePc)}px`,
+          color: forceStandardColors ? '#fb8c00' : config.refColor,
+          textShadow: (!forceStandardColors && config.bgImage) ? '0 2px 8px rgba(0,0,0,0.85)' : 'none'
+        }"
       >
         {{ bible.scriptural_reference }}
       </div>
@@ -66,6 +68,7 @@ export default defineComponent({
         fontSizePc: 15,
         align: "text-center",
         background: "#000000",
+        bgImage: null,
         color: "#ffffff",
         refFontSizePc: 10,
         refColor: "#fb8c00",
@@ -74,11 +77,28 @@ export default defineComponent({
     isDarkMode(): boolean {
       return this.$vuetify?.theme?.global?.name !== "light";
     },
-    previewBackground(): string {
+    containerStyle(): any {
       if (this.forceStandardColors) {
-        return "transparent";
+        return {
+          background: "transparent",
+          width: "100%",
+          height: this.height ? `${this.height  }px` : "100%",
+          color: "#ffffff",
+        };
       }
-      return this.config.background;
+      const style: any = {
+        backgroundColor: this.config.background || "#000000",
+        width: "100%",
+        height: this.height ? `${this.height  }px` : "100%",
+        color: this.config.color,
+      };
+      if (this.config.bgImage) {
+        style.backgroundImage = `url("${this.config.bgImage}")`;
+        style.backgroundSize = "cover";
+        style.backgroundPosition = "center center";
+        style.backgroundRepeat = "no-repeat";
+      }
+      return style;
     },
   },
   watch: {

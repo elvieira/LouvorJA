@@ -2,12 +2,7 @@
   <div
     ref="container"
     class="d-flex align-center justify-center overflow-hidden"
-    :style="{
-      background: config.background,
-      width: '100%',
-      height: '100vh',
-      color: config.color,
-    }"
+    :style="containerStyle"
   >
     <v-slide-y-transition mode="out-in">
       <div 
@@ -17,7 +12,9 @@
           fontSize: data.isDrawing ? (config.fontSizePc * 0.8) + 'vw' : config.fontSizePc + 'vw',
           transition: 'all 0.3s ease-out',
           textTransform: config.textTransform,
-          textShadow: data.isDrawing ? 'none' : `0 10px 40px ${config.color}60`,
+          textShadow: data.isDrawing
+            ? (config.bgImage ? '0 4px 12px rgba(0,0,0,0.8)' : 'none')
+            : (config.bgImage ? `0 10px 40px ${config.color}60, 0 2px 10px rgba(0,0,0,0.8)` : `0 10px 40px ${config.color}60`),
           opacity: data.currentDisplay ? 1 : 0
         }"
       >
@@ -40,6 +37,7 @@ export default defineComponent({
       fontSizePc: 15,
       textTransform: "none",
       animationSpeed: "normal",
+      bgImage: null as string | null,
     },
   }),
   computed: {
@@ -48,6 +46,21 @@ export default defineComponent({
     },
     config(): any {
       return this.$appdata.get(`modules.${this.module_id}.config`) || this.$userdata.get("sorteio_config") || this.defaultConfig;
+    },
+    containerStyle(): any {
+      const base: any = {
+        backgroundColor: this.config.background || "#ffffff",
+        width: "100%",
+        height: "100vh",
+        color: this.config.color,
+      };
+      if (this.config.bgImage) {
+        base.backgroundImage = `url("${this.config.bgImage}")`;
+        base.backgroundSize = "cover";
+        base.backgroundPosition = "center center";
+        base.backgroundRepeat = "no-repeat";
+      }
+      return base;
     },
     data(): any {
       return this.$appdata.get(`modules.${this.module_id}.data`) || {

@@ -4,7 +4,7 @@
       <v-card
         class="timer-config-modal rounded-xl"
         width="100%"
-        max-width="540"
+        max-width="520"
         style="background: var(--card-bg, #ffffff); box-shadow: 0 10px 40px rgba(0,0,0,0.5); overflow: hidden; display: flex; flex-direction: column; max-height: 90%;"
       >
         <!-- Header -->
@@ -53,7 +53,11 @@
             v-if="activeTab === 'general'"
             class="d-flex flex-column align-center justify-center overflow-hidden rounded-lg mx-auto position-relative"
             :style="{
-              background: localConfig.bgColor,
+              backgroundColor: localConfig.bgColor,
+              backgroundImage: localConfig.bgImage ? `url('${localConfig.bgImage}')` : 'none',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center center',
+              backgroundRepeat: 'no-repeat',
               color: localConfig.fontColor,
               aspectRatio: '16/9',
               maxHeight: '170px',
@@ -61,7 +65,7 @@
               boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
             }"
           >
-            <div :style="{ fontSize: '64px', fontWeight: '900', lineHeight: '1' }">
+            <div :style="{ fontSize: '64px', fontWeight: '900', lineHeight: '1', textShadow: localConfig.bgImage ? '0 4px 20px rgba(0,0,0,0.8), 0 2px 8px rgba(0,0,0,0.9)' : 'none' }">
               05:00
             </div>
           </div>
@@ -71,7 +75,11 @@
             v-else
             class="d-flex flex-column align-center justify-center overflow-hidden rounded-lg mx-auto position-relative"
             :style="{
-              background: localConfig.cultBgColor || localConfig.bgColor,
+              backgroundColor: localConfig.cultBgColor || localConfig.bgColor,
+              backgroundImage: (localConfig.cultBgImage || localConfig.bgImage) ? `url('${localConfig.cultBgImage || localConfig.bgImage}')` : 'none',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center center',
+              backgroundRepeat: 'no-repeat',
               aspectRatio: '16/9',
               maxHeight: '170px',
               width: '100%',
@@ -133,11 +141,11 @@
         </div>
 
         <!-- Scrollable Content -->
-        <div style="background: var(--main-bg, #f5f5f5); padding: 20px; flex: 1; min-height: 0; overflow-y: auto;" class="custom-scrollbar">
+        <div style="background: var(--main-bg, #f5f5f5); padding: 24px; flex: 1; min-height: 0; overflow-y: auto;">
           <!-- CONFIGURAÇÕES: ABA PADRÃO (GERAL) -->
           <template v-if="activeTab === 'general'">
             <!-- Fundo da Projeção -->
-            <v-card class="settings-card rounded-xl pa-2 mb-4" flat style="background: var(--card-bg, #ffffff); box-shadow: var(--shadow);">
+            <v-card class="settings-card rounded-xl pa-2 mb-6" flat style="background: var(--card-bg, #ffffff); box-shadow: var(--shadow);">
               <v-card-text class="pa-4">
                 <div class="d-flex align-center justify-space-between mb-4">
                   <div class="d-flex align-center">
@@ -183,11 +191,82 @@
                     </template>
                   </ModernColorPicker>
                 </div>
+
+                <v-divider class="my-4" style="opacity: 0.1;" />
+
+                <!-- Imagem de fundo Padrão -->
+                <div class="mb-2">
+                  <div class="d-flex align-center justify-space-between mb-3">
+                    <div class="d-flex align-center">
+                      <v-icon size="18" color="primary" class="mr-2">
+                        mdi-image-outline
+                      </v-icon>
+                      <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text);">Imagem de Fundo</span>
+                    </div>
+                  </div>
+
+                  <div
+                    v-if="localConfig.bgImage"
+                    class="position-relative rounded-xl overflow-hidden mb-2"
+                    style="height: 120px; border: 1px solid var(--border-color); border-radius: 16px !important;"
+                  >
+                    <img :src="localConfig.bgImage" class="w-100 h-100" style="object-fit: cover;" />
+                    <div class="position-absolute w-100 h-100 d-flex align-center justify-center" style="top: 0; left: 0; background: rgba(0,0,0,0.35);">
+                      <v-btn
+                        icon
+                        size="small"
+                        variant="flat"
+                        color="error"
+                        class="mr-2"
+                        @click="localConfig.bgImage = null"
+                      >
+                        <v-icon>mdi-delete</v-icon>
+                        <v-tooltip activator="parent" location="top">
+                          Remover imagem
+                        </v-tooltip>
+                      </v-btn>
+                      <v-btn
+                        icon
+                        size="small"
+                        variant="flat"
+                        color="white"
+                        @click="($refs.bgImageInput as any).click()"
+                      >
+                        <v-icon color="black">
+                          mdi-pencil
+                        </v-icon>
+                        <v-tooltip activator="parent" location="top">
+                          Trocar imagem
+                        </v-tooltip>
+                      </v-btn>
+                    </div>
+                  </div>
+
+                  <div
+                    v-else
+                    class="rounded-xl d-flex flex-column align-center justify-center cursor-pointer"
+                    style="height: 90px; border: 2px dashed var(--border-color); background: var(--card-bg); transition: all 0.2s; border-radius: 16px !important;"
+                    @click="($refs.bgImageInput as any).click()"
+                  >
+                    <v-icon size="28" color="grey-lighten-1" class="mb-1">
+                      mdi-cloud-upload-outline
+                    </v-icon>
+                    <span class="text-caption font-weight-medium" style="color: var(--sidebar-text-secondary);">Selecionar Imagem</span>
+                  </div>
+
+                  <input
+                    ref="bgImageInput"
+                    type="file"
+                    accept="image/*"
+                    style="display: none;"
+                    @change="onBgImageSelect"
+                  />
+                </div>
               </v-card-text>
             </v-card>
 
             <!-- Cor do Texto -->
-            <v-card class="settings-card rounded-xl pa-2 mb-4" flat style="background: var(--card-bg, #ffffff); box-shadow: var(--shadow);">
+            <v-card class="settings-card rounded-xl pa-2 mb-6" flat style="background: var(--card-bg, #ffffff); box-shadow: var(--shadow);">
               <v-card-text class="pa-4">
                 <div class="d-flex align-center justify-space-between mb-4">
                   <div class="d-flex align-center">
@@ -307,7 +386,7 @@
           <!-- CONFIGURAÇÕES: ABA CRONÔMETRO DE CULTO -->
           <template v-else>
             <!-- Fundo Culto -->
-            <v-card class="settings-card rounded-xl pa-2 mb-4" flat style="background: var(--card-bg, #ffffff); box-shadow: var(--shadow);">
+            <v-card class="settings-card rounded-xl pa-2 mb-6" flat style="background: var(--card-bg, #ffffff); box-shadow: var(--shadow);">
               <v-card-text class="pa-4">
                 <div class="d-flex align-center justify-space-between mb-4">
                   <div class="d-flex align-center">
@@ -353,11 +432,82 @@
                     </template>
                   </ModernColorPicker>
                 </div>
+
+                <v-divider class="my-4" style="opacity: 0.1;" />
+
+                <!-- Imagem de fundo Modo Culto -->
+                <div class="mb-2">
+                  <div class="d-flex align-center justify-space-between mb-3">
+                    <div class="d-flex align-center">
+                      <v-icon size="18" color="primary" class="mr-2">
+                        mdi-image-outline
+                      </v-icon>
+                      <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text);">Imagem de Fundo (Modo Culto)</span>
+                    </div>
+                  </div>
+
+                  <div
+                    v-if="localConfig.cultBgImage"
+                    class="position-relative rounded-xl overflow-hidden mb-2"
+                    style="height: 120px; border: 1px solid var(--border-color); border-radius: 16px !important;"
+                  >
+                    <img :src="localConfig.cultBgImage" class="w-100 h-100" style="object-fit: cover;" />
+                    <div class="position-absolute w-100 h-100 d-flex align-center justify-center" style="top: 0; left: 0; background: rgba(0,0,0,0.35);">
+                      <v-btn
+                        icon
+                        size="small"
+                        variant="flat"
+                        color="error"
+                        class="mr-2"
+                        @click="localConfig.cultBgImage = null"
+                      >
+                        <v-icon>mdi-delete</v-icon>
+                        <v-tooltip activator="parent" location="top">
+                          Remover imagem
+                        </v-tooltip>
+                      </v-btn>
+                      <v-btn
+                        icon
+                        size="small"
+                        variant="flat"
+                        color="white"
+                        @click="($refs.cultBgImageInput as any).click()"
+                      >
+                        <v-icon color="black">
+                          mdi-pencil
+                        </v-icon>
+                        <v-tooltip activator="parent" location="top">
+                          Trocar imagem
+                        </v-tooltip>
+                      </v-btn>
+                    </div>
+                  </div>
+
+                  <div
+                    v-else
+                    class="rounded-xl d-flex flex-column align-center justify-center cursor-pointer"
+                    style="height: 90px; border: 2px dashed var(--border-color); background: var(--card-bg); transition: all 0.2s; border-radius: 16px !important;"
+                    @click="($refs.cultBgImageInput as any).click()"
+                  >
+                    <v-icon size="28" color="grey-lighten-1" class="mb-1">
+                      mdi-cloud-upload-outline
+                    </v-icon>
+                    <span class="text-caption font-weight-medium" style="color: var(--sidebar-text-secondary);">Selecionar Imagem para o Modo Culto</span>
+                  </div>
+
+                  <input
+                    ref="cultBgImageInput"
+                    type="file"
+                    accept="image/*"
+                    style="display: none;"
+                    @change="onCultBgImageSelect"
+                  />
+                </div>
               </v-card-text>
             </v-card>
 
             <!-- Cores do Culto (Hora, Tempo Restante, Alerta) -->
-            <v-card class="settings-card rounded-xl pa-2 mb-4" flat style="background: var(--card-bg, #ffffff); box-shadow: var(--shadow);">
+            <v-card class="settings-card rounded-xl pa-2 mb-6" flat style="background: var(--card-bg, #ffffff); box-shadow: var(--shadow);">
               <v-card-text class="pa-4">
                 <div class="d-flex align-center mb-4">
                   <v-icon color="primary" class="mr-3" size="24">
@@ -478,7 +628,7 @@
             </v-card>
 
             <!-- Comportamentos do Culto -->
-            <v-card class="settings-card rounded-xl pa-2 mb-4" flat style="background: var(--card-bg, #ffffff); box-shadow: var(--shadow);">
+            <v-card class="settings-card rounded-xl pa-2 mb-6" flat style="background: var(--card-bg, #ffffff); box-shadow: var(--shadow);">
               <v-card-text class="pa-4">
                 <div class="d-flex align-center mb-4">
                   <v-icon color="primary" class="mr-3" size="24">
@@ -647,9 +797,7 @@
           <div class="d-flex" style="gap: 12px;">
             <v-btn
               variant="tonal"
-              color="white"
-              class="rounded-lg text-none px-6 font-weight-bold flex-shrink-0 text-white"
-              style="color: #ffffff !important;"
+              class="rounded-lg text-none px-6 font-weight-bold flex-shrink-0"
               @click="cancel"
             >
               Cancelar
@@ -700,10 +848,12 @@ export default defineComponent({
     localConfig: {
       fontColor: "#ffffff",
       bgColor: "#000000",
+      bgImage: null as string | null,
       visualAlert: true,
       audioAlert: true,
       // Culto
       cultBgColor: "#000000",
+      cultBgImage: null as string | null,
       cultClockColor: "#ffffff",
       cultTimerColor: "#38bdf8",
       cultWarningColor: "#ef4444",
@@ -717,10 +867,12 @@ export default defineComponent({
     defaultConfig: {
       fontColor: "#ffffff",
       bgColor: "#000000",
+      bgImage: null as string | null,
       visualAlert: true,
       audioAlert: true,
       // Culto
       cultBgColor: "#000000",
+      cultBgImage: null as string | null,
       cultClockColor: "#ffffff",
       cultTimerColor: "#38bdf8",
       cultWarningColor: "#ef4444",
@@ -789,6 +941,72 @@ export default defineComponent({
       stopSchoolBellAlert();
       this.internalValue = false;
     },
+    onBgImageSelect(event: Event) {
+      const input = event.target as HTMLInputElement;
+      const file = input.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const maxW = 1920;
+          const maxH = 1080;
+          let w = img.width;
+          let h = img.height;
+          if (w > maxW || h > maxH) {
+            const ratio = Math.min(maxW / w, maxH / h);
+            w = Math.round(w * ratio);
+            h = Math.round(h * ratio);
+            const canvas = document.createElement("canvas");
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext("2d");
+            if (ctx) {
+              ctx.drawImage(img, 0, 0, w, h);
+              this.localConfig.bgImage = canvas.toDataURL("image/jpeg", 0.85);
+              return;
+            }
+          }
+          this.localConfig.bgImage = e.target?.result as string;
+        };
+        img.src = e.target?.result as string;
+      };
+      reader.readAsDataURL(file);
+      input.value = "";
+    },
+    onCultBgImageSelect(event: Event) {
+      const input = event.target as HTMLInputElement;
+      const file = input.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const maxW = 1920;
+          const maxH = 1080;
+          let w = img.width;
+          let h = img.height;
+          if (w > maxW || h > maxH) {
+            const ratio = Math.min(maxW / w, maxH / h);
+            w = Math.round(w * ratio);
+            h = Math.round(h * ratio);
+            const canvas = document.createElement("canvas");
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext("2d");
+            if (ctx) {
+              ctx.drawImage(img, 0, 0, w, h);
+              this.localConfig.cultBgImage = canvas.toDataURL("image/jpeg", 0.85);
+              return;
+            }
+          }
+          this.localConfig.cultBgImage = e.target?.result as string;
+        };
+        img.src = e.target?.result as string;
+      };
+      reader.readAsDataURL(file);
+      input.value = "";
+    },
     testSound() {
       playSchoolBellAlert();
     },
@@ -797,17 +1015,10 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
+.timer-config-modal {
+  box-shadow: 0 24px 48px rgba(0,0,0,0.2) !important;
 }
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.1);
-  border-radius: 10px;
-}
-[data-theme='dark'] .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+.settings-card {
+  transition: all 0.3s;
 }
 </style>

@@ -81,6 +81,7 @@ export default defineComponent({
         visualAlert: true,
         audioAlert: true,
         cultBgColor: "#000000",
+        cultBgImage: null,
         cultClockColor: "#ffffff",
         cultTimerColor: "#38bdf8",
         cultWarningColor: "#ef4444",
@@ -90,6 +91,7 @@ export default defineComponent({
         cultAudio5min: true,
         cultAudio1min: true,
         cultAudioEnd: true,
+        bgImage: null,
       };
     },
     timerData(): any {
@@ -172,7 +174,7 @@ export default defineComponent({
           : (this.preview ? "var(--sidebar-text)" : this.config.fontColor),
         fontSize: this.preview ? "clamp(4rem, 8vw, 8rem)" : "25vmin",
         lineHeight: 1,
-        textShadow: this.preview ? "none" : "0 10px 40px rgba(0,0,0,0.5)",
+        textShadow: this.preview ? "none" : "0 10px 40px rgba(0,0,0,0.8), 0 2px 10px rgba(0,0,0,0.9)",
       };
     },
     cultClockStyle(): any {
@@ -182,7 +184,7 @@ export default defineComponent({
           : (this.config.cultClockColor || "#ffffff"),
         fontSize: this.preview ? "clamp(2rem, 4vw, 3.6rem)" : "12vmin",
         lineHeight: 1.1,
-        textShadow: this.preview ? "none" : "0 8px 30px rgba(0,0,0,0.6)",
+        textShadow: this.preview ? "none" : "0 8px 30px rgba(0,0,0,0.8), 0 2px 8px rgba(0,0,0,0.9)",
         fontVariantNumeric: "tabular-nums",
       };
     },
@@ -194,7 +196,7 @@ export default defineComponent({
         color,
         fontSize: this.preview ? "clamp(3.5rem, 7.5vw, 6.8rem)" : "22vmin",
         lineHeight: 1.1,
-        textShadow: this.preview ? "none" : "0 10px 40px rgba(0,0,0,0.6)",
+        textShadow: this.preview ? "none" : "0 10px 40px rgba(0,0,0,0.8), 0 2px 10px rgba(0,0,0,0.9)",
         fontVariantNumeric: "tabular-nums",
       };
     },
@@ -205,13 +207,27 @@ export default defineComponent({
         };
       }
       if (this.preview) return { background: "transparent" };
-      if (this.mode === "cult") {
+      
+      const bgImg = this.mode === "cult"
+        ? (this.config.cultBgImage || this.config.bgImage)
+        : this.config.bgImage;
+
+      const baseBg = this.mode === "cult"
+        ? (this.config.cultBgColor || this.config.bgColor || "#000000")
+        : (this.config.bgColor || "#000000");
+
+      if (bgImg) {
         return {
-          background: this.config.cultBgColor || this.config.bgColor || "#000000",
+          backgroundColor: baseBg,
+          backgroundImage: `url("${bgImg}")`,
+          backgroundSize: "cover",
+          backgroundPosition: "center center",
+          backgroundRepeat: "no-repeat",
         };
       }
+
       return {
-        background: this.config.bgColor,
+        background: baseBg,
       };
     },
   },

@@ -29,7 +29,11 @@
           <div
             class="d-flex flex-column align-center justify-center overflow-hidden rounded-lg mx-auto"
             :style="{
-              background: localConfig.background,
+              backgroundColor: localConfig.background,
+              backgroundImage: localConfig.bgImage ? `url('${localConfig.bgImage}')` : 'none',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center center',
+              backgroundRepeat: 'no-repeat',
               color: localConfig.color,
               aspectRatio: '16/9',
               maxHeight: '180px',
@@ -38,13 +42,13 @@
             }"
           >
             <div class="d-flex flex-column w-100 pa-4" :class="[localConfig.align]">
-              <div :style="{ fontSize: `${localConfig.fontSizePc * 0.9}px`, lineHeight: '1.4' }">
+              <div :style="{ fontSize: `${localConfig.fontSizePc * 0.9}px`, lineHeight: '1.4', textShadow: localConfig.bgImage ? '0 2px 10px rgba(0,0,0,0.85)' : 'none' }">
                 No princípio criou Deus os céus e a terra.
               </div>
               <div
                 class="mt-2 font-weight-bold"
                 :class="[localConfig.refAlign || 'text-right']"
-                :style="{ fontSize: `${localConfig.refFontSizePc * 0.9}px`, color: localConfig.refColor }"
+                :style="{ fontSize: `${localConfig.refFontSizePc * 0.9}px`, color: localConfig.refColor, textShadow: localConfig.bgImage ? '0 2px 8px rgba(0,0,0,0.85)' : 'none' }"
               >
                 Gênesis 1:1
               </div>
@@ -98,6 +102,77 @@
                     </div>
                   </template>
                 </ModernColorPicker>
+              </div>
+
+              <v-divider class="my-4" style="opacity: 0.1;" />
+
+              <!-- Imagem de fundo -->
+              <div class="mb-2">
+                <div class="d-flex align-center justify-space-between mb-3">
+                  <div class="d-flex align-center">
+                    <v-icon size="18" color="primary" class="mr-2">
+                      mdi-image-outline
+                    </v-icon>
+                    <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text);">Imagem de Fundo</span>
+                  </div>
+                </div>
+
+                <div
+                  v-if="localConfig.bgImage"
+                  class="position-relative rounded-xl overflow-hidden mb-2"
+                  style="height: 120px; border: 1px solid var(--border-color); border-radius: 16px !important;"
+                >
+                  <img :src="localConfig.bgImage" class="w-100 h-100" style="object-fit: cover;" />
+                  <div class="position-absolute w-100 h-100 d-flex align-center justify-center" style="top: 0; left: 0; background: rgba(0,0,0,0.35);">
+                    <v-btn
+                      icon
+                      size="small"
+                      variant="flat"
+                      color="error"
+                      class="mr-2"
+                      @click="localConfig.bgImage = null"
+                    >
+                      <v-icon>mdi-delete</v-icon>
+                      <v-tooltip activator="parent" location="top">
+                        Remover imagem
+                      </v-tooltip>
+                    </v-btn>
+                    <v-btn
+                      icon
+                      size="small"
+                      variant="flat"
+                      color="white"
+                      @click="($refs.bgImageInput as any).click()"
+                    >
+                      <v-icon color="black">
+                        mdi-pencil
+                      </v-icon>
+                      <v-tooltip activator="parent" location="top">
+                        Trocar imagem
+                      </v-tooltip>
+                    </v-btn>
+                  </div>
+                </div>
+
+                <div
+                  v-else
+                  class="rounded-xl d-flex flex-column align-center justify-center cursor-pointer"
+                  style="height: 90px; border: 2px dashed var(--border-color); background: var(--card-bg); transition: all 0.2s; border-radius: 16px !important;"
+                  @click="($refs.bgImageInput as any).click()"
+                >
+                  <v-icon size="28" color="grey-lighten-1" class="mb-1">
+                    mdi-cloud-upload-outline
+                  </v-icon>
+                  <span class="text-caption font-weight-medium" style="color: var(--sidebar-text-secondary);">Selecionar Imagem</span>
+                </div>
+
+                <input
+                  ref="bgImageInput"
+                  type="file"
+                  accept="image/*"
+                  style="display: none;"
+                  @change="onBgImageSelect"
+                />
               </div>
             </v-card-text>
           </v-card>
@@ -436,6 +511,7 @@ export default defineComponent({
       fontSizePc: 15,
       align: "text-center",
       background: "#000000",
+      bgImage: null as string | null,
       color: "#ffffff",
       refFontSizePc: 10,
       refColor: "#fb8c00",
@@ -445,6 +521,7 @@ export default defineComponent({
       fontSizePc: 15,
       align: "text-center",
       background: "#000000",
+      bgImage: null as string | null,
       color: "#ffffff",
       refFontSizePc: 10,
       refColor: "#fb8c00",
@@ -487,6 +564,39 @@ export default defineComponent({
     },
     resetToDefault() {
       this.localConfig = { ...this.defaultConfig };
+    },
+    onBgImageSelect(event: Event) {
+      const input = event.target as HTMLInputElement;
+      const file = input.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const maxW = 1920;
+          const maxH = 1080;
+          let w = img.width;
+          let h = img.height;
+          if (w > maxW || h > maxH) {
+            const ratio = Math.min(maxW / w, maxH / h);
+            w = Math.round(w * ratio);
+            h = Math.round(h * ratio);
+            const canvas = document.createElement("canvas");
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext("2d");
+            if (ctx) {
+              ctx.drawImage(img, 0, 0, w, h);
+              this.localConfig.bgImage = canvas.toDataURL("image/jpeg", 0.85);
+              return;
+            }
+          }
+          this.localConfig.bgImage = e.target?.result as string;
+        };
+        img.src = e.target?.result as string;
+      };
+      reader.readAsDataURL(file);
+      input.value = "";
     },
     saveAndClose() {
       this.$appdata.set("modules.bible.config", JSON.parse(JSON.stringify(this.localConfig)));

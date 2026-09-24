@@ -3,7 +3,11 @@
     ref="container"
     class="d-flex align-center justify-center position-relative w-100 h-100 overflow-hidden"
     :style="{
-      background: preview ? 'transparent' : config.bgColor,
+      backgroundColor: preview ? 'transparent' : config.bgColor,
+      backgroundImage: (!preview && config.bgImage) ? `url('${config.bgImage}')` : 'none',
+      backgroundSize: 'cover',
+      backgroundPosition: 'center center',
+      backgroundRepeat: 'no-repeat',
       height: height ? height + 'px' : '100%',
       color: preview ? 'var(--sidebar-text)' : config.textColor,
     }"
@@ -15,7 +19,7 @@
         class="digital-clock font-weight-black d-flex align-center justify-center text-center w-100"
         :style="{
           fontSize: `${digitalFontSize}px`,
-          textShadow: preview ? 'none' : `0 4px 30px ${config.textColor}40`,
+          textShadow: preview ? 'none' : (config.bgImage ? '0 4px 20px rgba(0,0,0,0.8), 0 2px 8px rgba(0,0,0,0.9)' : `0 4px 30px ${config.textColor}40`),
           fontFamily: 'system-ui, -apple-system, sans-serif'
         }"
       >
@@ -46,7 +50,9 @@
           width: `${analogSize}px`,
           height: `${analogSize}px`,
           border: `min(8px, ${analogSize * 0.02}px) solid ${config.textColor}`,
-          boxShadow: `inset 0 0 40px ${config.bgColor}40, 0 10px 40px ${config.textColor}20`
+          boxShadow: config.bgImage 
+            ? `inset 0 0 40px rgba(0,0,0,0.6), 0 10px 40px rgba(0,0,0,0.6), 0 0 15px ${config.textColor}40`
+            : `inset 0 0 40px ${config.bgColor}40, 0 10px 40px ${config.textColor}20`
         }"
       >
         <!-- Center Dot -->
@@ -174,6 +180,7 @@ export default defineComponent({
       showSeconds: true,
       format24h: true,
       bgColor: "#000000",
+      bgImage: null as string | null,
       textColor: "#FFFFFF",
     },
   }),
