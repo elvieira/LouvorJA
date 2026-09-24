@@ -9,8 +9,14 @@
       <QuickSearchModal v-model="showQuickSearch" />
       <BibleQuickSearchModal v-model="showBibleSearch" />
 
+
+
       <transition name="fade-slide">
-        <div v-if="isMinimized && showMiniPlayer" class="mini-player-popup elevation-12">
+        <div 
+          v-if="isMinimized && showMiniPlayer" 
+          :class="['mini-player-popup', 'elevation-12', 'corner-' + miniplayerCorner]"
+          @pointerdown="onMiniPlayerPointerDown"
+        >
           <v-card
             theme="dark"
             rounded="lg"
@@ -24,12 +30,12 @@
                 variant="flat" 
                 color="rgba(0,0,0,0.6)" 
                 class="mx-1 hover-btn"
-                @click="maximizePlayer" 
+                @click.stop="maximizePlayer" 
               >
                 <v-icon>mdi-arrow-expand-all</v-icon>
                 <v-tooltip
                   activator="parent"
-                  location="top"
+                  :location="miniplayerCorner.startsWith('top') ? 'bottom' : 'top'"
                   open-delay="300"
                   content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
                 >
@@ -42,12 +48,12 @@
                 variant="flat" 
                 color="rgba(0,0,0,0.6)" 
                 class="hover-btn"
-                @click="showMiniPlayer = false" 
+                @click.stop="showMiniPlayer = false" 
               >
                 <v-icon>mdi-minus</v-icon>
                 <v-tooltip
                   activator="parent"
-                  location="top"
+                  :location="miniplayerCorner.startsWith('top') ? 'bottom' : 'top'"
                   open-delay="300"
                   content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
                 >
@@ -55,7 +61,7 @@
                 </v-tooltip>
               </v-btn>
             </div>
-            <div class="position-relative w-100 bg-black" style="height: 180px;">
+            <div class="position-relative w-100 bg-black mini-player-content" style="height: 180px;">
               <LSlide
                 v-if="slide"
                 :slide_number="config.slide_index"
@@ -77,7 +83,11 @@
 
       <!-- External Media MiniPlayer -->
       <transition name="fade-slide">
-        <div v-if="isExternalMediaMinimized && showExternalMiniPlayer && isExternalVideo" class="mini-player-popup elevation-12">
+        <div 
+          v-if="isExternalMediaMinimized && showExternalMiniPlayer && isExternalVideo" 
+          :class="['mini-player-popup', 'elevation-12', 'corner-' + miniplayerCorner]"
+          @pointerdown="onMiniPlayerPointerDown"
+        >
           <v-card
             theme="dark"
             rounded="lg"
@@ -91,12 +101,12 @@
                 variant="flat" 
                 color="rgba(0,0,0,0.6)" 
                 class="mx-1 hover-btn"
-                @click="maximizeExternalPlayer" 
+                @click.stop="maximizeExternalPlayer" 
               >
                 <v-icon>mdi-arrow-expand-all</v-icon>
                 <v-tooltip
                   activator="parent"
-                  location="top"
+                  :location="miniplayerCorner.startsWith('top') ? 'bottom' : 'top'"
                   open-delay="300"
                   content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
                 >
@@ -109,12 +119,12 @@
                 variant="flat" 
                 color="rgba(0,0,0,0.6)" 
                 class="hover-btn"
-                @click="showExternalMiniPlayer = false" 
+                @click.stop="showExternalMiniPlayer = false" 
               >
                 <v-icon>mdi-minus</v-icon>
                 <v-tooltip
                   activator="parent"
-                  location="top"
+                  :location="miniplayerCorner.startsWith('top') ? 'bottom' : 'top'"
                   open-delay="300"
                   content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
                 >
@@ -122,7 +132,7 @@
                 </v-tooltip>
               </v-btn>
             </div>
-            <div class="position-relative w-100 bg-black" style="height: 180px;">
+            <div class="position-relative w-100 bg-black mini-player-content" style="height: 180px;">
               <video
                 v-if="externalFilePath"
                 ref="externalMiniPlayerVideo"
@@ -172,9 +182,31 @@ export default defineComponent({
       sidebarPinned: false,
       showQuickSearch: false,
       showBibleSearch: false,
+      dragState: null as {
+        el: HTMLElement;
+        startX: number;
+        startY: number;
+        initialRect: DOMRect;
+        currentDeltaX: number;
+        currentDeltaY: number;
+        hasMoved: boolean;
+      } | null,
+      snapTimeout: null as any,
     };
   },
   computed: {
+    miniplayerCorner: {
+      get(): "bottom-left" | "bottom-right" | "top-left" | "top-right" {
+        const val = this.$userdata.get("modules.media.miniplayer_corner");
+        if (val && ["bottom-left", "bottom-right", "top-left", "top-right"].includes(val)) {
+          return val;
+        }
+        return "bottom-left";
+      },
+      set(val: "bottom-left" | "bottom-right" | "top-left" | "top-right") {
+        this.$userdata.set("modules.media.miniplayer_corner", val);
+      },
+    },
     showMiniPlayer: {
       get(): boolean {
         return this.$appdata.get("modules.media.show_mini_player") !== false;
@@ -390,6 +422,13 @@ export default defineComponent({
   },
   unmounted() {
     window.removeEventListener("keydown", this.onGlobalSearchShortcut);
+    window.removeEventListener("pointermove", this.onMiniPlayerPointerMove);
+    window.removeEventListener("pointerup", this.onMiniPlayerPointerUp);
+    window.removeEventListener("pointercancel", this.onMiniPlayerPointerUp);
+    if (this.snapTimeout) {
+      clearTimeout(this.snapTimeout);
+      this.snapTimeout = null;
+    }
   },
   methods: {
     onPinnedChange(val: boolean) {
@@ -445,6 +484,145 @@ export default defineComponent({
       this.$appdata.set("modules.external_media.minimized", false);
       this.showExternalMiniPlayer = false;
     },
+    onMiniPlayerPointerDown(e: PointerEvent) {
+      if (e.button !== 0 && e.pointerType === "mouse") return;
+      const target = e.target as HTMLElement;
+      if (target.closest("button") || target.closest(".v-btn") || target.closest(".hover-btn")) {
+        return;
+      }
+      const popupEl = (e.currentTarget as HTMLElement).closest(".mini-player-popup") as HTMLElement;
+      if (!popupEl) return;
+
+      if (this.snapTimeout) {
+        clearTimeout(this.snapTimeout);
+        this.snapTimeout = null;
+      }
+
+      popupEl.style.transition = "none";
+      popupEl.style.transform = "";
+
+      const initialRect = popupEl.getBoundingClientRect();
+
+      this.dragState = {
+        el: popupEl,
+        startX: e.clientX,
+        startY: e.clientY,
+        initialRect,
+        currentDeltaX: 0,
+        currentDeltaY: 0,
+        hasMoved: false,
+      };
+
+      popupEl.classList.add("is-dragging");
+      document.body.style.userSelect = "none";
+      try {
+        popupEl.setPointerCapture(e.pointerId);
+      } catch (_e) {
+        // Pointer capture may not be supported or allowed for this pointer type
+      }
+
+      window.addEventListener("pointermove", this.onMiniPlayerPointerMove);
+      window.addEventListener("pointerup", this.onMiniPlayerPointerUp);
+      window.addEventListener("pointercancel", this.onMiniPlayerPointerUp);
+    },
+    onMiniPlayerPointerMove(e: PointerEvent) {
+      if (!this.dragState) return;
+
+      const dx = e.clientX - this.dragState.startX;
+      const dy = e.clientY - this.dragState.startY;
+
+      if (!this.dragState.hasMoved && Math.hypot(dx, dy) > 3) {
+        this.dragState.hasMoved = true;
+      }
+
+      if (!this.dragState.hasMoved) return;
+
+      const parentEl = this.dragState.el.parentElement || document.body;
+      const parentRect = parentEl.getBoundingClientRect();
+      const initialRect = this.dragState.initialRect;
+
+      // Boundaries inside parent container with 8px margin
+      const minDeltaX = parentRect.left - initialRect.left + 8;
+      const maxDeltaX = parentRect.right - initialRect.right - 8;
+      const minDeltaY = parentRect.top - initialRect.top + 8;
+      const maxDeltaY = parentRect.bottom - initialRect.bottom - 8;
+
+      const clampedDx = Math.max(minDeltaX, Math.min(maxDeltaX, dx));
+      const clampedDy = Math.max(minDeltaY, Math.min(maxDeltaY, dy));
+
+      this.dragState.currentDeltaX = clampedDx;
+      this.dragState.currentDeltaY = clampedDy;
+
+      this.dragState.el.style.transform = `translate3d(${clampedDx}px, ${clampedDy}px, 0)`;
+    },
+    onMiniPlayerPointerUp(e: PointerEvent) {
+      if (!this.dragState) return;
+
+      window.removeEventListener("pointermove", this.onMiniPlayerPointerMove);
+      window.removeEventListener("pointerup", this.onMiniPlayerPointerUp);
+      window.removeEventListener("pointercancel", this.onMiniPlayerPointerUp);
+      document.body.style.userSelect = "";
+
+      const { el, initialRect, currentDeltaX, currentDeltaY, hasMoved } = this.dragState;
+
+      try {
+        el.releasePointerCapture(e.pointerId);
+      } catch (_e) {
+        // Pointer capture release may fail if pointer is already released
+      }
+      el.classList.remove("is-dragging");
+
+      if (!hasMoved) {
+        this.dragState = null;
+        return;
+      }
+
+      const parentEl = el.parentElement || document.body;
+      const parentRect = parentEl.getBoundingClientRect();
+
+      const currentLeft = initialRect.left + currentDeltaX;
+      const currentTop = initialRect.top + currentDeltaY;
+      const centerX = currentLeft + initialRect.width / 2;
+      const centerY = currentTop + initialRect.height / 2;
+      const parentCenterX = parentRect.left + parentRect.width / 2;
+      const parentCenterY = parentRect.top + parentRect.height / 2;
+
+      const isLeft = centerX < parentCenterX;
+      const isTop = centerY < parentCenterY;
+      const newCorner = isTop ? (isLeft ? "top-left" : "top-right") : (isLeft ? "bottom-left" : "bottom-right");
+
+      const droppedRect = { left: currentLeft, top: currentTop };
+
+      this.miniplayerCorner = newCorner;
+      this.$userdata.set("modules.media.miniplayer_corner", newCorner);
+
+      // FLIP animation to smoothly glide into the corner
+      el.style.transform = "";
+      el.style.transition = "none";
+
+      this.$nextTick(() => {
+        const newRect = el.getBoundingClientRect();
+        const invertX = droppedRect.left - newRect.left;
+        const invertY = droppedRect.top - newRect.top;
+
+        el.style.transition = "none";
+        el.style.transform = `translate3d(${invertX}px, ${invertY}px, 0)`;
+
+        // Force reflow
+        void el.offsetHeight;
+
+        el.style.transition = "transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1)";
+        el.style.transform = "translate3d(0, 0, 0)";
+
+        this.snapTimeout = setTimeout(() => {
+          el.style.transition = "";
+          el.style.transform = "";
+          this.snapTimeout = null;
+        }, 350);
+      });
+
+      this.dragState = null;
+    },
   },
 });
 </script>
@@ -484,13 +662,59 @@ main {
 
 .mini-player-popup {
   position: absolute;
-  bottom: 16px;
-  left: 16px;
   z-index: 1000;
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 10px 30px rgba(0,0,0,0.5);
   border: 1px solid rgba(255,255,255,0.1);
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.mini-player-popup.is-dragging {
+  cursor: grabbing !important;
+  box-shadow: 0 16px 40px rgba(0,0,0,0.7), 0 0 0 2px rgba(var(--v-theme-primary), 0.5) !important;
+  z-index: 1002;
+}
+
+.mini-player-popup.is-dragging .mini-player-content {
+  pointer-events: none;
+}
+
+.mini-player-popup img,
+.mini-player-popup video {
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
+.mini-player-popup.corner-bottom-left {
+  bottom: 16px;
+  left: 16px;
+  top: auto;
+  right: auto;
+}
+
+.mini-player-popup.corner-bottom-right {
+  bottom: 16px;
+  right: 16px;
+  top: auto;
+  left: auto;
+}
+
+.mini-player-popup.corner-top-left {
+  top: 16px;
+  left: 16px;
+  bottom: auto;
+  right: auto;
+}
+
+.mini-player-popup.corner-top-right {
+  top: 16px;
+  right: 16px;
+  bottom: auto;
+  left: auto;
 }
 
 .mini-player-toolbar {
@@ -500,7 +724,8 @@ main {
   padding-bottom: 20px !important;
 }
 
-.mini-player-popup:hover .mini-player-toolbar {
+.mini-player-popup:hover .mini-player-toolbar,
+.mini-player-popup.is-dragging .mini-player-toolbar {
   opacity: 1;
 }
 
@@ -521,6 +746,6 @@ main {
 .fade-slide-enter-from,
 .fade-slide-leave-to {
   opacity: 0;
-  transform: translateY(20px) scale(0.95);
+  transform: scale(0.92);
 }
 </style>

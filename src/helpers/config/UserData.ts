@@ -69,6 +69,8 @@ export default {
       "modules.config.media_slide_fullscreen": true,
       "modules.config.media_slide_disable_main_if_extended": true,
       "modules.config.media_slide_minimize_player": false,
+
+      "modules.media.miniplayer_corner": "bottom-left",
     };
 
     return staticDefaults[param];
