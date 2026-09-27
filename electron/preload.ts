@@ -21,6 +21,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
   readAudioFolder: (folderPath: string) => ipcRenderer.invoke("read-audio-folder", folderPath),
   writeSljaZip: (payload: Record<string, unknown>) => ipcRenderer.invoke("write-slja-zip", payload),
   readSljaZip: (filePath: string) => ipcRenderer.invoke("read-slja-zip", filePath),
+  checkSljaHasInstrumental: (filePath: string) => ipcRenderer.invoke("check-slja-has-instrumental", filePath),
   openExternal: (url: string) => ipcRenderer.invoke("open-external", url),
   getSysDbInfo: () => ipcRenderer.invoke("get-sysdb-info"),
   getAppDataSize: () => ipcRenderer.invoke("get-app-data-size"),

@@ -109,6 +109,54 @@
           </v-btn>
         </div>
         <div v-else class="d-flex align-center" style="gap: 8px;">
+          <v-menu
+            v-if="hasPlayableSongsInDetail"
+            location="bottom center"
+            open-on-hover
+            :close-on-content-click="true"
+          >
+            <template #activator="{ props: menuProps }">
+              <v-btn
+                v-bind="menuProps"
+                color="primary"
+                variant="tonal"
+                class="text-none rounded-lg"
+                prepend-icon="mdi-play"
+              >
+                {{ t('play_all') }}
+              </v-btn>
+            </template>
+            <v-card class="modern-glass-menu elevation-4 mt-2" rounded="lg">
+              <v-list class="py-1" bg-color="transparent" density="compact">
+                <v-list-item class="mx-1 rounded" style="min-height: 32px;" @click.stop="playAllCollection('audio')">
+                  <div class="d-flex align-center">
+                    <v-icon size="small" class="mr-2">
+                      mdi-play-circle
+                    </v-icon>
+                    <span class="text-caption font-weight-medium">{{ $t('modules.media.general.sung') }}</span>
+                  </div>
+                </v-list-item>
+                <v-list-item class="mx-1 rounded" style="min-height: 32px;" @click.stop="playAllCollection('instrumental')">
+                  <div class="d-flex align-center">
+                    <v-icon size="small" class="mr-2">
+                      mdi-play-circle-outline
+                    </v-icon>
+                    <span class="text-caption font-weight-medium">{{ $t('modules.media.general.instrumental') }}</span>
+                  </div>
+                </v-list-item>
+              </v-list>
+            </v-card>
+          </v-menu>
+          <v-btn
+            v-if="hasPlaybackQueue"
+            variant="tonal"
+            color="primary"
+            class="text-none font-weight-bold rounded-lg"
+            prepend-icon="mdi-playlist-play"
+            @click="openPlaybackQueue"
+          >
+            {{ t('playback_queue') }}
+          </v-btn>
           <v-btn
             variant="tonal"
             color="primary"
@@ -387,7 +435,7 @@
                         density="compact"
                         class="mx-1"
                         icon
-                        @click="playOrAddNoAudio(item)"
+                        @click="playNoAudio(item)"
                       >
                         <v-icon>mdi-monitor</v-icon>
                         <v-tooltip
@@ -396,7 +444,7 @@
                           open-delay="300"
                           content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
                         >
-                          {{ item.filePathNoAudio ? 'Sem Áudio' : t('add_no_audio') }}
+                          Sem Áudio
                         </v-tooltip>
                       </v-btn>
                     </template>
@@ -471,34 +519,7 @@
                               <span class="text-body-2 font-weight-medium">{{ t('remove_playback') }}</span>
                             </div>
                           </v-list-item>
-                          
-                          <v-list-item
-                            class="mx-2 rounded-lg mb-1"
-                            style="min-height: 40px;"
-                            @click="changeNoAudio(item)"
-                          >
-                            <div class="d-flex align-center">
-                              <v-icon size="small" class="mr-3">
-                                mdi-monitor
-                              </v-icon>
-                              <span class="text-body-2 font-weight-medium">{{ item.filePathNoAudio ? t('change_no_audio') : t('add_no_audio') }}</span>
-                            </div>
-                          </v-list-item>
-                          
-                          <v-list-item
-                            v-if="item.filePathNoAudio"
-                            class="mx-2 rounded-lg mb-1"
-                            style="min-height: 40px;"
-                            @click="removeNoAudio(item)"
-                          >
-                            <div class="d-flex align-center">
-                              <v-icon size="small" class="mr-3">
-                                mdi-music-note-off-outline
-                              </v-icon>
-                              <span class="text-body-2 font-weight-medium">{{ t('remove_no_audio') }}</span>
-                            </div>
-                          </v-list-item>
-                          
+
                           <v-list-item
                             class="mx-2 rounded-lg mb-0 mt-2"
                             style="min-height: 40px;"
@@ -1070,80 +1091,8 @@
                 </div>
               </div>
             </div>
-
-            <!-- No Audio Dropzone -->
-            <div class="mb-2">
-              <div class="text-body-2 font-weight-medium mb-1" style="color: var(--sidebar-text-secondary); margin-left: 4px;">
-                {{ t('no_audio_file') }} ({{ t('optional') }})
-              </div>
-              
-              <div
-                v-if="externalNoAudioFileName"
-                class="rounded-xl pa-4 d-flex align-center justify-space-between"
-                style="border: 1px solid var(--border-color, rgba(128,128,128,0.2)); background: rgba(var(--v-theme-on-surface), 0.06);"
-              >
-                <div class="d-flex align-center" style="overflow: hidden;">
-                  <v-icon color="primary" size="32" class="mr-3">
-                    mdi-monitor
-                  </v-icon>
-                  <div class="d-flex flex-column" style="overflow: hidden;">
-                    <span class="font-weight-bold text-truncate" style="color: var(--sidebar-text); max-width: 250px;">{{ externalNoAudioFileName }}</span>
-                    <span class="text-caption text-truncate" style="color: var(--sidebar-text-secondary); max-width: 250px;" :title="externalNoAudioFilePath || undefined">{{ externalNoAudioFilePath }}</span>
-                  </div>
-                </div>
-                <div class="d-flex align-center">
-                  <v-btn
-                    icon
-                    size="small"
-                    variant="text"
-                    color="primary"
-                    class="mr-1"
-                    @click="pickExternalFile('no_audio')"
-                  >
-                    <v-icon>mdi-pencil</v-icon>
-                    <v-tooltip activator="parent" location="top">
-                      {{ t('actions.change') || 'Alterar' }}
-                    </v-tooltip>
-                  </v-btn>
-                  <v-btn
-                    icon
-                    size="small"
-                    variant="text"
-                    color="error"
-                    @click="externalNoAudioFileName = ''; externalNoAudioFilePath = ''"
-                  >
-                    <v-icon>mdi-delete</v-icon>
-                    <v-tooltip activator="parent" location="top">
-                      {{ t('actions.delete') || 'Remover' }}
-                    </v-tooltip>
-                  </v-btn>
-                </div>
-              </div>
-
-              <div
-                v-else
-                class="rounded-xl d-flex flex-row align-center pa-3 cursor-pointer"
-                style="border: 2px dashed var(--border-color, rgba(128,128,128,0.2)); background: rgba(128,128,128,0.02); transition: all 0.2s;"
-                onmouseover="this.style.background='rgba(128,128,128,0.04)'; this.style.borderColor='rgba(128,128,128,0.5)'"
-                onmouseout="this.style.background='rgba(128,128,128,0.02)'; this.style.borderColor='var(--border-color, rgba(128,128,128,0.2))'"
-                @click="pickExternalFile('no_audio')"
-              >
-                <v-icon
-                  size="28"
-                  color="primary"
-                  class="mr-3 ml-2"
-                  style="opacity: 0.8;"
-                >
-                  mdi-file-find
-                </v-icon>
-                <div class="d-flex flex-column justify-center">
-                  <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text); line-height: 1.2;">Selecionar Arquivo</span>
-                  <span class="text-caption" style="color: var(--sidebar-text-secondary); line-height: 1.2; margin-top: 2px;">Clique para buscar no computador</span>
-                </div>
-              </div>
-            </div>
           </v-card-text>
-          
+
           <v-card-actions class="px-6 pb-6 pt-2">
             <v-spacer />
             <div class="d-flex" style="gap: 12px;">
@@ -1189,7 +1138,6 @@ interface ExternalSong {
   name: string;
   filePathAudio: string | null;
   filePathInstrumental: string | null;
-  filePathNoAudio: string | null;
 }
 type CollectionSong = InternalSong | ExternalSong;
 
@@ -1259,8 +1207,12 @@ export default defineComponent({
       externalAudioFileName: "",
       externalInstrumentalFilePath: null as string | null,
       externalInstrumentalFileName: "",
-      externalNoAudioFilePath: null as string | null,
-      externalNoAudioFileName: "",
+
+      playQueueItems: [] as CollectionSong[],
+      playQueueIndex: -1,
+      playQueueMode: "audio" as "audio" | "instrumental",
+      playQueueActive: false,
+      queueEndedBaseline: 0,
     };
   },
   computed: {
@@ -1279,6 +1231,33 @@ export default defineComponent({
 
     detailCollection(): CustomCollection | null {
       return this.collections.find((c) => c.id === this.detailCollectionId) || null;
+    },
+    hasPlayableSongsInDetail(): boolean {
+      return !!this.detailCollection && this.detailCollection.songs.length > 0;
+    },
+    hasPlaybackQueue(): boolean {
+      return ((this as any).$appdata.get("modules.media.queue")?.items || []).length > 0;
+    },
+    currentQueueItem(): CollectionSong | null {
+      if (!this.playQueueActive) return null;
+      return this.playQueueItems[this.playQueueIndex] || null;
+    },
+    currentQueueEngine(): "media" | "external_media" | null {
+      const item = this.currentQueueItem;
+      if (!item) return null;
+      if (item.type === "internal") return "media";
+      const rawPath = this.playQueueMode === "instrumental" ? item.filePathInstrumental : item.filePathAudio;
+      return rawPath && isSljaFile(rawPath) ? "media" : "external_media";
+    },
+    // Contador que só sobe quando o item atual da fila termina naturalmente (sem
+    // nada em seguida na fila própria da engine), nunca num fechamento manual.
+    // Cada engine tem o seu, incrementado só nessa hora específica (ver
+    // "markNaturalEnd" no Media.ts e "ended_seq" no external_media).
+    queueEngineEndedSeq(): number {
+      const engine = this.currentQueueEngine;
+      if (engine === "media") return (this as any).$appdata.get("modules.media.config.natural_end_seq") || 0;
+      if (engine === "external_media") return (this as any).$appdata.get("modules.external_media.config.ended_seq") || 0;
+      return 0;
     },
     searchResults(): { song: CollectionSong; collection: CustomCollection }[] {
       const query = (this.search || "").trim();
@@ -1315,6 +1294,12 @@ export default defineComponent({
         }
       },
       deep: true,
+    },
+    queueEngineEndedSeq(val: number) {
+      if (!this.playQueueActive) return;
+      if (val > this.queueEndedBaseline) {
+        this.advancePlayQueue();
+      }
     },
   },
   mounted() {
@@ -1359,7 +1344,74 @@ export default defineComponent({
       if (item.type === "external") return item.name;
       return this.songData(item)?.name || "";
     },
+    playAllCollection(mode: "audio" | "instrumental") {
+      if (!this.detailCollection) return;
+
+      const eligibleSongs = this.detailCollection.songs.filter((s) => {
+        if (s.type === "internal") {
+          if (mode === "instrumental") {
+            const data = this.songData(s);
+            return !!(data?.has_instrumental_music === 1 || data?.has_instrumental_music === true);
+          }
+          return true;
+        }
+        return mode === "instrumental" ? !!s.filePathInstrumental : !!s.filePathAudio;
+      });
+
+      if (eligibleSongs.length === 0) {
+        import("@/helpers/ui/Snackbar").then(({ default: $snackbar }) => {
+          $snackbar.show({ text: this.t("no_playable_songs"), color: "warning", timeout: 3000 });
+        });
+        return;
+      }
+
+      if (eligibleSongs.length < this.detailCollection.songs.length) {
+        import("@/helpers/ui/Snackbar").then(({ default: $snackbar }) => {
+          $snackbar.show({ text: this.t("some_songs_skipped"), color: "info", timeout: 4000 });
+        });
+      }
+
+      this.playQueueItems = eligibleSongs;
+      this.playQueueMode = mode;
+      this.playQueueActive = true;
+      this.playQueueAt(0);
+    },
+    playQueueAt(index: number) {
+      if (index < 0 || index >= this.playQueueItems.length) {
+        this.stopPlayQueue();
+        return;
+      }
+      this.playQueueIndex = index;
+      // Marca o valor atual do contador de "terminou" da engine que vai tocar
+      // esse item: só um incremento A PARTIR DAQUI conta como fim dele (evita
+      // confundir com incrementos antigos de quando essa engine tocou outra
+      // coisa, inclusive ao trocar de engine no meio da fila).
+      this.queueEndedBaseline = this.queueEngineEndedSeq;
+      const item = this.playQueueItems[index];
+      if (item.type === "internal") {
+        // Zera a fila própria do $media antes de abrir: essa coletânea tem a sua
+        // própria fila (aqui), e uma fila antiga de outro álbum não pode fazer o
+        // $media pular pra uma música errada quando essa aqui terminar.
+        (this as any).$appdata.set("modules.media.queue", { items: [], currentIndex: -1 });
+        (this as any).$media.open({ id_music: item.id_music, mode: this.playQueueMode });
+      } else {
+        this.playExternalFile(item, this.playQueueMode);
+      }
+    },
+    advancePlayQueue() {
+      if (!this.playQueueActive) return;
+      this.playQueueAt(this.playQueueIndex + 1);
+    },
+    stopPlayQueue() {
+      this.playQueueActive = false;
+      this.playQueueItems = [];
+      this.playQueueIndex = -1;
+    },
+    openPlaybackQueue() {
+      (this as any).$appdata.set("modules.media.show_queue", true);
+    },
     playSong(item: CollectionSong) {
+      this.stopPlayQueue();
       if (item.type === "internal") {
         (this as any).$media.open({ id_music: item.id_music, mode: "audio" });
         return;
@@ -1367,7 +1419,9 @@ export default defineComponent({
       this.playExternalFile(item, "audio");
     },
     async playExternalFile(item: ExternalSong, mode: "audio" | "instrumental" | "no_audio") {
-      const rawPath = mode === "audio" ? item.filePathAudio : mode === "instrumental" ? item.filePathInstrumental : item.filePathNoAudio;
+      // "Sem Áudio" sempre usa o mesmo arquivo do Cantado (não é uma escolha
+      // separada): se o Cantado mudar ou for excluído, o Sem Áudio acompanha.
+      const rawPath = mode === "instrumental" ? item.filePathInstrumental : item.filePathAudio;
       if (!rawPath) return;
 
       if (isSljaFile(rawPath)) {
@@ -1454,7 +1508,16 @@ export default defineComponent({
       // O $media só aceita tempos como string "H:M:S" (segundos inteiros), o que trunca a
       // precisão de décimos de segundo gravada no .slja. Sobrescrevemos com os tempos exatos.
       if (playMode === "audio" || playMode === "instrumental") {
-        const preciseTimes = [0, ...remainingSlides.map((s: any) => (typeof s.time === "number" ? s.time : 0))];
+        // A capa (índice 0) sempre começa em 0s. Se um slide sem sincronia manual
+        // também ficar em 0s (ou empatar com o tempo anterior), o cálculo de "qual
+        // slide mostrar agora" pula direto pra ele, pulando a capa visualmente.
+        // Garantimos ordem estritamente crescente pra evitar esse empate.
+        const preciseTimes: number[] = [0];
+        remainingSlides.forEach((s: any) => {
+          const raw = typeof s.time === "number" ? s.time : 0;
+          const last = preciseTimes[preciseTimes.length - 1];
+          preciseTimes.push(raw <= last ? last + 0.001 : raw);
+        });
         (this as any).$appdata.set("modules.media.times", preciseTimes);
       }
     },
@@ -1475,9 +1538,11 @@ export default defineComponent({
     async detectSljaInstrumental(filePath: string): Promise<boolean> {
       if (!isSljaFile(filePath)) return false;
       const electronAPI = (window as any).electronAPI;
-      if (!electronAPI?.readSljaZip) return false;
-      const data = await electronAPI.readSljaZip(filePath);
-      return !!data?.instrumentalPath;
+      // Versão leve: só lê o cabeçalho do .slja, sem extrair áudio/imagens pro
+      // disco (extrair é lento e trava o app quando é feito pra vários arquivos
+      // de uma vez, como ao importar uma pasta inteira).
+      if (!electronAPI?.checkSljaHasInstrumental) return false;
+      return await electronAPI.checkSljaHasInstrumental(filePath);
     },
     async changeCantado(item: ExternalSong) {
       if (!(window as any).electronAPI?.openFileDialog) return;
@@ -1487,11 +1552,8 @@ export default defineComponent({
       });
       if (!filePath) return;
       item.filePathAudio = filePath as string;
-      if (isSljaFile(filePath as string)) {
-        if (!item.filePathNoAudio) item.filePathNoAudio = filePath as string;
-        if (!item.filePathInstrumental && await this.detectSljaInstrumental(filePath as string)) {
-          item.filePathInstrumental = filePath as string;
-        }
+      if (isSljaFile(filePath as string) && !item.filePathInstrumental && await this.detectSljaInstrumental(filePath as string)) {
+        item.filePathInstrumental = filePath as string;
       }
       this.saveCollections();
     },
@@ -1509,26 +1571,10 @@ export default defineComponent({
       item.filePathInstrumental = null;
       this.saveCollections();
     },
-    async playOrAddNoAudio(item: ExternalSong) {
-      if (item.filePathNoAudio) {
-        this.playExternalFile(item, "no_audio");
-        return;
-      }
-      await this.changeNoAudio(item);
-    },
-    async changeNoAudio(item: ExternalSong) {
-      if (!(window as any).electronAPI?.openFileDialog) return;
-      const filePath = await (window as any).electronAPI.openFileDialog({
-        title: this.t("no_audio_file"),
-        filters: MEDIA_FILTERS,
-      });
-      if (!filePath) return;
-      item.filePathNoAudio = filePath as string;
-      this.saveCollections();
-    },
-    removeNoAudio(item: ExternalSong) {
-      item.filePathNoAudio = null;
-      this.saveCollections();
+    playNoAudio(item: ExternalSong) {
+      // "Sem Áudio" sempre é o próprio arquivo Cantado, tocado sem áudio: não há
+      // nada pra escolher/trocar aqui.
+      this.playExternalFile(item, "no_audio");
     },
 
     openCreateDialog() {
@@ -1601,15 +1647,13 @@ export default defineComponent({
       this.externalAudioFileName = "";
       this.externalInstrumentalFilePath = null;
       this.externalInstrumentalFileName = "";
-      this.externalNoAudioFilePath = null;
-      this.externalNoAudioFileName = "";
     },
     stripExt(fileName: string): string {
       return fileName.replace(/\.[^./\\]+$/, "");
     },
-    async pickExternalFile(kind: "audio" | "instrumental" | "no_audio") {
+    async pickExternalFile(kind: "audio" | "instrumental") {
       if (!(window as any).electronAPI?.openFileDialog) return;
-      const title = kind === "audio" ? this.t("external_audio_file") : kind === "instrumental" ? this.t("external_instrumental_file") : this.t("no_audio_file");
+      const title = kind === "audio" ? this.t("external_audio_file") : this.t("external_instrumental_file");
       const filePath = await (window as any).electronAPI.openFileDialog({
         title,
         filters: MEDIA_FILTERS,
@@ -1619,22 +1663,13 @@ export default defineComponent({
       if (kind === "audio") {
         this.externalAudioFilePath = filePath as string;
         this.externalAudioFileName = fileName;
-        if (isSljaFile(filePath as string)) {
-          if (!this.externalNoAudioFilePath) {
-            this.externalNoAudioFilePath = filePath as string;
-            this.externalNoAudioFileName = fileName;
-          }
-          if (!this.externalInstrumentalFilePath && await this.detectSljaInstrumental(filePath as string)) {
-            this.externalInstrumentalFilePath = filePath as string;
-            this.externalInstrumentalFileName = fileName;
-          }
+        if (isSljaFile(filePath as string) && !this.externalInstrumentalFilePath && await this.detectSljaInstrumental(filePath as string)) {
+          this.externalInstrumentalFilePath = filePath as string;
+          this.externalInstrumentalFileName = fileName;
         }
-      } else if (kind === "instrumental") {
+      } else {
         this.externalInstrumentalFilePath = filePath as string;
         this.externalInstrumentalFileName = fileName;
-      } else {
-        this.externalNoAudioFilePath = filePath as string;
-        this.externalNoAudioFileName = fileName;
       }
     },
     finalizeCreateWithSong() {
@@ -1649,7 +1684,6 @@ export default defineComponent({
           name: this.stripExt(this.externalAudioFileName),
           filePathAudio: this.externalAudioFilePath,
           filePathInstrumental: this.externalInstrumentalFilePath,
-          filePathNoAudio: this.externalNoAudioFilePath,
         }],
       });
       this.saveCollections();
@@ -1678,13 +1712,9 @@ export default defineComponent({
           name: file.name,
           filePathAudio: file.filePath,
           filePathInstrumental: null,
-          filePathNoAudio: null,
         };
-        if (isSljaFile(file.filePath)) {
-          song.filePathNoAudio = file.filePath;
-          if (await this.detectSljaInstrumental(file.filePath)) {
-            song.filePathInstrumental = file.filePath;
-          }
+        if (isSljaFile(file.filePath) && await this.detectSljaInstrumental(file.filePath)) {
+          song.filePathInstrumental = file.filePath;
         }
         return song;
       }));
@@ -1714,7 +1744,6 @@ export default defineComponent({
         name: this.stripExt(this.externalAudioFileName),
         filePathAudio: this.externalAudioFilePath,
         filePathInstrumental: this.externalInstrumentalFilePath,
-        filePathNoAudio: this.externalNoAudioFilePath,
       });
       this.saveCollections();
       this.closeAddSongDialog();

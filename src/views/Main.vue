@@ -127,6 +127,12 @@
                 v-if="isExternalYoutube"
                 ref="youtubeMiniPlayerEl"
                 class="w-100 h-100"
+                style="pointer-events: none;"
+              />
+              <div
+                v-if="isExternalYoutube && (youtubeMiniEnded || youtubeMiniStarting)"
+                class="w-100 h-100 position-absolute bg-black"
+                style="top: 0; left: 0;"
               />
               <video
                 v-else-if="externalFilePath"
@@ -179,6 +185,9 @@ export default defineComponent({
       showQuickSearch: false,
       showBibleSearch: false,
       youtubeMiniPlayer: null as any,
+      youtubeMiniEnded: false,
+      youtubeMiniStarting: false,
+      youtubeMiniStartingTimer: null as any,
     };
   },
   computed: {
@@ -309,6 +318,8 @@ export default defineComponent({
     },
     youtubeVideoId(val: string) {
       if (this.showYoutubeMiniPlayer && this.youtubeMiniPlayer && val) {
+        this.youtubeMiniEnded = false;
+        this.startYoutubeMiniIntroCover();
         this.youtubeMiniPlayer.loadVideoById(val);
       }
     },
@@ -512,6 +523,14 @@ export default defineComponent({
       this.$appdata.set("modules.external_media.minimized", false);
       this.showExternalMiniPlayer = false;
     },
+    startYoutubeMiniIntroCover() {
+      this.youtubeMiniStarting = true;
+      if (this.youtubeMiniStartingTimer) clearTimeout(this.youtubeMiniStartingTimer);
+      this.youtubeMiniStartingTimer = setTimeout(() => {
+        this.youtubeMiniStarting = false;
+      }, 1200);
+    },
+
     async initYoutubeMiniPlayer() {
       if (this.youtubeMiniPlayer || !this.youtubeVideoId) return;
       const container = this.$refs.youtubeMiniPlayerEl as HTMLElement;
@@ -519,6 +538,8 @@ export default defineComponent({
       const YT = await loadYoutubeApi();
       // O player pode ter sido fechado/trocado enquanto a API carregava.
       if (!this.showYoutubeMiniPlayer) return;
+      this.youtubeMiniEnded = false;
+      this.startYoutubeMiniIntroCover();
       this.youtubeMiniPlayer = markRaw(new YT.Player(container, {
         videoId: this.youtubeVideoId,
         playerVars: {
@@ -556,6 +577,13 @@ export default defineComponent({
               // ignora se o módulo de legendas não existir nessa versão do player
             }
           },
+          onStateChange: (event: any) => {
+            if (event.data === 1) {
+              this.youtubeMiniEnded = false;
+            } else if (event.data === 0) {
+              this.youtubeMiniEnded = true;
+            }
+          },
         },
       }));
     },
@@ -568,6 +596,9 @@ export default defineComponent({
         }
         this.youtubeMiniPlayer = null;
       }
+      this.youtubeMiniEnded = false;
+      this.youtubeMiniStarting = false;
+      clearTimeout(this.youtubeMiniStartingTimer);
     },
   },
 });

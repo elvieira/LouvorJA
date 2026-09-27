@@ -63,6 +63,7 @@ interface ElectronAPI {
       time: number | null
     }>
   } | null>
+  checkSljaHasInstrumental: (filePath: string) => Promise<boolean>
   openExternal: (url: string) => Promise<void>
   fetchYoutubePlaylist: (playlistId: string) => Promise<{
     playlistId: string

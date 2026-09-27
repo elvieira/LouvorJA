@@ -37,6 +37,10 @@ function buildSljaIni(slides: Array<SljaSlideInput & { imagemRelPath: string }>,
     lines.push(`url_musica_instrumental=${instrumentalRelPath}`);
   }
   lines.push(`audio=${audioRelPath ? 1 : 0}`);
+  // Marca explícita de que "tempo" (abaixo, por slide) está em microssegundos.
+  // Sem essa marca, o leitor assume que é um arquivo do app antigo (Delphi),
+  // que grava "tempo" como posição em bytes dentro do áudio decodificado.
+  lines.push("tempo_unit=us");
   lines.push("");
   slides.forEach((s, i) => {
     lines.push(`[Slide:${i + 1}]`);
@@ -98,6 +102,117 @@ function parseSljaIni(text: string): { geral: Record<string, string>; slides: Re
     .sort((a, b) => a - b)
     .map((k) => slidesMap.get(k) as Record<string, string>);
   return { geral, slides: orderedSlides };
+}
+
+// O app antigo (Delphi) grava "tempo" como a posição em BYTES dentro do stream
+// decodificado pela lib BASS, não em microssegundos — por isso não dá pra
+// reutilizar a mesma conta do formato novo para esses arquivos. Só que ele
+// também grava "tempo_hms" (ex.: "1:02:03" ou "02:03"), já convertido para
+// segundos por ele mesmo (que tinha o canal BASS aberto pra fazer essa conta
+// corretamente). Preferir esse campo evita ter que ressincronizar o arquivo.
+function parseLegacyTimeHms(value: string): number | null {
+  if (!value) return null;
+  const parts = value.split(":").map((p) => parseInt(p, 10));
+  if (parts.length < 2 || parts.length > 3 || parts.some((p) => isNaN(p))) return null;
+  if (parts.length === 2) {
+    const [mm, ss] = parts;
+    return mm * 60 + ss;
+  }
+  const [hh, mm, ss] = parts;
+  return hh * 3600 + mm * 60 + ss;
+}
+
+// Fallback para quando o app antigo não conseguiu gravar "tempo_hms" (ele só
+// grava esse campo se o BASS_Init conseguir abrir um dispositivo de áudio na
+// hora de salvar — se isso falhar, sobra só "tempo" em bytes). O BASS decodifica
+// o MP3 preservando a taxa de amostragem/canais originais do arquivo, então lemos
+// esses valores direto do cabeçalho do MP3 pra fazer a mesma conta que ele fazia
+// (bytes / (taxa * canais * 2), já que o BASS decodifica em PCM 16 bits por padrão).
+const MPEG_BITRATES_V1: Record<number, number[]> = {
+  0b11: [0, 32, 64, 96, 128, 160, 192, 224, 256, 288, 320, 352, 384, 416, 448, 0], // Layer I
+  0b10: [0, 32, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320, 384, 0],    // Layer II
+  0b01: [0, 32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320, 0],     // Layer III
+};
+const MPEG_BITRATES_V2: Record<number, number[]> = {
+  0b11: [0, 32, 48, 56, 64, 80, 96, 112, 128, 144, 160, 176, 192, 224, 256, 0], // Layer I
+  0b10: [0, 8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160, 0],      // Layer II
+  0b01: [0, 8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160, 0],      // Layer III
+};
+
+function readMp3Format(filePath: string): { sampleRate: number; channels: number } | null {
+  try {
+    const buf = fs.readFileSync(filePath);
+    let offset = 0;
+    if (buf.length > 10 && buf.toString("ascii", 0, 3) === "ID3") {
+      const size = ((buf[6] & 0x7f) << 21) | ((buf[7] & 0x7f) << 14) | ((buf[8] & 0x7f) << 7) | (buf[9] & 0x7f);
+      offset = 10 + size;
+    }
+
+    const sampleRateTable = [
+      [44100, 48000, 32000], // MPEG1
+      [22050, 24000, 16000], // MPEG2
+      [11025, 12000, 8000],  // MPEG2.5
+    ];
+
+    for (let i = offset; i < buf.length - 4; i++) {
+      if (buf[i] !== 0xff || (buf[i + 1] & 0xe0) !== 0xe0) continue;
+
+      const b2 = buf[i + 1];
+      const b3 = buf[i + 2];
+      const b4 = buf[i + 3];
+
+      const versionBits = (b2 >> 3) & 0x3;
+      const layerBits = (b2 >> 1) & 0x3;
+      if (layerBits === 0) continue; // reservado
+
+      const bitrateIndex = (b3 >> 4) & 0xf;
+      const sampleRateIndex = (b3 >> 2) & 0x3;
+      if (sampleRateIndex === 3) continue; // reservado
+      const padding = (b3 >> 1) & 0x1;
+
+      let versionRow: number;
+      if (versionBits === 0b11) versionRow = 0;
+      else if (versionBits === 0b10) versionRow = 1;
+      else if (versionBits === 0b00) versionRow = 2;
+      else continue; // reservado
+
+      const sampleRate = sampleRateTable[versionRow][sampleRateIndex];
+      if (!sampleRate) continue;
+
+      const bitrateTable = versionRow === 0 ? MPEG_BITRATES_V1 : MPEG_BITRATES_V2;
+      const bitrateKbps = bitrateTable[layerBits]?.[bitrateIndex];
+      if (!bitrateKbps) continue; // free-format ou índice inválido: não dá pra confirmar o próximo frame
+
+      // Canais ficam no byte SEGUINTE ao de bitrate/taxa de amostragem (erro comum
+      // é ler esse bit do byte errado, o que embaralha mono/estéreo).
+      const channelModeBits = (b4 >> 6) & 0x3;
+      const channels = channelModeBits === 3 ? 1 : 2;
+
+      const frameLength = layerBits === 0b11
+        ? (Math.floor((12 * bitrateKbps * 1000) / sampleRate) + padding) * 4
+        : Math.floor((144 * bitrateKbps * 1000) / sampleRate) + padding;
+      if (frameLength < 4) continue;
+
+      // Confirma que o próximo frame também começa com um sync válido, pra evitar
+      // falso positivo em dados binários (ex.: capa de álbum dentro da tag ID3v2).
+      const nextPos = i + frameLength;
+      if (nextPos + 1 < buf.length) {
+        if (buf[nextPos] !== 0xff || (buf[nextPos + 1] & 0xe0) !== 0xe0) continue;
+      }
+
+      return { sampleRate, channels };
+    }
+  } catch {
+    // ignora: arquivo ilegível, formato inesperado, etc.
+  }
+  return null;
+}
+
+function legacyBytesToSeconds(bytes: number, audioPath: string | null): number {
+  const format = audioPath ? readMp3Format(audioPath) : null;
+  const sampleRate = format?.sampleRate || 44100;
+  const channels = format?.channels || 2;
+  return bytes / (sampleRate * channels * 2);
 }
 
 export function registerIpcHandlers() {
@@ -357,7 +472,17 @@ export function registerIpcHandlers() {
             imagePathByRel.set(imgRel, imagePath);
           }
         }
-        const tempoUs = parseInt(s.tempo, 10);
+        let time = parseLegacyTimeHms(s.tempo_hms || "");
+        if (time === null) {
+          const tempoRaw = parseInt(s.tempo, 10);
+          if (!isNaN(tempoRaw)) {
+            time = geral.tempo_unit === "us"
+              ? tempoRaw / 1000000
+              : legacyBytesToSeconds(tempoRaw, audioPath);
+          } else {
+            time = null;
+          }
+        }
         return {
           text: (s.letra || "").split("|").join("\n"),
           auxText: (s.letra_aux || "").split("|").join("\n"),
@@ -366,7 +491,7 @@ export function registerIpcHandlers() {
           fontColor: s.cor_letra || "#ffffff",
           auxFontSize: parseInt(s.tamanho_letra_aux, 10) || 10,
           auxFontColor: s.cor_letra_aux || "#ffffff",
-          time: isNaN(tempoUs) ? null : tempoUs / 1000000,
+          time,
         };
       });
 
@@ -379,6 +504,34 @@ export function registerIpcHandlers() {
     } catch (e) {
       console.error("Erro ao abrir .slja:", e);
       return null;
+    }
+  });
+
+  // Versão leve de "read-slja-zip" pra quando só precisamos saber SE o arquivo
+  // tem playback, sem extrair áudio/imagens pro disco (isso é lento e trava o
+  // app quando é feito pra cada arquivo de uma pasta inteira, ex. ao importar
+  // uma coletânea inteira de uma vez).
+  ipcMain.handle("check-slja-has-instrumental", async (_event, filePath: string) => {
+    try {
+      if (!filePath || !fs.existsSync(filePath)) return false;
+
+      let iniText = "";
+      try {
+        const zip = new AdmZip(filePath);
+        const iniEntry = zip.getEntries().find((e) => e.entryName.toLowerCase() === "slides.lja");
+        if (iniEntry) {
+          iniText = iniEntry.getData().toString("latin1");
+        }
+      } catch {
+        iniText = fs.readFileSync(filePath, "latin1");
+      }
+
+      if (!iniText) return false;
+      const { geral } = parseSljaIni(iniText);
+      return !!geral.url_musica_instrumental;
+    } catch (e) {
+      console.error("Erro ao verificar playback do .slja:", e);
+      return false;
     }
   });
 

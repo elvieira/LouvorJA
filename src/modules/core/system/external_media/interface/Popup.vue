@@ -9,7 +9,10 @@
       muted
       @error="onError"
     />
-    <div v-else-if="isYoutube" ref="youtubePlayerEl" class="w-100 h-100" />
+    <div v-else-if="isYoutube" class="w-100 h-100" style="position: relative;">
+      <div ref="youtubePlayerEl" class="w-100 h-100" style="pointer-events: none;" />
+      <div v-if="youtubeEnded || youtubeStarting" class="w-100 h-100 position-absolute bg-black" style="top: 0; left: 0;" />
+    </div>
     <div v-else />
   </div>
 </template>
@@ -26,6 +29,9 @@ export default defineComponent({
     attached: false,
     youtubePlayer: null as any,
     youtubeReady: false,
+    youtubeEnded: false,
+    youtubeStarting: false,
+    youtubeStartingTimer: null as any,
   }),
   computed: {
     module_id(): string {
@@ -115,6 +121,7 @@ export default defineComponent({
     if (this.retryTimer) {
       clearTimeout(this.retryTimer);
     }
+    clearTimeout(this.youtubeStartingTimer);
     this.cleanupStream();
     this.destroyYoutubePlayer();
   },
@@ -235,9 +242,19 @@ export default defineComponent({
       }
     },
 
+    startYoutubeIntroCover() {
+      this.youtubeStarting = true;
+      if (this.youtubeStartingTimer) clearTimeout(this.youtubeStartingTimer);
+      this.youtubeStartingTimer = setTimeout(() => {
+        this.youtubeStarting = false;
+      }, 1200);
+    },
+
     async initYoutubePlayer() {
       if (this.youtubePlayer) {
         this.youtubeReady = false;
+        this.youtubeEnded = false;
+        this.startYoutubeIntroCover();
         this.youtubePlayer.loadVideoById(this.youtubeVideoId);
         this.disableYoutubeCaptions();
         return;
@@ -246,6 +263,7 @@ export default defineComponent({
       if (!container) return;
       const YT = await loadYoutubeApi();
       if (!this.isYoutube) return;
+      this.startYoutubeIntroCover();
       this.youtubePlayer = markRaw(new YT.Player(container, {
         videoId: this.youtubeVideoId,
         playerVars: {
@@ -275,6 +293,13 @@ export default defineComponent({
             }
           },
           onApiChange: this.disableYoutubeCaptions,
+          onStateChange: (event: any) => {
+            if (event.data === 1) {
+              this.youtubeEnded = false;
+            } else if (event.data === 0) {
+              this.youtubeEnded = true;
+            }
+          },
         },
       }));
     },

@@ -52,20 +52,23 @@
             </p>
           </div>
 
-          <div v-else class="online-grid-wrap">
+          <div v-else class="online-list-wrap">
             <div
-              v-for="video in searchResults"
+              v-for="(video, index) in searchResults"
               :key="video.id"
-              class="online-card"
+              class="online-list-item"
               @click="playVideo(video, video.channelName)"
             >
-              <div class="online-card-image">
+              <div class="online-list-number">
+                {{ index + 1 }}
+              </div>
+              <div class="online-list-thumb">
                 <img :src="video.image" loading="lazy" />
-                <v-icon class="online-play-icon" size="40">
+                <v-icon class="online-play-icon" size="24">
                   mdi-play-circle
                 </v-icon>
               </div>
-              <div class="online-card-title">
+              <div class="online-list-title">
                 {{ video.name }}
               </div>
             </div>
@@ -103,6 +106,28 @@
             </p>
           </div>
 
+          <div v-else-if="view === 'videos'" class="online-list-wrap">
+            <div
+              v-for="(item, index) in currentItems"
+              :key="item.id"
+              class="online-list-item"
+              @click="selectItem(item)"
+            >
+              <div class="online-list-number">
+                {{ index + 1 }}
+              </div>
+              <div class="online-list-thumb">
+                <img :src="item.image" loading="lazy" />
+                <v-icon class="online-play-icon" size="24">
+                  mdi-play-circle
+                </v-icon>
+              </div>
+              <div class="online-list-title">
+                {{ item.name }}
+              </div>
+            </div>
+          </div>
+
           <div v-else class="online-grid-wrap">
             <div
               v-for="item in currentItems"
@@ -112,9 +137,6 @@
             >
               <div class="online-card-image">
                 <img :src="item.image" loading="lazy" />
-                <v-icon v-if="view === 'videos'" class="online-play-icon" size="40">
-                  mdi-play-circle
-                </v-icon>
               </div>
               <div class="online-card-title">
                 {{ item.name }}
@@ -388,6 +410,88 @@ export default defineComponent({
 
     .online-card-title {
       padding: 12px 14px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--sidebar-text);
+      line-height: 1.3;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+  }
+
+  .online-list-wrap {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .online-list-item {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 14px 10px 8px;
+    background: transparent;
+    border-bottom: 1px solid var(--border-color, rgba(128, 128, 128, 0.2));
+    box-shadow: none;
+    transition: var(--transition);
+    cursor: pointer;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    &:hover {
+      box-shadow: var(--shadow-hover);
+      background: var(--sidebar-hover);
+
+      .online-play-icon {
+        opacity: 1;
+      }
+    }
+
+    .online-list-number {
+      flex-shrink: 0;
+      min-width: 32px;
+      text-align: center;
+      font-size: 15px;
+      font-weight: 600;
+      line-height: 1;
+      color: var(--accent-blue);
+    }
+
+    .online-list-thumb {
+      position: relative;
+      flex-shrink: 0;
+      width: 96px;
+      aspect-ratio: 16 / 9;
+      background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-blue-dark) 100%);
+      border-radius: 8px;
+      overflow: hidden;
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .online-play-icon {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: white;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+        filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.5));
+      }
+    }
+
+    .online-list-title {
+      flex: 1;
+      min-width: 0;
       font-size: 14px;
       font-weight: 600;
       color: var(--sidebar-text);

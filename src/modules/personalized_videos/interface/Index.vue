@@ -118,75 +118,76 @@
             </p>
           </div>
 
-          <div v-else class="personalized-grid-wrap">
+          <div v-else class="personalized-list-wrap">
             <div
-              v-for="video in filteredVideos"
+              v-for="(video, index) in filteredVideos"
               :key="video.id"
-              class="personalized-card"
+              class="personalized-list-item"
             >
-              <div class="personalized-card-image" @click="playVideo(video)">
+              <div class="personalized-list-number">
+                {{ index + 1 }}
+              </div>
+              <div class="personalized-list-thumb" @click="playVideo(video)">
                 <img :src="thumbnailUrl(video.videoId)" loading="lazy" />
-                <v-icon class="personalized-play-icon" size="40">
+                <v-icon class="personalized-play-icon" size="20">
                   mdi-play-circle
                 </v-icon>
               </div>
-              <div class="personalized-card-footer d-flex align-center">
-                <div class="personalized-card-title flex-grow-1" @click="playVideo(video)">
-                  {{ video.name }}
-                </div>
-                <v-menu location="bottom end">
-                  <template #activator="{ props: menuProps }">
-                    <v-btn
-                      v-bind="menuProps"
-                      icon
-                      variant="text"
-                      size="small"
-                      @click.stop
-                    >
-                      <v-icon size="18">
-                        mdi-dots-vertical
-                      </v-icon>
-                    </v-btn>
-                  </template>
-                  <v-list density="compact" rounded="lg" class="py-1">
-                    <v-list-item @click="openEditDialog(video)">
-                      <template #prepend>
-                        <v-icon size="18">
-                          mdi-pencil-outline
-                        </v-icon>
-                      </template>
-                      <v-list-item-title>{{ t('edit') }}</v-list-item-title>
-                    </v-list-item>
-                    <v-list-item @click="copyLink(video)">
-                      <template #prepend>
-                        <v-icon size="18">
-                          mdi-content-copy
-                        </v-icon>
-                      </template>
-                      <v-list-item-title>{{ t('copy_link') }}</v-list-item-title>
-                    </v-list-item>
-                    <v-list-item @click="openInBrowser(video)">
-                      <template #prepend>
-                        <v-icon size="18">
-                          mdi-open-in-new
-                        </v-icon>
-                      </template>
-                      <v-list-item-title>{{ t('open_browser') }}</v-list-item-title>
-                    </v-list-item>
-                    <v-divider />
-                    <v-list-item @click="confirmDelete(video)">
-                      <template #prepend>
-                        <v-icon size="18" color="error">
-                          mdi-delete-outline
-                        </v-icon>
-                      </template>
-                      <v-list-item-title class="text-error">
-                        {{ t('delete') }}
-                      </v-list-item-title>
-                    </v-list-item>
-                  </v-list>
-                </v-menu>
+              <div class="personalized-list-title" @click="playVideo(video)">
+                {{ video.name }}
               </div>
+              <v-menu location="bottom end">
+                <template #activator="{ props: menuProps }">
+                  <v-btn
+                    v-bind="menuProps"
+                    icon
+                    variant="text"
+                    size="small"
+                    @click.stop
+                  >
+                    <v-icon size="18">
+                      mdi-dots-vertical
+                    </v-icon>
+                  </v-btn>
+                </template>
+                <v-list density="compact" rounded="lg" class="py-1">
+                  <v-list-item @click="openEditDialog(video)">
+                    <template #prepend>
+                      <v-icon size="18">
+                        mdi-pencil-outline
+                      </v-icon>
+                    </template>
+                    <v-list-item-title>{{ t('edit') }}</v-list-item-title>
+                  </v-list-item>
+                  <v-list-item @click="copyLink(video)">
+                    <template #prepend>
+                      <v-icon size="18">
+                        mdi-content-copy
+                      </v-icon>
+                    </template>
+                    <v-list-item-title>{{ t('copy_link') }}</v-list-item-title>
+                  </v-list-item>
+                  <v-list-item @click="openInBrowser(video)">
+                    <template #prepend>
+                      <v-icon size="18">
+                        mdi-open-in-new
+                      </v-icon>
+                    </template>
+                    <v-list-item-title>{{ t('open_browser') }}</v-list-item-title>
+                  </v-list-item>
+                  <v-divider />
+                  <v-list-item @click="confirmDelete(video)">
+                    <template #prepend>
+                      <v-icon size="18" color="error">
+                        mdi-delete-outline
+                      </v-icon>
+                    </template>
+                    <v-list-item-title class="text-error">
+                      {{ t('delete') }}
+                    </v-list-item-title>
+                  </v-list-item>
+                </v-list>
+              </v-menu>
             </div>
           </div>
         </template>
@@ -200,22 +201,24 @@
                 {{ t('empty_videos') }}
               </p>
             </div>
-            <div v-else class="personalized-grid-wrap">
+            <div v-else class="personalized-list-wrap">
               <div
-                v-for="video in selectedAlbum.videos"
+                v-for="(video, index) in selectedAlbum.videos"
                 :key="video.videoId"
-                class="personalized-card"
+                class="personalized-list-item"
+                @click="playAlbumVideo(video)"
               >
-                <div class="personalized-card-image" @click="playAlbumVideo(video)">
+                <div class="personalized-list-number">
+                  {{ index + 1 }}
+                </div>
+                <div class="personalized-list-thumb">
                   <img :src="thumbnailUrl(video.videoId)" loading="lazy" />
-                  <v-icon class="personalized-play-icon" size="40">
+                  <v-icon class="personalized-play-icon" size="20">
                     mdi-play-circle
                   </v-icon>
                 </div>
-                <div class="personalized-card-footer d-flex align-center">
-                  <div class="personalized-card-title flex-grow-1" @click="playAlbumVideo(video)">
-                    {{ video.name }}
-                  </div>
+                <div class="personalized-list-title">
+                  {{ video.name }}
                 </div>
               </div>
             </div>
@@ -232,22 +235,24 @@
               </p>
             </div>
 
-            <div v-else class="personalized-grid-wrap">
+            <div v-else class="personalized-list-wrap">
               <div
-                v-for="video in albumSearchResults"
+                v-for="(video, index) in albumSearchResults"
                 :key="`${video.albumId}_${video.videoId}`"
-                class="personalized-card"
+                class="personalized-list-item"
+                @click="playAlbumSearchVideo(video)"
               >
-                <div class="personalized-card-image" @click="playAlbumSearchVideo(video)">
+                <div class="personalized-list-number">
+                  {{ index + 1 }}
+                </div>
+                <div class="personalized-list-thumb">
                   <img :src="thumbnailUrl(video.videoId)" loading="lazy" />
-                  <v-icon class="personalized-play-icon" size="40">
+                  <v-icon class="personalized-play-icon" size="20">
                     mdi-play-circle
                   </v-icon>
                 </div>
-                <div class="personalized-card-footer d-flex align-center">
-                  <div class="personalized-card-title flex-grow-1" @click="playAlbumSearchVideo(video)">
-                    {{ video.name }}
-                  </div>
+                <div class="personalized-list-title">
+                  {{ video.name }}
                 </div>
               </div>
             </div>
@@ -1002,6 +1007,90 @@ export default defineComponent({
         -webkit-box-orient: vertical;
         overflow: hidden;
       }
+    }
+  }
+
+  .personalized-list-wrap {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .personalized-list-item {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 14px 10px 8px;
+    background: transparent;
+    border-bottom: 1px solid var(--border-color, rgba(128, 128, 128, 0.2));
+    box-shadow: none;
+    transition: var(--transition);
+    cursor: pointer;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    &:hover {
+      box-shadow: var(--shadow-hover);
+      background: var(--sidebar-hover);
+
+      .personalized-play-icon {
+        opacity: 1;
+      }
+    }
+
+    .personalized-list-number {
+      flex-shrink: 0;
+      min-width: 32px;
+      text-align: center;
+      font-size: 15px;
+      font-weight: 600;
+      line-height: 1;
+      color: var(--accent-blue);
+    }
+
+    .personalized-list-thumb {
+      position: relative;
+      flex-shrink: 0;
+      width: 96px;
+      aspect-ratio: 16 / 9;
+      background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-blue-dark) 100%);
+      border-radius: 8px;
+      overflow: hidden;
+      cursor: pointer;
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .personalized-play-icon {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: white;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+        filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.5));
+      }
+    }
+
+    .personalized-list-title {
+      flex: 1;
+      min-width: 0;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--sidebar-text);
+      line-height: 1.3;
+      cursor: pointer;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
     }
   }
 }

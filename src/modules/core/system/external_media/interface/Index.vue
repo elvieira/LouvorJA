@@ -115,6 +115,7 @@
               <!-- YOUTUBE: player embutido via YT.Player (IFrame API) -->
               <div v-if="isYoutube && filePath" class="w-100 h-100 youtube-player-wrapper">
                 <div ref="youtubePlayerEl" class="w-100 h-100" />
+                <div v-if="youtubeEnded || youtubeStarting" class="w-100 h-100 position-absolute bg-black" style="top: 0; left: 0;" />
               </div>
 
               <!-- Audio-only visual placeholder -->
@@ -201,6 +202,9 @@ export default defineComponent({
     lastTimeUpdate: 0,
     youtubePlayer: null as any,
     youtubePollTimer: null as any,
+    youtubeEnded: false,
+    youtubeStarting: false,
+    youtubeStartingTimer: null as any,
   }),
   computed: {
     requestAction(): string {
@@ -352,6 +356,7 @@ export default defineComponent({
       this.pillResizeObserver.disconnect();
     }
     clearTimeout(this.fullscreenTimer);
+    clearTimeout(this.youtubeStartingTimer);
   },
   methods: {
     t(text: string) {
@@ -554,6 +559,10 @@ export default defineComponent({
       this.progress = 0;
       this.currentTime = 0;
       this.$appdata.set("modules.external_media.config.is_paused", true);
+      // Contador que só sobe quando a mídia termina naturalmente (diferente de uma
+      // pausa manual): outros módulos usam isso pra saber a hora certa de avançar
+      // pro próximo item de uma fila de reprodução própria.
+      this.$appdata.set("modules.external_media.config.ended_seq", (this.$appdata.get("modules.external_media.config.ended_seq") || 0) + 1);
     },
 
     onPlay() {
@@ -675,11 +684,24 @@ export default defineComponent({
 
     // --- YouTube (via YT.Player / IFrame API) ---
 
+    // O YouTube exibe brevemente título/canal/logo ao iniciar um vídeo, sem
+    // como desativar via playerVars. Cobrimos essa janela com uma tela preta
+    // nossa, que some antes do usuário perceber o overlay do YouTube.
+    startYoutubeIntroCover() {
+      this.youtubeStarting = true;
+      if (this.youtubeStartingTimer) clearTimeout(this.youtubeStartingTimer);
+      this.youtubeStartingTimer = setTimeout(() => {
+        this.youtubeStarting = false;
+      }, 1200);
+    },
+
     async initYoutubePlayer() {
       if (this.youtubePlayer) {
         // Player já existe (troca de vídeo dentro do YouTube): só recarrega o vídeo.
+        this.startYoutubeIntroCover();
         this.youtubePlayer.loadVideoById(this.youtubeVideoId);
         this.mediaReady = false;
+        this.youtubeEnded = false;
         return;
       }
       const container = this.$refs.youtubePlayerEl as HTMLElement;
@@ -687,6 +709,7 @@ export default defineComponent({
       const YT = await loadYoutubeApi();
       // A mídia pode ter mudado enquanto a API carregava.
       if (!this.isYoutube) return;
+      this.startYoutubeIntroCover();
       this.youtubePlayer = markRaw(new YT.Player(container, {
         videoId: this.youtubeVideoId,
         playerVars: {
@@ -735,6 +758,7 @@ export default defineComponent({
       // YT.PlayerState: -1 não iniciado, 0 terminado, 1 tocando, 2 pausado, 3 buffering, 5 sugerido
       if (event.data === 1) {
         this.isPaused = false;
+        this.youtubeEnded = false;
         this.$appdata.set("modules.external_media.config.is_paused", false);
         this.duration = this.youtubePlayer?.getDuration() || 0;
         this.$appdata.set("modules.external_media.config.duration", this.duration);
@@ -745,9 +769,11 @@ export default defineComponent({
         this.stopYoutubePolling();
       } else if (event.data === 0) {
         this.isPaused = true;
+        this.youtubeEnded = true;
         this.progress = 0;
         this.currentTime = 0;
         this.$appdata.set("modules.external_media.config.is_paused", true);
+        this.$appdata.set("modules.external_media.config.ended_seq", (this.$appdata.get("modules.external_media.config.ended_seq") || 0) + 1);
         this.stopYoutubePolling();
       }
     },
@@ -794,6 +820,11 @@ export default defineComponent({
 </script>
 
 <style lang="scss">
+.youtube-player-wrapper {
+  pointer-events: none;
+  position: relative;
+}
+
 .external-media-window {
   .v-card {
     border-radius: 20px !important;
