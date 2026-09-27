@@ -12,7 +12,7 @@
         :style="{
           overflow: 'hidden',
           backgroundColor: no_background ? 'transparent' : 'rgb(0,0,0)',
-          zIndex: index + 1
+          zIndex: Math.min(index + 1, 5)
         }"
       >
         <div v-if="!no_background" class="position-absolute top-0 left-0 w-100 h-100" :style="style_bg(slide)" />
@@ -356,12 +356,14 @@ const setSlide = () => {
     setTimeout(() => {
       if (slides.value && slides.value.length > 2) {
         slides.value[2].destroy = true;
+        slides.value = slides.value.slice(0, 2);
       }
     }, 250);
   }
 
   if (slides.value.length > 3) {
     slides.value[3].destroy = true;
+    slides.value = slides.value.slice(0, 3);
   }
 };
 

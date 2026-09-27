@@ -1,17 +1,19 @@
 import { app, ipcMain } from "electron";
 import * as path from "path";
 import * as fs from "fs-extra";
-import { coversPath, musicPath, slidesPath, getSysDbPath, sysConfigPath } from "../config/constants";
+import { coversPath, musicPath, slidesPath, avatarsPath, getSysDbPath, sysConfigPath } from "../config/constants";
 import { SQLiteHelper } from "../utils/sqlite";
 import DbExtractor from "./db-extractor";
 import { decryptData } from "../utils/crypto";
 
 export function registerValidatorHandlers() {
-  ipcMain.handle("validate-installation", async (event, lang: string = "pt") => {
+  ipcMain.handle("validate-installation", async (event, lang: string = "pt", devAvatarFilenames: string[] = []) => {
     try {
       const dbPath = path.join(app.getPath("userData"), `database_${lang}.db`);
       if (!fs.existsSync(dbPath)) {
-        return { missingCovers: [], missingMusic: [], missingImages: [], missingBins: [], totalMissing: 0 };
+        const actualAvatars = new Set<string>(fs.existsSync(avatarsPath) ? fs.readdirSync(avatarsPath) : []);
+        const missingAvatars = (devAvatarFilenames || []).filter(x => x && !actualAvatars.has(x));
+        return { missingCovers: [], missingMusic: [], missingImages: [], missingBins: [], missingAvatars, totalMissing: missingAvatars.length };
       }
 
       const db = new SQLiteHelper(dbPath);
@@ -89,16 +91,20 @@ export function registerValidatorHandlers() {
       
       const missingBins = [...binFiles].filter(x => x && !actualBins.has(x));
 
+      const actualAvatars = new Set<string>(fs.existsSync(avatarsPath) ? fs.readdirSync(avatarsPath) : []);
+      const missingAvatars = (devAvatarFilenames || []).filter(x => x && !actualAvatars.has(x));
+
       return {
         missingCovers,
         missingMusic,
         missingImages,
         missingBins,
-        totalMissing: missingCovers.length + missingMusic.length + missingImages.length + missingBins.length,
+        missingAvatars,
+        totalMissing: missingCovers.length + missingMusic.length + missingImages.length + missingBins.length + missingAvatars.length,
       };
     } catch (error) {
       console.error("Erro ao validar instalação:", error);
-      return { missingCovers: [], missingMusic: [], missingImages: [], missingBins: [], totalMissing: 0 };
+      return { missingCovers: [], missingMusic: [], missingImages: [], missingBins: [], missingAvatars: [], totalMissing: 0 };
     }
   });
 

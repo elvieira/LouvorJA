@@ -7,7 +7,7 @@
     <v-card class="rounded-xl pa-5 mb-8" flat style="background: var(--card-bg); box-shadow: var(--shadow);">
       <div class="d-flex align-center">
         <v-avatar size="80" class="mr-5" style="border: 2px solid var(--border-color); background: rgba(0, 151, 215, 0.05);">
-          <v-img v-if="data.owner.avatar" :src="getAvatarSrc(data.owner.avatar)" />
+          <v-img v-if="getAvatarSrc(data.owner.avatar)" :src="getAvatarSrc(data.owner.avatar)" />
           <v-icon
             v-else
             size="40"
@@ -49,7 +49,7 @@
     <v-card class="rounded-xl pa-4 mb-8" flat style="background: var(--card-bg); box-shadow: var(--shadow);">
       <div class="d-flex align-center">
         <v-avatar size="60" class="mr-4" style="border: 1px solid var(--border-color); background: rgba(0, 151, 215, 0.05);">
-          <v-img v-if="data.current_version_maintainer.avatar" :src="getAvatarSrc(data.current_version_maintainer.avatar)" />
+          <v-img v-if="getAvatarSrc(data.current_version_maintainer.avatar)" :src="getAvatarSrc(data.current_version_maintainer.avatar)" />
           <v-icon
             v-else
             size="28"
@@ -100,7 +100,7 @@
       >
         <v-card class="rounded-xl pa-3 d-flex align-center h-100" flat style="background: var(--card-bg); box-shadow: var(--shadow);">
           <v-avatar size="48" class="mr-3" style="border: 1px solid var(--border-color); background: rgba(0, 151, 215, 0.05);">
-            <v-img v-if="dev.avatar" :src="getAvatarSrc(dev.avatar)" />
+            <v-img v-if="getAvatarSrc(dev.avatar)" :src="getAvatarSrc(dev.avatar)" />
             <v-icon
               v-else
               size="24"
@@ -172,22 +172,14 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from "vue";
+import { defineComponent, ref, onMounted } from "vue";
 import developersData from "../../data/developers.json";
+import { getAvatarSrc as getCachedAvatarSrc, shouldUpdateAvatars, cacheAvatars } from "@/helpers/services/Developers";
 
 export default defineComponent({
   name: "HelpDevelopers",
   setup() {
-    const avatarCache = ref<Record<string, string>>({});
-
-    try {
-      const stored = localStorage.getItem("dev_avatars_cache");
-      if (stored) {
-        avatarCache.value = JSON.parse(stored);
-      }
-    } catch (e) {
-      // ignorar
-    }
+    const avatarCacheTrigger = ref(0);
 
     const openLink = (url: string) => {
       if (url && url !== "#") {
@@ -201,8 +193,20 @@ export default defineComponent({
 
     const getAvatarSrc = (url: string) => {
       if (!url) return "";
-      return avatarCache.value[url] || url;
+      if (avatarCacheTrigger.value) {
+        // Leitura para re-render reativo se o cache atualizar
+      }
+      return getCachedAvatarSrc(url);
     };
+
+    onMounted(async () => {
+      if (shouldUpdateAvatars()) {
+        const updated = await cacheAvatars();
+        if (updated) {
+          avatarCacheTrigger.value++;
+        }
+      }
+    });
 
     return {
       data: developersData,

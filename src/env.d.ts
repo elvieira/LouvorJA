@@ -80,7 +80,7 @@ interface ElectronAPI {
   importLegacyMedia?: (folderPath?: string) => Promise<{ success: boolean; copiedMusic: number; copiedImages: number; totalCopied: number; error?: string }>
   onImportLegacyProgress?: (callback: (data: { current: number; total: number; filename: string }) => void) => void
   searchBible: (versionId: number, query: string, mode: string, lang?: string) => Promise<Record<string, unknown>[]>
-  validateInstallation: (lang?: string) => Promise<{ missingCovers: string[], missingMusic: string[], missingImages: string[], missingBins: string[], totalMissing: number }>
+  validateInstallation: (lang?: string, devAvatarFilenames?: string[]) => Promise<{ missingCovers: string[], missingMusic: string[], missingImages: string[], missingBins: string[], missingAvatars?: string[], totalMissing: number }>
   repairSysdata: (filenames: string[], lang?: string) => Promise<boolean>
   getLoginItemSettings?: () => Promise<{ openAtLogin: boolean }>
   setLoginItemSettings?: (settings: Record<string, unknown>) => Promise<{ openAtLogin: boolean }>
@@ -95,6 +95,7 @@ interface ElectronAPI {
   getInitialFileToOpen?: () => Promise<string | null>
   onOpenExternalSong?: (callback: (filePath: string) => void) => void
   getPathForFile?: (file: File) => string
+  fetchImageBase64?: (url: string) => Promise<string | null>
   onExtractProgress: (callback: (data: unknown) => void) => void
   onDownloadDbProgress: (callback: (data: unknown) => void) => void
   getDisplays: () => Promise<unknown[]>

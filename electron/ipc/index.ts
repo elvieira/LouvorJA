@@ -1,4 +1,4 @@
-import { ipcMain, BrowserWindow, dialog, shell, app, screen, Display } from "electron";
+import { ipcMain, BrowserWindow, dialog, shell, app, screen, Display, net } from "electron";
 import * as fs from "fs-extra";
 import * as path from "path";
 import AdmZip from "adm-zip";
@@ -218,6 +218,21 @@ export function registerIpcHandlers() {
 
   ipcMain.handle("get-initial-file-to-open", () => {
     return getPendingFilePathToOpen();
+  });
+
+  ipcMain.handle("fetch-image-base64", async (_event, url: string) => {
+    try {
+      if (!url || typeof url !== "string") return null;
+      const response = await net.fetch(url, { redirect: "follow" });
+      if (!response.ok) return null;
+      const arrayBuffer = await response.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+      const contentType = response.headers.get("content-type") || "image/png";
+      return `data:${contentType};base64,${buffer.toString("base64")}`;
+    } catch (err) {
+      console.warn("Erro ao buscar imagem via net.fetch:", url, err);
+      return null;
+    }
   });
 
   ipcMain.handle("open-file-dialog", async (event, options: Electron.OpenDialogOptions) => {

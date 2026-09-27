@@ -1,7 +1,7 @@
 import { ipcMain, net } from "electron";
 import * as path from "path";
 import * as fs from "fs-extra";
-import { coversPath, musicPath, slidesPath, sysConfigPath } from "../config/constants";
+import { coversPath, musicPath, slidesPath, avatarsPath, sysConfigPath } from "../config/constants";
 import { getFtpParams, useFtpFallback, setUseFtpFallback, resetFtpFallbackTimer, getOrCreateFtpClient, ftpMutex, forceCloseFtpClient } from "../utils/ftp-client";
 import { encryptData, decryptData } from "../utils/crypto";
 
@@ -106,12 +106,15 @@ export function registerMediaHandlers() {
       let destFolder = coversPath;
       if (destFolderType === "music") destFolder = musicPath;
       else if (destFolderType === "slides") destFolder = slidesPath;
+      else if (destFolderType === "avatars") destFolder = avatarsPath;
 
       let decodedFilename = decodeURIComponent(filename);
       if (destFolderType === "music" && decodedFilename.startsWith("/musics/")) {
         decodedFilename = decodedFilename.substring(8); // remove /musics/
       } else if (destFolderType === "slides" && decodedFilename.startsWith("/images/")) {
         decodedFilename = decodedFilename.substring(8); // remove /images/
+      } else if (destFolderType === "avatars" && decodedFilename.startsWith("/avatars/")) {
+        decodedFilename = decodedFilename.substring(9); // remove /avatars/
       }
       
       const filePath = path.join(destFolder, decodedFilename);
@@ -119,6 +122,15 @@ export function registerMediaHandlers() {
 
       if (!fs.existsSync(fileDir)) {
         fs.mkdirSync(fileDir, { recursive: true });
+      }
+
+      if (destFolderType === "avatars") {
+        const fetchUrl = url || (decodedFilename.startsWith("http") ? decodedFilename : `https://github.com/${decodedFilename}`);
+        const response = await net.fetch(fetchUrl, { redirect: "follow" });
+        if (!response || !response.ok) return false;
+        const arrayBuffer = await response.arrayBuffer();
+        fs.writeFileSync(filePath, Buffer.from(arrayBuffer));
+        return true;
       }
 
       if (useFtpFallback) {
@@ -167,12 +179,15 @@ export function registerMediaHandlers() {
     let destFolder = coversPath;
     if (destFolderType === "music") destFolder = musicPath;
     else if (destFolderType === "slides") destFolder = slidesPath;
+    else if (destFolderType === "avatars") destFolder = avatarsPath;
 
     let decodedFilename = decodeURIComponent(filename);
     if (destFolderType === "music" && decodedFilename.startsWith("/musics/")) {
       decodedFilename = decodedFilename.substring(8);
     } else if (destFolderType === "slides" && decodedFilename.startsWith("/images/")) {
       decodedFilename = decodedFilename.substring(8);
+    } else if (destFolderType === "avatars" && decodedFilename.startsWith("/avatars/")) {
+      decodedFilename = decodedFilename.substring(9);
     }
     let filePath = path.join(destFolder, decodedFilename);
     if (!fs.existsSync(filePath) && destFolderType === "music") {
@@ -203,18 +218,21 @@ export function registerMediaHandlers() {
     let destFolder = coversPath;
     if (destFolderType === "music") destFolder = musicPath;
     else if (destFolderType === "slides") destFolder = slidesPath;
+    else if (destFolderType === "avatars") destFolder = avatarsPath;
 
     let decodedFilename = decodeURIComponent(filename);
     if (destFolderType === "music" && decodedFilename.startsWith("/musics/")) {
       decodedFilename = decodedFilename.substring(8);
     } else if (destFolderType === "slides" && decodedFilename.startsWith("/images/")) {
       decodedFilename = decodedFilename.substring(8);
+    } else if (destFolderType === "avatars" && decodedFilename.startsWith("/avatars/")) {
+      decodedFilename = decodedFilename.substring(9);
     }
     const filePath = path.join(destFolder, decodedFilename);
     if (fs.existsSync(filePath)) {
       try {
         fs.unlinkSync(filePath);
-        if (destFolderType !== "covers") {
+        if (destFolderType !== "covers" && destFolderType !== "avatars") {
           unregisterDownloadedMedia(decodedFilename);
         }
         return true;

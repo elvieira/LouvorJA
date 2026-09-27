@@ -172,9 +172,6 @@ export default {
       
       // Inicia a sincronização silenciosa em background (se necessária)
       setTimeout(async () => {
-        // Cache de avatares de desenvolvedores
-        import("@/helpers/services/Developers").then(mod => mod.cacheAvatars());
-
         // Verificação de atualização do Banco de Dados
         if (window.electronAPI) {
           try {
@@ -203,7 +200,9 @@ export default {
 
         // Auto-healing e validação de arquivos ausentes
         if (window.electronAPI && window.electronAPI.validateInstallation) {
-          const missing = await window.electronAPI.validateInstallation();
+          const { getAllDevAvatars, recoverMissingAvatars, checkAndRefreshAvatars } = await import("@/helpers/services/Developers");
+          const devAvatars = getAllDevAvatars();
+          const missing = await window.electronAPI.validateInstallation(undefined, devAvatars.map(d => d.filename));
           if (missing && missing.totalMissing > 0) {
             const { default: $snackbar } = await import("@/helpers/ui/Snackbar");
             $snackbar.show({ text: `Recuperando ${missing.totalMissing} arquivos ausentes...`, loading: true, timeout: -1, color: "orange-darken-2" });
@@ -223,11 +222,20 @@ export default {
             if (missing.missingImages.length > 0) {
               for (const file of missing.missingImages) await window.electronAPI.downloadMedia("", "slides", file);
             }
+            // 3. Baixa avatares dos desenvolvedores ausentes
+            if (missing.missingAvatars && missing.missingAvatars.length > 0) {
+              await recoverMissingAvatars(missing.missingAvatars);
+            }
             
             // Adiciona um pequeno atraso para que o usuário consiga ler a mensagem de recuperação
             await new Promise(resolve => setTimeout(resolve, 1500));
             $snackbar.show({ text: "Todos os arquivos foram recuperados com sucesso!", color: "success", timeout: 3000 });
+          } else {
+            // Se nenhum arquivo estiver ausente, executa a verificação periódica de avatares (7 a 15 dias)
+            checkAndRefreshAvatars();
           }
+        } else {
+          import("@/helpers/services/Developers").then(mod => mod.checkAndRefreshAvatars());
         }
       }, 5000);
     },

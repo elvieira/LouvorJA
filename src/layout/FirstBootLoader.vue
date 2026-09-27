@@ -341,6 +341,13 @@ export default defineComponent({
               }
             }
 
+            try {
+              const { checkAndRecoverAvatars } = await import("@/helpers/services/Developers");
+              await checkAndRecoverAvatars(true);
+            } catch (err) {
+              console.warn("Falha no download inicial dos avatares:", err);
+            }
+
             this.progress = 100;
             const finalLang = this.$i18n.locale || "pt";
             await window.electronAPI.saveLocalDb(`sfbc_${finalLang}`, { complete: true, date: new Date().toISOString() });

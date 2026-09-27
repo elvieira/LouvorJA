@@ -17,6 +17,7 @@ export const mediaPath = path.join(userDataPath, "Media");
 export const coversPath = path.join(mediaPath, "covers");
 export const musicPath = path.join(mediaPath, "musics");
 export const slidesPath = path.join(mediaPath, "images");
+export const avatarsPath = path.join(mediaPath, "avatars");
 export const finalDbPath = path.join(userDataPath, "database.db");
 
 export const isDev = !app.isPackaged;

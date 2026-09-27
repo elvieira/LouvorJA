@@ -16,6 +16,7 @@
           v-if="isMinimized && showMiniPlayer" 
           :class="['mini-player-popup', 'elevation-12', 'corner-' + miniplayerCorner]"
           @pointerdown="onMiniPlayerPointerDown"
+          @dblclick="maximizePlayer"
         >
           <v-card
             theme="dark"
@@ -23,7 +24,7 @@
             class="overflow-hidden bg-black"
             width="320"
           >
-            <div class="mini-player-toolbar d-flex justify-end pa-1 position-absolute w-100" style="z-index: 10;">
+            <div class="mini-player-toolbar d-flex justify-end pa-1 position-absolute w-100" style="z-index: 50;">
               <v-btn 
                 icon
                 size="x-small" 
@@ -61,7 +62,7 @@
                 </v-tooltip>
               </v-btn>
             </div>
-            <div class="position-relative w-100 bg-black mini-player-content" style="height: 180px;">
+            <div class="position-relative w-100 bg-black mini-player-content" style="height: 180px; z-index: 1;">
               <LSlide
                 v-if="slide"
                 :slide_number="config.slide_index"
@@ -87,6 +88,7 @@
           v-if="isExternalMediaMinimized && showExternalMiniPlayer && isExternalVideo" 
           :class="['mini-player-popup', 'elevation-12', 'corner-' + miniplayerCorner]"
           @pointerdown="onMiniPlayerPointerDown"
+          @dblclick="maximizeExternalPlayer"
         >
           <v-card
             theme="dark"
@@ -94,7 +96,7 @@
             class="overflow-hidden bg-black"
             width="320"
           >
-            <div class="mini-player-toolbar d-flex justify-end pa-1 position-absolute w-100" style="z-index: 10;">
+            <div class="mini-player-toolbar d-flex justify-end pa-1 position-absolute w-100" style="z-index: 50;">
               <v-btn 
                 icon
                 size="x-small" 
@@ -132,7 +134,7 @@
                 </v-tooltip>
               </v-btn>
             </div>
-            <div class="position-relative w-100 bg-black mini-player-content" style="height: 180px;">
+            <div class="position-relative w-100 bg-black mini-player-content" style="height: 180px; z-index: 1;">
               <video
                 v-if="externalFilePath"
                 ref="externalMiniPlayerVideo"
@@ -761,18 +763,23 @@ main {
 
 .mini-player-toolbar {
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.25s ease;
   background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 100%);
   padding-bottom: 20px !important;
+  pointer-events: auto !important;
+  z-index: 50 !important;
 }
 
 .mini-player-popup:hover .mini-player-toolbar,
+.mini-player-popup:focus-within .mini-player-toolbar,
 .mini-player-popup.is-dragging .mini-player-toolbar {
   opacity: 1;
 }
 
 .hover-btn {
   transition: all 0.2s;
+  pointer-events: auto !important;
+  cursor: pointer !important;
 }
 
 .hover-btn:hover {

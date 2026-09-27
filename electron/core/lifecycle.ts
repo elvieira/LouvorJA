@@ -149,6 +149,9 @@ export function setupLifecycle(): void {
       filePath = resolvedFilePath;
 
       if (!fs.existsSync(filePath)) {
+        if (fallbackPath.startsWith("/avatars/")) {
+          return callback({ error: -6 });
+        }
         const apiUrl = `https://api.louvorja.com.br/file${fallbackPath.replace(/\\/g, "/")}`;
         net.fetch(apiUrl).then(res => {
           if (res.ok) {

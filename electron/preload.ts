@@ -41,7 +41,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
   },
   searchBible: (versionId: number, query: string, mode: string, lang?: string) => ipcRenderer.invoke("search-bible", versionId, query, mode, lang),
   
-  validateInstallation: (lang?: string) => ipcRenderer.invoke("validate-installation", lang),
+  validateInstallation: (lang?: string, devAvatarFilenames?: string[]) => ipcRenderer.invoke("validate-installation", lang, devAvatarFilenames),
   repairSysdata: (filenames: string[], lang?: string) => ipcRenderer.invoke("repair-sysdata", filenames, lang),
   
   getLoginItemSettings: () => ipcRenderer.invoke("get-login-item-settings"),
@@ -75,6 +75,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
       return (file as File & { path?: string }).path || "";
     }
   },
+  fetchImageBase64: (url: string) => ipcRenderer.invoke("fetch-image-base64", url),
   onExtractProgress: (callback: (data: unknown) => void) => {
     ipcRenderer.on("extract-progress", (_event, data: unknown) => callback(data));
   },
