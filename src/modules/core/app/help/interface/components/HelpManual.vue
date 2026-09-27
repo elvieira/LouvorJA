@@ -30,6 +30,7 @@
           density="compact"
           flat
           hide-details
+          clearable
           :placeholder="$t('modules.help.manual.search_placeholder')"
           prepend-inner-icon="mdi-magnify"
           rounded="xl"
@@ -37,27 +38,30 @@
           variant="solo"
           elevation="0"
           class="search-bar"
+          @keydown.esc="clearSearch"
+          @click:clear="clearSearch"
         />
       </div>
 
       <!-- Main Area (Sidebar + Content) -->
       <div class="d-flex flex-grow-1" style="min-height: 0;">
         <!-- Sidebar Navigation -->
-        <div class="manual-sidebar d-flex flex-column flex-shrink-0" style="width: 270px; border-right: 1px solid var(--border-color); background: rgba(0, 0, 0, 0.015);">
+        <div class="manual-sidebar d-flex flex-column flex-shrink-0" style="width: 270px; border-right: 1px solid var(--border-color); background: rgba(0, 0, 0, 0.015); overflow-y: auto;">
           <v-list
+            v-if="displayedSections.length > 0"
             bg-color="transparent"
             class="px-4 py-4"
             density="comfortable"
             nav
           >
             <v-list-item
-              v-for="section in sections"
+              v-for="section in displayedSections"
               :key="section.id"
               :active="activeSection === section.id"
               class="mb-2 manual-list-item rounded-lg"
               :value="section.id"
               :ripple="false"
-              @click="activeSection = section.id"
+              @click="selectSection(section.id)"
             >
               <template #prepend>
                 <v-icon
@@ -74,23 +78,63 @@
               >
                 {{ section.title }}
               </v-list-item-title>
+              <template v-if="searchQuery.length >= 2 && section.matchesCount > 0" #append>
+                <v-chip
+                  size="x-small"
+                  color="primary"
+                  variant="tonal"
+                  class="font-weight-bold ml-1"
+                  style="font-size: 0.72rem; height: 20px; padding: 0 6px;"
+                >
+                  {{ section.matchesCount }}
+                </v-chip>
+              </template>
             </v-list-item>
           </v-list>
+          <div v-else class="pa-6 text-center text-caption" style="color: var(--sidebar-text-secondary);">
+            {{ $t('modules.help.manual.no_topics_found') }}
+          </div>
         </div>
 
         <!-- Main Content -->
-        <div class="manual-content flex-grow-1 overflow-auto pa-8 bg-transparent">
-          <v-fade-transition mode="out-in">
-            <div :key="activeSection">
-              <h2 class="mb-6 font-weight-bold" style="color: var(--sidebar-text); font-size: 2rem; letter-spacing: -0.02em;">
-                {{ currentSectionTitle }}
-              </h2>
-              
-              <div class="text-body-1" style="color: var(--sidebar-text-secondary); line-height: 1.7;">
-                <component :is="activeSectionComponent" />
-              </div>
+        <div ref="contentArea" class="manual-content flex-grow-1 overflow-auto pa-8 bg-transparent">
+          <!-- Empty State when searching and no results -->
+          <div v-if="searchQuery.length >= 2 && displayedSections.length === 0" class="d-flex flex-column align-center justify-center h-100 py-12 text-center">
+            <v-icon
+              icon="mdi-text-box-search-outline"
+              size="64"
+              color="grey-darken-1"
+              class="mb-4"
+              style="opacity: 0.5;"
+            />
+            <h3 class="font-weight-bold mb-2" style="color: var(--sidebar-text);">
+              {{ $t('modules.help.manual.no_results_title') }}
+            </h3>
+            <p class="text-body-2 mb-6" style="color: var(--sidebar-text-secondary); max-width: 420px;">
+              {{ $t('modules.help.manual.no_results_desc', { query: search }) }}
+            </p>
+            <v-btn
+              variant="tonal"
+              color="primary"
+              size="small"
+              prepend-icon="mdi-close"
+              rounded="lg"
+              @click="clearSearch"
+            >
+              {{ $t('modules.help.manual.clear_search') }}
+            </v-btn>
+          </div>
+
+          <!-- Normal / Filtered Content -->
+          <div v-else class="manual-content-view">
+            <h2 class="mb-6 font-weight-bold" style="color: var(--sidebar-text); font-size: 2rem; letter-spacing: -0.02em;">
+              {{ currentSectionTitle }}
+            </h2>
+            
+            <div class="text-body-1" style="color: var(--sidebar-text-secondary); line-height: 1.7;">
+              <component :is="activeSectionComponent" />
             </div>
-          </v-fade-transition>
+          </div>
         </div>
       </div>
     </v-card>
@@ -104,6 +148,8 @@ import ManualShortcuts from "./manual/ManualShortcuts.vue";
 import ManualSongs from "./manual/ManualSongs.vue";
 import ManualBible from "./manual/ManualBible.vue";
 import ManualLiturgy from "./manual/ManualLiturgy.vue";
+import ManualCustomCollection from "./manual/ManualCustomCollection.vue";
+import ManualMusicEditor from "./manual/ManualMusicEditor.vue";
 import ManualUtilities from "./manual/ManualUtilities.vue";
 import ManualSync from "./manual/ManualSync.vue";
 import ManualDisplays from "./manual/ManualDisplays.vue";
@@ -117,6 +163,8 @@ export default defineComponent({
     ManualSongs,
     ManualBible,
     ManualLiturgy,
+    ManualCustomCollection,
+    ManualMusicEditor,
     ManualUtilities,
     ManualSync,
     ManualDisplays,
@@ -126,7 +174,8 @@ export default defineComponent({
   data() {
     return {
       search: "",
-      activeSection: "intro",
+      activeSection: (this as any).$appdata?.get("modules.help.activeSection") || "intro",
+      highlightTimeout: null as any,
     };
   },
   computed: {
@@ -137,8 +186,33 @@ export default defineComponent({
         { id: "songs", title: (this as any).$t("modules.help.manual.sections.songs"), icon: "mdi-music-note" },
         { id: "bible", title: (this as any).$t("modules.help.manual.sections.bible"), icon: "mdi-book-cross" },
         { id: "liturgy", title: (this as any).$t("modules.help.manual.sections.liturgy"), icon: "mdi-hands-pray" },
+        { id: "custom_collection", title: (this as any).$t("modules.help.manual.sections.custom_collection"), icon: "mdi-music-box-multiple" },
+        { id: "music_editor", title: (this as any).$t("modules.help.manual.sections.music_editor"), icon: "mdi-music-note-plus" },
         { id: "utilities", title: (this as any).$t("modules.help.manual.sections.utilities"), icon: "mdi-plus-circle" },
+        { id: "sync", title: (this as any).$t("modules.help.manual.sections.sync"), icon: "mdi-library" },
       ];
+    },
+    searchQuery(): string {
+      return this.search ? this.search.trim() : "";
+    },
+    sectionMatches(): Record<string, number> {
+      const query = this.searchQuery;
+      if (query.length < 2) return {};
+      const res: Record<string, number> = {};
+      for (const section of this.sections) {
+        const text = `${this.getSectionText(section.id)} ${section.title}`;
+        res[section.id] = this.countMatches(text, query);
+      }
+      return res;
+    },
+    displayedSections(): Array<{ id: string; title: string; icon: string; matchesCount: number }> {
+      const query = this.searchQuery;
+      if (query.length < 2) {
+        return this.sections.map((s) => ({ ...s, matchesCount: 0 }));
+      }
+      return this.sections
+        .map((s) => ({ ...s, matchesCount: this.sectionMatches[s.id] || 0 }))
+        .filter((s) => s.matchesCount > 0);
     },
     currentSectionTitle(): string {
       const section = this.sections.find((s) => s.id === this.activeSection);
@@ -151,12 +225,230 @@ export default defineComponent({
         songs: "ManualSongs",
         bible: "ManualBible",
         liturgy: "ManualLiturgy",
+        custom_collection: "ManualCustomCollection",
+        music_editor: "ManualMusicEditor",
         utilities: "ManualUtilities",
         sync: "ManualSync",
         displays: "ManualDisplays",
         settings: "ManualSettings",
       };
       return map[this.activeSection] || "ManualIntro";
+    },
+  },
+  watch: {
+    activeSection() {
+      this.onSectionChanged();
+    },
+    displayedSections(newVal) {
+      if (this.searchQuery.length >= 2) {
+        if (newVal.length > 0 && !newVal.some((s: any) => s.id === this.activeSection)) {
+          this.activeSection = newVal[0].id;
+        }
+      }
+    },
+    search() {
+      if (this.searchQuery.length >= 2) {
+        this.applyHighlight();
+      } else {
+        this.clearHighlights();
+        const container = this.$refs.contentArea as HTMLElement;
+        if (container) {
+          container.scrollTop = 0;
+        }
+      }
+    },
+  },
+  mounted() {
+    const container = this.$refs.contentArea as HTMLElement;
+    if (container) {
+      container.scrollTop = 0;
+    }
+    if (this.searchQuery.length >= 2) {
+      this.applyHighlight();
+    }
+  },
+  beforeUnmount() {
+    (this as any).$appdata?.set("modules.help.activeSection", this.activeSection);
+    if (this.highlightTimeout) {
+      clearTimeout(this.highlightTimeout);
+    }
+    this.clearHighlights();
+  },
+  methods: {
+    onSectionChanged() {
+      (this as any).$appdata?.set("modules.help.activeSection", this.activeSection);
+      this.$nextTick(() => {
+        const container = this.$refs.contentArea as HTMLElement;
+        if (container) {
+          container.scrollTop = 0;
+        }
+        if (this.searchQuery.length >= 2) {
+          this.applyHighlight();
+        } else {
+          this.clearHighlights();
+        }
+      });
+    },
+    normalizeString(str: string): string {
+      return (str || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase();
+    },
+    countMatches(text: string, query: string): number {
+      if (!text || !query) return 0;
+      const normText = this.normalizeString(text);
+      const normQuery = this.normalizeString(query);
+      if (!normQuery) return 0;
+
+      let count = 0;
+      let pos = 0;
+      while ((pos = normText.indexOf(normQuery, pos)) !== -1) {
+        count++;
+        pos += normQuery.length;
+      }
+      return count;
+    },
+    getManualMessages(): any {
+      try {
+        if (typeof (this as any).$tm === "function") {
+          const tm = (this as any).$tm("modules.help.manual");
+          if (tm && typeof tm === "object") return tm;
+        }
+      } catch {
+        // fallback
+      }
+      const i18n = (this as any).$i18n;
+      if (i18n) {
+        const locale = typeof i18n.locale === "object" ? i18n.locale.value : i18n.locale;
+        if (typeof i18n.getLocaleMessage === "function") {
+          const msg = i18n.getLocaleMessage(locale);
+          if (msg?.modules?.help?.manual) return msg.modules.help.manual;
+        }
+        if (i18n.messages?.[locale]?.modules?.help?.manual) {
+          return i18n.messages[locale].modules.help.manual;
+        }
+      }
+      return {};
+    },
+    getSectionText(sectionId: string): string {
+      const manualObj = this.getManualMessages();
+      const sectionObj = manualObj[sectionId];
+      if (!sectionObj) return "";
+
+      const extract = (val: any): string[] => {
+        if (!val) return [];
+        if (typeof val === "string") {
+          return [val.replace(/<[^>]*>/g, " ")];
+        }
+        if (Array.isArray(val)) {
+          return val.flatMap(extract);
+        }
+        if (typeof val === "object") {
+          return Object.values(val).flatMap(extract);
+        }
+        return [];
+      };
+
+      return extract(sectionObj).join(" ");
+    },
+    selectSection(sectionId: string) {
+      if (this.activeSection === sectionId) {
+        if (this.searchQuery.length >= 2) {
+          this.applyHighlight();
+        }
+        return;
+      }
+      this.activeSection = sectionId;
+    },
+    clearSearch() {
+      this.search = "";
+      this.clearHighlights();
+      const container = this.$refs.contentArea as HTMLElement;
+      if (container) {
+        container.scrollTop = 0;
+      }
+    },
+    applyHighlight() {
+      if (this.highlightTimeout) {
+        clearTimeout(this.highlightTimeout);
+      }
+      this.highlightTimeout = setTimeout(() => {
+        this.$nextTick(() => {
+          this.highlightContent();
+        });
+      }, 40);
+    },
+    clearHighlights() {
+      if (typeof CSS !== "undefined" && (CSS as any)?.highlights) {
+        (CSS as any).highlights.delete("manual-search");
+      }
+    },
+    highlightContent() {
+      const container = this.$refs.contentArea as HTMLElement;
+      if (!container) return;
+
+      this.clearHighlights();
+
+      const query = this.searchQuery;
+      if (query.length < 2) return;
+
+      const normQuery = this.normalizeString(query);
+
+      const walker = document.createTreeWalker(
+        container,
+        NodeFilter.SHOW_TEXT,
+        {
+          acceptNode(node) {
+            const parent = node.parentElement;
+            if (!parent) return NodeFilter.FILTER_REJECT;
+            const tag = parent.tagName.toLowerCase();
+            if (tag === "script" || tag === "style") {
+              return NodeFilter.FILTER_REJECT;
+            }
+            return NodeFilter.FILTER_ACCEPT;
+          },
+        },
+      );
+
+      const ranges: Range[] = [];
+      let node: Node | null;
+      let firstMatchEl: HTMLElement | null = null;
+
+      while ((node = walker.nextNode())) {
+        const text = (node.nodeValue || "").normalize("NFC");
+        const normText = this.normalizeString(text);
+
+        let matchIndex = normText.indexOf(normQuery);
+        while (matchIndex !== -1) {
+          try {
+            const range = new Range();
+            range.setStart(node, matchIndex);
+            range.setEnd(node, matchIndex + normQuery.length);
+            ranges.push(range);
+
+            if (!firstMatchEl && node.parentElement) {
+              firstMatchEl = node.parentElement;
+            }
+          } catch {
+            // Ignore boundary errors
+          }
+          matchIndex = normText.indexOf(normQuery, matchIndex + normQuery.length);
+        }
+      }
+
+      if (ranges.length > 0 && typeof (window as any).Highlight !== "undefined" && (CSS as any)?.highlights) {
+        const highlight = new (window as any).Highlight(...ranges);
+        (CSS as any).highlights.set("manual-search", highlight);
+      }
+
+      if (firstMatchEl) {
+        const containerRect = container.getBoundingClientRect();
+        const elRect = firstMatchEl.getBoundingClientRect();
+        const relativeTop = elRect.top - containerRect.top + container.scrollTop;
+        const targetScroll = Math.max(0, relativeTop - container.clientHeight / 2 + elRect.height / 2);
+        container.scrollTo({ top: targetScroll, behavior: "smooth" });
+      }
     },
   },
 });
@@ -183,6 +475,19 @@ export default defineComponent({
   background: rgba(0, 0, 0, 0.04) !important;
 }
 
+.manual-content-view {
+  animation: fadeIn 0.15s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0.4;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 /* Estilos globais para as tags de atalho dentro do manual */
 .manual-container :deep(kbd) {
   background: rgba(128, 128, 128, 0.08);
@@ -197,8 +502,26 @@ export default defineComponent({
   white-space: nowrap;
 }
 
+/* Realce da pesquisa no manual */
+.manual-container :deep(mark.manual-highlight) {
+  background-color: rgba(255, 214, 0, 0.45);
+  color: inherit;
+  border-radius: 4px;
+  padding: 1px 3px;
+  font-weight: 600;
+  box-shadow: 0 0 0 1px rgba(255, 214, 0, 0.6);
+  transition: background-color 0.2s ease;
+}
+
 /* Remover o scroll individual das tabelas */
 .manual-container :deep(.v-table__wrapper) {
   overflow: visible !important;
+}
+</style>
+
+<style>
+::highlight(manual-search) {
+  background-color: #ffd600;
+  color: #111111;
 }
 </style>

@@ -1201,12 +1201,12 @@ interface CustomCollection {
 }
 
 const MEDIA_FILTERS = [
-  { name: "Áudios, Vídeos e Arquivos LouvorJA", extensions: ["mp3", "wav", "flac", "aac", "ogg", "wma", "m4a", "mp4", "mkv", "avi", "mov", "wmv", "webm", "slja"] },
+  { name: "Áudios, Vídeos e Arquivos LouvorJA", extensions: ["mp3", "wav", "flac", "aac", "ogg", "wma", "m4a", "mp4", "mkv", "avi", "mov", "wmv", "webm", "slja", "sja", "lja"] },
   { name: "Todos", extensions: ["*"] },
 ];
 
 function isSljaFile(filePath: string): boolean {
-  return filePath.toLowerCase().endsWith(".slja");
+  return /\.(slja|sja|lja)$/i.test(filePath);
 }
 
 function toLocalFileUrl(rawPath: string | null): string {

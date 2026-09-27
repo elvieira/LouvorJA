@@ -2,7 +2,8 @@
 <template>
   <div class="manual-section">
     <!-- Projetando Tela -->
-    <h3 class="text-h6 font-weight-bold mb-3 text-primary">
+    <h3 class="text-h6 font-weight-bold mb-3 text-primary d-flex align-center">
+      <v-icon icon="mdi-projector-screen-outline" class="mr-2" size="22" />
       {{ t('displays.projecting_title') }}
     </h3>
     <p class="mb-4" v-html="t('displays.projecting_p1')" />
@@ -15,7 +16,8 @@
     <v-divider class="my-6 border-opacity-25" />
 
     <!-- Formatação -->
-    <h3 class="text-h6 font-weight-bold mb-3 text-primary">
+    <h3 class="text-h6 font-weight-bold mb-3 text-primary d-flex align-center">
+      <v-icon icon="mdi-format-paint" class="mr-2" size="22" />
       {{ t('displays.formatting_title') }}
     </h3>
     <p class="mb-4" v-html="t('displays.formatting_p1')" />
@@ -24,7 +26,8 @@
     <v-divider class="my-6 border-opacity-25" />
 
     <!-- Transmitindo e CSS -->
-    <h3 class="text-h6 font-weight-bold mb-3 text-primary">
+    <h3 class="text-h6 font-weight-bold mb-3 text-primary d-flex align-center">
+      <v-icon icon="mdi-broadcast" class="mr-2" size="22" />
       {{ t('displays.streaming_title') }}
     </h3>
     <p class="mb-4" v-html="t('displays.streaming_p1')" />
@@ -60,7 +63,8 @@
     <v-divider class="my-6 border-opacity-25" />
 
     <!-- Editor de Slides -->
-    <h3 class="text-h6 font-weight-bold mb-3 text-primary">
+    <h3 class="text-h6 font-weight-bold mb-3 text-primary d-flex align-center">
+      <v-icon icon="mdi-presentation" class="mr-2" size="22" />
       {{ t('displays.editor_title') }}
     </h3>
     <p class="mb-4" v-html="t('displays.editor_p1')" />

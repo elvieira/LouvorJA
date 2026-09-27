@@ -2,7 +2,8 @@
 <template>
   <div class="manual-section">
     <!-- Página Inicial / Busca Central -->
-    <h3 class="text-h6 font-weight-bold mb-3 text-primary">
+    <h3 class="text-h6 font-weight-bold mb-3 text-primary d-flex align-center">
+      <v-icon icon="mdi-home-search-outline" class="mr-2" size="22" />
       {{ t('songs.home_title') }}
     </h3>
     <p class="mb-4" v-html="t('songs.home_p1')" />
@@ -14,7 +15,8 @@
     <v-divider class="my-6 border-opacity-25" />
 
     <!-- Busca de Hinos -->
-    <h3 class="text-h6 font-weight-bold mb-3 text-primary">
+    <h3 class="text-h6 font-weight-bold mb-3 text-primary d-flex align-center">
+      <v-icon icon="mdi-book-music-outline" class="mr-2" size="22" />
       {{ t('songs.hymn_search_title') }}
     </h3>
     <p class="mb-4" v-html="t('songs.hymn_search_p1')" />
@@ -33,15 +35,21 @@
       </v-alert>
     </ul>
 
+    <v-divider class="my-6 border-opacity-25" />
+
     <!-- Busca Rápida / Localizar Músicas -->
-    <h3 class="text-h6 font-weight-bold mb-3 mt-6 text-primary">
+    <h3 class="text-h6 font-weight-bold mb-3 text-primary d-flex align-center">
+      <v-icon icon="mdi-lightning-bolt-outline" class="mr-2" size="22" />
       {{ t('songs.quick_search_title') }}
     </h3>
     <p class="mb-4" v-html="t('songs.quick_search_p1')" />
     <p class="mb-4" v-html="t('songs.quick_search_p2')" />
 
+    <v-divider class="my-6 border-opacity-25" />
+
     <!-- Reprodução de Hinos -->
-    <h3 class="text-h6 font-weight-bold mb-3 mt-6 text-primary">
+    <h3 class="text-h6 font-weight-bold mb-3 text-primary d-flex align-center">
+      <v-icon icon="mdi-play-circle-outline" class="mr-2" size="22" />
       {{ t('songs.playback_title') }}
     </h3>
     <p class="mb-2">

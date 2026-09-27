@@ -3,6 +3,12 @@ import * as path from "path";
 import { isDev } from "../config/constants";
 import { loadWindowState, isPositionVisible, setupWindowStateTracker, getDefaultWindowDimensions } from "../services/window-state";
 
+let mainWindowInstance: BrowserWindow | null = null;
+
+export function getMainWindow(): BrowserWindow | null {
+  return mainWindowInstance;
+}
+
 export function createWindow(): void {
   const windowState = loadWindowState();
   const defaultDimensions = getDefaultWindowDimensions();
@@ -34,6 +40,13 @@ export function createWindow(): void {
   }
 
   const mainWindow = new BrowserWindow(windowOptions);
+  mainWindowInstance = mainWindow;
+
+  mainWindow.on("closed", () => {
+    if (mainWindowInstance === mainWindow) {
+      mainWindowInstance = null;
+    }
+  });
 
   setupWindowStateTracker(mainWindow);
 

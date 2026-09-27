@@ -4,7 +4,8 @@
     <p class="mb-6" v-html="t('bible.intro')" />
 
     <!-- Exibindo Passagens Bíblicas -->
-    <h3 class="text-h6 font-weight-bold mb-3 text-primary">
+    <h3 class="text-h6 font-weight-bold mb-3 text-primary d-flex align-center">
+      <v-icon icon="mdi-book-open-page-variant-outline" class="mr-2" size="22" />
       {{ t('bible.nav_title') }}
     </h3>
     <p class="mb-4" v-html="t('bible.nav_p1')" />
@@ -13,7 +14,8 @@
     <v-divider class="my-6 border-opacity-25" />
 
     <!-- Barra de Pesquisa e Seleção de Versículos -->
-    <h3 class="text-h6 font-weight-bold mb-3 text-primary">
+    <h3 class="text-h6 font-weight-bold mb-3 text-primary d-flex align-center">
+      <v-icon icon="mdi-text-box-search-outline" class="mr-2" size="22" />
       {{ t('bible.search_bar_title') }}
     </h3>
     <p class="mb-4" v-html="t('bible.search_bar_intro')" />
@@ -36,8 +38,11 @@
       </li>
     </ul>
 
+    <v-divider class="my-6 border-opacity-25" />
+
     <!-- Seleção Múltipla e Projeção -->
-    <h3 class="text-h6 font-weight-bold mb-3 text-primary">
+    <h3 class="text-h6 font-weight-bold mb-3 text-primary d-flex align-center">
+      <v-icon icon="mdi-checkbox-multiple-marked-outline" class="mr-2" size="22" />
       {{ t('bible.multi_proj_title') }}
     </h3>
     <p class="mb-4 text-body-2" style="color: var(--sidebar-text-secondary);" v-html="t('bible.multi_proj_p1')" />
@@ -62,7 +67,8 @@
     <v-divider class="my-6 border-opacity-25" />
 
     <!-- Personalização da Projeção -->
-    <h3 class="text-h6 font-weight-bold mb-3 text-primary">
+    <h3 class="text-h6 font-weight-bold mb-3 text-primary d-flex align-center">
+      <v-icon icon="mdi-palette-outline" class="mr-2" size="22" />
       {{ t('bible.custom_title') }}
     </h3>
     <p class="mb-4" v-html="t('bible.custom_p1')" />

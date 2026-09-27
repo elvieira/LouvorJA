@@ -2,7 +2,8 @@
 <template>
   <div class="manual-section">
     <!-- Configurações -->
-    <h3 class="text-h6 font-weight-bold mb-3 text-primary">
+    <h3 class="text-h6 font-weight-bold mb-3 text-primary d-flex align-center">
+      <v-icon icon="mdi-cog-outline" class="mr-2" size="22" />
       {{ t('settings.title') }}
     </h3>
     <p class="mb-4">
@@ -17,7 +18,8 @@
     <v-divider class="my-6 border-opacity-25" />
 
     <!-- Utilitários -->
-    <h3 class="text-h6 font-weight-bold mb-3 text-primary">
+    <h3 class="text-h6 font-weight-bold mb-3 text-primary d-flex align-center">
+      <v-icon icon="mdi-tools" class="mr-2" size="22" />
       {{ t('settings.utilities_title') }}
     </h3>
     <p class="mb-4">
@@ -41,7 +43,8 @@
     <v-divider class="my-6 border-opacity-25" />
 
     <!-- Texto Interativo -->
-    <h3 class="text-h6 font-weight-bold mb-3 text-primary">
+    <h3 class="text-h6 font-weight-bold mb-3 text-primary d-flex align-center">
+      <v-icon icon="mdi-text-box-edit-outline" class="mr-2" size="22" />
       {{ t('settings.interactive_text_title') }}
     </h3>
     <p class="mb-4">

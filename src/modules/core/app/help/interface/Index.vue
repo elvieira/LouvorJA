@@ -19,7 +19,7 @@
             <v-tabs-window v-model="tab" class="h-100 w-100">
               <v-tabs-window-item :value="1" class="h-100">
                 <div class="h-100 overflow-auto px-6 pb-6">
-                  <HelpAbout :app-version="appVersion" @open-update="openUpdate" @open-manual="currentView = 'manual'" />
+                  <HelpAbout :app-version="appVersion" @open-update="openUpdate" @open-manual="openManual" />
                 </div>
               </v-tabs-window-item>
 
@@ -36,7 +36,7 @@
         <div v-else-if="currentView === 'manual'" class="d-flex flex-column h-100 w-100" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: var(--main-bg);">
           <div class="content-main flex-grow-1 w-100 h-100" style="padding-top: 24px;">
             <div class="h-100 overflow-auto px-6 pb-6">
-              <HelpManual @back="currentView = 'tabs'" />
+              <HelpManual @back="closeManual" />
             </div>
           </div>
         </div>
@@ -82,16 +82,31 @@ export default defineComponent({
     "module.action": {
       handler(newVal) {
         if (newVal === "open-manual") {
-          this.currentView = "manual";
+          this.openManual();
           this.$appdata.set("modules.help.action", null);
         }
       },
       immediate: true,
     },
   },
+  created() {
+    const savedView = this.$appdata.get("modules.help.currentView");
+    if (savedView) {
+      this.currentView = savedView;
+    }
+  },
   methods: {
     openUpdate() {
       this.$modules.open("update");
+    },
+    openManual() {
+      this.currentView = "manual";
+      this.$appdata.set("modules.help.currentView", "manual");
+    },
+    closeManual() {
+      this.currentView = "tabs";
+      this.$appdata.set("modules.help.currentView", "tabs");
+      this.$appdata.set("modules.help.activeSection", "intro");
     },
   },
 });

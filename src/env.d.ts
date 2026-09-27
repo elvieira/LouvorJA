@@ -92,6 +92,9 @@ interface ElectronAPI {
   forceQuitApp: () => Promise<void>
   onNavigateModule: (callback: (moduleId: string) => void) => void
   onNavigateRoute: (callback: (routeName: string) => void) => void
+  getInitialFileToOpen?: () => Promise<string | null>
+  onOpenExternalSong?: (callback: (filePath: string) => void) => void
+  getPathForFile?: (file: File) => string
   onExtractProgress: (callback: (data: unknown) => void) => void
   onDownloadDbProgress: (callback: (data: unknown) => void) => void
   getDisplays: () => Promise<unknown[]>

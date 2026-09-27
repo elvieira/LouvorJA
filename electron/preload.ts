@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer } from "electron";
+import { contextBridge, ipcRenderer, webUtils } from "electron";
 
 contextBridge.exposeInMainWorld("electronAPI", {
   isElectron: true,
@@ -63,6 +63,17 @@ contextBridge.exposeInMainWorld("electronAPI", {
   },
   onNavigateRoute: (callback: (routeName: string) => void) => {
     ipcRenderer.on("navigate-route", (_event, routeName: string) => callback(routeName));
+  },
+  getInitialFileToOpen: () => ipcRenderer.invoke("get-initial-file-to-open"),
+  onOpenExternalSong: (callback: (filePath: string) => void) => {
+    ipcRenderer.on("open-external-song", (_event, filePath: string) => callback(filePath));
+  },
+  getPathForFile: (file: File) => {
+    try {
+      return webUtils.getPathForFile(file);
+    } catch {
+      return (file as File & { path?: string }).path || "";
+    }
   },
   onExtractProgress: (callback: (data: unknown) => void) => {
     ipcRenderer.on("extract-progress", (_event, data: unknown) => callback(data));

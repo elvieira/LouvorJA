@@ -461,7 +461,10 @@ export default {
       has_instrumental_music: !!data.instrumentalPath,
     };
 
-    const playMode = mode === "instrumental" ? "instrumental" : mode === "no_audio" ? "no_audio" : "audio";
+    let playMode = mode === "instrumental" ? "instrumental" : mode === "no_audio" ? "no_audio" : "audio";
+    if (playMode === "audio" && !data.audioPath) {
+      playMode = data.instrumentalPath ? "instrumental" : "no_audio";
+    }
     await this.open({
       id_music: `slja:${filePath}`,
       mode: playMode,

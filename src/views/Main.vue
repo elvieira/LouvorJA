@@ -410,7 +410,22 @@ export default defineComponent({
           this.$modules.open("help");
         }
       });
+      if (window.electronAPI.onOpenExternalSong) {
+        window.electronAPI.onOpenExternalSong((filePath: string) => {
+          this.handleExternalSong(filePath);
+        });
+      }
+      if (window.electronAPI.getInitialFileToOpen) {
+        window.electronAPI.getInitialFileToOpen().then((filePath) => {
+          if (filePath) {
+            this.handleExternalSong(filePath);
+          }
+        });
+      }
     }
+
+    window.addEventListener("dragover", this.onWindowDragOver);
+    window.addEventListener("drop", this.onWindowDrop);
 
     const savedPinned = this.$userdata.get("sidebar_pinned");
     if (savedPinned !== undefined && savedPinned !== null) {
@@ -425,12 +440,39 @@ export default defineComponent({
     window.removeEventListener("pointermove", this.onMiniPlayerPointerMove);
     window.removeEventListener("pointerup", this.onMiniPlayerPointerUp);
     window.removeEventListener("pointercancel", this.onMiniPlayerPointerUp);
+    window.removeEventListener("dragover", this.onWindowDragOver);
+    window.removeEventListener("drop", this.onWindowDrop);
     if (this.snapTimeout) {
       clearTimeout(this.snapTimeout);
       this.snapTimeout = null;
     }
   },
   methods: {
+    async handleExternalSong(filePath: string) {
+      if (!filePath) return;
+      this.showQuickSearch = false;
+      this.showBibleSearch = false;
+      try {
+        await this.$media.playExternalSlja(filePath);
+      } catch (err) {
+        console.error("Erro ao reproduzir música externa:", err);
+      }
+    },
+    onWindowDragOver(e: DragEvent) {
+      if (e.dataTransfer?.types?.includes("Files")) {
+        e.preventDefault();
+      }
+    },
+    onWindowDrop(e: DragEvent) {
+      if (!e.dataTransfer?.files || e.dataTransfer.files.length === 0) return;
+      const file = e.dataTransfer.files[0];
+      const filePath = window.electronAPI?.getPathForFile ? window.electronAPI.getPathForFile(file) : (file as any).path;
+      if (filePath && /\.(slja|sja|lja)$/i.test(filePath)) {
+        e.preventDefault();
+        e.stopPropagation();
+        this.handleExternalSong(filePath);
+      }
+    },
     onPinnedChange(val: boolean) {
       this.sidebarPinned = val;
       this.$userdata.set("sidebar_pinned", val);

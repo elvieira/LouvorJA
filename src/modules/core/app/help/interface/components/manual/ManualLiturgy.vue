@@ -4,7 +4,8 @@
     <p class="mb-6" v-html="t('liturgy.intro')" />
 
     <!-- Liturgias Diárias e Avulsas -->
-    <h3 class="text-h6 font-weight-bold mb-3 text-primary">
+    <h3 class="text-h6 font-weight-bold mb-3 text-primary d-flex align-center">
+      <v-icon icon="mdi-calendar-check-outline" class="mr-2" size="22" />
       {{ t('liturgy.days_title') }}
     </h3>
     <p class="mb-4" v-html="t('liturgy.days_p1')" />
@@ -13,7 +14,8 @@
     <v-divider class="my-6 border-opacity-25" />
 
     <!-- Tipos de Itens -->
-    <h3 class="text-h6 font-weight-bold mb-3 text-primary">
+    <h3 class="text-h6 font-weight-bold mb-3 text-primary d-flex align-center">
+      <v-icon icon="mdi-shape-outline" class="mr-2" size="22" />
       {{ t('liturgy.item_types_title') }}
     </h3>
     <p class="mb-4" v-html="t('liturgy.item_types_intro')" />
@@ -31,7 +33,8 @@
     <v-divider class="my-6 border-opacity-25" />
 
     <!-- Funcionalidades da Lista -->
-    <h3 class="text-h6 font-weight-bold mb-3 text-primary">
+    <h3 class="text-h6 font-weight-bold mb-3 text-primary d-flex align-center">
+      <v-icon icon="mdi-format-list-checks" class="mr-2" size="22" />
       {{ t('liturgy.manage_title') }}
     </h3>
     <ul class="mb-6 pl-6 text-body-2" style="color: var(--sidebar-text-secondary);">
@@ -70,7 +73,8 @@
     <v-divider class="my-6 border-opacity-25" />
 
     <!-- Importar / Exportar, Templates e Agendados -->
-    <h3 class="text-h6 font-weight-bold mb-3 text-primary">
+    <h3 class="text-h6 font-weight-bold mb-3 text-primary d-flex align-center">
+      <v-icon icon="mdi-swap-horizontal-bold" class="mr-2" size="22" />
       {{ t('liturgy.advanced_title') }}
     </h3>
     <ul class="mb-6 pl-6 text-body-2" style="color: var(--sidebar-text-secondary);">
@@ -88,7 +92,8 @@
     <v-divider class="my-6 border-opacity-25" />
 
     <!-- Notas do Dia -->
-    <h3 class="text-h6 font-weight-bold mb-3 text-primary">
+    <h3 class="text-h6 font-weight-bold mb-3 text-primary d-flex align-center">
+      <v-icon icon="mdi-note-text-outline" class="mr-2" size="22" />
       {{ t('liturgy.notes_title') }}
     </h3>
     <p class="mb-4 text-body-2" style="color: var(--sidebar-text-secondary);" v-html="t('liturgy.notes_desc')" />

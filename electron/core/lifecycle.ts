@@ -2,14 +2,82 @@ import { app, protocol, net, BrowserWindow, screen } from "electron";
 import * as path from "path";
 import * as fs from "fs";
 import { isDev } from "../config/constants";
-import { createWindow } from "./window";
+import { createWindow, getMainWindow } from "./window";
+
+let pendingFilePathToOpen: string | null = null;
+
+export function getPendingFilePathToOpen(): string | null {
+  const file = pendingFilePathToOpen;
+  pendingFilePathToOpen = null;
+  return file;
+}
+
+export function extractSongFileFromArgv(argv: string[]): string | null {
+  if (!argv || !Array.isArray(argv)) return null;
+  for (const rawArg of argv) {
+    if (typeof rawArg !== "string") continue;
+    const arg = rawArg.replace(/^["']|["']$/g, "").trim();
+    if (arg.toLowerCase().match(/\.(slja|sja|lja)$/i)) {
+      try {
+        if (fs.existsSync(arg)) {
+          return path.resolve(arg);
+        }
+      } catch {
+        // ignore
+      }
+    }
+  }
+  return null;
+}
 
 export function setupLifecycle(): void {
+  const gotTheLock = app.requestSingleInstanceLock();
+  if (!gotTheLock) {
+    app.quit();
+    return;
+  }
+
+  app.on("second-instance", (_event, commandLine) => {
+    const mainWindow = getMainWindow();
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.focus();
+      const filePath = extractSongFileFromArgv(commandLine);
+      if (filePath) {
+        mainWindow.webContents.send("open-external-song", filePath);
+      }
+    }
+  });
+
+  app.on("open-file", (event, filePath) => {
+    event.preventDefault();
+    const mainWindow = getMainWindow();
+    if (mainWindow && !mainWindow.isDestroyed() && mainWindow.webContents) {
+      if (mainWindow.webContents.isLoading()) {
+        mainWindow.webContents.once("did-finish-load", () => {
+          mainWindow.webContents.send("open-external-song", filePath);
+        });
+      } else {
+        mainWindow.webContents.send("open-external-song", filePath);
+      }
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.focus();
+    } else {
+      pendingFilePathToOpen = filePath;
+    }
+  });
+
   protocol.registerSchemesAsPrivileged([
     { scheme: "local", privileges: { standard: true, bypassCSP: true, supportFetchAPI: true, secure: true, corsEnabled: true, stream: true } },
   ]);
 
   app.whenReady().then(() => {
+    if (!pendingFilePathToOpen) {
+      const startupFile = extractSongFileFromArgv(process.argv);
+      if (startupFile) {
+        pendingFilePathToOpen = startupFile;
+      }
+    }
     if (!isDev) {
       app.on("browser-window-created", (event, window) => {
         window.webContents.on("before-input-event", (event, input) => {

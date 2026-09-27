@@ -11,6 +11,7 @@ import { registerValidatorHandlers } from "../services/validator";
 import { registerStreamingIpcHandlers } from "./streaming";
 import { checkLegacyInstallation, selectLegacyFolder, importLegacyMedia } from "../services/legacy-importer";
 import { getRememberWindowBounds, setRememberWindowBounds } from "../services/window-state";
+import { getPendingFilePathToOpen } from "../core/lifecycle";
 
 interface SljaSlideInput {
   tipo: string;
@@ -213,6 +214,10 @@ export function registerIpcHandlers() {
       console.error("Erro ao calcular tamanho da pasta:", error);
       return 0;
     }
+  });
+
+  ipcMain.handle("get-initial-file-to-open", () => {
+    return getPendingFilePathToOpen();
   });
 
   ipcMain.handle("open-file-dialog", async (event, options: Electron.OpenDialogOptions) => {
