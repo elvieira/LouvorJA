@@ -36,7 +36,7 @@
         <main class="settings-content-panel flex-grow-1" style="overflow-y: auto; overflow-x: hidden; max-width: 1060px; padding-right: 8px;">
           <div class="settings-content-container pb-6">
             <!-- CABEÇALHO DA CATEGORIA SELECIONADA -->
-            <div class="settings-category-header mb-6">
+            <div class="settings-category-header d-flex align-center justify-space-between flex-wrap mb-6" style="gap: 12px;">
               <div class="d-flex align-center">
                 <v-avatar
                   color="primary"
@@ -58,11 +58,28 @@
                   </p>
                 </div>
               </div>
+
+              <!-- BOTÃO RESTAURAR PADRÕES -->
+              <transition name="fade-fast">
+                <v-btn
+                  v-if="hasRestoreAction"
+                  variant="tonal"
+                  color="primary"
+                  class="text-none font-weight-bold rounded-xl px-4"
+                  style="border-radius: 12px !important;"
+                  @click="triggerRestore"
+                >
+                  <v-icon start size="18">
+                    mdi-restore
+                  </v-icon>
+                  {{ t('restore_defaults') }}
+                </v-btn>
+              </transition>
             </div>
 
             <!-- COMPONENTE MODULAR ATIVO COM TRANSIÇÃO SUAVE -->
             <transition name="fade-fast" mode="out-in">
-              <component :is="activeCategory.component" :key="activeCategory.id" />
+              <component :is="activeCategory.component" ref="activeComponentRef" :key="activeCategory.id" />
             </transition>
           </div>
         </main>
@@ -138,6 +155,7 @@ export default defineComponent({
         description: "category_slide_style_desc",
         icon: "mdi-format-size",
         component: "ConfigSlideStyle",
+        hasRestore: true,
       },
       {
         id: "bible",
@@ -152,6 +170,7 @@ export default defineComponent({
         description: "category_media_desc",
         icon: "mdi-play-circle-outline",
         component: "ConfigMedia",
+        hasRestore: true,
       },
       {
         id: "streaming",
@@ -180,6 +199,9 @@ export default defineComponent({
       const found = this.categories.find(c => c.id === this.activeCategoryId);
       return found || this.categories[0];
     },
+    hasRestoreAction(): boolean {
+      return !!this.activeCategory?.hasRestore;
+    },
   },
   mounted() {
     const savedCategory = (this as any).$userdata.get("modules.config.active_category");
@@ -194,6 +216,21 @@ export default defineComponent({
     selectCategory(id: string) {
       this.activeCategoryId = id;
       (this as any).$userdata.set("modules.config.active_category", id);
+    },
+    triggerRestore() {
+      let comp = this.$refs.activeComponentRef as any;
+      if (Array.isArray(comp)) {
+        comp = comp[0];
+      }
+      if (comp) {
+        if (typeof comp.restoreDefaults === "function") {
+          comp.restoreDefaults();
+        } else if (typeof comp.resetSlideConfigs === "function") {
+          comp.resetSlideConfigs();
+        } else if (typeof comp.resetMediaConfigs === "function") {
+          comp.resetMediaConfigs();
+        }
+      }
     },
   },
 });

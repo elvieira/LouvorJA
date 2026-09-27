@@ -91,20 +91,6 @@
             </div>
           </v-expand-transition>
         </div>
-
-        <div class="d-flex justify-end">
-          <v-btn
-            variant="tonal"
-            color="primary"
-            class="text-none font-weight-bold rounded-lg px-4"
-            @click="resetMediaConfigs"
-          >
-            <v-icon start>
-              mdi-restore
-            </v-icon>
-            {{ t('restore_defaults') }}
-          </v-btn>
-        </div>
       </v-card-text>
     </v-card>
   </div>
@@ -220,6 +206,9 @@ export default defineComponent({
           await $popup.syncMonitors(selectedMonitors, "external_media", isExternalMediaActive);
         }
       }
+    },
+    restoreDefaults() {
+      this.resetMediaConfigs();
     },
     resetMediaConfigs() {
       this.media_use_internal_player = false;

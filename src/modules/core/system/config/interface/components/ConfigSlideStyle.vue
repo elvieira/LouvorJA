@@ -505,23 +505,6 @@
             </div>
           </div>
         </v-expand-transition>
-
-        <v-divider class="my-6" style="opacity: 0.1;" />
-
-        <div class="d-flex justify-end">
-          <v-btn
-            variant="tonal"
-            color="primary"
-            class="text-none font-weight-bold rounded-xl px-4"
-            style="border-radius: 12px !important;"
-            @click="resetSlideConfigs"
-          >
-            <v-icon start>
-              mdi-restore
-            </v-icon>
-            {{ t('restore_defaults') }}
-          </v-btn>
-        </div>
       </v-card-text>
     </v-card>
   </div>
@@ -644,6 +627,9 @@ export default defineComponent({
       };
       reader.readAsDataURL(file);
       input.value = "";
+    },
+    restoreDefaults() {
+      this.resetSlideConfigs();
     },
     resetSlideConfigs() {
       this.slide_align = "Centro";
