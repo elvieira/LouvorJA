@@ -15,33 +15,35 @@
           </v-btn>
         </template>
 
-        <div v-if="!selectedAlbum" class="personalized-tabs-pill-center">
-          <div class="personalized-tabs-pill d-flex align-center flex-shrink-0">
-            <div class="personalized-tab-slider" :style="tabSliderStyle" />
-            <button
-              ref="musicTabBtn"
-              type="button"
-              class="personalized-tab-btn"
-              :class="{ active: tab === 'music' }"
-              @click="tab = 'music'"
-            >
-              <v-icon icon="mdi-music-note" size="16" class="mr-1" />
-              {{ t('tab_music') }}
-            </button>
-            <button
-              ref="playlistsTabBtn"
-              type="button"
-              class="personalized-tab-btn"
-              :class="{ active: tab === 'playlists' }"
-              @click="tab = 'playlists'"
-            >
-              <v-icon icon="mdi-playlist-play" size="16" class="mr-1" />
-              {{ t('tab_playlists') }}
-            </button>
+        <template #title-actions>
+          <div v-if="!selectedAlbum" class="ml-6 d-flex align-center">
+            <div class="personalized-tabs-pill d-flex align-center flex-shrink-0">
+              <div class="personalized-tab-slider" :style="tabSliderStyle" />
+              <button
+                ref="musicTabBtn"
+                type="button"
+                class="personalized-tab-btn"
+                :class="{ active: tab === 'music' }"
+                @click="tab = 'music'"
+              >
+                <v-icon icon="mdi-music-note" size="16" class="mr-1" />
+                {{ t('tab_music') }}
+              </button>
+              <button
+                ref="playlistsTabBtn"
+                type="button"
+                class="personalized-tab-btn"
+                :class="{ active: tab === 'playlists' }"
+                @click="tab = 'playlists'"
+              >
+                <v-icon icon="mdi-playlist-play" size="16" class="mr-1" />
+                {{ t('tab_playlists') }}
+              </button>
+            </div>
           </div>
-        </div>
+        </template>
 
-        <div v-if="tab === 'music'" class="search-bar mr-4 d-flex align-center" style="max-width: 260px; flex: 1;">
+        <div v-if="tab === 'music'" class="search-bar mr-4 d-flex align-center" style="max-width: 360px; flex: 1;">
           <v-text-field
             v-model="musicSearch"
             :placeholder="t('search_placeholder')"
@@ -53,7 +55,7 @@
             rounded="xl"
           />
         </div>
-        <div v-else-if="!selectedAlbum" class="search-bar mr-4 d-flex align-center" style="max-width: 260px; flex: 1;">
+        <div v-else-if="!selectedAlbum" class="search-bar mr-4 d-flex align-center" style="max-width: 360px; flex: 1;">
           <v-text-field
             v-model="albumSearch"
             :placeholder="t('search_placeholder')"
@@ -345,93 +347,128 @@
       </div>
 
       <v-dialog v-model="showAddDialog" max-width="440" persistent>
-        <v-card class="rounded-xl pa-2">
+        <v-card
+          class="rounded-xl pa-2"
+          :color="isDark ? 'var(--card-bg)' : '#ffffff'"
+          :theme="isDark ? 'dark' : 'light'"
+        >
           <v-card-title class="font-weight-bold">
             {{ editingVideo ? t('edit') : t('add_link') }}
           </v-card-title>
           <v-card-text>
-            <v-text-field
-              v-model="nameInput"
-              :label="t('video_name')"
-              :placeholder="t('video_name_placeholder')"
-              variant="outlined"
-              density="comfortable"
-              autofocus
-              hide-details
-              class="mb-4"
-              @keydown.enter="submitVideo"
-            />
-            <v-text-field
-              v-model="linkInput"
-              :label="t('video_link')"
-              :placeholder="t('video_link_placeholder')"
-              variant="outlined"
-              density="comfortable"
-              hide-details
-              @keydown.enter="submitVideo"
-              @blur="fetchVideoTitle"
-              @paste="onLinkPaste"
-            />
+            <div class="mb-4">
+              <div class="text-body-2 font-weight-medium mb-1" style="color: var(--sidebar-text-secondary); margin-left: 4px;">
+                {{ t('video_name') }}
+              </div>
+              <v-text-field
+                v-model="nameInput"
+                variant="outlined"
+                color="primary"
+                rounded="lg"
+                density="compact"
+                hide-details
+                class="modern-input-compact"
+                autofocus
+                @keydown.enter="submitVideo"
+              />
+            </div>
+            <div>
+              <div class="text-body-2 font-weight-medium mb-1" style="color: var(--sidebar-text-secondary); margin-left: 4px;">
+                {{ t('video_link') }}
+              </div>
+              <v-text-field
+                v-model="linkInput"
+                variant="outlined"
+                color="primary"
+                rounded="lg"
+                density="compact"
+                hide-details
+                class="modern-input-compact"
+                @keydown.enter="submitVideo"
+                @blur="fetchVideoTitle"
+                @paste="onLinkPaste"
+              />
+            </div>
           </v-card-text>
-          <v-card-actions>
+          <v-card-actions class="px-4 pb-4">
             <v-spacer />
-            <v-btn variant="text" class="text-none" @click="closeAddDialog">
-              {{ t('cancel') }}
-            </v-btn>
-            <v-btn
-              color="primary"
-              variant="flat"
-              class="text-none font-weight-bold"
-              :disabled="!nameInput.trim() || !linkInput.trim()"
-              @click="submitVideo"
-            >
-              {{ editingVideo ? t('save') : t('add_link') }}
-            </v-btn>
+            <div class="d-flex" style="gap: 12px;">
+              <v-btn
+                variant="tonal"
+                :color="isDark ? 'white' : 'grey-darken-2'"
+                class="rounded-lg text-none px-6 font-weight-bold"
+                @click="closeAddDialog"
+              >
+                {{ t('cancel') }}
+              </v-btn>
+              <v-btn
+                color="primary"
+                variant="flat"
+                class="rounded-lg text-none px-6 font-weight-bold"
+                :disabled="!nameInput.trim() || !linkInput.trim()"
+                @click="submitVideo"
+              >
+                {{ editingVideo ? t('save') : t('add_link') }}
+              </v-btn>
+            </div>
           </v-card-actions>
         </v-card>
       </v-dialog>
 
       <v-dialog v-model="showAddAlbumDialog" max-width="440" persistent>
-        <v-card class="rounded-xl pa-2">
+        <v-card
+          class="rounded-xl pa-2"
+          :color="isDark ? 'var(--card-bg)' : '#ffffff'"
+          :theme="isDark ? 'dark' : 'light'"
+        >
           <v-card-title class="font-weight-bold">
             {{ t('add_playlist') }}
           </v-card-title>
           <v-card-text>
-            <v-text-field
-              v-model="albumLinkInput"
-              :label="t('playlist_link')"
-              :placeholder="t('playlist_link_placeholder')"
-              variant="outlined"
-              density="comfortable"
-              autofocus
-              hide-details
-              :disabled="albumLoading"
-              @keydown.enter="submitAlbum"
-            />
+            <div>
+              <div class="text-body-2 font-weight-medium mb-1" style="color: var(--sidebar-text-secondary); margin-left: 4px;">
+                {{ t('playlist_link') }}
+              </div>
+              <v-text-field
+                v-model="albumLinkInput"
+                variant="outlined"
+                color="primary"
+                rounded="lg"
+                density="compact"
+                hide-details
+                class="modern-input-compact"
+                autofocus
+                :disabled="albumLoading"
+                @keydown.enter="submitAlbum"
+              />
+            </div>
             <p v-if="albumError" class="mt-3 mb-0 text-error" style="font-size: 13px;">
               {{ albumError }}
             </p>
           </v-card-text>
-          <v-card-actions>
+          <v-card-actions class="px-4 pb-4">
             <v-spacer />
-            <v-btn
-              variant="text"
-              class="text-none"
-              :disabled="albumLoading"
-              @click="closeAddAlbumDialog"
-            >
-              {{ t('cancel') }}
-            </v-btn>
-            <v-btn
-              color="primary"
-              variant="flat"
-              class="text-none font-weight-bold"
-              :loading="albumLoading"
-              :disabled="!albumLinkInput.trim() || albumLoading"
-              @click="submitAlbum"
-            >
-              {{ t('add_playlist') }}
-            </v-btn>
+            <div class="d-flex" style="gap: 12px;">
+              <v-btn
+                variant="tonal"
+                :color="isDark ? 'white' : 'grey-darken-2'"
+                class="rounded-lg text-none px-6 font-weight-bold"
+                :disabled="albumLoading"
+                @click="closeAddAlbumDialog"
+              >
+                {{ t('cancel') }}
+              </v-btn>
+              <v-btn
+                color="primary"
+                variant="flat"
+                class="rounded-lg text-none px-6 font-weight-bold"
+                :loading="albumLoading"
+                :disabled="!albumLinkInput.trim() || albumLoading"
+                @click="submitAlbum"
+              >
+                {{ t('add_playlist') }}
+              </v-btn>
+            </div>
           </v-card-actions>
         </v-card>
       </v-dialog>
@@ -527,6 +564,9 @@ export default defineComponent({
     },
     /* COMPUTEDS OBRIGATÓRIAS - FIM */
 
+    isDark(): boolean {
+      return (this as any).$vuetify.theme.current.dark;
+    },
     headerTitle(): string {
       if (this.tab === "playlists" && this.selectedAlbum) return this.selectedAlbum.name;
       return this.t("title");
@@ -874,12 +914,38 @@ export default defineComponent({
     position: relative;
   }
 
-  .personalized-tabs-pill-center {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 1;
+  .search-bar {
+    .v-field {
+      background: var(--card-bg) !important;
+      box-shadow: var(--shadow) !important;
+      border: 1px solid transparent;
+      transition: all 0.2s ease;
+      border-radius: 25px !important;
+      
+      .v-field__input {
+        padding: 12px 20px !important;
+        font-size: 14px !important;
+      }
+      
+      .v-field__prepend-inner {
+        padding-left: 16px !important;
+        
+        .v-icon {
+          color: var(--accent-blue) !important;
+          opacity: 0.7;
+        }
+      }
+      
+      &:hover {
+        box-shadow: var(--shadow-hover) !important;
+      }
+      
+      &.v-field--focused {
+        border-color: var(--accent-blue);
+        background: rgba(0, 151, 215, 0.05) !important;
+        box-shadow: 0 4px 20px rgba(0, 151, 215, 0.15) !important;
+      }
+    }
   }
 
   .personalized-tabs-pill {

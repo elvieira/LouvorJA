@@ -1,7 +1,7 @@
 <template>
   <v-slide-y-reverse-transition>
     <div v-if="module?.show" class="module-full-page online-collection-module d-flex flex-column">
-      <ModuleHeader :title="headerTitle" icon="mdi-youtube">
+      <ModuleHeader :title="headerTitle" icon="mdi-web">
         <template #prefix>
           <v-btn
             v-if="view !== 'channels'"
@@ -358,6 +358,40 @@ export default defineComponent({
 
 <style lang="scss">
 .online-collection-module {
+  .search-bar {
+    .v-field {
+      background: var(--card-bg) !important;
+      box-shadow: var(--shadow) !important;
+      border: 1px solid transparent;
+      transition: all 0.2s ease;
+      border-radius: 25px !important;
+      
+      .v-field__input {
+        padding: 12px 20px !important;
+        font-size: 14px !important;
+      }
+      
+      .v-field__prepend-inner {
+        padding-left: 16px !important;
+        
+        .v-icon {
+          color: var(--accent-blue) !important;
+          opacity: 0.7;
+        }
+      }
+      
+      &:hover {
+        box-shadow: var(--shadow-hover) !important;
+      }
+      
+      &.v-field--focused {
+        border-color: var(--accent-blue);
+        background: rgba(0, 151, 215, 0.05) !important;
+        box-shadow: 0 4px 20px rgba(0, 151, 215, 0.15) !important;
+      }
+    }
+  }
+
   .online-grid-wrap {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));

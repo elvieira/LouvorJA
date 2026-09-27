@@ -277,7 +277,7 @@ export default defineComponent({
       
       const groupIcons: Record<string, string> = {
         musics: "mdi-play",
-        online_collection: "mdi-youtube",
+        online_collection: "mdi-web",
         bible: "mdi-book-cross",
         utilities: "mdi-plus-circle",
         personalized: "mdi-star-outline",
