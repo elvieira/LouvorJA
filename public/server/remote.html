@@ -4,6 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Controle Remoto - Louvor JA</title>
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#141722">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="shortcut icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" href="/favicon-180x180.png">
   <style>
     * {
       box-sizing: border-box;
@@ -12,27 +21,39 @@
       -webkit-tap-highlight-color: transparent;
     }
 
+    html, body {
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh;
+      max-height: 100dvh;
+      overflow: hidden;
+      margin: 0;
+      padding: 0;
+    }
+
     body {
       background: #0d0f15;
       color: #e0e0e0;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      min-height: 100vh;
+      height: 100vh;
+      height: 100dvh;
+      max-height: 100dvh;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      overflow-x: hidden;
+      overflow: hidden;
       user-select: none;
+      position: relative;
     }
 
     header {
-      padding: 14px 20px;
+      padding: clamp(8px, 1.5vh, 12px) 16px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       background: #141722;
       border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      position: sticky;
-      top: 0;
+      flex-shrink: 0;
       z-index: 10;
     }
 
@@ -74,95 +95,168 @@
       box-shadow: 0 0 10px rgba(76, 175, 80, 0.8);
     }
 
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-fullscreen {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      color: #cfd8dc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.2s ease, border-color 0.2s ease, transform 0.15s ease, color 0.2s ease;
+      outline: none;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn-fullscreen:hover {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: rgba(255, 255, 255, 0.25);
+      color: #ffffff;
+    }
+
+    .btn-fullscreen:active {
+      transform: scale(0.92);
+      background: rgba(0, 151, 215, 0.25);
+      border-color: #0097d7;
+      color: #0097d7;
+    }
+
+    .btn-fullscreen.active {
+      background: rgba(0, 151, 215, 0.2);
+      border-color: rgba(0, 151, 215, 0.5);
+      color: #0097d7;
+    }
+
+    .btn-fullscreen svg {
+      fill: currentColor;
+    }
+
+    /* BANNER INTERATIVO DE TELA CHEIA */
+    .banner-fullscreen {
+      display: none;
+      background: linear-gradient(135deg, rgba(0, 151, 215, 0.22), rgba(0, 151, 215, 0.08));
+      border: 1px solid rgba(0, 151, 215, 0.35);
+      color: #4fc3f7;
+      padding: clamp(6px, 1.1vh, 9px) 14px;
+      margin: clamp(6px, 1.1vh, 8px) 14px 0 14px;
+      border-radius: 10px;
+      font-size: clamp(11px, 1.5vh, 12px);
+      font-weight: 600;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      cursor: pointer;
+      flex-shrink: 0;
+      animation: pulseBanner 2.2s infinite ease-in-out;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    @keyframes pulseBanner {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.015); box-shadow: 0 0 14px rgba(0, 151, 215, 0.35); }
+    }
+
+    .banner-fullscreen:active {
+      transform: scale(0.98);
+      background: rgba(0, 151, 215, 0.35);
+    }
+
+    .banner-fullscreen svg {
+      fill: currentColor;
+      flex-shrink: 0;
+    }
+
     .dot.disconnected {
       background: #f44336;
       box-shadow: 0 0 10px rgba(244, 67, 54, 0.8);
     }
 
-    /* CARD DE STATUS ATUAL */
-    .now-playing {
-      margin: 14px 20px;
-      padding: 16px 20px;
-      background: #171b26;
-      border-radius: 16px;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      text-align: center;
-      min-height: 84px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-      position: relative;
-      overflow: hidden;
+    /* CARD DINÂMICO DE MÍDIA ATIVA (APARECE APENAS QUANDO HÁ MÍDIA / BÍBLIA) */
+    .dynamic-media-card {
+      display: none;
+      margin: clamp(6px, 1.2vh, 10px) 16px 0 16px;
+      padding: clamp(8px, 1.2vh, 12px) 16px;
+      background: rgba(23, 27, 38, 0.88);
+      border-radius: 14px;
+      border: 1px solid rgba(0, 151, 215, 0.25);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      animation: slideDownFade 0.25s ease-out;
+      flex-shrink: 0;
     }
 
-    .now-playing-header {
+    @keyframes slideDownFade {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .dynamic-media-header {
       display: flex;
       align-items: center;
-      justify-content: center;
       gap: 8px;
-      margin-bottom: 4px;
     }
 
-    .now-playing-title {
-      font-size: 16px;
+    .dynamic-media-title {
+      font-size: 14px;
       font-weight: 700;
-      color: #64b5f6;
+      color: #ffffff;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      max-width: 85%;
+      flex: 1;
     }
 
-    .status-badge {
+    .dynamic-media-badge {
       font-size: 10px;
       font-weight: 700;
       padding: 2px 7px;
       border-radius: 6px;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-    }
-
-    .status-badge.playing {
+      flex-shrink: 0;
       background: rgba(76, 175, 80, 0.2);
       color: #81c784;
       border: 1px solid rgba(76, 175, 80, 0.4);
     }
 
-    .status-badge.paused {
+    .dynamic-media-badge.paused {
       background: rgba(255, 179, 0, 0.2);
       color: #ffb74d;
       border: 1px solid rgba(255, 179, 0, 0.4);
     }
 
-    .now-playing-lyric {
-      font-size: 13px;
-      color: #b0bec5;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-      line-height: 1.4;
-    }
-
     /* BOTÕES PRINCIPAIS */
     main {
       flex: 1;
+      min-height: 0;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 22px;
-      padding: 10px 20px;
+      gap: clamp(10px, 2.5vh, 22px);
+      padding: clamp(6px, 1.5vh, 14px) 16px;
+      overflow: hidden;
     }
 
     .top-actions {
       display: flex;
       width: 100%;
-      max-width: 320px;
+      max-width: 310px;
       justify-content: space-between;
-      gap: 14px;
+      gap: 12px;
+      flex-shrink: 0;
     }
 
     .btn {
@@ -189,9 +283,10 @@
 
     .btn-action {
       flex: 1;
-      height: 50px;
+      height: clamp(40px, 5.5vh, 48px);
       border-radius: 14px;
       gap: 8px;
+      font-size: clamp(13px, 1.8vh, 15px);
     }
 
     .btn-close {
@@ -214,20 +309,21 @@
       background: rgba(0, 151, 215, 0.25);
     }
 
-    /* CONTROLE CRUCIFORME */
+    /* CONTROLE CRUCIFORME RESPONSIVO */
     .controls-grid {
       display: grid;
-      grid-template-columns: repeat(3, 86px);
-      grid-template-rows: repeat(3, 86px);
-      gap: 14px;
+      grid-template-columns: repeat(3, clamp(66px, 19vw, 84px));
+      grid-template-rows: repeat(3, clamp(66px, 9.8vh, 84px));
+      gap: clamp(8px, 1.8vh, 14px);
       align-items: center;
       justify-content: center;
+      flex-shrink: 0;
     }
 
     .btn-arrow {
-      width: 86px;
-      height: 86px;
-      border-radius: 24px;
+      width: 100%;
+      height: 100%;
+      border-radius: clamp(16px, 2.4vh, 22px);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -236,7 +332,7 @@
     }
 
     .btn-arrow span {
-      font-size: 10px;
+      font-size: clamp(9px, 1.2vh, 10px);
       font-weight: 700;
       color: rgba(255, 255, 255, 0.6);
       text-transform: uppercase;
@@ -253,12 +349,12 @@
     }
 
     .btn-center {
-      width: 86px;
-      height: 86px;
+      width: 100%;
+      height: 100%;
       border-radius: 50%;
       background: linear-gradient(135deg, #0097d7 0%, #1565c0 100%);
       border: 1px solid rgba(255, 255, 255, 0.25);
-      box-shadow: 0 10px 25px rgba(0, 151, 215, 0.45);
+      box-shadow: 0 8px 20px rgba(0, 151, 215, 0.4);
     }
 
     .btn-center:active {
@@ -276,26 +372,15 @@
     }
 
     svg {
-      width: 28px;
-      height: 28px;
+      width: clamp(22px, 3vh, 28px);
+      height: clamp(22px, 3vh, 28px);
       fill: currentColor;
-    }
-
-    footer {
-      padding: 14px 20px;
-      background: #141722;
-      border-top: 1px solid rgba(255, 255, 255, 0.08);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      font-size: 12px;
-      color: #78909c;
     }
 
     /* TOAST DE FEEDBACK FLUTUANTE */
     .toast {
       position: fixed;
-      bottom: 74px;
+      bottom: 24px;
       left: 50%;
       transform: translateX(-50%) translateY(20px);
       background: rgba(20, 24, 34, 0.94);
@@ -343,41 +428,49 @@
     }
 
     .search-header {
-      padding: 16px 20px;
+      padding: 14px 16px;
       background: #141722;
       border-bottom: 1px solid rgba(255, 255, 255, 0.1);
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
+      flex-shrink: 0;
     }
 
     .search-input-wrapper {
       flex: 1;
+      min-width: 0;
       position: relative;
       display: flex;
       align-items: center;
     }
 
-    .search-input-wrapper svg {
+    .search-icon-left,
+    .search-input-wrapper > svg {
       position: absolute;
       left: 14px;
-      width: 20px;
-      height: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 18px;
+      height: 18px;
       fill: #78909c;
       pointer-events: none;
+      z-index: 1;
     }
 
     .search-input {
       width: 100%;
-      height: 46px;
+      min-width: 0;
+      height: 44px;
       background: #1c202d;
       border: 1px solid rgba(255, 255, 255, 0.12);
       border-radius: 12px;
-      padding: 0 40px 0 44px;
+      padding: 0 40px 0 42px;
       color: #ffffff;
       font-size: 15px;
       outline: none;
-      transition: border-color 0.2s ease;
+      box-sizing: border-box;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
     }
 
     .search-input:focus {
@@ -387,15 +480,34 @@
 
     .search-clear-btn {
       position: absolute;
-      right: 12px;
-      background: transparent;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 28px;
+      height: 28px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
       border: none;
-      color: #90a4ae;
+      color: #cfd8dc;
       cursor: pointer;
-      display: flex;
+      display: none;
       align-items: center;
       justify-content: center;
-      padding: 4px;
+      padding: 0;
+      z-index: 3;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 0.15s ease, color 0.15s ease;
+    }
+
+    .search-clear-btn:active {
+      background: rgba(255, 255, 255, 0.25);
+      color: #ffffff;
+    }
+
+    .search-clear-btn svg {
+      width: 16px;
+      height: 16px;
+      fill: currentColor;
     }
 
     .search-close-btn {
@@ -405,15 +517,17 @@
       font-size: 14px;
       font-weight: 600;
       padding: 0 16px;
-      height: 46px;
+      height: 44px;
       border-radius: 12px;
       cursor: pointer;
+      flex-shrink: 0;
+      white-space: nowrap;
     }
 
     .search-results {
       flex: 1;
       overflow-y: auto;
-      padding: 14px 20px;
+      padding: 14px 16px;
       display: flex;
       flex-direction: column;
       gap: 10px;
@@ -423,26 +537,19 @@
       background: #161924;
       border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 14px;
-      padding: 14px 16px;
+      padding: 12px 14px;
       display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      cursor: pointer;
-      transition: background 0.15s ease, transform 0.1s ease;
-    }
-
-    .search-item:active {
-      background: #202534;
-      transform: scale(0.98);
+      flex-direction: column;
+      gap: 10px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+      transition: background 0.15s ease, border-color 0.15s ease;
     }
 
     .search-item-info {
-      flex: 1;
       display: flex;
       flex-direction: column;
       gap: 3px;
-      overflow: hidden;
+      cursor: pointer;
     }
 
     .search-item-title-row {
@@ -479,16 +586,84 @@
       text-overflow: ellipsis;
     }
 
-    .search-item-play-icon {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background: rgba(0, 151, 215, 0.15);
+    .search-item-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      padding-top: 8px;
+    }
+
+    .song-action-btn {
+      flex: 1;
+      min-width: 0;
+      height: 34px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: #1c202e;
+      color: #cfd8dc;
+      font-size: 11px;
+      font-weight: 600;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #0097d7;
+      gap: 5px;
+      cursor: pointer;
+      transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease, color 0.15s ease;
+      outline: none;
+      -webkit-tap-highlight-color: transparent;
+      padding: 0 4px;
+      white-space: nowrap;
+    }
+
+    .song-action-btn svg {
+      width: 14px;
+      height: 14px;
+      fill: currentColor;
       flex-shrink: 0;
+    }
+
+    .song-action-btn:active:not(:disabled) {
+      transform: scale(0.95);
+    }
+
+    .song-action-btn.btn-audio {
+      background: rgba(0, 151, 215, 0.15);
+      border-color: rgba(0, 151, 215, 0.35);
+      color: #4fc3f7;
+    }
+
+    .song-action-btn.btn-audio:active {
+      background: rgba(0, 151, 215, 0.3);
+    }
+
+    .song-action-btn.btn-pb {
+      background: rgba(103, 58, 183, 0.16);
+      border-color: rgba(149, 117, 205, 0.35);
+      color: #b39ddb;
+    }
+
+    .song-action-btn.btn-pb:active:not(:disabled) {
+      background: rgba(103, 58, 183, 0.35);
+    }
+
+    .song-action-btn.btn-no-audio {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.12);
+      color: #b0bec5;
+    }
+
+    .song-action-btn.btn-no-audio:active {
+      background: rgba(255, 255, 255, 0.12);
+      color: #ffffff;
+    }
+
+    .song-action-btn.disabled,
+    .song-action-btn:disabled {
+      opacity: 0.28 !important;
+      cursor: not-allowed !important;
+      pointer-events: none !important;
+      border-color: rgba(255, 255, 255, 0.05) !important;
     }
 
     .search-empty {
@@ -497,15 +672,17 @@
       align-items: center;
       justify-content: center;
       padding: 60px 20px;
-      color: #78909c;
-      gap: 12px;
+      color: rgba(255, 255, 255, 0.35);
+      gap: 14px;
       text-align: center;
+      font-size: 13px;
+      line-height: 1.4;
     }
 
     .search-empty svg {
-      width: 48px;
-      height: 48px;
-      fill: #455a64;
+      width: 44px;
+      height: 44px;
+      fill: rgba(255, 255, 255, 0.18);
     }
 
     /* MODAL DE CONFIRMAÇÃO E MODAL DE TOKEN */
@@ -613,21 +790,36 @@
 </head>
 <body>
   <header>
-    <div style="width: 10px;"></div>
+    <div style="width: 56px;"></div>
     <div class="brand">
       <h1>LOUVOR JA</h1>
       <h2>Controle Remoto</h2>
     </div>
-    <div id="dot" class="dot"></div>
+    <div class="header-right">
+      <button id="btn-fullscreen" class="btn-fullscreen" title="Alternar Tela Cheia" onclick="Remote.toggleFullscreen()">
+        <svg id="icon-fs-enter" viewBox="0 0 24 24" width="20" height="20">
+          <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
+        </svg>
+        <svg id="icon-fs-exit" viewBox="0 0 24 24" width="20" height="20" style="display: none;">
+          <path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/>
+        </svg>
+      </button>
+      <div id="dot" class="dot" title="Status da Conexão"></div>
+    </div>
   </header>
 
-  <!-- CARD STATUS ATUAL -->
-  <div class="now-playing">
-    <div class="now-playing-header">
-      <div id="now-title" class="now-playing-title">LouvorJA Conectado</div>
-      <span id="now-badge" class="status-badge" style="display: none;"></span>
+  <!-- BANNER DE TELA CHEIA -->
+  <div id="banner-fullscreen" class="banner-fullscreen" onclick="Remote.toggleFullscreen()">
+    <svg viewBox="0 0 24 24" width="18" height="18"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+    <span>Toque aqui para ativar Tela Cheia</span>
+  </div>
+
+  <!-- CARD DINÂMICO DE MÍDIA ATIVA (APARECE APENAS QUANDO HOUVER PROJEÇÃO) -->
+  <div id="media-card" class="dynamic-media-card" style="display: none;">
+    <div class="dynamic-media-header">
+      <span id="media-badge" class="dynamic-media-badge">Reproduzindo</span>
+      <span id="media-title" class="dynamic-media-title"></span>
     </div>
-    <div id="now-lyric" class="now-playing-lyric">Toque nos botões para controlar a projeção.</div>
   </div>
 
   <!-- CONTROLES -->
@@ -653,7 +845,7 @@
       <div></div>
 
       <!-- LINHA 2: SLIDE ANTERIOR | PLAY-PAUSE | SLIDE PRÓXIMO -->
-      <button class="btn btn-arrow" onclick="Remote.sendSlide('previous')" title="Slide Anterior">
+      <button id="btn-prev" class="btn btn-arrow disabled" disabled onclick="Remote.sendSlide('previous')" title="Slide Anterior">
         <svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
         <span>Anterior</span>
       </button>
@@ -663,7 +855,7 @@
         <svg id="icon-pause" viewBox="0 0 24 24" style="display: none;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
       </button>
 
-      <button class="btn btn-arrow" onclick="Remote.sendSlide('next')" title="Próximo Slide">
+      <button id="btn-next" class="btn btn-arrow disabled" disabled onclick="Remote.sendSlide('next')" title="Próximo Slide">
         <svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
         <span>Próximo</span>
       </button>
@@ -677,11 +869,6 @@
       <div></div>
     </div>
   </main>
-
-  <footer>
-    <span id="volume-indicator">Volume: --</span>
-    <span id="footer-token"></span>
-  </footer>
 
   <!-- TOAST FLUTUANTE DE FEEDBACK -->
   <div id="toast" class="toast"></div>
@@ -741,10 +928,9 @@
   <script>
     (function () {
       const dotEl = document.getElementById("dot");
-      const titleEl = document.getElementById("now-title");
-      const badgeEl = document.getElementById("now-badge");
-      const lyricEl = document.getElementById("now-lyric");
-      const volIndicatorEl = document.getElementById("volume-indicator");
+      const mediaCardEl = document.getElementById("media-card");
+      const mediaTitleEl = document.getElementById("media-title");
+      const mediaBadgeEl = document.getElementById("media-badge");
       const toastEl = document.getElementById("toast");
       const modalTokenEl = document.getElementById("modal-token");
       const modalConfirmCloseEl = document.getElementById("modal-confirm-close");
@@ -793,15 +979,19 @@
         if (isPlaying) {
           iconPlay.style.display = "none";
           iconPause.style.display = "block";
-          badgeEl.textContent = "Reproduzindo";
-          badgeEl.className = "status-badge playing";
-          badgeEl.style.display = "inline-block";
+          if (mediaBadgeEl) {
+            mediaBadgeEl.textContent = "Reproduzindo";
+            mediaBadgeEl.className = "dynamic-media-badge";
+            mediaBadgeEl.style.display = "inline-block";
+          }
         } else {
           iconPlay.style.display = "block";
           iconPause.style.display = "none";
-          badgeEl.textContent = "Pausado";
-          badgeEl.className = "status-badge paused";
-          badgeEl.style.display = "inline-block";
+          if (mediaBadgeEl) {
+            mediaBadgeEl.textContent = "Pausado";
+            mediaBadgeEl.className = "dynamic-media-badge paused";
+            mediaBadgeEl.style.display = "inline-block";
+          }
         }
       }
 
@@ -809,6 +999,8 @@
         hasMedia = Boolean(active);
         const playPauseBtn = document.getElementById("btn-play-pause");
         const closeBtn = document.getElementById("btn-close") || document.querySelector(".btn-close");
+        const prevBtn = document.getElementById("btn-prev");
+        const nextBtn = document.getElementById("btn-next");
         if (hasMedia) {
           if (playPauseBtn) {
             playPauseBtn.classList.remove("disabled");
@@ -818,6 +1010,14 @@
             closeBtn.classList.remove("disabled");
             closeBtn.removeAttribute("disabled");
           }
+          if (prevBtn) {
+            prevBtn.classList.remove("disabled");
+            prevBtn.removeAttribute("disabled");
+          }
+          if (nextBtn) {
+            nextBtn.classList.remove("disabled");
+            nextBtn.removeAttribute("disabled");
+          }
         } else {
           if (playPauseBtn) {
             playPauseBtn.classList.add("disabled");
@@ -826,6 +1026,14 @@
           if (closeBtn) {
             closeBtn.classList.add("disabled");
             closeBtn.setAttribute("disabled", "true");
+          }
+          if (prevBtn) {
+            prevBtn.classList.add("disabled");
+            prevBtn.setAttribute("disabled", "true");
+          }
+          if (nextBtn) {
+            nextBtn.classList.add("disabled");
+            nextBtn.setAttribute("disabled", "true");
           }
         }
       }
@@ -856,6 +1064,7 @@
 
       window.Remote = {
         async sendSlide(action) {
+          if (!hasMedia) return;
           await callApi("song-slides", { action });
         },
         async sendKey(keyCode) {
@@ -873,13 +1082,11 @@
         },
         async volumeUp() {
           currentVolume = Math.min(100, currentVolume + 5);
-          volIndicatorEl.textContent = "Volume: " + currentVolume + "%";
           showToast("🔊 Volume: " + currentVolume + "%");
           await callApi("volume", { action: "up" });
         },
         async volumeDown() {
           currentVolume = Math.max(0, currentVolume - 5);
-          volIndicatorEl.textContent = "Volume: " + currentVolume + "%";
           showToast("🔉 Volume: " + currentVolume + "%");
           await callApi("volume", { action: "down" });
         },
@@ -896,13 +1103,13 @@
           await callApi("close-media", { force: "true" });
         },
         openSearch() {
+          Remote.clearSearch();
           searchModal.style.display = "flex";
           setTimeout(() => searchInput.focus(), 100);
         },
         closeSearch() {
           searchModal.style.display = "none";
-          searchInput.value = "";
-          searchClear.style.display = "none";
+          Remote.clearSearch();
         },
         clearSearch() {
           searchInput.value = "";
@@ -915,10 +1122,12 @@
           `;
           searchInput.focus();
         },
-        async openSong(id, name) {
-          showToast("Iniciando: " + (name || "Música"));
+        async openSong(id, name, mode = "audio") {
+          const modeLabel = mode === "instrumental" ? "Playback" : mode === "no_audio" ? "Sem Áudio" : "Cantado";
+          showToast("Iniciando (" + modeLabel + "): " + (name || "Música"));
           Remote.closeSearch();
-          await callApi("open-song", { id: id, tag: "1" });
+          const tag = mode === "instrumental" ? "2" : mode === "no_audio" ? "3" : "1";
+          await callApi("open-song", { id: id, tag: tag, mode: mode });
         },
         async saveToken() {
           const val = tokenInputEl.value.trim().toUpperCase();
@@ -934,6 +1143,23 @@
             setToken(val);
             modalTokenEl.style.display = "none";
             callApi("ping");
+          }
+        },
+        toggleFullscreen() {
+          const isFs = Boolean(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+          const docEl = document.documentElement;
+          if (!isFs) {
+            const req = docEl.requestFullscreen || docEl.webkitRequestFullscreen || docEl.mozRequestFullScreen || docEl.msRequestFullscreen;
+            if (req) {
+              const p = req.call(docEl);
+              if (p && p.then) p.then(() => updateFullscreenUI()).catch(() => {});
+            }
+          } else {
+            const exit = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen;
+            if (exit) {
+              const p = exit.call(document);
+              if (p && p.then) p.then(() => updateFullscreenUI()).catch(() => {});
+            }
           }
         }
       };
@@ -974,19 +1200,31 @@
           for (const item of items) {
             const hBadge = item.hymnal_track ? `<span class="hymn-badge">Hino ${item.hymnal_track}</span>` : "";
             const artist = item.artist ? `<span class="search-item-artist">${item.artist}</span>` : "";
-            const safeName = (item.name || "").replace(/"/g, '&quot;');
+            const safeName = (item.name || "").replace(/"/g, '&quot;').replace(/'/g, "\\'");
+            const hasPb = Boolean(item.has_instrumental);
 
             html += `
-              <div class="search-item" onclick="Remote.openSong(${item.id_music}, '${safeName}')">
-                <div class="search-item-info">
+              <div class="search-item">
+                <div class="search-item-info" onclick="Remote.openSong(${item.id_music}, '${safeName}', 'audio')">
                   <div class="search-item-title-row">
                     ${hBadge}
                     <span class="search-item-name">${item.name}</span>
                   </div>
                   ${artist}
                 </div>
-                <div class="search-item-play-icon">
-                  <svg viewBox="0 0 24 24" style="width: 20px; height: 20px;"><path d="M8 5v14l11-7z"/></svg>
+                <div class="search-item-actions">
+                  <button class="song-action-btn btn-audio" title="Tocar Cantado" onclick="Remote.openSong(${item.id_music}, '${safeName}', 'audio')">
+                    <svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+                    <span>Cantado</span>
+                  </button>
+                  <button class="song-action-btn btn-pb ${!hasPb ? 'disabled' : ''}" ${!hasPb ? 'disabled' : ''} title="${hasPb ? 'Tocar Playback' : 'Playback indisponível'}" onclick="Remote.openSong(${item.id_music}, '${safeName}', 'instrumental')">
+                    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-2.5-4.5l6-3.5-6-3.5v7z"/></svg>
+                    <span>Playback</span>
+                  </button>
+                  <button class="song-action-btn btn-no-audio" title="Projetar Sem Áudio" onclick="Remote.openSong(${item.id_music}, '${safeName}', 'no_audio')">
+                    <svg viewBox="0 0 24 24"><path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 1.99-.9 1.99-2L23 5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z"/></svg>
+                    <span>Sem Áudio</span>
+                  </button>
                 </div>
               </div>
             `;
@@ -1006,16 +1244,6 @@
         }
       });
 
-      function formatLyricHtml(raw) {
-        if (!raw) return "";
-        let text = String(raw).trim();
-        text = text.replace(/&lt;br\s*\/?&gt;[\r\n]*/gi, " ");
-        text = text.replace(/<\s*br\s*\/?>[\r\n]*/gi, " ");
-        const div = document.createElement("div");
-        div.textContent = text;
-        return div.innerHTML;
-      }
-
       // EventSource para receber atualização de estado em tempo real
       function connectSSE() {
         const token = getToken();
@@ -1029,26 +1257,25 @@
 
             if (data.volume !== undefined) {
               currentVolume = data.volume;
-              volIndicatorEl.textContent = "Volume: " + currentVolume + "%";
             }
 
             if (data.type === "media") {
               setMediaActive(true);
-              titleEl.textContent = data.title || "Música em reprodução";
-              lyricEl.innerHTML = formatLyricHtml((data.currentLyric || "").trim()) || "---";
+              if (mediaCardEl) mediaCardEl.style.display = "block";
+              if (mediaTitleEl) mediaTitleEl.textContent = data.title || "Música em reprodução";
               updatePlayState(data.isPaused === true);
             } else if (data.type === "bible") {
               setMediaActive(false);
-              titleEl.textContent = data.bibleReference || "Bíblia Sagrada";
-              lyricEl.innerHTML = formatLyricHtml(data.bibleText || "") || "---";
-              badgeEl.style.display = "none";
+              if (mediaCardEl) mediaCardEl.style.display = "block";
+              if (mediaTitleEl) mediaTitleEl.textContent = data.bibleReference || "Bíblia Sagrada";
+              if (mediaBadgeEl) mediaBadgeEl.style.display = "none";
               iconPlay.style.display = "block";
               iconPause.style.display = "none";
             } else {
               setMediaActive(false);
-              titleEl.textContent = "LouvorJA Conectado";
-              lyricEl.textContent = "Nenhuma mídia em reprodução no momento.";
-              badgeEl.style.display = "none";
+              if (mediaCardEl) mediaCardEl.style.display = "none";
+              if (mediaTitleEl) mediaTitleEl.textContent = "";
+              if (mediaBadgeEl) mediaBadgeEl.style.display = "none";
               iconPlay.style.display = "block";
               iconPause.style.display = "none";
             }
@@ -1083,6 +1310,35 @@
           }
         } catch (e) {}
       }
+
+      function updateFullscreenUI() {
+        const isFs = Boolean(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+        const iconEnter = document.getElementById("icon-fs-enter");
+        const iconExit = document.getElementById("icon-fs-exit");
+        const btnFs = document.getElementById("btn-fullscreen");
+        const bannerFs = document.getElementById("banner-fullscreen");
+
+        if (iconEnter && iconExit) {
+          iconEnter.style.display = isFs ? "none" : "block";
+          iconExit.style.display = isFs ? "block" : "none";
+        }
+        if (btnFs) {
+          btnFs.classList.toggle("active", isFs);
+          btnFs.setAttribute("title", isFs ? "Sair da Tela Cheia" : "Tela Cheia");
+        }
+        if (bannerFs) {
+          bannerFs.style.display = isFs ? "none" : "flex";
+        }
+      }
+
+      document.addEventListener("fullscreenchange", updateFullscreenUI);
+      document.addEventListener("webkitfullscreenchange", updateFullscreenUI);
+      document.addEventListener("mozfullscreenchange", updateFullscreenUI);
+      document.addEventListener("MSFullscreenChange", updateFullscreenUI);
+
+      window.addEventListener("DOMContentLoaded", () => {
+        updateFullscreenUI();
+      });
 
       setMediaActive(false);
       checkAuth();

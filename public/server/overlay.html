@@ -4,6 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LouvorJA - Transmissão (OBS / vMix)</title>
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="shortcut icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" href="/favicon-180x180.png">
   <style>
     * {
       box-sizing: border-box;
@@ -455,10 +460,12 @@
       const fsBibleRef = document.getElementById("fs-bible-ref");
 
       if (isFullscreen) {
+        document.title = "LouvorJA - Transmissão Tela Cheia";
         document.body.classList.add("mode-fullscreen-body");
         fsView.style.display = "flex";
         ltView.style.display = "none";
       } else {
+        document.title = "LouvorJA - Transmissão Terço Inferior";
         document.body.classList.add("mode-lower-third-body");
         ltView.style.display = "flex";
         fsView.style.display = "none";

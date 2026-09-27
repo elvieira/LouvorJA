@@ -754,7 +754,8 @@ export default {
 
   slides(): any[] {
     const data = $appdata.get("modules.media.data");
-    if (!data) return [];
+    const id_music = $appdata.get("modules.media.id_music");
+    if (!data || !id_music || !data.name) return [];
     const showTitle = $userdata.get("modules.config.slide_show_title") !== false;
 
     let prev_image = data.url_image;
@@ -802,6 +803,12 @@ export default {
 
   syncStreaming() {
     if (typeof window !== "undefined" && window.electronAPI?.streamingPushSlide) {
+      const hasMedia = Boolean($appdata.get("modules.media.id_music") || $appdata.get("modules.media.data")?.name);
+      if (!hasMedia) {
+        window.electronAPI.streamingClearSlide?.();
+        return;
+      }
+
       const slide = this.slide();
       const slides = this.slides() || [];
       const config = this.config();
@@ -845,6 +852,10 @@ export default {
   },
 
   goToSlide(index: number) {
+    const hasMedia = Boolean($appdata.get("modules.media.id_music") || $appdata.get("modules.media.data")?.name);
+    if (!hasMedia) {
+      return;
+    }
     const last_slide = $appdata.get("modules.media.config.last_slide");
 
     if (index > last_slide - 1) {
@@ -955,17 +966,25 @@ export default {
   },
 
   firstSlide() {
+    const hasMedia = Boolean($appdata.get("modules.media.id_music") || $appdata.get("modules.media.data")?.name);
+    if (!hasMedia) return;
     this.goToSlide(0);
   },
   prevSlide() {
+    const hasMedia = Boolean($appdata.get("modules.media.id_music") || $appdata.get("modules.media.data")?.name);
+    if (!hasMedia) return;
     const slide_index = $appdata.get("modules.media.config.slide_index");
     this.goToSlide(slide_index - 1);
   },
   nextSlide() {
+    const hasMedia = Boolean($appdata.get("modules.media.id_music") || $appdata.get("modules.media.data")?.name);
+    if (!hasMedia) return;
     const slide_index = $appdata.get("modules.media.config.slide_index");
     this.goToSlide(slide_index + 1);
   },
   lastSlide() {
+    const hasMedia = Boolean($appdata.get("modules.media.id_music") || $appdata.get("modules.media.data")?.name);
+    if (!hasMedia) return;
     const last_slide = $appdata.get("modules.media.config.last_slide");
     this.goToSlide(last_slide - 1);
   },

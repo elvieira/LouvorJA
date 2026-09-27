@@ -565,14 +565,6 @@ class StreamingServerService {
       return;
     }
 
-    if (!fs.existsSync(safeFilePath) || fs.statSync(safeFilePath).isDirectory()) {
-      // Se não encontrar o arquivo específico, tenta o fallback
-      res.writeHead(404, { "Content-Type": "text/html; charset=utf-8" });
-      res.end("<h1>404 - Página não encontrada</h1><p>LouvorJA Streaming Server</p>");
-      return;
-    }
-
-    const ext = path.extname(safeFilePath).toLowerCase();
     const mimeTypes: Record<string, string> = {
       ".html": "text/html; charset=utf-8",
       ".css": "text/css; charset=utf-8",
@@ -580,12 +572,44 @@ class StreamingServerService {
       ".json": "application/json; charset=utf-8",
       ".png": "image/png",
       ".jpg": "image/jpeg",
+      ".jpeg": "image/jpeg",
       ".svg": "image/svg+xml",
       ".ico": "image/x-icon",
+      ".webp": "image/webp",
     };
 
+    if (!fs.existsSync(safeFilePath) || fs.statSync(safeFilePath).isDirectory()) {
+      // Fallback para ícones / favicons caso não estejam no diretório base
+      if (targetFile.startsWith("/favicon") || targetFile.startsWith("/apple-touch-icon")) {
+        const cleanName = targetFile.replace(/^\//, "");
+        const fallbackCandidates = [
+          path.join(process.cwd(), "public", "ico", cleanName),
+          path.join(process.cwd(), "public", cleanName),
+          path.join(app.getAppPath(), "public", "ico", cleanName),
+          path.join(app.getAppPath(), "public", cleanName),
+        ];
+        for (const candidate of fallbackCandidates) {
+          if (fs.existsSync(candidate) && !fs.statSync(candidate).isDirectory()) {
+            const ext = path.extname(candidate).toLowerCase();
+            const contentType = mimeTypes[ext] || "image/x-icon";
+            res.writeHead(200, { "Content-Type": contentType, "Cache-Control": "public, max-age=86400" });
+            return fs.createReadStream(candidate).pipe(res);
+          }
+        }
+      }
+
+      res.writeHead(404, { "Content-Type": "text/html; charset=utf-8" });
+      res.end("<h1>404 - Página não encontrada</h1><p>LouvorJA Streaming Server</p>");
+      return;
+    }
+
+    const ext = path.extname(safeFilePath).toLowerCase();
     const contentType = mimeTypes[ext] || "application/octet-stream";
-    res.writeHead(200, { "Content-Type": contentType });
+    const cacheControl = (ext === ".png" || ext === ".ico" || ext === ".svg" || ext === ".jpg" || ext === ".jpeg")
+      ? "public, max-age=86400"
+      : "no-cache";
+
+    res.writeHead(200, { "Content-Type": contentType, "Cache-Control": cacheControl });
     const stream = fs.createReadStream(safeFilePath);
     stream.pipe(res);
   }

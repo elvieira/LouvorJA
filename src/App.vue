@@ -117,13 +117,16 @@ export default {
         window.electronAPI.onStreamingRemoteAction(async (data) => {
           const { action, params } = data;
           if (action === "song-slides") {
-            if (params.action === "next") {
-              this.$media.nextSlide();
-            } else if (params.action === "previous") {
-              this.$media.prevSlide();
-            } else if (params.action === "close") {
+            const hasMedia = Boolean(this.$appdata.get("modules.media.id_music") || this.$appdata.get("modules.media.data")?.name);
+            if (params.action === "close") {
               const force = params.force === "true";
               this.$media.close(force);
+            } else if (hasMedia) {
+              if (params.action === "next") {
+                this.$media.nextSlide();
+              } else if (params.action === "previous") {
+                this.$media.prevSlide();
+              }
             }
           } else if (action === "play-pause") {
             const hasMedia = Boolean(this.$appdata.get("modules.media.id_music") || this.$appdata.get("modules.media.data")?.name);
@@ -135,11 +138,12 @@ export default {
             this.$media.close(force);
           } else if (action === "keyboard") {
             const key = Number(params.key);
-            if (key === 39) this.$media.nextSlide();
-            else if (key === 37) this.$media.prevSlide();
+            const hasMedia = Boolean(this.$appdata.get("modules.media.id_music") || this.$appdata.get("modules.media.data")?.name);
+            if (key === 39 && hasMedia) this.$media.nextSlide();
+            else if (key === 37 && hasMedia) this.$media.prevSlide();
             else if (key === 38) this.$media.volumeUp();
             else if (key === 40) this.$media.volumeDown();
-            else if (key === 32) this.$media.playPause();
+            else if (key === 32 && hasMedia) this.$media.playPause();
             else if (key === 27) {
               const force = params.force === "true";
               this.$media.close(force);
@@ -151,8 +155,15 @@ export default {
           } else if (action === "open-song") {
             const songId = Number(params.id);
             if (songId) {
-              const tag = params.tag || "1";
-              const mode = tag === "2" ? "instrumental" : tag === "3" ? "no_audio" : "audio";
+              const tag = params.tag;
+              let mode = "audio";
+              if (params.mode) {
+                mode = params.mode;
+              } else if (tag === "2" || tag === "playback" || tag === "instrumental") {
+                mode = "instrumental";
+              } else if (tag === "3" || tag === "no_audio" || tag === "sem_audio") {
+                mode = "no_audio";
+              }
               this.$media.open({ id_music: songId, mode });
             }
           }
