@@ -36,6 +36,10 @@ export default {
       $appdata.set("modules.external_media.show", false);
     }
 
+    if (!params.fromQueue && $appdata.get("modules.media.show_queue")) {
+      $appdata.set("modules.media.show_queue", false);
+    }
+
     const mode = params.mode ? params.mode : "no_audio";
     const currentMode = $appdata.get("modules.media.config.mode");
     const isSameSong = params.id_music === $appdata.get("modules.media.id_music");

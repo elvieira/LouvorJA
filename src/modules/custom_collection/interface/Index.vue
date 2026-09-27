@@ -147,16 +147,7 @@
               </v-list>
             </v-card>
           </v-menu>
-          <v-btn
-            v-if="hasPlaybackQueue"
-            variant="tonal"
-            color="primary"
-            class="text-none font-weight-bold rounded-lg"
-            prepend-icon="mdi-playlist-play"
-            @click="openPlaybackQueue"
-          >
-            {{ t('playback_queue') }}
-          </v-btn>
+
           <v-btn
             variant="tonal"
             color="primary"
@@ -620,7 +611,6 @@
                 </div>
                 <v-text-field
                   v-model="nameInput"
-                  :placeholder="t('new_collection_placeholder')"
                   variant="outlined"
                   color="primary"
                   rounded="lg"
@@ -1235,9 +1225,6 @@ export default defineComponent({
     hasPlayableSongsInDetail(): boolean {
       return !!this.detailCollection && this.detailCollection.songs.length > 0;
     },
-    hasPlaybackQueue(): boolean {
-      return ((this as any).$appdata.get("modules.media.queue")?.items || []).length > 0;
-    },
     currentQueueItem(): CollectionSong | null {
       if (!this.playQueueActive) return null;
       return this.playQueueItems[this.playQueueIndex] || null;
@@ -1406,9 +1393,6 @@ export default defineComponent({
       this.playQueueActive = false;
       this.playQueueItems = [];
       this.playQueueIndex = -1;
-    },
-    openPlaybackQueue() {
-      (this as any).$appdata.set("modules.media.show_queue", true);
     },
     playSong(item: CollectionSong) {
       this.stopPlayQueue();

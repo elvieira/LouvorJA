@@ -22,6 +22,7 @@
         "title": "Cola de Reproducción",
         "empty": "La cola está vacía",
         "clear": "Limpiar cola",
+        "collapse": "Contraer cola",
         "added": "Canción añadida a la cola",
         "add_to_queue": "Añadir a la cola",
         "now_playing": "Reproduciendo ahora",

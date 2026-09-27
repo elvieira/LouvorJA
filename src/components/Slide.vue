@@ -1,21 +1,16 @@
 <template>
   <div ref="container" class="w-100 h-100">
-    <transition
-      v-for="(slide, index) in slides.slice().reverse()"
-      :key="index"
-      name="fade"
-    >
+    <transition :name="no_background ? 'slide-fade-transparent' : 'slide-fade'" :duration="350">
       <div
-        v-if="!slide.destroy"
-        v-show="slide.active"
+        v-if="currentSlide"
+        :key="currentSlide.uid"
         class="position-absolute top-0 left-0 w-100 h-100"
         :style="{
           overflow: 'hidden',
           backgroundColor: no_background ? 'transparent' : 'rgb(0,0,0)',
-          zIndex: Math.min(index + 1, 5)
         }"
       >
-        <div v-if="!no_background" class="position-absolute top-0 left-0 w-100 h-100" :style="style_bg(slide)" />
+        <div v-if="!no_background" class="position-absolute top-0 left-0 w-100 h-100" :style="style_bg(currentSlide)" />
         <div
           class="position-absolute top-0 left-0 w-100 h-100 d-flex justify-center"
           :class="slideAlignClass"
@@ -24,32 +19,32 @@
           <!-- Hero Design Exclusivo para o Título da Música (Cover Slide) -->
           <!-- eslint-disable vue/no-v-html -->
           <div
-            v-if="slide.cover && (hasText(slide.text) || hasText(slide.aux_text))"
+            v-if="currentSlide.cover && (hasText(currentSlide.text) || hasText(currentSlide.aux_text))"
             class="cover-slide-group d-flex flex-column align-center justify-center text-center w-100"
             :style="{ maxWidth: '90%' }"
           >
             <!-- Card Principal do Título -->
             <div
-              v-if="hasText(slide.text)"
+              v-if="hasText(currentSlide.text)"
               class="cover-slide-hero d-flex flex-column align-center justify-center text-center"
-              :style="style_cover_container(slide)"
+              :style="style_cover_container(currentSlide)"
             >
               <div
                 class="cover-title-text"
-                :style="style_cover_title(slide)"
-                v-html="formatCoverTitle(slide.text)"
+                :style="style_cover_title(currentSlide)"
+                v-html="formatCoverTitle(currentSlide.text)"
               />
             </div>
 
             <!-- Subtítulo Abaixo do Card do Título (Aba com Whiskers) -->
             <div
-              v-if="hasText(slide.aux_text)"
+              v-if="hasText(currentSlide.aux_text)"
               class="cover-subtitle-tab d-inline-flex align-center justify-center"
-              :style="style_cover_subtitle(slide)"
+              :style="style_cover_subtitle(currentSlide)"
             >
               <span class="subtitle-whisker" :style="style_subtitle_whisker" />
               <span class="subtitle-text" :style="style_subtitle_text">
-                {{ formatCoverSubtitle(slide.aux_text) }}
+                {{ formatCoverSubtitle(currentSlide.aux_text) }}
               </span>
               <span class="subtitle-whisker" :style="style_subtitle_whisker" />
             </div>
@@ -57,19 +52,19 @@
           <!-- eslint-enable vue/no-v-html -->
 
           <!-- Slide de Letra Padrão -->
-          <div v-else-if="!slide.cover && (hasText(slide.text) || hasText(slide.aux_text))" class="d-flex flex-column align-center justify-center w-100">
+          <div v-else-if="!currentSlide.cover && (hasText(currentSlide.text) || hasText(currentSlide.aux_text))" class="d-flex flex-column align-center justify-center w-100">
             <!-- eslint-disable vue/no-v-html -->
             <div
-              v-if="hasText(slide.aux_text)"
-              :style="style_aux_text(slide)"
-              v-html="slide.aux_text"
+              v-if="hasText(currentSlide.aux_text)"
+              :style="style_aux_text(currentSlide)"
+              v-html="currentSlide.aux_text"
             />
             <div
-              v-if="hasText(slide.text)"
+              v-if="hasText(currentSlide.text)"
               class="slide-lyric-card"
-              :style="style_text(slide)"
+              :style="style_text(currentSlide)"
             >
-              <div class="slide-lyric-content w-100 text-center" v-html="slide.text" />
+              <div class="slide-lyric-content w-100 text-center" v-html="currentSlide.text" />
             </div>
             <!-- eslint-enable vue/no-v-html -->
           </div>
@@ -140,7 +135,8 @@ const stringHelper = useString();
 const media = useMedia();
 const appdata = useAppData();
 
-const slides = ref<any[]>([{}, {}]);
+let slideUid = 0;
+const currentSlide = ref<any>(null);
 const repeat = ref(false);
 const getInitialDims = () => {
   if (props.reference_size?.width && props.reference_size?.height) {
@@ -324,47 +320,21 @@ const updateSettings = () => {
 const setSlide = () => {
   updateSettings();
   if (
-    slides.value[1] &&
-    stringHelper.clean(slides.value[1].text || "") === stringHelper.clean(props_slide.value.text || "") &&
-    stringHelper.clean(slides.value[1].aux_text || "") === stringHelper.clean(props_slide.value.aux_text || "") &&
-    slides.value[1].image === props_slide.value.image &&
-    slides.value[1].cover === props_slide.value.cover
+    currentSlide.value &&
+    stringHelper.clean(currentSlide.value.text || "") === stringHelper.clean(props_slide.value.text || "") &&
+    stringHelper.clean(currentSlide.value.aux_text || "") === stringHelper.clean(props_slide.value.aux_text || "") &&
+    currentSlide.value.image === props_slide.value.image &&
+    currentSlide.value.cover === props_slide.value.cover
   ) {
     repeat.value = !repeat.value;
-  } else {
-    repeat.value = false;
-  }
-
-  if (props.no_background) {
-    slides.value = [
-      {},
-      {
-        ...props_slide.value,
-        active: true,
-      },
-    ];
     return;
   }
+  repeat.value = false;
 
-  slides.value.unshift({});
-  slides.value[1] = {
+  currentSlide.value = {
     ...props_slide.value,
-    active: true,
+    uid: ++slideUid,
   };
-
-  if (slides.value.length > 2) {
-    setTimeout(() => {
-      if (slides.value && slides.value.length > 2) {
-        slides.value[2].destroy = true;
-        slides.value = slides.value.slice(0, 2);
-      }
-    }, 250);
-  }
-
-  if (slides.value.length > 3) {
-    slides.value[3].destroy = true;
-    slides.value = slides.value.slice(0, 3);
-  }
 };
 
 const style_bg = (slide: any) => {
@@ -878,12 +848,52 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.5s ease;
+.slide-fade-enter-active {
+  transition: opacity 0.35s ease;
+  z-index: 2;
 }
-.fade-enter-from,
-.fade-leave-to {
+
+.slide-fade-enter-from {
+  opacity: 0;
+}
+
+.slide-fade-leave-active {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none;
+  transition: opacity 0.35s ease;
+}
+
+.slide-fade-leave-to {
+  opacity: 1;
+}
+
+/* Modo sem fundo (transparência ativa): o slide anterior faz fade-out */
+.slide-fade-transparent-enter-active {
+  transition: opacity 0.35s ease;
+  z-index: 2;
+}
+
+.slide-fade-transparent-enter-from {
+  opacity: 0;
+}
+
+.slide-fade-transparent-leave-active {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none;
+  transition: opacity 0.35s ease;
+}
+
+.slide-fade-transparent-leave-to {
   opacity: 0;
 }
 </style>

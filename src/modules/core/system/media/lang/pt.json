@@ -22,6 +22,7 @@
         "title": "Fila de Reprodução",
         "empty": "A fila está vazia",
         "clear": "Limpar fila",
+        "collapse": "Recolher fila",
         "added": "Música adicionada à fila",
         "add_to_queue": "Adicionar à fila",
         "now_playing": "Tocando agora",

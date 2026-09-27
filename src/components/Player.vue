@@ -237,7 +237,27 @@
       </v-btn>
 
       <v-btn
-        v-if="location === 'footer' && queueCount > 0"
+        v-if="location === 'footer' && queueCount > 0 && !isQueueOpen"
+        variant="text"
+        size="small"
+        icon
+        :color="defaultTextColor"
+        class="mx-1"
+        @click="openQueue"
+      >
+        <v-icon>mdi-playlist-play</v-icon>
+        <v-tooltip
+          activator="parent"
+          location="top"
+          open-delay="300"
+          content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+        >
+          {{ $t('modules.media.queue.title') }}
+        </v-tooltip>
+      </v-btn>
+
+      <v-btn
+        v-if="location === 'footer' && queueCount > 0 && isQueueOpen"
         variant="text"
         size="small"
         icon
@@ -342,36 +362,97 @@
   </v-expand-transition>
 
   <v-dialog v-model="showSaveQueueDialog" max-width="440" persistent>
-    <v-card class="rounded-xl pa-2">
+    <v-card
+      class="rounded-xl pa-2"
+      :color="isDark ? 'var(--card-bg)' : '#ffffff'"
+      :theme="isDark ? 'dark' : 'light'"
+    >
       <v-card-title class="font-weight-bold">
         Salvar fila como coletânea
       </v-card-title>
       <v-card-text>
-        <v-text-field
-          v-model="saveQueueName"
-          label="Nome da coletânea"
-          placeholder="Ex.: Louvor"
-          variant="outlined"
-          density="comfortable"
-          autofocus
-          hide-details
-          @keydown.enter="saveQueueAsCollection"
-        />
+        <div class="d-flex justify-center mb-4">
+          <div class="dialog-cover-card">
+            <div
+              class="dialog-cover-card-image cursor-pointer"
+              @click="coverFileInput?.click()"
+            >
+              <img
+                v-if="saveQueueCover"
+                :src="saveQueueCover"
+                class="dialog-cover-card-img"
+              />
+              <v-icon v-else size="30" color="var(--accent-blue)">
+                mdi-image-plus
+              </v-icon>
+              <div v-if="saveQueueCover" class="dialog-cover-card-hover">
+                <v-icon size="22" color="white">
+                  mdi-pencil
+                </v-icon>
+              </div>
+              <v-btn
+                v-if="saveQueueCover"
+                icon
+                size="x-small"
+                variant="flat"
+                color="error"
+                class="dialog-cover-remove-btn"
+                @click.stop="saveQueueCover = null"
+              >
+                <v-icon size="14">
+                  mdi-close
+                </v-icon>
+              </v-btn>
+            </div>
+          </div>
+          <input
+            ref="coverFileInput"
+            type="file"
+            accept="image/*"
+            style="display: none;"
+            @change="onQueueCoverSelect"
+          />
+        </div>
+
+        <div class="mb-4">
+          <div class="text-body-2 font-weight-medium mb-1" style="color: var(--sidebar-text-secondary); margin-left: 4px;">
+            Nome da coletânea
+          </div>
+          <v-text-field
+            v-model="saveQueueName"
+            variant="outlined"
+            color="primary"
+            rounded="lg"
+            density="compact"
+            hide-details
+            class="modern-input-compact"
+            autofocus
+            @keydown.enter="saveQueueAsCollection"
+          />
+        </div>
       </v-card-text>
-      <v-card-actions>
+
+      <v-card-actions class="px-4 pb-4">
         <v-spacer />
-        <v-btn variant="text" class="text-none" @click="showSaveQueueDialog = false">
-          Cancelar
-        </v-btn>
-        <v-btn
-          color="primary"
-          variant="flat"
-          class="text-none font-weight-bold"
-          :disabled="!saveQueueName.trim()"
-          @click="saveQueueAsCollection"
-        >
-          Salvar
-        </v-btn>
+        <div class="d-flex" style="gap: 12px;">
+          <v-btn
+            variant="tonal"
+            :color="isDark ? 'white' : 'grey-darken-2'"
+            class="rounded-lg text-none px-6 font-weight-bold"
+            @click="showSaveQueueDialog = false"
+          >
+            Cancelar
+          </v-btn>
+          <v-btn
+            variant="flat"
+            color="primary"
+            class="rounded-lg text-none px-6 font-weight-bold"
+            :disabled="!saveQueueName.trim()"
+            @click="saveQueueAsCollection"
+          >
+            Salvar
+          </v-btn>
+        </div>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -435,6 +516,11 @@ const has_instrumental_music = computed(() => !!media.value.data.url_instrumenta
 
 const isPlaylistOpen = computed(() => appdata.get("modules.media.show_playlist") || false);
 const queueCount = computed(() => (appdata.get("modules.media.queue")?.items || []).length);
+const isQueueOpen = computed(() => appdata.get("modules.media.show_queue") === true);
+
+const openQueue = () => {
+  appdata.set("modules.media.show_queue", true);
+};
 
 const loopMode = computed(() => appdata.get("modules.media.config.loop") || "none");
 
@@ -561,9 +647,24 @@ const togglePlaylist = () => {
 
 const showSaveQueueDialog = ref(false);
 const saveQueueName = ref("");
+const saveQueueCover = ref<string | null>(null);
+const coverFileInput = ref<HTMLInputElement | null>(null);
+
+const onQueueCoverSelect = (event: Event) => {
+  const input = event.target as HTMLInputElement;
+  const file = input.files?.[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    saveQueueCover.value = e.target?.result as string;
+  };
+  reader.readAsDataURL(file);
+  input.value = "";
+};
 
 const openSaveQueueDialog = () => {
   saveQueueName.value = "";
+  saveQueueCover.value = null;
   showSaveQueueDialog.value = true;
 };
 
@@ -584,7 +685,7 @@ const saveQueueAsCollection = () => {
   collections.push({
     id: crypto.randomUUID(),
     name,
-    coverImage: null,
+    coverImage: saveQueueCover.value || null,
     songs,
   });
   userdata.set("modules.custom_collection.list", collections);
@@ -703,6 +804,58 @@ onBeforeUnmount(() => {
   &:hover {
     opacity: 0.8;
     background: rgba(255,255,255,0.05);
+  }
+}
+
+.dialog-cover-card {
+  width: 168px;
+
+  .dialog-cover-card-image {
+    position: relative;
+    width: 168px;
+    height: 168px;
+    border-radius: 14px;
+    overflow: hidden;
+    background: rgba(150, 150, 150, 0.05);
+    border: 2px dashed var(--border-color, rgba(255, 255, 255, 0.2));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 0.2s ease, transform 0.2s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+      border-color: var(--accent-blue);
+
+      .dialog-cover-card-hover {
+        opacity: 1;
+      }
+    }
+  }
+
+  .dialog-cover-card-img {
+    width: 168px;
+    height: 168px;
+    object-fit: cover;
+    display: block;
+  }
+
+  .dialog-cover-card-hover {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.35);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  .dialog-cover-remove-btn {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    z-index: 2;
   }
 }
 </style>

@@ -23,6 +23,10 @@ export default {
       $appdata.set("modules.external_media.config.request_action", { action: "minimize", time: Date.now() });
     }
 
+    if ($appdata.get("modules.media.show_queue")) {
+      $appdata.set("modules.media.show_queue", false);
+    }
+
     const modules = $appdata.get("modules") || {};
     const moduleToOpen = modules[id];
     const isOverlay = moduleToOpen?.manifest?.overlay === true;

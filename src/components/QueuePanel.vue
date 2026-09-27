@@ -7,6 +7,17 @@
       :class="!isDark ? 'bg-light' : 'bg-dark'"
     >
       <div class="queue-panel-header d-flex align-center px-6 pt-4 pb-2 flex-shrink-0">
+        <v-btn
+          variant="tonal"
+          color="primary"
+          size="small"
+          class="text-none mr-3"
+          prepend-icon="mdi-chevron-down"
+          @click="closeQueue"
+        >
+          {{ $t('modules.media.queue.collapse') }}
+        </v-btn>
+
         <span class="text-button font-weight-bold opacity-70" :class="isDark ? 'text-white' : 'text-black'">{{ $t('modules.media.queue.title') }}</span>
         
         <v-spacer />
@@ -113,14 +124,6 @@
           </template>
         </draggable>
       </div>
-
-      <v-btn
-        icon="mdi-chevron-down"
-        color="primary"
-        variant="tonal"
-        class="queue-close-fab opacity-80"
-        @click="closeQueue"
-      />
     </div>
   </v-expand-transition>
 </template>
@@ -232,17 +235,6 @@ const playFromQueue = (index: number) => {
   opacity: 0.8 !important;
 }
 
-.queue-close-fab {
-  position: absolute;
-  top: calc(var(--queue-height) - 72px);
-  right: 16px;
-  z-index: 1000;
-  transition: opacity 0.2s;
-}
-
-.queue-close-fab:hover {
-  opacity: 1 !important;
-}
 
 .queue-cover {
   width: 40px;
