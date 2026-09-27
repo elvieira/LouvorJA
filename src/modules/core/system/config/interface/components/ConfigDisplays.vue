@@ -13,7 +13,7 @@
                 {{ t('monitors') }}
               </h3>
               <div class="text-caption" style="color: var(--sidebar-text-secondary);">
-                Telas e monitores detectados pelo sistema operacional
+                {{ t('monitors_desc') }}
               </div>
             </div>
           </div>

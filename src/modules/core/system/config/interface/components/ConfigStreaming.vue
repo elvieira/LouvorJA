@@ -10,10 +10,10 @@
             </v-icon>
             <div>
               <h3 class="font-weight-bold" style="color: var(--sidebar-text); font-size: 1.1rem; line-height: 1.2;">
-                Servidor de Transmissão (OBS / vMix)
+                {{ t('streaming_server_title') }}
               </h3>
               <div class="text-caption" style="color: var(--sidebar-text-secondary);">
-                Transmita letras e versículos para OBS Studio, vMix ou dispositivos na rede local
+                {{ t('streaming_server_desc') }}
               </div>
             </div>
           </div>
@@ -27,7 +27,7 @@
               <v-icon start size="16">
                 {{ isRunning ? 'mdi-check-circle' : 'mdi-power-standby' }}
               </v-icon>
-              {{ isRunning ? 'Servidor Ativo' : 'Desconectado' }}
+              {{ isRunning ? t('server_active') : t('server_offline') }}
             </v-chip>
 
             <v-switch
@@ -47,8 +47,8 @@
           v-model="autoStart"
           icon="mdi-play-network-outline"
           icon-color="primary"
-          title="Iniciar com o Louvor JA"
-          subtitle="Iniciar o servidor de transmissão automaticamente ao abrir o programa"
+          :title="t('streaming_auto_start')"
+          :subtitle="t('streaming_auto_start_desc')"
           type="switch"
           @update:model-value="saveSettings"
         />
@@ -63,8 +63,8 @@
           v-model="selectedHost"
           icon="mdi-ip-network"
           icon-color="primary"
-          title="Interface de Rede (IP)"
-          subtitle="Selecione a placa de rede ou endereço IP para vinculação do servidor"
+          :title="t('network_interface')"
+          :subtitle="t('network_interface_desc')"
           type="select"
           :items="interfaces"
           item-title="name"
@@ -83,10 +83,10 @@
             </v-icon>
             <div>
               <h3 class="font-weight-bold" style="color: var(--sidebar-text); font-size: 1.1rem; line-height: 1.2;">
-                Porta do Servidor
+                {{ t('server_port') }}
               </h3>
               <div class="text-caption" style="color: var(--sidebar-text-secondary);">
-                Padrão 7071 (porta para conexão do OBS Studio, vMix e aparelhos)
+                {{ t('server_port_desc') }}
               </div>
             </div>
           </div>
@@ -111,8 +111,8 @@
           v-model="useToken"
           icon="mdi-shield-check-outline"
           icon-color="primary"
-          title="Exigir Token de Segurança"
-          subtitle="Solicitar código de autenticação para aparelhos na rede local"
+          :title="t('require_token')"
+          :subtitle="t('require_token_desc')"
           type="switch"
           @update:model-value="saveSettings"
         />
@@ -128,10 +128,10 @@
               </v-icon>
               <div>
                 <h3 class="font-weight-bold" style="color: var(--sidebar-text); font-size: 1.1rem; line-height: 1.2;">
-                  Token de Segurança
+                  {{ t('security_token') }}
                 </h3>
                 <div class="text-caption" style="color: var(--sidebar-text-secondary);">
-                  Código de autenticação (incluso automaticamente no QR Code)
+                  {{ t('security_token_desc') }}
                 </div>
               </div>
             </div>
@@ -153,7 +153,7 @@
                 color="primary"
                 size="small"
                 class="rounded-lg"
-                title="Gerar novo token"
+                :title="t('generate_new_token')"
                 @click="generateToken"
               />
             </div>
@@ -170,10 +170,10 @@
           </v-icon>
           <div>
             <h3 class="font-weight-bold" style="color: var(--sidebar-text); font-size: 1.1rem; line-height: 1.2;">
-              Links para Transmissão e Dispositivos
+              {{ t('streaming_links_title') }}
             </h3>
             <div class="text-caption" style="color: var(--sidebar-text-secondary);">
-              Adicione as fontes de vídeo ao OBS/vMix ou envie os links para tablets e celulares
+              {{ t('streaming_links_desc') }}
             </div>
           </div>
         </div>
@@ -196,7 +196,7 @@
                   </v-avatar>
                   <div style="min-width: 0;">
                     <div class="font-weight-bold text-body-1 text-truncate" style="color: var(--sidebar-text); line-height: 1.25;">
-                      OBS / vMix — Terço Inferior
+                      {{ t('link_lower_third_title') }}
                     </div>
                   </div>
                 </div>
@@ -207,12 +207,12 @@
                   class="font-weight-bold flex-shrink-0"
                   style="white-space: nowrap;"
                 >
-                  Recomendado
+                  {{ t('recommended_badge') }}
                 </v-chip>
               </div>
 
               <div class="text-caption mb-3" style="color: var(--sidebar-text-secondary); line-height: 1.4;">
-                Barra semi-transparente ideal para câmeras ao vivo. Adicione como "Fonte de Navegador" (Browser Source) no OBS Studio.
+                {{ t('link_lower_third_desc') }}
               </div>
             </div>
 
@@ -235,7 +235,7 @@
                   height="36"
                   @click="copyToClipboard(links.overlay)"
                 >
-                  Copiar Link
+                  {{ t('copy_link') }}
                 </v-btn>
                 <v-btn
                   variant="outlined"
@@ -243,8 +243,8 @@
                   size="small"
                   class="rounded-lg"
                   style="border-color: var(--border-color); color: var(--sidebar-text);"
-                  title="Exibir QR Code para celular"
-                  @click="openQrCode('OBS / vMix — Terço Inferior', links.overlay, 'overlay')"
+                  :title="t('qr_code_tooltip')"
+                  @click="openQrCode(t('link_lower_third_title'), links.overlay, 'overlay')"
                 />
                 <v-btn
                   variant="outlined"
@@ -252,7 +252,7 @@
                   size="small"
                   class="rounded-lg"
                   style="border-color: var(--border-color); color: var(--sidebar-text);"
-                  title="Abrir no navegador"
+                  :title="t('open_browser_tooltip')"
                   @click="openUrl(links.overlay)"
                 />
               </div>
@@ -276,7 +276,7 @@
                   </v-avatar>
                   <div style="min-width: 0;">
                     <div class="font-weight-bold text-body-1 text-truncate" style="color: var(--sidebar-text); line-height: 1.25;">
-                      OBS / vMix — Tela Cheia (Projetor)
+                      {{ t('link_fullscreen_title') }}
                     </div>
                   </div>
                 </div>
@@ -287,12 +287,12 @@
                   class="font-weight-bold flex-shrink-0"
                   style="white-space: nowrap;"
                 >
-                  Projeção / Player
+                  {{ t('projection_player_badge') }}
                 </v-chip>
               </div>
 
               <div class="text-caption mb-3" style="color: var(--sidebar-text-secondary); line-height: 1.4;">
-                Replica exatamente a tela do projetor e do player (letras, capa com card de título, fundo e Bíblia) para captura no OBS Studio ou vMix.
+                {{ t('link_fullscreen_desc') }}
               </div>
             </div>
 
@@ -315,7 +315,7 @@
                   height="36"
                   @click="copyToClipboard(links.overlayFullscreen)"
                 >
-                  Copiar Link
+                  {{ t('copy_link') }}
                 </v-btn>
                 <v-btn
                   variant="outlined"
@@ -323,8 +323,8 @@
                   size="small"
                   class="rounded-lg"
                   style="border-color: var(--border-color); color: var(--sidebar-text);"
-                  title="Exibir QR Code para celular"
-                  @click="openQrCode('OBS / vMix — Tela Cheia', links.overlayFullscreen, 'overlayFullscreen')"
+                  :title="t('qr_code_tooltip')"
+                  @click="openQrCode(t('link_fullscreen_title'), links.overlayFullscreen, 'overlayFullscreen')"
                 />
                 <v-btn
                   variant="outlined"
@@ -332,7 +332,7 @@
                   size="small"
                   class="rounded-lg"
                   style="border-color: var(--border-color); color: var(--sidebar-text);"
-                  title="Abrir no navegador"
+                  :title="t('open_browser_tooltip')"
                   @click="openUrl(links.overlayFullscreen)"
                 />
               </div>
@@ -356,7 +356,7 @@
                   </v-avatar>
                   <div style="min-width: 0;">
                     <div class="font-weight-bold text-body-1 text-truncate" style="color: var(--sidebar-text); line-height: 1.25;">
-                      Retorno de Palco
+                      {{ t('link_stage_title') }}
                     </div>
                   </div>
                 </div>
@@ -367,12 +367,12 @@
                   class="font-weight-bold flex-shrink-0"
                   style="white-space: nowrap;"
                 >
-                  Músicos
+                  {{ t('musicians_badge') }}
                 </v-chip>
               </div>
 
               <div class="text-caption mb-3" style="color: var(--sidebar-text-secondary); line-height: 1.4;">
-                Página web para celular ou tablet com letra atual em destaque e prévia da próxima estrofe para a equipe de louvor.
+                {{ t('link_stage_desc') }}
               </div>
             </div>
 
@@ -395,7 +395,7 @@
                   height="36"
                   @click="copyToClipboard(links.stage)"
                 >
-                  Copiar Link
+                  {{ t('copy_link') }}
                 </v-btn>
                 <v-btn
                   variant="outlined"
@@ -403,8 +403,8 @@
                   size="small"
                   class="rounded-lg"
                   style="border-color: var(--border-color); color: var(--sidebar-text);"
-                  title="Exibir QR Code para celular"
-                  @click="openQrCode('Retorno de Palco', links.stage, 'stage')"
+                  :title="t('qr_code_tooltip')"
+                  @click="openQrCode(t('link_stage_title'), links.stage, 'stage')"
                 />
                 <v-btn
                   variant="outlined"
@@ -412,7 +412,7 @@
                   size="small"
                   class="rounded-lg"
                   style="border-color: var(--border-color); color: var(--sidebar-text);"
-                  title="Abrir no navegador"
+                  :title="t('open_browser_tooltip')"
                   @click="openUrl(links.stage)"
                 />
               </div>
@@ -436,7 +436,7 @@
                   </v-avatar>
                   <div style="min-width: 0;">
                     <div class="font-weight-bold text-body-1 text-truncate" style="color: var(--sidebar-text); line-height: 1.25;">
-                      Controle Remoto Web
+                      {{ t('link_remote_title') }}
                     </div>
                   </div>
                 </div>
@@ -447,12 +447,12 @@
                   class="font-weight-bold flex-shrink-0"
                   style="white-space: nowrap;"
                 >
-                  Controle Web
+                  {{ t('web_control_badge') }}
                 </v-chip>
               </div>
 
               <div class="text-caption mb-3" style="color: var(--sidebar-text-secondary); line-height: 1.4;">
-                Acesse pelo smartphone na mesma rede local para passar estrofes, acionar play/pause e pesquisar hinos facilmente.
+                {{ t('link_remote_desc') }}
               </div>
             </div>
 
@@ -475,7 +475,7 @@
                   height="36"
                   @click="copyToClipboard(links.remote)"
                 >
-                  Copiar Link
+                  {{ t('copy_link') }}
                 </v-btn>
                 <v-btn
                   variant="outlined"
@@ -483,8 +483,8 @@
                   size="small"
                   class="rounded-lg"
                   style="border-color: var(--border-color); color: var(--sidebar-text);"
-                  title="Exibir QR Code para celular"
-                  @click="openQrCode('Controle Remoto Web', links.remote, 'remote')"
+                  :title="t('qr_code_tooltip')"
+                  @click="openQrCode(t('link_remote_title'), links.remote, 'remote')"
                 />
                 <v-btn
                   variant="outlined"
@@ -492,7 +492,7 @@
                   size="small"
                   class="rounded-lg"
                   style="border-color: var(--border-color); color: var(--sidebar-text);"
-                  title="Abrir no navegador"
+                  :title="t('open_browser_tooltip')"
                   @click="openUrl(links.remote)"
                 />
               </div>
@@ -534,7 +534,7 @@
 
         <v-card-text class="pa-4 pt-1 text-center">
           <div class="text-caption mb-3" style="color: var(--sidebar-text-secondary); line-height: 1.4;">
-            Aponte a câmera do seu smartphone ou tablet conectado na mesma rede Wi-Fi para abrir diretamente.
+            {{ t('qr_dialog_scan') }}
           </div>
 
           <!-- CONTAINER DO QR CODE -->
@@ -556,7 +556,7 @@
                 style="width: 100%; height: 100%; object-fit: contain; display: block;"
               />
               <div v-else class="text-caption text-grey">
-                Não foi possível gerar o QR Code.
+                {{ t('qr_error') }}
               </div>
             </div>
           </div>
@@ -574,7 +574,7 @@
               variant="text"
               size="x-small"
               class="ml-1 rounded"
-              title="Copiar link"
+              :title="t('copy_link')"
               @click="copyToClipboard(qrDialogUrl)"
             />
           </div>
@@ -587,7 +587,7 @@
             class="mt-3 rounded-lg text-left text-caption"
             icon="mdi-information-outline"
           >
-            O servidor está desligado. Inicie o servidor no topo para que o dispositivo consiga acessar a página.
+            {{ t('server_offline_alert') }}
           </v-alert>
         </v-card-text>
 
@@ -599,7 +599,7 @@
             prepend-icon="mdi-content-copy"
             @click="copyToClipboard(qrDialogUrl)"
           >
-            Copiar Link
+            {{ t('copy_link') }}
           </v-btn>
           <v-btn
             variant="outlined"
@@ -607,7 +607,7 @@
             style="border-color: var(--border-color); color: var(--sidebar-text);"
             @click="showQrDialog = false"
           >
-            Fechar
+            {{ t('close_btn') }}
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -618,6 +618,7 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import QRCode from "qrcode";
+import manifest from "../../manifest";
 import SettingsActionRow from "@/components/SettingsActionRow.vue";
 import $snackbar from "@/helpers/ui/Snackbar";
 
@@ -670,6 +671,9 @@ export default defineComponent({
     await this.fetchStatus();
   },
   methods: {
+    t(key: string, params?: any): string {
+      return (this as any).$t(`modules.${manifest.id}.${key}`, params);
+    },
     loadSettings() {
       this.autoStart = (this as any).$userdata.get("modules.streaming.autostart") === true;
       const savedPort = (this as any).$userdata.get("modules.streaming.port");
@@ -719,12 +723,12 @@ export default defineComponent({
       if (window.electronAPI?.streamingGetInterfaces) {
         const list = await window.electronAPI.streamingGetInterfaces();
         this.interfaces = [
-          { name: "Todas as Redes (Padrão 0.0.0.0)", ip: "0.0.0.0", isLocal: false },
+          { name: this.t("all_networks"), ip: "0.0.0.0", isLocal: false },
           ...list,
         ];
       } else {
         this.interfaces = [
-          { name: "Localhost (Apenas este computador)", ip: "127.0.0.1", isLocal: true },
+          { name: this.t("localhost_only"), ip: "127.0.0.1", isLocal: true },
         ];
       }
       this.updateLinks();
@@ -834,19 +838,19 @@ export default defineComponent({
               token: this.useToken ? this.token : "",
             });
             this.isRunning = status.running;
-            $snackbar.show({ text: `Servidor de transmissão iniciado na porta ${this.port}!`, color: "success" });
+            $snackbar.show({ text: this.t("msg_server_started", { port: this.port }), color: "success" });
           }
         } else {
           if (window.electronAPI?.streamingStop) {
             await window.electronAPI.streamingStop();
             this.isRunning = false;
-            $snackbar.show({ text: "Servidor de transmissão desconectado.", color: "info" });
+            $snackbar.show({ text: this.t("msg_server_stopped"), color: "info" });
           }
         }
         await this.fetchStatus();
       } catch (err: any) {
         this.isRunning = false;
-        $snackbar.show({ text: `Erro ao controlar servidor: ${err.message || err}`, color: "error" });
+        $snackbar.show({ text: this.t("msg_server_error", { error: err.message || err }), color: "error" });
       } finally {
         this.isLoading = false;
       }
@@ -854,7 +858,7 @@ export default defineComponent({
     copyToClipboard(text: string) {
       if (navigator.clipboard) {
         navigator.clipboard.writeText(text);
-        $snackbar.show({ text: "Link copiado para a área de transferência!", color: "success", timeout: 2000 });
+        $snackbar.show({ text: this.t("msg_link_copied"), color: "success", timeout: 2000 });
       }
     },
     openUrl(url: string) {

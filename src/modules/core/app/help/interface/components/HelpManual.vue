@@ -30,7 +30,7 @@
           density="compact"
           flat
           hide-details
-          placeholder="Buscar no manual..."
+          :placeholder="$t('modules.help.manual.search_placeholder')"
           prepend-inner-icon="mdi-magnify"
           rounded="xl"
           style="max-width: 320px;"
@@ -104,6 +104,7 @@ import ManualShortcuts from "./manual/ManualShortcuts.vue";
 import ManualSongs from "./manual/ManualSongs.vue";
 import ManualBible from "./manual/ManualBible.vue";
 import ManualLiturgy from "./manual/ManualLiturgy.vue";
+import ManualUtilities from "./manual/ManualUtilities.vue";
 import ManualSync from "./manual/ManualSync.vue";
 import ManualDisplays from "./manual/ManualDisplays.vue";
 import ManualSettings from "./manual/ManualSettings.vue";
@@ -116,6 +117,7 @@ export default defineComponent({
     ManualSongs,
     ManualBible,
     ManualLiturgy,
+    ManualUtilities,
     ManualSync,
     ManualDisplays,
     ManualSettings,
@@ -130,14 +132,12 @@ export default defineComponent({
   computed: {
     sections(): Array<{ id: string; title: string; icon: string }> {
       return [
-        { id: "intro", title: "Introdução", icon: "mdi-flag" },
-        { id: "shortcuts", title: "Teclas de Atalho", icon: "mdi-keyboard" },
-        { id: "songs", title: "Músicas e Hinos", icon: "mdi-music-note" },
-        { id: "bible", title: "Bíblia Sagrada", icon: "mdi-book-cross" },
-        { id: "liturgy", title: "Liturgia", icon: "mdi-hands-pray" },
-        // { id: "sync", title: "Sincronização e Download", icon: "mdi-cloud-sync" },
-        // { id: "displays", title: "Telas de Projeção", icon: "mdi-monitor-multiple" },
-        // { id: "settings", title: "Configurações", icon: "mdi-cog" },
+        { id: "intro", title: (this as any).$t("modules.help.manual.sections.intro"), icon: "mdi-flag" },
+        { id: "shortcuts", title: (this as any).$t("modules.help.manual.sections.shortcuts"), icon: "mdi-keyboard" },
+        { id: "songs", title: (this as any).$t("modules.help.manual.sections.songs"), icon: "mdi-music-note" },
+        { id: "bible", title: (this as any).$t("modules.help.manual.sections.bible"), icon: "mdi-book-cross" },
+        { id: "liturgy", title: (this as any).$t("modules.help.manual.sections.liturgy"), icon: "mdi-hands-pray" },
+        { id: "utilities", title: (this as any).$t("modules.help.manual.sections.utilities"), icon: "mdi-plus-circle" },
       ];
     },
     currentSectionTitle(): string {
@@ -151,6 +151,7 @@ export default defineComponent({
         songs: "ManualSongs",
         bible: "ManualBible",
         liturgy: "ManualLiturgy",
+        utilities: "ManualUtilities",
         sync: "ManualSync",
         displays: "ManualDisplays",
         settings: "ManualSettings",

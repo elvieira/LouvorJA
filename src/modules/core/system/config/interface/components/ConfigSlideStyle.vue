@@ -7,7 +7,7 @@
           <v-icon size="24" color="primary" class="mr-2">
             mdi-format-align-center
           </v-icon>
-          <span class="text-subtitle-1 font-weight-bold" style="color: var(--sidebar-text);">Alinhamento e Estrutura</span>
+          <span class="text-subtitle-1 font-weight-bold" style="color: var(--sidebar-text);">{{ t('slide_alignment_structure') }}</span>
         </div>
 
         <div class="mb-6">
@@ -67,7 +67,7 @@
                 {{ t('font_customization') }}
               </h3>
               <div class="text-caption" style="color: var(--sidebar-text-secondary);">
-                Tamanho da letra, cores, peso da fonte e tarja de fundo
+                {{ t('font_customization_desc') }}
               </div>
             </div>
           </div>
@@ -309,7 +309,7 @@
                 {{ t('custom_background') }}
               </h3>
               <div class="text-caption" style="color: var(--sidebar-text-secondary);">
-                Defina uma cor sólida ou imagem personalizada para os slides
+                {{ t('custom_bg_desc') }}
               </div>
             </div>
           </div>

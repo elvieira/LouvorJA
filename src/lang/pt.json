@@ -49,7 +49,10 @@
         "no": "Não",
         "wait": "Aguarde...",
         "close_app_title": "Encerrar Aplicativo?",
-        "close_app_text": "Existe uma mídia ativa ou projeção em andamento. Deseja realmente sair?"
+        "close_app_text": "Existe uma mídia ativa ou projeção em andamento. Deseja realmente sair?",
+        "msg_lang_title": "Aviso de Idioma",
+        "msg_lang_download": "Ao alterar o idioma, é necessário baixar o banco de dados e configurações do novo idioma. Deseja prosseguir?",
+        "msg_lang_reload": "Ao alterar o idioma, o programa será recarregado. Deseja prosseguir?"
     },
     "messages": {
         "file_database_not_found": "Arquivo de dados não encontrado!",

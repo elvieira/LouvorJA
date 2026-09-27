@@ -12,7 +12,7 @@
               {{ t('playback') }}
             </h3>
             <div class="text-caption" style="color: var(--sidebar-text-secondary);">
-              Configurações do player interno de vídeo e apresentações
+              {{ t('playback_desc') }}
             </div>
           </div>
         </div>

@@ -1,7 +1,7 @@
 <template>
   <div class="manual-section">
     <p class="mb-6">
-      Agilize o uso do aplicativo utilizando as teclas de atalho mapeadas. Abaixo, você confere as combinações disponíveis para cada módulo do sistema.
+      {{ t('shortcuts.intro') }}
     </p>
 
     <!-- Geral -->
@@ -13,7 +13,7 @@
           class="mr-3"
           size="small"
         />
-        <span class="font-weight-bold" style="font-size: 1.1rem; color: var(--sidebar-text);">Geral</span>
+        <span class="font-weight-bold" style="font-size: 1.1rem; color: var(--sidebar-text);">{{ t('shortcuts.general') }}</span>
       </v-card-title>
       <v-card-text class="pa-0">
         <v-table class="bg-transparent" density="comfortable">
@@ -23,36 +23,36 @@
                 <kbd>ESC</kbd>
               </td>
               <td style="color: var(--sidebar-text-secondary);">
-                Fecha a música
+                {{ t('shortcuts.close_song') }}
               </td>
             </tr>
             <tr>
               <td><kbd>CTRL / ⌘</kbd> + <kbd>F</kbd></td>
               <td style="color: var(--sidebar-text-secondary);">
-                Abre a busca rápida de músicas
+                {{ t('shortcuts.quick_search_songs') }}
               </td>
             </tr>
             <tr>
               <td><kbd>CTRL / ⌘</kbd> + <kbd>B</kbd></td>
               <td style="color: var(--sidebar-text-secondary);">
-                Abre a busca rápida da bíblia
+                {{ t('shortcuts.quick_search_bible') }}
               </td>
             </tr>
             <tr>
               <td><kbd>F1</kbd></td>
               <td style="color: var(--sidebar-text-secondary);">
-                Abre a tela de ajuda
+                {{ t('shortcuts.open_help') }}
               </td>
             </tr>
             <tr>
               <td><kbd>CTRL / ⌘</kbd> + <kbd>Enter</kbd></td>
               <td style="color: var(--sidebar-text-secondary);">
-                Projeta a janela atual (quando disponível o recurso)
+                {{ t('shortcuts.project_current_window') }}
               </td>
             </tr>
             <tr>
               <td class="font-weight-medium">
-                Sair da projeção
+                {{ t('shortcuts.exit_projection') }}
               </td>
               <td><kbd>ESC</kbd></td>
             </tr>
@@ -70,7 +70,7 @@
           class="mr-3"
           size="small"
         />
-        <span class="font-weight-bold" style="font-size: 1.1rem; color: var(--sidebar-text);">Bíblia / Busca Bíblica</span>
+        <span class="font-weight-bold" style="font-size: 1.1rem; color: var(--sidebar-text);">{{ t('shortcuts.bible_title') }}</span>
       </v-card-title>
       <v-card-text class="pa-0">
         <v-table class="bg-transparent" density="comfortable">
@@ -80,7 +80,7 @@
                 <kbd>←</kbd> / <kbd>↑</kbd> / <kbd>PgUp</kbd>
               </td>
               <td style="color: var(--sidebar-text-secondary);">
-                Vai para o verso anterior
+                {{ t('shortcuts.prev_verse') }}
               </td>
             </tr>
             <tr>
@@ -88,7 +88,7 @@
                 <kbd>→</kbd> / <kbd>↓</kbd> / <kbd>PgDn</kbd>
               </td>
               <td style="color: var(--sidebar-text-secondary);">
-                Vai para o próximo verso
+                {{ t('shortcuts.next_verse') }}
               </td>
             </tr>
           </tbody>
@@ -105,7 +105,7 @@
           class="mr-3"
           size="small"
         />
-        <span class="font-weight-bold" style="font-size: 1.1rem; color: var(--sidebar-text);">Projeção de Música</span>
+        <span class="font-weight-bold" style="font-size: 1.1rem; color: var(--sidebar-text);">{{ t('shortcuts.song_projection') }}</span>
       </v-card-title>
       <v-card-text class="pa-0">
         <v-table class="bg-transparent" density="comfortable">
@@ -115,7 +115,7 @@
                 <kbd>←</kbd> / <kbd>↑</kbd> / <kbd>PgUp</kbd>
               </td>
               <td style="color: var(--sidebar-text-secondary);">
-                Vai para o slide anterior (ou retrocede o versículo)
+                {{ t('shortcuts.prev_slide') }}
               </td>
             </tr>
             <tr>
@@ -123,19 +123,19 @@
                 <kbd>→</kbd> / <kbd>↓</kbd> / <kbd>PgDn</kbd>
               </td>
               <td style="color: var(--sidebar-text-secondary);">
-                Vai para o próximo slide (ou avança o versículo)
+                {{ t('shortcuts.next_slide') }}
               </td>
             </tr>
             <tr>
               <td><kbd>Home</kbd></td>
               <td style="color: var(--sidebar-text-secondary);">
-                Vai para o primeiro slide
+                {{ t('shortcuts.first_slide') }}
               </td>
             </tr>
             <tr>
               <td><kbd>End</kbd></td>
               <td style="color: var(--sidebar-text-secondary);">
-                Vai para o último slide
+                {{ t('shortcuts.last_slide') }}
               </td>
             </tr>
             <tr>
@@ -143,7 +143,7 @@
                 <kbd>CTRL / ⌘</kbd> + <kbd>P</kbd> / <kbd>Espaço</kbd>
               </td>
               <td style="color: var(--sidebar-text-secondary);">
-                Pausa a música, ou continua, caso já esteja pausada
+                {{ t('shortcuts.pause_resume') }}
               </td>
             </tr>
           </tbody>
@@ -158,5 +158,10 @@ import { defineComponent } from "vue";
 
 export default defineComponent({
   name: "ManualShortcuts",
+  methods: {
+    t(key: string, params?: any): string {
+      return (this as any).$t(`modules.help.manual.${key}`, params);
+    },
+  },
 });
 </script>

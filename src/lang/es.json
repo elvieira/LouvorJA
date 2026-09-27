@@ -49,7 +49,10 @@
         "no": "No",
         "wait": "Espere...",
         "close_app_title": "¿Cerrar Aplicación?",
-        "close_app_text": "Hay un medio activo o proyección en curso. ¿Desea realmente salir?"
+        "close_app_text": "Hay un medio activo o proyección en curso. ¿Desea realmente salir?",
+        "msg_lang_title": "Aviso de Idioma",
+        "msg_lang_download": "Al cambiar el idioma, es necesario descargar la base de datos y la configuración del nuevo idioma. ¿Deseas continuar?",
+        "msg_lang_reload": "Al cambiar el idioma, el programa se recargará. ¿Deseas continuar?"
     },
     "messages": {
         "file_database_not_found": "Archivo de datos no encontrado!",

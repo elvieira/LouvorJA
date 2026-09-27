@@ -26,7 +26,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
   getAppDataSize: () => ipcRenderer.invoke("get-app-data-size"),
   openPath: (filePath: string) => ipcRenderer.invoke("open-path", filePath),
   clearAllData: () => ipcRenderer.invoke("clear-all-data"),
-  clearSysData: () => ipcRenderer.invoke("clear-sys-data"),
+  clearSysData: (lang?: string) => ipcRenderer.invoke("clear-sys-data", lang),
   extractLocalDb: (lang?: string) => ipcRenderer.invoke("extract-local-db", lang),
   downloadDatabase: (lang?: string, force?: boolean) => ipcRenderer.invoke("download-database", lang, force),
   checkDatabaseExists: (lang?: string) => ipcRenderer.invoke("check-database-exists", lang),

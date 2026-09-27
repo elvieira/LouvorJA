@@ -3,7 +3,7 @@
     <v-card class="settings-card rounded-xl pa-2" flat style="background: var(--card-bg); box-shadow: var(--shadow);">
       <v-card-text class="pa-6">
         <SettingsActionRow
-          v-model="language"
+          :model-value="language"
           icon="mdi-translate"
           icon-color="primary"
           :title="t('language')"
@@ -13,6 +13,7 @@
           item-title="name"
           item-value="code"
           class="mb-6"
+          @update:model-value="changeLanguage"
         />
 
         <v-divider class="mb-6" style="opacity: 0.1;" />
@@ -55,21 +56,15 @@ export default defineComponent({
     SettingsActionRow,
   },
   data: () => ({
-    isDesktop: !!(window as any).electronAPI,
+    isDesktop: typeof window !== "undefined" && !!((window as any).electronAPI && (window as any).electronAPI.isElectron),
     languagesList: [
       { name: "Português", code: "pt" },
       { name: "Español", code: "es" },
     ],
   }),
   computed: {
-    language: {
-      get(): string {
-        return (this as any).$userdata.get("language") || (this as any).$i18n.locale || "pt";
-      },
-      set(val: string) {
-        (this as any).$userdata.set("language", val);
-        (this as any).$i18n.locale = val;
-      },
+    language(): string {
+      return (this as any).$userdata.get("language") || (this as any).$i18n.locale || "pt";
     },
     start_on_login: {
       get(): boolean {
@@ -106,6 +101,67 @@ export default defineComponent({
   methods: {
     t(text: string): string {
       return (this as any).$t(`modules.${manifest.id}.${text}`);
+    },
+    async changeLanguage(val: string) {
+      const current = (this as any).$userdata.get("language") || (this as any).$i18n.locale || "pt";
+      if (!val || val === current) return;
+
+      const isElectron = typeof window !== "undefined" && !!((window as any).electronAPI && (window as any).electronAPI.isElectron);
+
+      if (isElectron) {
+        try {
+          const dbExists = await (window as any).electronAPI.checkDatabaseExists(val);
+          if (dbExists) {
+            (this as any).$alert.yesno(
+              {
+                title: this.t("msg_lang_title"),
+                text: this.t("msg_lang_reload"),
+                translate: false,
+              },
+              (resp: any) => {
+                if (resp === "yes") {
+                  (this as any).$userdata.set("language", val);
+                  window.location.reload();
+                }
+              },
+            );
+            return;
+          }
+        } catch (err) {
+          console.error("Erro ao verificar DB existente", err);
+        }
+
+        (this as any).$alert.yesno(
+          {
+            title: this.t("msg_lang_title"),
+            text: this.t("msg_lang_download"),
+            translate: false,
+          },
+          async (resp: any) => {
+            if (resp === "yes") {
+              window.sessionStorage.setItem("pending_language", val);
+              if ((window as any).electronAPI?.clearSysData) {
+                await (window as any).electronAPI.clearSysData(val);
+              }
+              window.location.reload();
+            }
+          },
+        );
+      } else {
+        (this as any).$alert.yesno(
+          {
+            title: this.t("msg_lang_title"),
+            text: this.t("msg_lang_reload"),
+            translate: false,
+          },
+          (resp: any) => {
+            if (resp === "yes") {
+              (this as any).$userdata.set("language", val);
+              window.location.reload();
+            }
+          },
+        );
+      }
     },
   },
 });
