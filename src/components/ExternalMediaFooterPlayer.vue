@@ -87,6 +87,14 @@
     </div>
 
     <div class="d-flex align-center">
+      <ButtonScreen
+        v-if="isVideo && playerWidth >= 600 && !showExternalMiniPlayer"
+        module="external_media"
+        variant="text"
+        size="small"
+        :color="textColor"
+        class="mx-1"
+      />
       <v-btn
         v-if="isVideo && playerWidth >= 600 && !showExternalMiniPlayer"
         variant="text"
@@ -132,6 +140,7 @@
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import { useTheme } from "vuetify";
 import { useAppData } from "@/composables/useHelpers";
+import ButtonScreen from "@/components/buttons/Screen.vue";
 
 const theme = useTheme();
 const appdata = useAppData();
@@ -150,8 +159,11 @@ const rawFilePath = computed(() => appdata.get("modules.external_media.filePath"
 const mediaTitle = computed(() => appdata.get("modules.external_media.title") || "Mídia Externa");
 const mediaSubtitle = computed(() => appdata.get("modules.external_media.subtitle") || "");
 
+const isYoutube = computed(() => rawFilePath.value.startsWith("youtube:"));
+
 const isVideo = computed(() => {
   if (!rawFilePath.value) return false;
+  if (isYoutube.value) return true;
   const ext = rawFilePath.value.split(".").pop()?.toLowerCase();
   return ["mp4", "mkv", "avi", "mov", "wmv", "webm"].includes(ext || "");
 });

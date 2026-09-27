@@ -82,8 +82,8 @@
             <span class="nav-text">{{ $t(group.title) }}</span>
           </a>
         </div>
-        
-        <div 
+
+        <div
           v-else 
           class="nav-item main-item"
           :class="{ 'group-active': isGroupActive(group) && (!submenuOpen[groupKey] || isCollapsed) }"
@@ -233,6 +233,9 @@ export default defineComponent({
       submenuOpen: {} as Record<string, boolean>,
       windowWidth: window.innerWidth,
       submenuTimeout: null as any,
+      // Só reflete navegação feita pela própria sidebar — trocar de módulo pela
+      // OpenTabsBar (ou qualquer outro caminho) não deve mudar o item destacado aqui.
+      sidebarSelectedModule: "home" as string,
     };
   },
   computed: {
@@ -266,19 +269,7 @@ export default defineComponent({
       return ((this as any).$route.name as string)?.toLowerCase() || "";
     },
     currentModule(): string | null {
-      const modules = (this as any).$appdata.get("modules") || {};
-      const overlays = ["album", "media", "lyric"];
-      
-      if (modules["sync"]?.show) {
-        return "sync";
-      }
-      
-      for (const [key, module] of Object.entries(modules)) {
-        if ((module as any).show && !overlays.includes(key) && key !== "sync") {
-          return key;
-        }
-      }
-      return null;
+      return this.sidebarSelectedModule;
     },
     moduleGroups(): Record<string, any> {
       const groups = (this as any).$appdata.get("module_group") || {};
@@ -286,6 +277,7 @@ export default defineComponent({
       
       const groupIcons: Record<string, string> = {
         musics: "mdi-play",
+        online_collection: "mdi-youtube",
         bible: "mdi-book-cross",
         utilities: "mdi-plus-circle",
         personalized: "mdi-star-outline",
@@ -363,6 +355,7 @@ export default defineComponent({
     navigateTo(route: string) {
       if (route === "home") {
         (this as any).$modules.open("home");
+        this.sidebarSelectedModule = "home";
       }
       if (this.isMobile) {
         this.closeSidebar();
@@ -370,6 +363,7 @@ export default defineComponent({
     },
     openModule(moduleId: string) {
       (this as any).$modules.open(moduleId);
+      this.sidebarSelectedModule = moduleId;
       if (this.isMobile) {
         this.closeSidebar();
       }
@@ -429,6 +423,7 @@ export default defineComponent({
     },
     openUpdateModule() {
       (this as any).$modules.open("update");
+      this.sidebarSelectedModule = "update";
     },
   },
 });
@@ -447,7 +442,6 @@ export default defineComponent({
   top: 32px;
   z-index: 9999;
   overflow: hidden;
-  border-right: 1px solid var(--sidebar-border);
   box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
@@ -535,7 +529,6 @@ export default defineComponent({
   .sidebar-header {
     position: relative;
     padding: 24px 24px;
-    border-bottom: 1px solid var(--sidebar-border);
     background: transparent;
     display: flex;
     align-items: center;

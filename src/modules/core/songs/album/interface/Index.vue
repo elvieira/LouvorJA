@@ -75,6 +75,16 @@
               </v-list>
             </v-card>
           </v-menu>
+          <v-btn
+            v-if="hasPlaybackQueue"
+            color="primary"
+            variant="tonal"
+            class="ml-2 text-none rounded"
+            prepend-icon="mdi-playlist-play"
+            @click="openPlaybackQueue"
+          >
+            Lista de Reprodução
+          </v-btn>
         </div>
       </div>
 
@@ -149,6 +159,9 @@ export default defineComponent({
     loading(): boolean {
       return this.$appdata.get("modules.album.loading") || false;
     },
+    hasPlaybackQueue(): boolean {
+      return (this.$appdata.get("modules.media.queue")?.items || []).length > 0;
+    },
   },
   methods: {
     /* METHODS OBRIGATÓRIOS - INÍCIO */
@@ -162,6 +175,9 @@ export default defineComponent({
       if (mainEl) {
         mainEl.dispatchEvent(new CustomEvent("toggle-sidebar"));
       }
+    },
+    openPlaybackQueue() {
+      this.$appdata.set("modules.media.show_queue", true);
     },
   },
 });

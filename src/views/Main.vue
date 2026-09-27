@@ -85,7 +85,7 @@
       <!-- External Media MiniPlayer -->
       <transition name="fade-slide">
         <div 
-          v-if="isExternalMediaMinimized && showExternalMiniPlayer && isExternalVideo" 
+          v-if="isExternalMediaMinimized && showExternalMiniPlayer && (isExternalVideo || isExternalYoutube)" 
           :class="['mini-player-popup', 'elevation-12', 'corner-' + miniplayerCorner]"
           @pointerdown="onMiniPlayerPointerDown"
           @dblclick="maximizeExternalPlayer"
@@ -99,9 +99,9 @@
             <div class="mini-player-toolbar d-flex justify-end pa-1 position-absolute w-100" style="z-index: 50;">
               <v-btn 
                 icon
-                size="x-small" 
-                variant="flat" 
-                color="rgba(0,0,0,0.6)" 
+                size="x-small"
+                variant="flat"
+                color="rgba(0,0,0,0.6)"
                 class="mx-1 hover-btn"
                 @click.stop="maximizeExternalPlayer" 
               >
@@ -115,11 +115,11 @@
                   Maximizar
                 </v-tooltip>
               </v-btn>
-              <v-btn 
+              <v-btn
                 icon
-                size="x-small" 
-                variant="flat" 
-                color="rgba(0,0,0,0.6)" 
+                size="x-small"
+                variant="flat"
+                color="rgba(0,0,0,0.6)"
                 class="hover-btn"
                 @click.stop="showExternalMiniPlayer = false" 
               >
@@ -135,8 +135,19 @@
               </v-btn>
             </div>
             <div class="position-relative w-100 bg-black mini-player-content" style="height: 180px; z-index: 1;">
+              <div
+                v-if="isExternalYoutube"
+                ref="youtubeMiniPlayerEl"
+                class="w-100 h-100"
+                style="pointer-events: none;"
+              />
+              <div
+                v-if="isExternalYoutube && (youtubeMiniEnded || youtubeMiniStarting)"
+                class="w-100 h-100 position-absolute bg-black"
+                style="top: 0; left: 0;"
+              />
               <video
-                v-if="externalFilePath"
+                v-else-if="externalFilePath"
                 ref="externalMiniPlayerVideo"
                 :src="externalFilePath"
                 class="w-100 h-100"
@@ -158,7 +169,8 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
+import { defineComponent, markRaw } from "vue";
+import { loadYoutubeApi } from "@/helpers/services/YoutubeApi";
 import AppFooter from "@/layout/Footer.vue";
 import AppSidebar from "@/layout/Sidebar.vue";
 import AppModules from "@/layout/Modules.vue";
@@ -166,6 +178,7 @@ import AppTrayArea from "@/layout/TrayArea.vue";
 import LSlide from "@/components/Slide.vue";
 import QuickSearchModal from "@/components/QuickSearchModal.vue";
 import BibleQuickSearchModal from "@/components/BibleQuickSearchModal.vue";
+import $popup from "@/helpers/ui/Popup";
 
 export default defineComponent({
   name: "MainPage",
@@ -194,6 +207,10 @@ export default defineComponent({
         hasMoved: boolean;
       } | null,
       snapTimeout: null as any,
+      youtubeMiniPlayer: null as any,
+      youtubeMiniEnded: false,
+      youtubeMiniStarting: false,
+      youtubeMiniStartingTimer: null as any,
     };
   },
   computed: {
@@ -246,6 +263,14 @@ export default defineComponent({
       const ext = raw.split(".").pop()?.toLowerCase();
       return !!ext && ["mp4", "mkv", "avi", "mov", "wmv", "webm"].includes(ext);
     },
+    isExternalYoutube(): boolean {
+      const raw = this.$appdata.get("modules.external_media.filePath") || "";
+      return raw.startsWith("youtube:");
+    },
+    youtubeVideoId(): string {
+      const raw = this.$appdata.get("modules.external_media.filePath") || "";
+      return raw.startsWith("youtube:") ? raw.slice("youtube:".length) : "";
+    },
     externalMediaCurrentTime(): number {
       return this.$appdata.get("modules.external_media.config.current_time");
     },
@@ -264,6 +289,9 @@ export default defineComponent({
     isSidebarCollapsed(): boolean {
       return !this.sidebarPinned && !this.sidebarOpen;
     },
+    showYoutubeMiniPlayer(): boolean {
+      return this.isExternalMediaMinimized && this.showExternalMiniPlayer && this.isExternalYoutube;
+    },
   },
   watch: {
     externalMediaCurrentTime(val: number) {
@@ -271,6 +299,16 @@ export default defineComponent({
         const video = this.$refs.externalMiniPlayerVideo as HTMLVideoElement;
         if (!video.seeking && Math.abs(video.currentTime - val) > 0.5) {
           video.currentTime = val;
+        }
+      }
+      if (this.showYoutubeMiniPlayer && this.youtubeMiniPlayer) {
+        try {
+          const current = this.youtubeMiniPlayer.getCurrentTime?.() || 0;
+          if (Math.abs(current - val) > 0.8) {
+            this.youtubeMiniPlayer.seekTo(val, true);
+          }
+        } catch {
+          // player ainda não está pronto
         }
       }
     },
@@ -281,6 +319,14 @@ export default defineComponent({
         else video.play().catch((err: any) => {
           console.error("[MiniPlayer] play() failed:", err.message);
         });
+      }
+      if (this.showYoutubeMiniPlayer && this.youtubeMiniPlayer) {
+        try {
+          if (val) this.youtubeMiniPlayer.pauseVideo();
+          else this.youtubeMiniPlayer.playVideo();
+        } catch {
+          // player ainda não está pronto
+        }
       }
     },
     showExternalMiniPlayer(newVal: boolean) {
@@ -294,6 +340,22 @@ export default defineComponent({
             });
           }
         });
+      }
+    },
+    showYoutubeMiniPlayer(val: boolean) {
+      if (val) {
+        this.$nextTick(() => {
+          this.initYoutubeMiniPlayer();
+        });
+      } else {
+        this.destroyYoutubeMiniPlayer();
+      }
+    },
+    youtubeVideoId(val: string) {
+      if (this.showYoutubeMiniPlayer && this.youtubeMiniPlayer && val) {
+        this.youtubeMiniEnded = false;
+        this.startYoutubeMiniIntroCover();
+        this.youtubeMiniPlayer.loadVideoById(val);
       }
     },
     isMinimized(val: boolean) {
@@ -316,7 +378,7 @@ export default defineComponent({
       },
     },
     isExternalMediaMinimized(val: boolean) {
-      if (val && this.isExternalVideo) {
+      if (val && (this.isExternalVideo || this.isExternalYoutube)) {
         this.showExternalMiniPlayer = true;
       }
     },
@@ -381,9 +443,19 @@ export default defineComponent({
             }
           }
         } else if (event.data === "escape-pressed") {
-          import("@/helpers/ui/Popup").then(({ default: $popup }) => {
+          if (this.$appdata.get("popup_module") === "external_media") {
+            this.$alert.yesno({
+              title: "alert.exit_projection_title",
+              text: "alert.exit_projection_text",
+              translate: true,
+            }, (resp: unknown) => {
+              if (resp === "yes") {
+                $popup.exit();
+              }
+            });
+          } else {
             $popup.exit();
-          });
+          }
         }
       }
     });
@@ -436,6 +508,12 @@ export default defineComponent({
     document.addEventListener("sidebar-pinned-changed", (e: any) => {
       this.sidebarPinned = e.detail;
     });
+
+    if (this.showYoutubeMiniPlayer) {
+      this.$nextTick(() => {
+        this.initYoutubeMiniPlayer();
+      });
+    }
   },
   unmounted() {
     window.removeEventListener("keydown", this.onGlobalSearchShortcut);
@@ -448,6 +526,7 @@ export default defineComponent({
       clearTimeout(this.snapTimeout);
       this.snapTimeout = null;
     }
+    this.destroyYoutubeMiniPlayer();
   },
   methods: {
     async handleExternalSong(filePath: string) {
@@ -666,6 +745,83 @@ export default defineComponent({
       });
 
       this.dragState = null;
+    },
+    startYoutubeMiniIntroCover() {
+      this.youtubeMiniStarting = true;
+      if (this.youtubeMiniStartingTimer) clearTimeout(this.youtubeMiniStartingTimer);
+      this.youtubeMiniStartingTimer = setTimeout(() => {
+        this.youtubeMiniStarting = false;
+      }, 1200);
+    },
+
+    async initYoutubeMiniPlayer() {
+      if (this.youtubeMiniPlayer || !this.youtubeVideoId) return;
+      const container = this.$refs.youtubeMiniPlayerEl as HTMLElement;
+      if (!container) return;
+      const YT = await loadYoutubeApi();
+      // O player pode ter sido fechado/trocado enquanto a API carregava.
+      if (!this.showYoutubeMiniPlayer) return;
+      this.youtubeMiniEnded = false;
+      this.startYoutubeMiniIntroCover();
+      this.youtubeMiniPlayer = markRaw(new YT.Player(container, {
+        videoId: this.youtubeVideoId,
+        playerVars: {
+          autoplay: 1,
+          mute: 1,
+          controls: 0,
+          modestbranding: 1,
+          rel: 0,
+          iv_load_policy: 3,
+          disablekb: 1,
+          fs: 0,
+          playsinline: 1,
+          cc_load_policy: 0,
+        },
+        events: {
+          onReady: () => {
+            if (!this.youtubeMiniPlayer) return;
+            this.youtubeMiniPlayer.mute();
+            try {
+              this.youtubeMiniPlayer.setOption("captions", "track", {});
+            } catch {
+              // ignora se o módulo de legendas não existir nessa versão do player
+            }
+            this.youtubeMiniPlayer.seekTo(this.externalMediaCurrentTime || 0, true);
+            if (this.externalMediaIsPaused) {
+              this.youtubeMiniPlayer.pauseVideo();
+            } else {
+              this.youtubeMiniPlayer.playVideo();
+            }
+          },
+          onApiChange: () => {
+            try {
+              this.youtubeMiniPlayer?.setOption?.("captions", "track", {});
+            } catch {
+              // ignora se o módulo de legendas não existir nessa versão do player
+            }
+          },
+          onStateChange: (event: any) => {
+            if (event.data === 1) {
+              this.youtubeMiniEnded = false;
+            } else if (event.data === 0) {
+              this.youtubeMiniEnded = true;
+            }
+          },
+        },
+      }));
+    },
+    destroyYoutubeMiniPlayer() {
+      if (this.youtubeMiniPlayer) {
+        try {
+          this.youtubeMiniPlayer.destroy();
+        } catch {
+          // ignora se já estiver destruído
+        }
+        this.youtubeMiniPlayer = null;
+      }
+      this.youtubeMiniEnded = false;
+      this.youtubeMiniStarting = false;
+      clearTimeout(this.youtubeMiniStartingTimer);
     },
   },
 });

@@ -21,6 +21,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
   readAudioFolder: (folderPath: string) => ipcRenderer.invoke("read-audio-folder", folderPath),
   writeSljaZip: (payload: Record<string, unknown>) => ipcRenderer.invoke("write-slja-zip", payload),
   readSljaZip: (filePath: string) => ipcRenderer.invoke("read-slja-zip", filePath),
+  checkSljaHasInstrumental: (filePath: string) => ipcRenderer.invoke("check-slja-has-instrumental", filePath),
   openExternal: (url: string) => ipcRenderer.invoke("open-external", url),
   getSysDbInfo: () => ipcRenderer.invoke("get-sysdb-info"),
   getAppDataSize: () => ipcRenderer.invoke("get-app-data-size"),
@@ -40,6 +41,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.on("import-legacy-progress", (_event, data: unknown) => callback(data));
   },
   searchBible: (versionId: number, query: string, mode: string, lang?: string) => ipcRenderer.invoke("search-bible", versionId, query, mode, lang),
+  fetchYoutubePlaylist: (playlistId: string) => ipcRenderer.invoke("fetch-youtube-playlist", playlistId),
   
   validateInstallation: (lang?: string, devAvatarFilenames?: string[]) => ipcRenderer.invoke("validate-installation", lang, devAvatarFilenames),
   repairSysdata: (filenames: string[], lang?: string) => ipcRenderer.invoke("repair-sysdata", filenames, lang),

@@ -63,7 +63,13 @@ interface ElectronAPI {
       time: number | null
     }>
   } | null>
+  checkSljaHasInstrumental: (filePath: string) => Promise<boolean>
   openExternal: (url: string) => Promise<void>
+  fetchYoutubePlaylist: (playlistId: string) => Promise<{
+    playlistId: string
+    title: string
+    videos: Array<{ videoId: string; title: string }>
+  } | null>
   openPath: (filePath: string) => Promise<void>
   clearAllData: () => Promise<void>
   clearSysData: (lang?: string) => Promise<void>
@@ -143,5 +149,9 @@ declare module "@vue/runtime-core" {
     $userdata: any;
     $string: any;
     $database: any;
+    $popup: any;
+    $dev: any;
+    $history: any;
+    $helpers: any;
   }
 }

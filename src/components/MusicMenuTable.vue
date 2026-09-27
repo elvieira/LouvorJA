@@ -25,9 +25,9 @@
     <!-- Adicionar à Fila -->
     <v-menu
       v-if="hasInstrumentalMusic"
+      v-model="queueMenuOpen"
       location="top center"
-      open-on-hover
-      :close-on-content-click="true"
+      :close-on-content-click="false"
       transition="slide-y-reverse-transition"
     >
       <template #activator="{ props: menuProps }">
@@ -39,6 +39,8 @@
           class="mx-1"
           icon
           @click.stop
+          @mouseenter="queueMenuOpen = true"
+          @mouseleave="queueMenuOpen = false"
         >
           <v-icon>
             mdi-playlist-plus
@@ -50,6 +52,8 @@
         :color="isDark ? 'var(--card-bg)' : '#f4f5f7'"
         :theme="isDark ? 'dark' : 'light'"
         rounded="lg"
+        @mouseenter="queueMenuOpen = true"
+        @mouseleave="queueMenuOpen = false"
       >
         <div class="text-caption text-center pt-2 pb-0 font-weight-bold opacity-70" :class="!isDark ? 'text-black' : ''">
           {{ $t('modules.media.queue.add_to_queue') }}
@@ -99,7 +103,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import { useTheme } from "vuetify";
 import { useMedia } from "@/composables/useHelpers";
 
@@ -117,8 +121,11 @@ const media = useMedia();
 
 const isDark = computed(() => theme.name.value === "dark");
 
+const queueMenuOpen = ref(false);
+
 const addToQueue = (mode: string) => {
   media.addToQueue({ id_music: props.idMusic, mode });
+  queueMenuOpen.value = false;
 };
 
 const buttons = computed(() => {

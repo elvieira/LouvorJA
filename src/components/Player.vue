@@ -1,7 +1,7 @@
 <template>
   <div 
     ref="playerContainer"
-    :class="location === 'footer' ? 'footer-player-bar d-flex align-center w-100 px-4 py-2' : (location === 'fullscreen' ? 'fullscreen-player-bar d-flex align-center px-6 py-2 w-100' : 'modern-pill-player d-flex align-center px-6 py-2 mx-auto')" 
+    :class="location === 'footer' ? 'footer-player-bar d-flex align-center w-100 px-4 py-2' : (location === 'fullscreen' ? 'fullscreen-player-bar d-flex align-center px-6 py-2 w-100' : 'modern-pill-player d-flex align-center px-6 py-2 mx-auto')"
   >
     <div v-if="playerWidth >= 880" class="player-info d-flex flex-column mr-6" :style="location === 'footer' ? 'max-width: 320px; min-width: 200px;' : 'max-width: 280px; min-width: 150px;'">
       <span
@@ -215,39 +215,6 @@
 
 
 
-      <v-btn
-        v-if="location === 'footer'"
-        variant="text"
-        size="small"
-        icon
-        :color="isQueueOpen || queueHighlight ? 'var(--accent-blue)' : defaultTextColor"
-        class="mx-1 position-relative"
-        :class="{ 'pulse-queue': queueHighlight }"
-        @click="toggleQueue"
-      >
-        <v-badge
-          v-if="queueCount > 1"
-          :content="queueCount"
-          class="discreet-badge"
-          floating
-          offset-x="2"
-          offset-y="2"
-        >
-          <v-icon>mdi-playlist-music</v-icon>
-        </v-badge>
-        <v-icon v-else>
-          mdi-playlist-music
-        </v-icon>
-        
-        <v-tooltip
-          activator="parent"
-          location="top"
-          open-delay="300"
-          content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
-        >
-          Fila de Reprodução
-        </v-tooltip>
-      </v-btn>
 
       <v-btn
         v-if="location === 'footer' && !showMiniPlayer"
@@ -266,6 +233,26 @@
           content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
         >
           Maximizar
+        </v-tooltip>
+      </v-btn>
+
+      <v-btn
+        v-if="location === 'footer' && queueCount > 0"
+        variant="text"
+        size="small"
+        icon
+        :color="defaultTextColor"
+        class="mx-1"
+        @click="openSaveQueueDialog"
+      >
+        <v-icon>mdi-content-save-outline</v-icon>
+        <v-tooltip
+          activator="parent"
+          location="top"
+          open-delay="300"
+          content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+        >
+          Salvar fila como coletânea
         </v-tooltip>
       </v-btn>
 
@@ -353,14 +340,50 @@
   <v-expand-transition>
     <QueuePanel v-if="location === 'footer'" />
   </v-expand-transition>
+
+  <v-dialog v-model="showSaveQueueDialog" max-width="440" persistent>
+    <v-card class="rounded-xl pa-2">
+      <v-card-title class="font-weight-bold">
+        Salvar fila como coletânea
+      </v-card-title>
+      <v-card-text>
+        <v-text-field
+          v-model="saveQueueName"
+          label="Nome da coletânea"
+          placeholder="Ex.: Louvor"
+          variant="outlined"
+          density="comfortable"
+          autofocus
+          hide-details
+          @keydown.enter="saveQueueAsCollection"
+        />
+      </v-card-text>
+      <v-card-actions>
+        <v-spacer />
+        <v-btn variant="text" class="text-none" @click="showSaveQueueDialog = false">
+          Cancelar
+        </v-btn>
+        <v-btn
+          color="primary"
+          variant="flat"
+          class="text-none font-weight-bold"
+          :disabled="!saveQueueName.trim()"
+          @click="saveQueueAsCollection"
+        >
+          Salvar
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import { useTheme } from "vuetify";
-import { useMedia, useAppData, useModules } from "@/composables/useHelpers";
+import { useMedia, useAppData, useModules, useUserData } from "@/composables/useHelpers";
 import { useI18n } from "vue-i18n";
 import QueuePanel from "@/components/QueuePanel.vue";
+import $snackbar from "@/helpers/ui/Snackbar";
 
 defineOptions({ name: "MediaPlayer" });
 
@@ -374,6 +397,7 @@ const theme = useTheme();
 const mediaHelper = useMedia();
 const appdata = useAppData();
 const modules = useModules();
+const userdata = useUserData();
 // Note: datetime is used in the template via $datetime
 const { t } = useI18n();
 
@@ -410,9 +434,7 @@ const showMiniPlayer = computed(() => appdata.get("modules.media.show_mini_playe
 const has_instrumental_music = computed(() => !!media.value.data.url_instrumental_music);
 
 const isPlaylistOpen = computed(() => appdata.get("modules.media.show_playlist") || false);
-const isQueueOpen = computed(() => appdata.get("modules.media.show_queue") || false);
 const queueCount = computed(() => (appdata.get("modules.media.queue")?.items || []).length);
-const queueHighlight = computed(() => appdata.get("modules.media.queue_highlight") === true);
 
 const loopMode = computed(() => appdata.get("modules.media.config.loop") || "none");
 
@@ -518,7 +540,13 @@ const next = () => mediaHelper.nextSlide();
 const openMedia = (data: any) => mediaHelper.open(data);
 const openLyric = () => mediaHelper.openLyric();
 const maximize = () => mediaHelper.maximize();
-const close = () => mediaHelper.close();
+const close = () => {
+  if (appdata.get("modules.media.show_queue")) {
+    appdata.set("modules.media.show_queue", false);
+    return;
+  }
+  mediaHelper.close();
+};
 const changeProgress = () => {
   const time = (media.value.config.duration * media.value.config.progress) / 100;
   mediaHelper.goToTime(time);
@@ -530,12 +558,39 @@ const togglePlaylist = () => {
   const currentState = appdata.get("modules.media.show_playlist") || false;
   appdata.set("modules.media.show_playlist", !currentState);
 };
-const toggleQueue = () => {
-  const currentState = appdata.get("modules.media.show_queue") || false;
-  appdata.set("modules.media.show_queue", !currentState);
-  if (appdata.get("modules.media.queue_highlight")) {
-    appdata.set("modules.media.queue_highlight", false);
-  }
+
+const showSaveQueueDialog = ref(false);
+const saveQueueName = ref("");
+
+const openSaveQueueDialog = () => {
+  saveQueueName.value = "";
+  showSaveQueueDialog.value = true;
+};
+
+const saveQueueAsCollection = () => {
+  const name = saveQueueName.value.trim();
+  if (!name) return;
+
+  const items = appdata.get("modules.media.queue")?.items || [];
+  const songs = items
+    .filter((item: any) => !!item.id_music)
+    .map((item: any) => ({
+      id: crypto.randomUUID(),
+      type: "internal",
+      id_music: item.id_music,
+    }));
+
+  const collections = userdata.get("modules.custom_collection.list") || [];
+  collections.push({
+    id: crypto.randomUUID(),
+    name,
+    coverImage: null,
+    songs,
+  });
+  userdata.set("modules.custom_collection.list", collections);
+
+  showSaveQueueDialog.value = false;
+  $snackbar.show({ text: `Coletânea "${name}" salva com sucesso!`, color: "success" });
 };
 
 onMounted(() => {
@@ -648,23 +703,6 @@ onBeforeUnmount(() => {
   &:hover {
     opacity: 0.8;
     background: rgba(255,255,255,0.05);
-  }
-}
-
-.pulse-queue {
-  animation: pulse-queue-glow 1.5s infinite;
-  border-radius: 50%;
-}
-
-@keyframes pulse-queue-glow {
-  0% {
-    box-shadow: 0 0 0 0 rgba(0, 151, 215, 0.5);
-  }
-  50% {
-    box-shadow: 0 0 8px 4px rgba(0, 151, 215, 0.3);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(0, 151, 215, 0);
   }
 }
 </style>

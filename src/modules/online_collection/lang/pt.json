@@ -1,0 +1,11 @@
+{
+    "title": "Vídeos Online",
+    "back": "Voltar",
+    "retry": "Tentar novamente",
+    "load_error": "Não foi possível carregar. Verifique sua conexão com a internet.",
+    "empty_channels": "Nenhum canal disponível no momento.",
+    "empty_playlists": "Nenhuma playlist encontrada nesse canal.",
+    "empty_videos": "Nenhum vídeo encontrado nessa playlist.",
+    "search_placeholder": "Buscar coletânea...",
+    "no_results": "Nenhum resultado encontrado para essa busca."
+}

@@ -22,6 +22,9 @@
         "musics": {
             "title": "Álbuns e Coletâneas"
         },
+        "online_collection": {
+            "title": "Coletânea Online"
+        },
         "bible": {
             "title": "Bíblia"
         },
@@ -52,7 +55,9 @@
         "close_app_text": "Existe uma mídia ativa ou projeção em andamento. Deseja realmente sair?",
         "msg_lang_title": "Aviso de Idioma",
         "msg_lang_download": "Ao alterar o idioma, é necessário baixar o banco de dados e configurações do novo idioma. Deseja prosseguir?",
-        "msg_lang_reload": "Ao alterar o idioma, o programa será recarregado. Deseja prosseguir?"
+        "msg_lang_reload": "Ao alterar o idioma, o programa será recarregado. Deseja prosseguir?",
+        "exit_projection_title": "Parar projeção?",
+        "exit_projection_text": "Deseja realmente parar de projetar na segunda tela?"
     },
     "messages": {
         "file_database_not_found": "Arquivo de dados não encontrado!",

@@ -55,6 +55,16 @@
               </v-list>
             </v-card>
           </v-menu>
+          <v-btn
+            v-if="hasPlaybackQueue"
+            color="primary"
+            variant="tonal"
+            class="ml-2 text-none rounded"
+            prepend-icon="mdi-playlist-play"
+            @click="openPlaybackQueue"
+          >
+            Lista de Reprodução
+          </v-btn>
         </template>
       </ModuleHeader>
 
@@ -181,6 +191,10 @@ export default defineComponent({
       return this.hymnalImg;
     },
 
+    hasPlaybackQueue() {
+      return (this.$appdata.get("modules.media.queue")?.items || []).length > 0;
+    },
+
     classform() {
       return {
         group: "d-flex flex-wrap",
@@ -219,6 +233,9 @@ export default defineComponent({
     },
     close() {
       this.search = "";
+    },
+    openPlaybackQueue() {
+      this.$appdata.set("modules.media.show_queue", true);
     },
   },
 });

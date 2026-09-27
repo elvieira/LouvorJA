@@ -1,6 +1,7 @@
 /files/
 /tmp/
 /dev-dist
+/alterações.md
 
 .env
 .env.*

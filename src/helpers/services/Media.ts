@@ -474,7 +474,17 @@ export default {
     });
 
     if (playMode === "audio" || playMode === "instrumental") {
-      const preciseTimes = [0, ...remainingSlides.map((s: any) => (typeof s.time === "number" ? s.time : 0))];
+      // A capa (índice 0) sempre começa em 0s. Se um slide sem sincronia manual
+      // também ficar em 0s (ou empatar com o tempo anterior), o cálculo de "qual
+      // slide mostrar agora" (times.filter(t <= current).length - 1) pula direto
+      // pra ele, pulando a capa visualmente. Garantimos ordem estritamente
+      // crescente pra evitar esse empate.
+      const preciseTimes: number[] = [0];
+      remainingSlides.forEach((s: any) => {
+        const raw = typeof s.time === "number" ? s.time : 0;
+        const last = preciseTimes[preciseTimes.length - 1];
+        preciseTimes.push(raw <= last ? last + 0.001 : raw);
+      });
       $appdata.set("modules.media.times", preciseTimes);
     }
     return true;
@@ -1429,25 +1439,34 @@ export default {
     if ($appdata.get("modules.media.loading")) return;
     const queue = $appdata.get("modules.media.queue");
     if (!queue || queue.items.length === 0) {
+      this.markNaturalEnd();
       this.close(true);
       return;
     }
-    
+
     // Find next valid index
     let nextIndex = stayOnCurrentIndex ? queue.currentIndex : queue.currentIndex + 1;
-    
+
     if (nextIndex >= queue.items.length || nextIndex < 0) {
       const loopMode = $appdata.get("modules.media.config.loop") || "none";
       if (loopMode === "queue" && queue.items.length > 0) {
         nextIndex = 0; // Loop back to start of queue
       } else {
         // Reached the end of queue or invalid
+        this.markNaturalEnd();
         this.close(true);
         return;
       }
     }
-    
+
     this.playFromQueue(nextIndex);
+  },
+  // Contador que só sobe quando a faixa termina naturalmente e não há mais nada
+  // pra tocar em seguida (nem no loop, nem na fila própria do $media) — diferente
+  // de um fechamento manual do player. Outros módulos usam isso pra saber a hora
+  // certa de avançar pro próximo item de uma fila de reprodução própria.
+  markNaturalEnd() {
+    $appdata.set("modules.media.config.natural_end_seq", ($appdata.get("modules.media.config.natural_end_seq") || 0) + 1);
   },
   playFromQueue(index: number) {
     const queue = $appdata.get("modules.media.queue");
