@@ -55,7 +55,6 @@
               </v-list>
             </v-card>
           </v-menu>
-
         </template>
       </ModuleHeader>
 

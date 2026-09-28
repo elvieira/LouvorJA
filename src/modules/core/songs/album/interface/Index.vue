@@ -75,7 +75,6 @@
               </v-list>
             </v-card>
           </v-menu>
-
         </div>
       </div>
 
