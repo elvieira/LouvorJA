@@ -267,6 +267,11 @@ export default defineComponent({
   watch: {
     "module.show"(newVal: boolean) {
       if (newVal) {
+        if (this.$appdata.get("modules.media.user_exited_fullscreen") === true) {
+          this.fullscreen = false;
+          return;
+        }
+
         const slideFullscreen = this.$userdata.get("modules.config.slide_fullscreen") !== false;
         const disableIfExtended = this.$userdata.get("modules.config.slide_disable_main_if_extended") !== false;
         let slideMonitors = this.$userdata.get("modules.config.slide_monitor") || [];
@@ -277,6 +282,10 @@ export default defineComponent({
 
         if (window.electronAPI && window.electronAPI.getDisplays) {
           window.electronAPI.getDisplays().then((displays: any) => {
+            if (this.$appdata.get("modules.media.user_exited_fullscreen") === true) {
+              this.fullscreen = false;
+              return;
+            }
             let hasExtended = false;
             if (displays && displays.length > 1) {
               const primary = displays.find((d: any) => d.isPrimary) || displays[0];
@@ -286,7 +295,9 @@ export default defineComponent({
             if (slideFullscreen && !(disableIfExtended && hasExtended)) {
               this.$nextTick(() => {
                 setTimeout(() => {
-                  this.fullscreen = true;
+                  if (this.$appdata.get("modules.media.user_exited_fullscreen") !== true) {
+                    this.fullscreen = true;
+                  }
                 }, 200);
               });
             } else {
@@ -297,7 +308,9 @@ export default defineComponent({
           if (slideFullscreen && !(disableIfExtended && slideMonitors.length > 0)) {
             this.$nextTick(() => {
               setTimeout(() => {
-                this.fullscreen = true;
+                if (this.$appdata.get("modules.media.user_exited_fullscreen") !== true) {
+                  this.fullscreen = true;
+                }
               }, 200);
             });
           } else {

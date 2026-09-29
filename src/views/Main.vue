@@ -360,9 +360,9 @@ export default defineComponent({
     },
     isMinimized(val: boolean) {
       if (val) {
-        // Only auto-show mini player if the music is actually playing (not paused from addToQueue)
-        const isPaused = this.$appdata.get("modules.media.config.is_paused");
-        if (!isPaused) {
+        // Only hide mini player if waiting in queue standby (addToQueue without play)
+        const isQueueStandby = this.$appdata.get("modules.media.is_queue_standby") === true;
+        if (!isQueueStandby) {
           this.showMiniPlayer = true;
         }
       }
@@ -617,7 +617,6 @@ export default defineComponent({
     },
     maximizePlayer() {
       this.$media.maximize();
-      this.showMiniPlayer = false;
     },
     maximizeExternalPlayer() {
       this.$appdata.set("modules.external_media.show", true);

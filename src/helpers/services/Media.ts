@@ -75,12 +75,18 @@ export default {
       audio = this.getElement();
     } else {
       this.stopAudio();
-      this.clearVariables();
+      const isCurrentlyFullscreen = $appdata.get("modules.media.config.fullscreen") === true;
+      const userExitedFullscreen = $appdata.get("modules.media.user_exited_fullscreen") === true;
+      const keepFullscreen = Boolean(params.fromQueue && isCurrentlyFullscreen && !userExitedFullscreen);
+      this.clearVariables(keepFullscreen);
       audio = this.getElement();
     }
 
     const id_music = params.id_music;
-    const minimized = params.minimized ? params.minimized : false;
+    const isCurrentlyMinimized = this.isMinimized() || !$appdata.get("modules.media.show");
+    const minimized = params.minimized !== undefined
+      ? params.minimized
+      : (params.fromQueue ? isCurrentlyMinimized : false);
     const id_album = params.id_album ? params.id_album : null;
 
 
@@ -118,6 +124,7 @@ export default {
     }
 
     if (!params.fromQueue) {
+      $appdata.set("modules.media.user_exited_fullscreen", false);
       this.initQueue();
       const queue = $appdata.get("modules.media.queue");
       queue.items = [{
@@ -149,7 +156,8 @@ export default {
       }
     }
     
-    const willGoFullscreen = slideFullscreen && !(disableIfExtended && hasExtended);
+    const userExitedFullscreen = $appdata.get("modules.media.user_exited_fullscreen") === true;
+    const willGoFullscreen = slideFullscreen && !(disableIfExtended && hasExtended) && !userExitedFullscreen;
     
     let shouldMaximize = true;
     
@@ -161,12 +169,16 @@ export default {
 
     if (params.startPaused) {
       // Show the footer bar but hide the mini player popup - it will appear when the user presses play
+      $appdata.set("modules.media.is_queue_standby", true);
       this.minimize();
       $appdata.set("modules.media.show_mini_player", false);
-    } else if (shouldMaximize) {
-      this.maximize();
     } else {
-      this.minimize();
+      $appdata.set("modules.media.is_queue_standby", false);
+      if (shouldMaximize) {
+        this.maximize();
+      } else {
+        this.minimize();
+      }
     }
 
     if (mode === "audio" || mode === "instrumental") {
@@ -579,6 +591,9 @@ export default {
     $appdata.set("modules.media.show", false);
     $appdata.set("modules.media.minimized", false);
     $appdata.set("modules.media.config.fullscreen", false);
+    $appdata.set("modules.media.user_exited_fullscreen", false);
+    $appdata.set("modules.media.is_queue_standby", false);
+    $appdata.set("modules.media.show_mini_player", true);
 
     // Fechar a projeção se estiver aberta
     if ($appdata.get("popup_module") === "media") {
@@ -724,7 +739,7 @@ export default {
     $appdata.set("modules.media.config.is_paused", true);
   },
 
-  clearVariables() {
+  clearVariables(keepFullscreen = false) {
     if (typeof window !== "undefined" && window.electronAPI?.streamingClearSlide) {
       window.electronAPI.streamingClearSlide();
     }
@@ -748,12 +763,18 @@ export default {
     $appdata.set("modules.media.config.volume", this.getVolume());
     $appdata.set("modules.media.config.is_paused", false);
     $appdata.set("modules.media.config.is_fading", false);
-    $appdata.set("modules.media.config.fullscreen", false);
+    if (!keepFullscreen) {
+      $appdata.set("modules.media.config.fullscreen", false);
+    }
   },
 
   minimize() {
     $appdata.set("modules.media.show", false);
     $appdata.set("modules.media.minimized", true);
+    $appdata.set("modules.media.user_exited_fullscreen", true);
+    if (!$appdata.get("modules.media.is_queue_standby")) {
+      $appdata.set("modules.media.show_mini_player", true);
+    }
   },
 
   maximize() {
@@ -922,6 +943,7 @@ export default {
     if (!hasMedia) {
       return;
     }
+    $appdata.set("modules.media.is_queue_standby", false);
     // Restore mini player popup if it was hidden (e.g. loaded via addToQueue with startPaused)
     if ($appdata.get("modules.media.show_mini_player") === false) {
       $appdata.set("modules.media.show_mini_player", true);
@@ -1072,6 +1094,11 @@ export default {
 
   fullscreen(value = true) {
     $appdata.set("modules.media.config.fullscreen", value);
+    if (!value) {
+      $appdata.set("modules.media.user_exited_fullscreen", true);
+    } else {
+      $appdata.set("modules.media.user_exited_fullscreen", false);
+    }
   },
 
   getSubtitleFromData(data: any, id_album?: any): string {
@@ -1374,6 +1401,7 @@ export default {
       }
     }
 
+    $appdata.set("modules.media.user_exited_fullscreen", false);
     this.initQueue();
     const queue = $appdata.get("modules.media.queue");
     
