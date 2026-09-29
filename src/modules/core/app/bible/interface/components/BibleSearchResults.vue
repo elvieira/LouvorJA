@@ -12,7 +12,7 @@
         <v-icon color="primary" class="mr-3">
           mdi-text-search
         </v-icon>
-        <span class="text-h6 font-weight-bold" style="color: var(--sidebar-text);">Resultados da Busca</span>
+        <span class="text-h6 font-weight-bold" style="color: var(--sidebar-text);">{{ $t('modules.bible.search_results') }}</span>
         <v-spacer />
         <v-btn
           icon
@@ -32,14 +32,14 @@
             size="40"
             class="mb-4"
           />
-          <span class="text-body-2" style="color: var(--sidebar-text-secondary);">Buscando em toda a Bíblia...</span>
+          <span class="text-body-2" style="color: var(--sidebar-text-secondary);">{{ $t('modules.bible.searching_bible') }}</span>
         </div>
         
         <div v-else-if="searchResults.length === 0" class="d-flex flex-column align-center justify-center py-8">
           <v-icon size="48" color="grey" class="mb-4 opacity-50">
             mdi-text-box-search-outline
           </v-icon>
-          <span class="text-body-1" style="color: var(--sidebar-text-secondary);">Nenhum versículo encontrado para "{{ searchQuery }}".</span>
+          <span class="text-body-1" style="color: var(--sidebar-text-secondary);">{{ $t('modules.bible.no_verses_found', { query: searchQuery }) }}</span>
         </div>
         
         <div v-else class="d-flex flex-column" style="gap: 12px;">

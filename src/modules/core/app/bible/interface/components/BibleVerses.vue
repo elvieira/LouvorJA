@@ -1,44 +1,26 @@
 <template>
   <div class="bible-verses-col d-flex flex-column flex-grow-1" style="background: var(--card-bg, #fff); border-radius: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid var(--border-color, rgba(0,0,0,0.05)); min-height: 0;">
     <div class="pa-4 d-flex justify-space-between align-center" style="border-bottom: 1px solid var(--border-color, rgba(0,0,0,0.05));">
-      <h3 v-if="!showSearch" class="scriptural-reference-title" style="font-size: 1.3rem; color: var(--sidebar-text); font-weight: 600; line-height: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+      <h3 class="scriptural-reference-title" style="font-size: 1.3rem; color: var(--sidebar-text); font-weight: 600; line-height: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
         {{ referenceTitle }}
       </h3>
-      <div v-else class="flex-grow-1 mr-4" style="min-width: 0;">
-        <v-text-field
-          :model-value="searchQuery"
-          :placeholder="$t('modules.bible.search_verse')"
-          variant="solo"
-          flat
-          bg-color="rgba(150, 150, 150, 0.1)"
-          style="border: 1px solid var(--border-color, rgba(0,0,0,0.05)); border-radius: 24px;"
-          density="compact"
-          hide-details
-          autofocus
-          clearable
-          rounded
-          @update:model-value="onUpdateSearchQuery"
-          @keydown.enter="$emit('apply-search')"
-          @keydown.esc="$emit('toggle-search')"
-        />
-      </div>
       
       <div class="d-flex align-center ml-auto flex-shrink-0" style="gap: 8px;">
         <v-btn
           variant="tonal"
           size="small"
           icon
-          :color="showSearch ? 'primary' : 'default'"
-          @click="$emit('toggle-search')"
+          :color="multiSelect ? 'primary' : 'default'"
+          @click="$emit('toggle-multi-select')"
         >
-          <v-icon>{{ showSearch ? 'mdi-close' : 'mdi-magnify' }}</v-icon>
+          <v-icon>{{ multiSelect ? 'mdi-checkbox-multiple-marked' : 'mdi-checkbox-multiple-marked-outline' }}</v-icon>
           <v-tooltip
             activator="parent"
             location="top"
             open-delay="300"
             content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
           >
-            {{ showSearch ? $t('modules.bible.close_search') : $t('modules.bible.search_verse') }}
+            {{ $t('modules.bible.multi_select') }}
           </v-tooltip>
         </v-btn>
         <v-btn
@@ -116,6 +98,18 @@
           @click="$emit('select-verse', $event, num)"
         >
           <div class="d-flex align-start py-2">
+            <!-- Marcador Visual para Seleção Múltipla -->
+            <div
+              v-if="multiSelect"
+              class="mr-3 mt-1 d-flex align-center flex-shrink-0"
+            >
+              <v-icon
+                size="20"
+                :color="selectedVerses.includes(+num) ? 'primary' : 'grey'"
+              >
+                {{ selectedVerses.includes(+num) ? 'mdi-checkbox-marked-circle' : 'mdi-checkbox-blank-circle-outline' }}
+              </v-icon>
+            </div>
             <v-avatar
               size="32"
               class="mr-4 mt-1 font-weight-bold flex-shrink-0"
@@ -125,7 +119,7 @@
               <span style="font-size: 0.85rem;">{{ num }}</span>
             </v-avatar>
             <!-- eslint-disable-next-line vue/no-v-html -->
-            <div class="verse-text" style="font-size: 1.15rem; line-height: 1.6; color: var(--sidebar-text);" v-html="verse" />
+            <div class="verse-text flex-grow-1" style="font-size: 1.15rem; line-height: 1.6; color: var(--sidebar-text);" v-html="verse" />
           </div>
         </v-list-item>
       </v-list>
@@ -153,13 +147,9 @@ export default defineComponent({
       type: String,
       default: "",
     },
-    showSearch: {
+    multiSelect: {
       type: Boolean,
       default: false,
-    },
-    searchQuery: {
-      type: String,
-      default: "",
     },
     loading: {
       type: Boolean,
@@ -175,43 +165,8 @@ export default defineComponent({
     "prev-verse",
     "next-verse",
     "clear-selection",
-    "toggle-search",
-    "update:searchQuery",
-    "apply-search",
+    "toggle-multi-select",
   ],
-  methods: {
-    onUpdateSearchQuery(val: string) {
-      if (!val) {
-        this.$emit("update:searchQuery", val);
-        return;
-      }
-
-      const keys = Object.keys(this.verses).map(Number);
-      const maxVerse = keys.length > 0 ? Math.max(...keys) : 176;
-
-      const checkValid = (str: string) => {
-        const parts = str.split(/[-,\s]/);
-        for (const part of parts) {
-          if (part) {
-            const num = parseInt(part);
-            if (!isNaN(num) && num > maxVerse) {
-              return false;
-            }
-          }
-        }
-        return true;
-      };
-
-      let newVal = val;
-      while (newVal.length > 0 && !checkValid(newVal)) {
-        newVal = newVal.slice(0, -1);
-      }
-
-      // Se o Vue não atualizar a tela porque o newVal é igual ao antigo, 
-      // forçamos emitindo e voltando. Mas na maioria das vezes só emitir resolve.
-      this.$emit("update:searchQuery", newVal);
-    },
-  },
 });
 </script>
 

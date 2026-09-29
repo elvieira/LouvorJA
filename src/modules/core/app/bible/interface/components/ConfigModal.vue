@@ -20,7 +20,7 @@
             </div>
           </div>
           <p class="text-caption mb-0" style="color: var(--sidebar-text-secondary);">
-            Ajuste o visual da bíblia na tela
+            {{ t('modal_subtitle') }}
           </p>
         </div>
 
@@ -113,7 +113,7 @@
                     <v-icon size="18" color="primary" class="mr-2">
                       mdi-image-outline
                     </v-icon>
-                    <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text);">Imagem de Fundo</span>
+                    <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text);">{{ t('bg_image') }}</span>
                   </div>
                 </div>
 
@@ -134,7 +134,7 @@
                     >
                       <v-icon>mdi-delete</v-icon>
                       <v-tooltip activator="parent" location="top">
-                        Remover imagem
+                        {{ t('remove_image_tooltip') }}
                       </v-tooltip>
                     </v-btn>
                     <v-btn
@@ -148,7 +148,7 @@
                         mdi-pencil
                       </v-icon>
                       <v-tooltip activator="parent" location="top">
-                        Trocar imagem
+                        {{ t('change_image_tooltip') }}
                       </v-tooltip>
                     </v-btn>
                   </div>
@@ -163,7 +163,7 @@
                   <v-icon size="28" color="grey-lighten-1" class="mb-1">
                     mdi-cloud-upload-outline
                   </v-icon>
-                  <span class="text-caption font-weight-medium" style="color: var(--sidebar-text-secondary);">Selecionar Imagem</span>
+                  <span class="text-caption font-weight-medium" style="color: var(--sidebar-text-secondary);">{{ t('select_image') }}</span>
                 </div>
 
                 <input
@@ -465,7 +465,7 @@
             class="rounded-lg text-none px-6 font-weight-bold flex-shrink-0"
             @click="resetToDefault"
           >
-            Restaurar Padrão
+            {{ t('restore_default') }}
           </v-btn>
           <div class="d-flex" style="gap: 12px;">
             <v-btn
@@ -473,7 +473,7 @@
               class="rounded-lg text-none px-6 font-weight-bold flex-shrink-0"
               @click="cancel"
             >
-              Cancelar
+              {{ t('cancel') }}
             </v-btn>
             <v-btn
               variant="flat"
@@ -481,7 +481,7 @@
               class="rounded-lg text-none px-6 font-weight-bold flex-shrink-0"
               @click="saveAndClose"
             >
-              Aplicar
+              {{ t('apply') }}
             </v-btn>
           </div>
         </v-card-actions>

@@ -93,16 +93,13 @@
         />
 
         <BibleVerses
-          :verses="filteredVerses"
+          :verses="verses"
           :selected-verses="bible.verses"
           :reference-title="scripturalReference(bible)"
-          :show-search="showVerseSearch"
-          :search-query="verseSearchQuery"
+          :multi-select="multiSelect"
           :loading="loading_book || loading_verses"
           :has-selected-verses="select_bible?.verses && select_bible.verses.length > 0"
-          @update:search-query="verseSearchQuery = $event"
-          @toggle-search="showVerseSearch = !showVerseSearch"
-          @apply-search="applyVerseSearch"
+          @toggle-multi-select="multiSelect = !multiSelect"
           @select-verse="selVerse"
           @prev-verse="prevVerse"
           @next-verse="nextVerse"
@@ -125,7 +122,7 @@
                     open-delay="300"
                     content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
                   >
-                    {{ showPreview ? 'Ocultar Preview' : 'Mostrar Preview' }}
+                    {{ showPreview ? t('hide_preview') : t('show_preview') }}
                   </v-tooltip>
                 </v-btn>
                 <v-btn
@@ -232,7 +229,7 @@ export default defineComponent({
       last_verse: 1,
       last_bible_file: null as string | null,
       showConfigModal: false,
-      showVerseSearch: false,
+      multiSelect: false,
       verseSearchQuery: "",
       
       // New search features
@@ -301,17 +298,7 @@ export default defineComponent({
       // @ts-ignore
       return this.$vuetify.display.width <= 400;
     },
-    filteredVerses() {
-      if (!this.showVerseSearch || !this.verseSearchQuery) return this.verses;
-      
-      const newVerses = parseVerseSearchQuery(this.verseSearchQuery, this.verses);
-      
-      const filtered: Record<number, any> = {};
-      for (const num of newVerses) {
-        filtered[num] = this.verses[num];
-      }
-      return Object.keys(filtered).length > 0 ? filtered : this.verses;
-    },
+
   },
   watch: {
     navigateData: {
@@ -641,7 +628,6 @@ export default defineComponent({
       }
       
       this.verseSearchQuery = "";
-      this.showVerseSearch = false;
     },
     async executeSearchFallback(searchQuery: string) {
       if (!searchQuery.trim()) return;
@@ -718,7 +704,7 @@ export default defineComponent({
       );
       const isMultiSelectModifier = isMac ? (event?.metaKey && !event?.ctrlKey) : (event?.ctrlKey && !event?.metaKey);
 
-      if (isMultiSelectModifier) {
+      if (this.multiSelect || isMultiSelectModifier) {
         const index = this.bible.verses.indexOf(num);
         if (index === -1) {
           this.bible.verses.push(num);

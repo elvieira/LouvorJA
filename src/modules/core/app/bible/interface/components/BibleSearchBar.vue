@@ -4,7 +4,7 @@
     <v-text-field
       ref="searchInput"
       v-model="searchQuery"
-      :placeholder="searchMode === 'reference' ? 'Selecione um verso bíblico...' : 'Procure um texto bíblico...'"
+      :placeholder="searchMode === 'reference' ? $t('modules.bible.placeholder_ref') : $t('modules.bible.placeholder_text')"
       prepend-inner-icon="mdi-magnify"
       clearable
       variant="solo"
@@ -48,7 +48,7 @@
       style="position: absolute; right: 150px; top: 0; bottom: 0; pointer-events: none; z-index: 2;"
     >
       <span :style="matchedBook ? 'color: var(--accent-blue); opacity: 0.9; font-weight: 600;' : 'color: var(--sidebar-text-secondary); opacity: 0.6; font-weight: 500;'" style="font-size: 0.85rem;">
-        {{ autocompleteHint }} <v-icon v-if="matchedBook" size="small" class="ml-1 opacity-50">{{ autocompleteHint === 'Versículo' ? 'mdi-keyboard-return' : 'mdi-keyboard-space' }}</v-icon>
+        {{ autocompleteHint }} <v-icon v-if="matchedBook" size="small" class="ml-1 opacity-50">{{ (autocompleteHint === 'Versículo' || autocompleteHint === $t('modules.bible.verse_hint')) ? 'mdi-keyboard-return' : 'mdi-keyboard-space' }}</v-icon>
       </span>
     </div>
   </div>
@@ -310,7 +310,7 @@ export default defineComponent({
       } else if (isChapterStep && !isVerseStep) {
         if (exactBook) {
           this.matchedBook = exactBook;
-          this.autocompleteHint = chapterStr ? `Capítulo ${chapterStr}` : "Capítulo";
+          this.autocompleteHint = chapterStr ? `${this.$t("modules.bible.chapter_hint")} ${chapterStr}` : this.$t("modules.bible.chapter_hint");
         } else {
           this.matchedBook = null;
           this.autocompleteHint = "";
@@ -318,7 +318,7 @@ export default defineComponent({
       } else if (isVerseStep) {
         if (exactBook) {
           this.matchedBook = exactBook;
-          this.autocompleteHint = verseStr ? `Versículo ${verseStr}` : "Versículo";
+          this.autocompleteHint = verseStr ? `${this.$t("modules.bible.verse_hint")} ${verseStr}` : this.$t("modules.bible.verse_hint");
         } else {
           this.matchedBook = null;
           this.autocompleteHint = "";
