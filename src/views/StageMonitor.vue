@@ -194,7 +194,15 @@ export default defineComponent({
       const target = e.target as HTMLElement;
       if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable)) return;
 
-      if (e.key === "Escape" || ((e.ctrlKey || e.metaKey) && e.key === "Enter")) {
+      const isMac = Boolean((window as any)?.electronAPI?.isMac) || (
+        typeof navigator !== "undefined" && (
+          (navigator.userAgent && navigator.userAgent.includes("Mac")) ||
+          (navigator.platform && navigator.platform.includes("Mac"))
+        )
+      );
+      const isModifier = isMac ? (e.metaKey && !e.ctrlKey) : (e.ctrlKey && !e.metaKey);
+
+      if (e.key === "Escape" || (isModifier && e.key === "Enter")) {
         if (window.opener) {
           window.opener.postMessage("escape-pressed", "*");
         }

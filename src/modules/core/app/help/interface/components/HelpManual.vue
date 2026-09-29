@@ -154,6 +154,8 @@ import ManualUtilities from "./manual/ManualUtilities.vue";
 import ManualSync from "./manual/ManualSync.vue";
 import ManualDisplays from "./manual/ManualDisplays.vue";
 import ManualSettings from "./manual/ManualSettings.vue";
+import ManualOnlineCollection from "./manual/ManualOnlineCollection.vue";
+import ManualQueue from "./manual/ManualQueue.vue";
 
 export default defineComponent({
   name: "HelpManual",
@@ -161,9 +163,11 @@ export default defineComponent({
     ManualIntro,
     ManualShortcuts,
     ManualSongs,
+    ManualQueue,
     ManualBible,
     ManualLiturgy,
     ManualCustomCollection,
+    ManualOnlineCollection,
     ManualMusicEditor,
     ManualUtilities,
     ManualSync,
@@ -184,9 +188,11 @@ export default defineComponent({
         { id: "intro", title: (this as any).$t("modules.help.manual.sections.intro"), icon: "mdi-flag" },
         { id: "shortcuts", title: (this as any).$t("modules.help.manual.sections.shortcuts"), icon: "mdi-keyboard" },
         { id: "songs", title: (this as any).$t("modules.help.manual.sections.songs"), icon: "mdi-music-note" },
+        { id: "queue", title: (this as any).$t("modules.help.manual.sections.queue"), icon: "mdi-playlist-play" },
         { id: "bible", title: (this as any).$t("modules.help.manual.sections.bible"), icon: "mdi-book-cross" },
         { id: "liturgy", title: (this as any).$t("modules.help.manual.sections.liturgy"), icon: "mdi-hands-pray" },
         { id: "custom_collection", title: (this as any).$t("modules.help.manual.sections.custom_collection"), icon: "mdi-music-box-multiple" },
+        { id: "online_collection", title: (this as any).$t("modules.help.manual.sections.online_collection"), icon: "mdi-web" },
         { id: "music_editor", title: (this as any).$t("modules.help.manual.sections.music_editor"), icon: "mdi-music-note-plus" },
         { id: "utilities", title: (this as any).$t("modules.help.manual.sections.utilities"), icon: "mdi-plus-circle" },
         { id: "sync", title: (this as any).$t("modules.help.manual.sections.sync"), icon: "mdi-library" },
@@ -223,9 +229,11 @@ export default defineComponent({
         intro: "ManualIntro",
         shortcuts: "ManualShortcuts",
         songs: "ManualSongs",
+        queue: "ManualQueue",
         bible: "ManualBible",
         liturgy: "ManualLiturgy",
         custom_collection: "ManualCustomCollection",
+        online_collection: "ManualOnlineCollection",
         music_editor: "ManualMusicEditor",
         utilities: "ManualUtilities",
         sync: "ManualSync",
@@ -494,12 +502,33 @@ export default defineComponent({
   border: 1px solid rgba(128, 128, 128, 0.2);
   border-radius: 4px;
   color: var(--sidebar-text);
-  font-family: inherit; /* Herdando a fonte principal para integrar melhor com o texto */
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Segoe UI Symbol", "Apple Symbols", Roboto, sans-serif;
   font-size: 0.8em;
   font-weight: 600;
   padding: 1px 5px;
   margin: 0 3px;
   white-space: nowrap;
+}
+
+.manual-container :deep(.cmd-symbol) {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI Symbol", "Apple Symbols", sans-serif;
+  font-weight: 600;
+  font-size: 1.05em;
+  line-height: 1;
+  display: inline-block;
+}
+
+.manual-container :deep(.shortcut-operator) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85em;
+  font-weight: 500;
+  color: var(--sidebar-text);
+  opacity: 0.45;
+  margin: 0 4px;
+  user-select: none;
+  line-height: 1;
 }
 
 /* Realce da pesquisa no manual */

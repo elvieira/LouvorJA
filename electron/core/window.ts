@@ -66,114 +66,242 @@ export function createWindow(): void {
     mainWindow.webContents.send("window-maximized-state", false);
   });
 
-  // Menu nativo personalizado
-  const menuTemplate = [
-    ...(process.platform === "darwin" ? [{
+  // Menu nativo personalizado para macOS e Desktop
+  const isMac = process.platform === "darwin";
+
+  const menuTemplate: MenuItemConstructorOptions[] = [
+    ...(isMac ? [{
       label: "Louvor JA",
       submenu: [
-        { role: "about" },
+        {
+          label: "Sobre o Louvor JA",
+          click: () => {
+            mainWindow.webContents.send("navigate-route", "about");
+          },
+        },
         { type: "separator" },
-        { role: "services" },
-        { type: "separator" },
-        { role: "hide" },
-        { role: "hideOthers" },
-        { role: "unhide" },
-        { type: "separator" },
-        { role: "quit" },
-      ],
-    }] as MenuItemConstructorOptions[] : []),
-    {
-      label: "Página Inicial",
-      submenu: [
         {
-          label: "Ir para Página Inicial",
-          accelerator: "CmdOrCtrl+H",
-          click: () => {
-            mainWindow.webContents.send("navigate-module", "home");
-          },
-        },
-      ],
-    },
-    {
-      label: "Álbuns e Coletâneas",
-      submenu: [
-        {
-          label: "Hinário Adventista",
-          click: () => {
-            mainWindow.webContents.send("navigate-module", "hymnal");
-          },
-        },
-        {
-          label: "Hinário Adventista - 1996",
-          click: () => {
-            mainWindow.webContents.send("navigate-module", "hymnal_1996");
-          },
-        },
-        {
-          label: "Álbuns",
-          click: () => {
-            mainWindow.webContents.send("navigate-module", "collections");
-          },
-        },
-      ],
-    },
-    {
-      label: "Bíblia",
-      submenu: [
-        {
-          label: "Abrir Bíblia",
-          accelerator: "CmdOrCtrl+B",
-          click: () => {
-            mainWindow.webContents.send("navigate-module", "bible");
-          },
-        },
-      ],
-    },
-    {
-      label: "Utilitários",
-      submenu: [
-        {
-          label: "Módulos utilitários",
-          enabled: false,
-        },
-      ],
-    },
-    {
-      label: "Biblioteca Local",
-      submenu: [
-        {
-          label: "Abrir Biblioteca",
-          accelerator: "CmdOrCtrl+L",
-          click: () => {
-            mainWindow.webContents.send("navigate-module", "sync");
-          },
-        },
-      ],
-    },
-    {
-      label: "Configurações",
-      submenu: [
-        {
-          label: "Abrir Configurações",
+          label: "Configurações...",
           accelerator: "CmdOrCtrl+,",
           click: () => {
             mainWindow.webContents.send("navigate-module", "config");
           },
         },
+        { type: "separator" },
+        { role: "services", label: "Serviços" },
+        { type: "separator" },
+        { role: "hide", label: "Ocultar Louvor JA" },
+        { role: "hideOthers", label: "Ocultar Outros" },
+        { role: "unhide", label: "Mostrar Tudo" },
+        { type: "separator" },
+        { role: "quit", label: "Encerrar Louvor JA" },
+      ],
+    }] as MenuItemConstructorOptions[] : []),
+    {
+      label: "Arquivo",
+      submenu: [
+        {
+          label: "Nova Música no Editor...",
+          click: () => {
+            mainWindow.webContents.send("navigate-module", "personalized");
+          },
+        },
+        {
+          label: "Biblioteca Local (Arquivos Baixados)",
+          accelerator: "CmdOrCtrl+L",
+          click: () => {
+            mainWindow.webContents.send("navigate-module", "sync");
+          },
+        },
+        { type: "separator" },
+        ...(isMac ? [
+          { role: "close", label: "Fechar Janela" } as MenuItemConstructorOptions,
+        ] : [
+          { role: "quit", label: "Sair" } as MenuItemConstructorOptions,
+        ]),
+      ],
+    },
+    {
+      label: "Editar",
+      submenu: [
+        { role: "undo", label: "Desfazer" },
+        { role: "redo", label: "Refazer" },
+        { type: "separator" },
+        { role: "cut", label: "Recortar" },
+        { role: "copy", label: "Copiar" },
+        { role: "paste", label: "Colar" },
+        { role: "selectAll", label: "Selecionar Tudo" },
+        { type: "separator" },
+        {
+          label: "Buscar Músicas...",
+          accelerator: "CmdOrCtrl+F",
+          click: () => {
+            mainWindow.webContents.send("navigate-route", "quick-search");
+          },
+        },
+        {
+          label: "Buscar na Bíblia...",
+          accelerator: "CmdOrCtrl+B",
+          click: () => {
+            mainWindow.webContents.send("navigate-route", "bible-search");
+          },
+        },
+      ],
+    },
+    {
+      label: "Módulos",
+      submenu: [
+        {
+          label: "Página Inicial",
+          accelerator: "CmdOrCtrl+1",
+          click: () => {
+            mainWindow.webContents.send("navigate-module", "home");
+          },
+        },
+        {
+          label: "Álbuns e Hinários",
+          accelerator: "CmdOrCtrl+2",
+          click: () => {
+            mainWindow.webContents.send("cycle-module-group", "musics");
+          },
+        },
+        {
+          label: "Bíblia Sagrada",
+          accelerator: "CmdOrCtrl+3",
+          click: () => {
+            mainWindow.webContents.send("navigate-module", "bible");
+          },
+        },
+        {
+          label: "Utilitários",
+          accelerator: "CmdOrCtrl+4",
+          click: () => {
+            mainWindow.webContents.send("cycle-module-group", "utilities");
+          },
+        },
+        {
+          label: "Coletâneas Online",
+          accelerator: "CmdOrCtrl+5",
+          click: () => {
+            mainWindow.webContents.send("cycle-module-group", "online_collection");
+          },
+        },
+        {
+          label: "Coletâneas Personalizadas / Editor",
+          accelerator: "CmdOrCtrl+6",
+          click: () => {
+            mainWindow.webContents.send("cycle-module-group", "personalized");
+          },
+        },
+        {
+          label: "Liturgia",
+          accelerator: "CmdOrCtrl+7",
+          click: () => {
+            mainWindow.webContents.send("navigate-module", "liturgy");
+          },
+        },
+      ],
+    },
+    {
+      label: "Apresentação",
+      submenu: [
+        {
+          label: "Reproduzir / Pausar",
+          accelerator: "CmdOrCtrl+P",
+          click: () => {
+            mainWindow.webContents.send("menu-action", "play-pause");
+          },
+        },
+        {
+          label: "Próximo Slide",
+          click: () => {
+            mainWindow.webContents.send("menu-action", "next-slide");
+          },
+        },
+        {
+          label: "Slide Anterior",
+          click: () => {
+            mainWindow.webContents.send("menu-action", "prev-slide");
+          },
+        },
+        {
+          label: "Primeiro Slide",
+          click: () => {
+            mainWindow.webContents.send("menu-action", "first-slide");
+          },
+        },
+        {
+          label: "Último Slide",
+          click: () => {
+            mainWindow.webContents.send("menu-action", "last-slide");
+          },
+        },
+        { type: "separator" },
+        {
+          label: "Alternar Projeção no Telão",
+          accelerator: "CmdOrCtrl+Enter",
+          click: () => {
+            mainWindow.webContents.send("menu-action", "toggle-projection");
+          },
+        },
+        {
+          label: "Ocultar Projeção (Blackout)",
+          accelerator: "CmdOrCtrl+.",
+          click: () => {
+            mainWindow.webContents.send("menu-action", "toggle-blackout");
+          },
+        },
+        {
+          label: "Alternar Áudio (Cantado / Instrumental)",
+          accelerator: "CmdOrCtrl+T",
+          click: () => {
+            mainWindow.webContents.send("menu-action", "toggle-audio-mode");
+          },
+        },
+        {
+          label: "Silenciar Áudio",
+          click: () => {
+            mainWindow.webContents.send("menu-action", "toggle-mute");
+          },
+        },
+        {
+          label: "Fila de Reprodução",
+          click: () => {
+            mainWindow.webContents.send("menu-action", "toggle-queue");
+          },
+        },
+      ],
+    },
+    {
+      label: "Janela",
+      submenu: [
+        { role: "minimize", label: "Minimizar" },
+        { role: "zoom", label: "Zoom" },
+        ...(isMac ? [
+          { type: "separator" },
+          { role: "front", label: "Trazer Todas para a Frente" },
+        ] as MenuItemConstructorOptions[] : []),
       ],
     },
     {
       label: "Ajuda",
       submenu: [
         {
-          label: "Ajuda e Sobre",
+          label: "Manual de Uso",
+          accelerator: "F1",
           click: () => {
-            mainWindow.webContents.send("navigate-route", "help");
+            mainWindow.webContents.send("navigate-route", "manual");
+          },
+        },
+        {
+          label: "Ajuda e Sobre o Louvor JA",
+          click: () => {
+            mainWindow.webContents.send("navigate-route", "about");
           },
         },
       ],
     },
-  ] as MenuItemConstructorOptions[];
+  ];
 
   const menu = Menu.buildFromTemplate(menuTemplate);
   Menu.setApplicationMenu(menu);

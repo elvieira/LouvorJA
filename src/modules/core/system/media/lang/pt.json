@@ -5,12 +5,20 @@
         "no_instrumental_in_album": "Nenhuma música nesta coletânea possui playback.",
         "some_instrumental_omitted": "Algumas músicas sem playback foram ignoradas."
     },
+    "controls": {
+        "maximize": "Maximizar",
+        "close": "Fechar",
+        "fullscreen": "Tela Cheia",
+        "exit_fullscreen": "Sair da Tela Cheia"
+    },
     "general": {
         "sung": "Cantado",
         "instrumental": "Playback",
         "no_audio": "Sem Áudio",
         "lyric": "Letra da Música",
-        "track": "Faixa"
+        "slide_list": "Lista de Slides",
+        "track": "Faixa",
+        "play_all": "Reproduzir Todas"
     },
     "inputs": {
         "lazy_load": "Carregamento Dinâmico",
@@ -27,6 +35,8 @@
         "add_to_queue": "Adicionar à fila",
         "now_playing": "Tocando agora",
         "next_in_queue": "Próximas na fila",
-        "choose_version": "Escolha a versão"
+        "choose_version": "Escolha a versão",
+        "save_as_collection": "Salvar fila como coletânea",
+        "collection_saved": "Coletânea \"{name}\" salva com sucesso!"
     }
 }

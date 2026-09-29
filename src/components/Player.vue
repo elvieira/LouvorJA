@@ -232,7 +232,7 @@
           open-delay="300"
           content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
         >
-          Maximizar
+          {{ $t('modules.media.controls.maximize') }}
         </v-tooltip>
       </v-btn>
 
@@ -272,7 +272,7 @@
           open-delay="300"
           content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
         >
-          Salvar fila como coletânea
+          {{ $t('modules.media.queue.save_as_collection') }}
         </v-tooltip>
       </v-btn>
 
@@ -292,7 +292,7 @@
           open-delay="300"
           content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
         >
-          Fechar
+          {{ $t('modules.media.controls.close') }}
         </v-tooltip>
       </v-btn>
 
@@ -312,7 +312,7 @@
           open-delay="300"
           content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
         >
-          Sair da Tela Cheia
+          {{ $t('modules.media.controls.exit_fullscreen') }}
         </v-tooltip>
       </v-btn>
       <v-btn
@@ -331,7 +331,7 @@
           open-delay="300"
           content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
         >
-          Tela Cheia
+          {{ $t('modules.media.controls.fullscreen') }}
         </v-tooltip>
       </v-btn>
 
@@ -351,7 +351,7 @@
           open-delay="300"
           content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
         >
-          Lista de Slides
+          {{ $t('modules.media.general.slide_list') }}
         </v-tooltip>
       </v-btn>
     </div>
@@ -368,7 +368,7 @@
       :theme="isDark ? 'dark' : 'light'"
     >
       <v-card-title class="font-weight-bold">
-        Salvar fila como coletânea
+        {{ $t('modules.media.queue.save_as_collection') }}
       </v-card-title>
       <v-card-text>
         <div class="d-flex justify-center mb-4">
@@ -416,10 +416,11 @@
 
         <div class="mb-4">
           <div class="text-body-2 font-weight-medium mb-1" style="color: var(--sidebar-text-secondary); margin-left: 4px;">
-            Nome da coletânea
+            {{ $t('modules.custom_collection.new_collection_name') }}
           </div>
           <v-text-field
             v-model="saveQueueName"
+            :placeholder="$t('modules.custom_collection.new_collection_placeholder')"
             variant="outlined"
             color="primary"
             rounded="lg"
@@ -441,7 +442,7 @@
             class="rounded-lg text-none px-6 font-weight-bold"
             @click="showSaveQueueDialog = false"
           >
-            Cancelar
+            {{ $t('alert.cancel') }}
           </v-btn>
           <v-btn
             variant="flat"
@@ -450,7 +451,7 @@
             :disabled="!saveQueueName.trim()"
             @click="saveQueueAsCollection"
           >
-            Salvar
+            {{ $t('modules.custom_collection.save') }}
           </v-btn>
         </div>
       </v-card-actions>
@@ -691,7 +692,7 @@ const saveQueueAsCollection = () => {
   userdata.set("modules.custom_collection.list", collections);
 
   showSaveQueueDialog.value = false;
-  $snackbar.show({ text: `Coletânea "${name}" salva com sucesso!`, color: "success" });
+  $snackbar.show({ text: t("modules.media.queue.collection_saved", { name }), color: "success" });
 };
 
 onMounted(() => {

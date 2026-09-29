@@ -233,7 +233,7 @@ export default defineComponent({
       return this.rawFilePath;
     },
     mediaTitle() {
-      return this.$appdata.get("modules.external_media.title") || "Mídia Externa";
+      return this.$appdata.get("modules.external_media.title") || this.t("title");
     },
     mediaSubtitle() {
       return this.$appdata.get("modules.external_media.subtitle") || "";

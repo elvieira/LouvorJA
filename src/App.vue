@@ -38,6 +38,7 @@ export default {
     return {
       isAppReady: isPopup,
       isPopupWindow: isPopup,
+      lastEscTime: 0,
     };
   },
   watch: {
@@ -70,6 +71,19 @@ export default {
 
       if (this.isAppReady) {
         this.initBackgroundTasks();
+      }
+
+      if (window.electronAPI) {
+        if (window.electronAPI.onMenuAction) {
+          window.electronAPI.onMenuAction((action, payload) => {
+            this.handleMenuAction(action, payload);
+          });
+        }
+        if (window.electronAPI.onCycleModuleGroup) {
+          window.electronAPI.onCycleModuleGroup((groupKey) => {
+            this.cycleModuleGroup(groupKey);
+          });
+        }
       }
     }
   },
@@ -243,6 +257,61 @@ export default {
       console.log("click ");
       this.$dev.toogle();
     },
+    cycleModuleGroup(groupKey) {
+      const moduleGroup = this.$appdata.get(`module_group.${groupKey}`) || {};
+      const modules = moduleGroup.modules || [];
+      const language = this.$userdata.get("language") || "pt";
+      const isDev = this.$appdata.get("is_dev");
+
+      const visibleModules = modules.filter(id => {
+        const mod = this.$appdata.get(`modules.${id}`);
+        if (!mod) return false;
+        if (mod.language && mod.language !== language) return false;
+        if (mod.development && !isDev) return false;
+        return true;
+      });
+
+      if (visibleModules.length === 0) return;
+
+      const activeIndex = visibleModules.findIndex(id => this.$appdata.get(`modules.${id}.show`));
+      const nextIndex = activeIndex !== -1 ? (activeIndex + 1) % visibleModules.length : 0;
+      this.$modules.open(visibleModules[nextIndex]);
+    },
+    handleMenuAction(action, payload) {
+      if (action === "play-pause") {
+        this.$media.playPause();
+      } else if (action === "next-slide") {
+        this.$media.nextSlide();
+      } else if (action === "prev-slide") {
+        this.$media.prevSlide();
+      } else if (action === "first-slide") {
+        this.$media.firstSlide();
+      } else if (action === "last-slide") {
+        this.$media.lastSlide();
+      } else if (action === "toggle-projection") {
+        const isFullscreen = this.$appdata.get("modules.media.config.fullscreen");
+        this.$media.fullscreen(!isFullscreen);
+      } else if (action === "toggle-blackout") {
+        this.$media.toggleBlackout();
+      } else if (action === "toggle-audio-mode") {
+        const hasInstrumental = !!this.$appdata.get("modules.media.data.url_instrumental_music");
+        if (hasInstrumental) {
+          const currentMode = this.$appdata.get("modules.media.config.mode") || "audio";
+          const targetMode = currentMode === "instrumental" ? "audio" : "instrumental";
+          const idMusic = this.$appdata.get("modules.media.id_music");
+          const minimized = this.$appdata.get("modules.media.minimized");
+          if (idMusic) {
+            this.$media.open({ id_music: idMusic, mode: targetMode, minimized });
+          }
+        }
+      } else if (action === "toggle-mute") {
+        this.$media.toogleVolume();
+      } else if (action === "toggle-queue") {
+        this.$appdata.set("modules.media.show_queue", !this.$appdata.get("modules.media.show_queue"));
+      } else if (action === "cycle-group") {
+        this.cycleModuleGroup(payload);
+      }
+    },
     handleGlobalKeydown(e) {
       if (this.isPopupWindow) {
         return;
@@ -252,18 +321,35 @@ export default {
         return;
       }
 
+      const isMac = Boolean(window.electronAPI && window.electronAPI.isMac) || (
+        typeof navigator !== "undefined" && (
+          navigator.userAgent.includes("Mac") || (navigator.platform && navigator.platform.includes("Mac"))
+        )
+      );
+      // No Mac: estritamente Command (metaKey) e NUNCA Ctrl
+      // No Windows e Linux: estritamente Ctrl (ctrlKey) e NUNCA Command/Windows key
+      const isModifier = isMac ? (e.metaKey && !e.ctrlKey) : (e.ctrlKey && !e.metaKey);
+
+      // 1. ESC / Duplo ESC (Fechar Mídia / Sair com ou sem confirmação)
       if (e.code === "Escape") {
         const popupModule = this.$appdata.get("popup_module");
         const externalMediaOpen = this.$appdata.get("modules.external_media.show");
         const isMediaActive = this.$appdata.get("modules.media.show") && !this.$appdata.get("modules.media.minimized");
-        
-        // Se a mídia estiver ativa (música tocando), não interceptamos o Esc aqui.
-        // Deixamos cair para o handler de mídia abaixo que chama this.$media.close()
-        // com a caixa de confirmação.
-        if (!isMediaActive && (externalMediaOpen || popupModule)) {
-          e.preventDefault();
+        const isFullscreen = this.$appdata.get("modules.media.config.fullscreen");
+        const isAnyMediaPlaying = isMediaActive || isFullscreen || externalMediaOpen || popupModule;
 
-          const performClose = () => {
+        if (isAnyMediaPlaying) {
+          const now = Date.now();
+          const isAlertShowing = this.$appdata.get("alert.show");
+          const isDoubleEsc = (now - this.lastEscTime < 600) || isAlertShowing;
+          this.lastEscTime = now;
+
+          if (isDoubleEsc) {
+            e.preventDefault();
+            if (isAlertShowing) {
+              this.$appdata.set("alert.show", false);
+            }
+            this.$media.close(true);
             if (externalMediaOpen) {
               this.$appdata.set("modules.external_media.show", false);
               this.$appdata.set("modules.external_media.minimized", false);
@@ -274,11 +360,23 @@ export default {
                 $popup.exit();
               });
             }
-          };
+            this.lastEscTime = 0;
+            return;
+          }
 
-          // Vídeo/mídia externa: pede confirmação antes de fechar/parar a projeção,
-          // já que o Esc é fácil de apertar sem querer durante um culto.
+          // Primeiro ESC: solicita confirmação de segurança
+          e.preventDefault();
           if (externalMediaOpen || popupModule === "external_media") {
+            const performClose = () => {
+              this.$appdata.set("modules.external_media.show", false);
+              this.$appdata.set("modules.external_media.minimized", false);
+              this.$appdata.set("modules.external_media.filePath", null);
+              if (popupModule) {
+                import("@/helpers/ui/Popup").then(({ default: $popup }) => {
+                  $popup.exit();
+                });
+              }
+            };
             this.$alert.yesno({
               title: externalMediaOpen ? null : "alert.exit_projection_title",
               text: externalMediaOpen ? "modules.external_media.alerts.close" : "alert.exit_projection_text",
@@ -286,39 +384,194 @@ export default {
             }, (btn) => {
               if (btn === "yes") performClose();
             });
-          } else {
-            performClose();
+          } else if (isMediaActive || isFullscreen) {
+            this.$media.close();
+          } else if (popupModule) {
+            import("@/helpers/ui/Popup").then(({ default: $popup }) => {
+              $popup.exit();
+            });
           }
           return;
         }
       }
 
+      // 2. Navegação entre Módulos do Sistema e Controles Globais via Ctrl/Cmd
+      if (isModifier) {
+        if (e.code === "Digit1" || e.code === "Numpad1" || e.key === "1") {
+          e.preventDefault();
+          this.$modules.open("home");
+          return;
+        }
+        if (e.code === "Digit2" || e.code === "Numpad2" || e.key === "2") {
+          e.preventDefault();
+          this.cycleModuleGroup("musics");
+          return;
+        }
+        if (e.code === "Digit3" || e.code === "Numpad3" || e.key === "3") {
+          e.preventDefault();
+          this.$modules.open("bible");
+          return;
+        }
+        if (e.code === "Digit4" || e.code === "Numpad4" || e.key === "4") {
+          e.preventDefault();
+          this.cycleModuleGroup("utilities");
+          return;
+        }
+        if (e.code === "Digit5" || e.code === "Numpad5" || e.key === "5") {
+          e.preventDefault();
+          this.cycleModuleGroup("online_collection");
+          return;
+        }
+        if (e.code === "Digit6" || e.code === "Numpad6" || e.key === "6") {
+          e.preventDefault();
+          this.cycleModuleGroup("personalized");
+          return;
+        }
+        if (e.code === "Digit7" || e.code === "Numpad7" || e.key === "7") {
+          e.preventDefault();
+          this.$modules.open("liturgy");
+          return;
+        }
+        if (e.code === "KeyL" || e.key?.toLowerCase() === "l") {
+          e.preventDefault();
+          this.$appdata.set("modules.sync.view", "library");
+          this.$modules.open("sync");
+          return;
+        }
+        if (e.code === "KeyH" || e.key?.toLowerCase() === "h") {
+          e.preventDefault();
+          this.$modules.open("help");
+          this.$appdata.set("modules.help.action", "open-about");
+          return;
+        }
+        if (e.code === "Comma" || e.key === ",") {
+          e.preventDefault();
+          this.$modules.open("config");
+          return;
+        }
+
+        // Fila de reprodução
+        if (e.code === "KeyQ" || e.key?.toLowerCase() === "q") {
+          e.preventDefault();
+          this.$appdata.set("modules.media.show_queue", !this.$appdata.get("modules.media.show_queue"));
+          return;
+        }
+
+        // Alternar modo de áudio (Cantado ↔ Instrumental)
+        if (e.code === "KeyT" || e.key?.toLowerCase() === "t") {
+          e.preventDefault();
+          const hasInstrumental = !!this.$appdata.get("modules.media.data.url_instrumental_music");
+          if (hasInstrumental) {
+            const currentMode = this.$appdata.get("modules.media.config.mode") || "audio";
+            const targetMode = currentMode === "instrumental" ? "audio" : "instrumental";
+            const idMusic = this.$appdata.get("modules.media.id_music");
+            const minimized = this.$appdata.get("modules.media.minimized");
+            if (idMusic) {
+              this.$media.open({ id_music: idMusic, mode: targetMode, minimized });
+            }
+          }
+          return;
+        }
+
+        // Silenciar áudio (Mute / Unmute)
+        if (e.code === "KeyM" || e.key?.toLowerCase() === "m") {
+          e.preventDefault();
+          this.$media.toogleVolume();
+          return;
+        }
+
+        // Controle de Volume
+        if (e.code === "ArrowUp") {
+          e.preventDefault();
+          this.$media.volumeUp(5);
+          return;
+        }
+        if (e.code === "ArrowDown") {
+          e.preventDefault();
+          this.$media.volumeDown(5);
+          return;
+        }
+
+        // Faixa seguinte / anterior da fila de reprodução
+        if (e.code === "ArrowRight") {
+          e.preventDefault();
+          this.$media.playNext();
+          return;
+        }
+        if (e.code === "ArrowLeft") {
+          e.preventDefault();
+          this.$media.playPrev();
+          return;
+        }
+
+        // Blackout da Projeção
+        if (e.code === "Period" || e.key === ".") {
+          e.preventDefault();
+          this.$media.toggleBlackout();
+          return;
+        }
+
+        // Projeção Tela Cheia
+        if (e.code === "Enter" || e.code === "NumpadEnter") {
+          e.preventDefault();
+          const isFullscreen = this.$appdata.get("modules.media.config.fullscreen");
+          this.$media.fullscreen(!isFullscreen);
+          return;
+        }
+      }
+
+      // 3. F1 - Manual de Uso
+      if (e.key === "F1") {
+        e.preventDefault();
+        this.$modules.open("help");
+        this.$appdata.set("modules.help.action", "open-manual");
+        return;
+      }
+
+      // F11 - Tela Cheia / Projeção
+      if (e.key === "F11") {
+        e.preventDefault();
+        const isFullscreen = this.$appdata.get("modules.media.config.fullscreen");
+        this.$media.fullscreen(!isFullscreen);
+        return;
+      }
+
+      // 4. Controles de Mídia sem Modificador (Play/Pause, Slides, etc.)
       const isFullscreen = this.$appdata.get("modules.media.config.fullscreen");
       const isMediaModuleOpen = this.$appdata.get("modules.media.show");
       const isMinimized = this.$appdata.get("modules.media.minimized");
+      const isMediaActive = isFullscreen || (isMediaModuleOpen && !isMinimized);
+      const hasMediaLoaded = Boolean(this.$appdata.get("modules.media.id_music") || this.$appdata.get("modules.media.data")?.name);
+      const hasNoModifiers = !e.ctrlKey && !e.metaKey && !e.altKey;
 
-      const isActive = isFullscreen || (isMediaModuleOpen && !isMinimized);
+      if ((e.code === "Space" && hasNoModifiers) || (isModifier && (e.code === "KeyP" || e.key?.toLowerCase() === "p"))) {
+        if (hasMediaLoaded) {
+          e.preventDefault();
+          this.$media.playPause();
+          return;
+        }
+      }
 
-      if (!isActive) return;
-
-      if (e.code === "Space") {
-        e.preventDefault();
-        this.$media.playPause();
-      } else if (e.code === "ArrowRight" || e.code === "ArrowDown" || e.code === "PageDown") {
-        e.preventDefault();
-        this.$media.nextSlide();
-      } else if (e.code === "ArrowLeft" || e.code === "ArrowUp" || e.code === "PageUp") {
-        e.preventDefault();
-        this.$media.prevSlide();
-      } else if (e.code === "Escape") {
-        e.preventDefault();
-        this.$media.close();
-      } else if (e.code === "KeyF" || ((e.ctrlKey || e.metaKey) && (e.code === "Enter" || e.code === "NumpadEnter"))) {
-        e.preventDefault();
-        this.$media.fullscreen(!isFullscreen);
-      } else if (e.code === "KeyM") {
-        e.preventDefault();
-        this.$media.minimize();
+      if (isMediaActive || hasMediaLoaded) {
+        if (hasNoModifiers && (e.code === "ArrowRight" || e.code === "ArrowDown" || e.code === "PageDown")) {
+          e.preventDefault();
+          this.$media.nextSlide();
+        } else if (hasNoModifiers && (e.code === "ArrowLeft" || e.code === "ArrowUp" || e.code === "PageUp")) {
+          e.preventDefault();
+          this.$media.prevSlide();
+        } else if (hasNoModifiers && e.code === "Home") {
+          e.preventDefault();
+          this.$media.firstSlide();
+        } else if (hasNoModifiers && e.code === "End") {
+          e.preventDefault();
+          this.$media.lastSlide();
+        } else if (hasNoModifiers && (e.code === "KeyF" || e.key?.toLowerCase() === "f")) {
+          e.preventDefault();
+          this.$media.fullscreen(!isFullscreen);
+        } else if (hasNoModifiers && (e.code === "KeyM" || e.key?.toLowerCase() === "m")) {
+          e.preventDefault();
+          this.$media.minimize();
+        }
       }
     },
   },

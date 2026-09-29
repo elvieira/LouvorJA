@@ -31,7 +31,7 @@
                 class="ml-6 text-none rounded"
                 prepend-icon="mdi-play"
               >
-                Reproduzir Todas
+                {{ $t('modules.media.general.play_all') }}
               </v-btn>
             </template>
             <v-card class="modern-glass-menu elevation-4 mt-2" rounded="lg">

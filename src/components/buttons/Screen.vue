@@ -104,7 +104,14 @@ const handleGlobalKeydown = (e: KeyboardEvent) => {
     // Mas F5 e ESC costumam ser globais mesmo dentro de input, vou deixar passar ESC e F5
   }
 
-  if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+  const isMac = Boolean((window as any)?.electronAPI?.isMac) || (
+    typeof navigator !== "undefined" && (
+      navigator.userAgent.includes("Mac") || (navigator.platform && navigator.platform.includes("Mac"))
+    )
+  );
+  const isModifier = isMac ? (e.metaKey && !e.ctrlKey) : (e.ctrlKey && !e.metaKey);
+
+  if (isModifier && e.key === "Enter") {
     // Only trigger if this specific module is the one currently open on screen
     const isModuleActive = appdata.get(`modules.${props.module}.show`);
     if (isModuleActive) {

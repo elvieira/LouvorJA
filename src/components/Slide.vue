@@ -1,5 +1,12 @@
 <template>
-  <div ref="container" class="w-100 h-100">
+  <div ref="container" class="w-100 h-100 position-relative">
+    <transition name="fade-blackout" :duration="200">
+      <div
+        v-if="isBlackout"
+        class="position-absolute top-0 left-0 w-100 h-100"
+        style="background-color: #000; z-index: 10000; pointer-events: none;"
+      />
+    </transition>
     <transition :name="no_background ? 'slide-fade-transparent' : 'slide-fade'" :duration="350">
       <div
         v-if="currentSlide"
@@ -134,6 +141,7 @@ const userdata = useUserData();
 const stringHelper = useString();
 const media = useMedia();
 const appdata = useAppData();
+const isBlackout = computed(() => appdata.get("projection_blackout") === true);
 
 let slideUid = 0;
 const currentSlide = ref<any>(null);
@@ -894,6 +902,15 @@ onUnmounted(() => {
 }
 
 .slide-fade-transparent-leave-to {
+  opacity: 0;
+}
+
+.fade-blackout-enter-active,
+.fade-blackout-leave-active {
+  transition: opacity 0.2s ease;
+}
+.fade-blackout-enter-from,
+.fade-blackout-leave-to {
   opacity: 0;
 }
 </style>

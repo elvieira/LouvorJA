@@ -1,4 +1,12 @@
 {
     "title": "Coletâneas",
-    "all_collections": "Todas as Coletâneas"
+    "all_collections": "Todas as Coletâneas",
+    "all": "Todos",
+    "search_placeholder": "Buscar música...",
+    "filter_by": "Filtrar pesquisa por:",
+    "filter_song_name": "Nome da música",
+    "filter_album": "Álbum/Coletânea",
+    "filter_lyrics_soon": "Letra da música (em breve)",
+    "building_index": "Construindo índice de busca...",
+    "no_songs_found": "Nenhuma música encontrada"
 }

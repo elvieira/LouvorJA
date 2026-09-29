@@ -84,6 +84,9 @@ export default defineComponent({
         if (newVal === "open-manual") {
           this.openManual();
           this.$appdata.set("modules.help.action", null);
+        } else if (newVal === "open-about" || newVal === "open-tabs") {
+          this.closeManual();
+          this.$appdata.set("modules.help.action", null);
         }
       },
       immediate: true,

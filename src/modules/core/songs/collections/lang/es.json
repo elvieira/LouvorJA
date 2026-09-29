@@ -1,4 +1,12 @@
 {
     "title": "Colecciones",
-    "all_collections": "Todas las Colecciones"
+    "all_collections": "Todas las Colecciones",
+    "all": "Todos",
+    "search_placeholder": "Buscar canción...",
+    "filter_by": "Filtrar búsqueda por:",
+    "filter_song_name": "Nombre de la canción",
+    "filter_album": "Álbum/Colección",
+    "filter_lyrics_soon": "Letra de la canción (próximamente)",
+    "building_index": "Construyendo índice de búsqueda...",
+    "no_songs_found": "Ninguna canción encontrada"
 }

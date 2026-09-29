@@ -477,6 +477,22 @@ export default defineComponent({
           this.projectIfConfigured(true);
         }
       }
+
+      // Navegação de versículos pelas teclas direcionais quando a mídia não estiver tocando
+      const isMediaPlaying = this.$appdata.get("modules.media.show") && !this.$appdata.get("modules.media.minimized");
+      if (!isMediaPlaying && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        if (["ArrowRight", "ArrowDown", "PageDown"].includes(e.code)) {
+          if (this.select_bible?.verses?.length) {
+            e.preventDefault();
+            this.nextVerse();
+          }
+        } else if (["ArrowLeft", "ArrowUp", "PageUp"].includes(e.code)) {
+          if (this.select_bible?.verses?.length) {
+            e.preventDefault();
+            this.prevVerse();
+          }
+        }
+      }
     },
     async loadData() {
       this.loading = true;
@@ -695,7 +711,14 @@ export default defineComponent({
         return;
       }
 
-      if (event?.ctrlKey) {
+      const isMac = Boolean((window as any)?.electronAPI?.isMac) || (
+        typeof navigator !== "undefined" && (
+          navigator.userAgent.includes("Mac") || (navigator.platform && navigator.platform.includes("Mac"))
+        )
+      );
+      const isMultiSelectModifier = isMac ? (event?.metaKey && !event?.ctrlKey) : (event?.ctrlKey && !event?.metaKey);
+
+      if (isMultiSelectModifier) {
         const index = this.bible.verses.indexOf(num);
         if (index === -1) {
           this.bible.verses.push(num);

@@ -35,6 +35,14 @@ export default defineComponent({
       const target = e.target as HTMLElement;
       if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable)) return;
 
+      const isMac = Boolean((window as any)?.electronAPI?.isMac) || (
+        typeof navigator !== "undefined" && (
+          (navigator.userAgent && navigator.userAgent.includes("Mac")) ||
+          (navigator.platform && navigator.platform.includes("Mac"))
+        )
+      );
+      const isModifier = isMac ? (e.metaKey && !e.ctrlKey) : (e.ctrlKey && !e.metaKey);
+
       if (e.key === "Escape") {
         // Não fecha a janela diretamente aqui: quem decide (e pode pedir
         // confirmação, no caso de projeção de vídeo) é a janela principal,
@@ -42,7 +50,7 @@ export default defineComponent({
         if (window.opener) {
           window.opener.postMessage("escape-pressed", "*");
         }
-      } else if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+      } else if (isModifier && e.key === "Enter") {
         if (window.opener) {
           window.opener.postMessage("escape-pressed", "*");
         }

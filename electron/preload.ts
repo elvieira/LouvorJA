@@ -3,6 +3,7 @@ import { contextBridge, ipcRenderer, webUtils } from "electron";
 contextBridge.exposeInMainWorld("electronAPI", {
   isElectron: true,
   isWindows: process.platform === "win32",
+  isMac: process.platform === "darwin",
   getLocalDb: (filename: string, lang?: string) => ipcRenderer.invoke("get-local-db", filename, lang),
   saveLocalDb: (filename: string, data: unknown) => ipcRenderer.invoke("save-local-db", filename, data),
   getLiturgyData: () => ipcRenderer.invoke("get-liturgy-data"),
@@ -65,6 +66,12 @@ contextBridge.exposeInMainWorld("electronAPI", {
   },
   onNavigateRoute: (callback: (routeName: string) => void) => {
     ipcRenderer.on("navigate-route", (_event, routeName: string) => callback(routeName));
+  },
+  onCycleModuleGroup: (callback: (groupKey: string) => void) => {
+    ipcRenderer.on("cycle-module-group", (_event, groupKey: string) => callback(groupKey));
+  },
+  onMenuAction: (callback: (action: string, payload?: unknown) => void) => {
+    ipcRenderer.on("menu-action", (_event, action: string, payload?: unknown) => callback(action, payload));
   },
   getInitialFileToOpen: () => ipcRenderer.invoke("get-initial-file-to-open"),
   onOpenExternalSong: (callback: (filePath: string) => void) => {

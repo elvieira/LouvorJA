@@ -12,6 +12,14 @@
             @click="selectedAlbum = null"
           >
             <v-icon>mdi-arrow-left</v-icon>
+            <v-tooltip
+              activator="parent"
+              location="bottom"
+              open-delay="300"
+              content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+            >
+              {{ t('back') }}
+            </v-tooltip>
           </v-btn>
         </template>
 
@@ -362,6 +370,7 @@
               </div>
               <v-text-field
                 v-model="nameInput"
+                :placeholder="t('video_name_placeholder')"
                 variant="outlined"
                 color="primary"
                 rounded="lg"
@@ -378,6 +387,7 @@
               </div>
               <v-text-field
                 v-model="linkInput"
+                :placeholder="t('video_link_placeholder')"
                 variant="outlined"
                 color="primary"
                 rounded="lg"
@@ -431,6 +441,7 @@
               </div>
               <v-text-field
                 v-model="albumLinkInput"
+                :placeholder="t('playlist_link_placeholder')"
                 variant="outlined"
                 color="primary"
                 rounded="lg"

@@ -482,6 +482,16 @@ export default defineComponent({
       window.electronAPI.onNavigateRoute((routeName: string) => {
         if (routeName === "help") {
           this.$modules.open("help");
+        } else if (routeName === "manual") {
+          this.$modules.open("help");
+          this.$appdata.set("modules.help.action", "open-manual");
+        } else if (routeName === "about") {
+          this.$modules.open("help");
+          this.$appdata.set("modules.help.action", "open-about");
+        } else if (routeName === "quick-search") {
+          this.showQuickSearch = true;
+        } else if (routeName === "bible-search") {
+          this.showBibleSearch = true;
         }
       });
       if (window.electronAPI.onOpenExternalSong) {
@@ -562,10 +572,17 @@ export default defineComponent({
       document.querySelector(".main-container")?.dispatchEvent(new CustomEvent("sidebar-pinned-changed", { bubbles: true, detail: val }));
     },
     onGlobalSearchShortcut(e: KeyboardEvent) {
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "f") {
+      const isMac = Boolean((window as any)?.electronAPI?.isMac) || (
+        typeof navigator !== "undefined" && (
+          navigator.userAgent.includes("Mac") || (navigator.platform && navigator.platform.includes("Mac"))
+        )
+      );
+      const isModifier = isMac ? (e.metaKey && !e.ctrlKey) : (e.ctrlKey && !e.metaKey);
+
+      if (isModifier && e.key.toLowerCase() === "f") {
         e.preventDefault();
         this.showQuickSearch = true;
-      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "b") {
+      } else if (isModifier && e.key.toLowerCase() === "b") {
         e.preventDefault();
         this.showBibleSearch = true;
       } else if (e.key === "F1") {

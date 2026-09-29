@@ -5,7 +5,7 @@
         <div class="search-bar ml-4 d-flex align-center" style="max-width: 800px; flex: 1; gap: 16px;">
           <v-text-field
             v-model="search"
-            :placeholder="$t('modules.hymnal_1996.inputs.search') || 'Buscar música...'"
+            :placeholder="t('search_placeholder')"
             prepend-inner-icon="mdi-magnify"
             variant="solo"
             density="comfortable"
@@ -41,7 +41,7 @@
                       class="text-caption font-weight-bold mb-2 mx-4 mt-1"
                       style="color: var(--sidebar-text-secondary);"
                     >
-                      Filtrar pesquisa por:
+                      {{ t('filter_by') }}
                     </div>
                     <v-list-item
                       :active="searchFilters.includes('name')"
@@ -52,7 +52,7 @@
                     >
                       <div class="d-flex align-center">
                         <v-icon :icon="searchFilters.includes('name') ? 'mdi-check-circle' : 'mdi-circle-outline'" size="small" class="mr-3" />
-                        <span class="text-body-2 font-weight-medium">Nome da música</span>
+                        <span class="text-body-2 font-weight-medium">{{ t('filter_song_name') }}</span>
                       </div>
                     </v-list-item>
                     <v-list-item
@@ -64,7 +64,7 @@
                     >
                       <div class="d-flex align-center">
                         <v-icon :icon="searchFilters.includes('albums') ? 'mdi-check-circle' : 'mdi-circle-outline'" size="small" class="mr-3" />
-                        <span class="text-body-2 font-weight-medium">Álbum/Coletânea</span>
+                        <span class="text-body-2 font-weight-medium">{{ t('filter_album') }}</span>
                       </div>
                     </v-list-item>
                     <v-list-item
@@ -74,7 +74,7 @@
                     >
                       <div class="d-flex align-center">
                         <v-icon icon="mdi-circle-outline" size="small" class="mr-3" />
-                        <span class="text-body-2 font-weight-medium">Letra da música (em breve)</span>
+                        <span class="text-body-2 font-weight-medium">{{ t('filter_lyrics_soon') }}</span>
                       </div>
                     </v-list-item>
                   </v-list>
@@ -93,7 +93,7 @@
               >
                 <div class="d-flex align-center text-truncate w-100 justify-space-between" style="color: var(--sidebar-text);">
                   <span class="text-truncate font-weight-medium text-body-2">
-                    {{ categoryOptions.find(c => c.id_category === id_category)?.name || 'Todos' }}
+                    {{ categoryOptions.find(c => c.id_category === id_category)?.name || t('all') }}
                   </span>
                   <v-icon size="small" class="ml-3 opacity-50">
                     mdi-menu-down
@@ -153,7 +153,7 @@
               class="mb-4"
             />
             <p style="color: var(--sidebar-text-secondary); font-weight: 500;">
-              Construindo índice de busca...
+              {{ t('building_index') }}
             </p>
           </div>
           <div v-else-if="filteredMusics.length === 0" class="d-flex flex-column align-center justify-center flex-grow-1 w-100">
@@ -161,7 +161,7 @@
               mdi-magnify
             </v-icon>
             <p style="color: var(--sidebar-text-secondary); font-weight: 500;">
-              Nenhuma música encontrada
+              {{ t('no_songs_found') }}
             </p>
           </div>
           <div v-else class="music-list flex-grow-1 d-flex flex-column" style="background: transparent; box-shadow: none; min-height: 0;">

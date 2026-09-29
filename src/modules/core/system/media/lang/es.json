@@ -5,12 +5,20 @@
         "no_instrumental_in_album": "Ninguna música en este álbum tiene playback.",
         "some_instrumental_omitted": "Se ignoraron algunas músicas sin playback."
     },
+    "controls": {
+        "maximize": "Maximizar",
+        "close": "Cerrar",
+        "fullscreen": "Pantalla Completa",
+        "exit_fullscreen": "Salir de Pantalla Completa"
+    },
     "general": {
         "sung": "Cantado",
         "instrumental": "Pista",
         "no_audio": "Sin Audio",
         "lyric": "Letra de la Canción",
-        "track": "Pista"
+        "slide_list": "Lista de Diapositivas",
+        "track": "Pista",
+        "play_all": "Reproducir Todas"
     },
     "inputs": {
         "lazy_load": "Carga Dinámica",
@@ -27,6 +35,8 @@
         "add_to_queue": "Añadir a la cola",
         "now_playing": "Reproduciendo ahora",
         "next_in_queue": "Próximas en la cola",
-        "choose_version": "Elige la versión"
+        "choose_version": "Elige la versión",
+        "save_as_collection": "Guardar fila como colección",
+        "collection_saved": "¡Colección \"{name}\" guardada con éxito!"
     }
 }

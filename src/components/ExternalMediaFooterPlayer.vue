@@ -5,7 +5,7 @@
   >
     <div v-if="playerWidth >= 600" class="player-info d-flex flex-column mr-6" style="max-width: 300px; min-width: 200px;">
       <span class="text-subtitle-2 font-weight-bold text-truncate" :class="isDark ? 'text-white' : 'text-black'" style="line-height: 1.2;">{{ mediaTitle }}</span>
-      <span class="text-caption text-truncate" :class="isDark ? 'text-grey' : 'text-grey-darken-1'" style="line-height: 1.2;">{{ mediaSubtitle || (isVideo ? 'Vídeo' : 'Áudio') }}</span>
+      <span class="text-caption text-truncate" :class="isDark ? 'text-grey' : 'text-grey-darken-1'" style="line-height: 1.2;">{{ mediaSubtitle || (isVideo ? $t('modules.external_media.controls.video') : $t('modules.external_media.controls.audio')) }}</span>
     </div>
 
     <div class="d-flex align-center mr-6">
@@ -24,7 +24,7 @@
           open-delay="300"
           content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
         >
-          {{ isPaused ? 'Reproduzir' : 'Pausar' }}
+          {{ isPaused ? $t('modules.external_media.controls.play') : $t('modules.external_media.controls.pause') }}
         </v-tooltip>
       </v-btn>
     </div>
@@ -111,7 +111,7 @@
           open-delay="300"
           content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
         >
-          Maximizar
+          {{ $t('modules.external_media.controls.maximize') }}
         </v-tooltip>
       </v-btn>
       <v-btn
@@ -129,7 +129,7 @@
           open-delay="300"
           content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
         >
-          Fechar
+          {{ $t('modules.external_media.controls.close') }}
         </v-tooltip>
       </v-btn>
     </div>

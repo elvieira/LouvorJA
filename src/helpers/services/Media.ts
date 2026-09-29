@@ -1465,6 +1465,34 @@ export default {
 
     this.playFromQueue(nextIndex);
   },
+  playPrev() {
+    if ($appdata.get("modules.media.loading")) return;
+    const queue = $appdata.get("modules.media.queue");
+    if (!queue || queue.items.length === 0) return;
+
+    let prevIndex = queue.currentIndex - 1;
+    if (prevIndex < 0) {
+      const loopMode = $appdata.get("modules.media.config.loop") || "none";
+      if (loopMode === "queue") {
+        prevIndex = queue.items.length - 1;
+      } else {
+        prevIndex = 0;
+      }
+    }
+
+    this.playFromQueue(prevIndex);
+  },
+  toggleBlackout() {
+    const current = $appdata.get("projection_blackout") === true;
+    $appdata.set("projection_blackout", !current);
+    if (!current) {
+      if (typeof window !== "undefined" && window.electronAPI?.streamingClearSlide) {
+        window.electronAPI.streamingClearSlide();
+      }
+    } else {
+      this.syncStreaming();
+    }
+  },
   // Contador que só sobe quando a faixa termina naturalmente e não há mais nada
   // pra tocar em seguida (nem no loop, nem na fila própria do $media) — diferente
   // de um fechamento manual do player. Outros módulos usam isso pra saber a hora
