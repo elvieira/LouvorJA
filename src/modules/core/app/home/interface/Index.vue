@@ -178,6 +178,8 @@
                         :id-music="item.id_music"
                         :has-instrumental-music="item.has_instrumental_music"
                         :item="item"
+                        :pulse-lyric="searchFilters.includes('lyric')"
+                        :search-query="searchQuery"
                       />
                     </div>
                   </td>

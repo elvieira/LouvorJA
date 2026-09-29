@@ -603,6 +603,7 @@ export default {
 
     const id_music = params.id_music;
     const id_album = params.id_album ? params.id_album : null;
+    const highlight = params.highlight ? String(params.highlight).trim() : null;
 
     $appdata.set("modules.lyric.loading", true);
 
@@ -617,6 +618,7 @@ export default {
     $appdata.set("modules.lyric.id_music", id_music);
     $appdata.set("modules.lyric.id_album", id_album);
     $appdata.set("modules.lyric.config.title", data.name);
+    $appdata.set("modules.lyric.highlight", highlight);
 
     this.setAlbumInfo(id_album, "lyric");
 
@@ -631,6 +633,7 @@ export default {
     $appdata.set("modules.lyric.id_music", null);
     $appdata.set("modules.lyric.id_album", null);
     $appdata.set("modules.lyric.config.title", null);
+    $appdata.set("modules.lyric.highlight", null);
     $appdata.set("modules.lyric.loading", false);
   },
 

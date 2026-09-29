@@ -35,12 +35,17 @@
             </p>
           </div>
           
-          <div class="pa-6 pt-4 flex-grow-1" style="overflow-y: auto;">
+          <div ref="lyricScrollBody" class="pa-6 pt-4 flex-grow-1" style="overflow-y: auto;">
             <v-skeleton-loader v-if="module?.loading" type="text@5" />
             <div v-else class="lyric-content-wrapper">
               <div v-for="line in lyric" :key="line.id_lyric" class="lyric-line mb-4">
-                <b v-if="line.aux_lyric" class="d-block text-primary text-caption mb-1 text-uppercase font-weight-bold" style="letter-spacing: 0.5px;">{{ line.aux_lyric }}</b>
-                <span class="lyric-text text-body-1" style="color: var(--sidebar-text); font-weight: 500;">{{ line.lyric }}</span>
+                <!-- eslint-disable vue/no-v-html -->
+                <span
+                  class="lyric-text text-body-1"
+                  style="color: var(--sidebar-text); font-weight: 500;"
+                  v-html="formatLyricLine(line.lyric)"
+                />
+                <!-- eslint-enable vue/no-v-html -->
               </div>
             </div>
           </div>
@@ -68,6 +73,9 @@ export default defineComponent({
     /* COMPUTEDS OBRIGATÓRIAS - FIM */
     config(): any {
       return this.module?.config;
+    },
+    highlightQuery(): string {
+      return this.module?.highlight || "";
     },
     lyric(): any[] {
       const rawLyric = this.module?.data?.lyric || [];
@@ -110,6 +118,18 @@ export default defineComponent({
       }));
     },
   },
+  watch: {
+    "module.loading"(val) {
+      if (!val) {
+        this.scrollToHighlight();
+      }
+    },
+    "module.show"(val) {
+      if (val) {
+        this.scrollToHighlight();
+      }
+    },
+  },
   methods: {
     /* METHODS OBRIGATÓRIOS - INÍCIO */
     /* NÃO MODIFICAR */
@@ -117,6 +137,64 @@ export default defineComponent({
       return this.$t(`modules.${this.module_id}.${text}`);
     },
     /* METHODS OBRIGATÓRIOS - FIM */
+    escapeHtml(str: string): string {
+      return str
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    },
+    createDiacriticRegex(search: string): RegExp | null {
+      const trimmed = search.trim();
+      if (!trimmed) return null;
+
+      const diacriticsMap: Record<string, string> = {
+        a: "[aáàãâäAÁÀÃÂÄ]",
+        e: "[eéèêëEÉÈÊË]",
+        i: "[iíìîïIÍÌÎÏ]",
+        o: "[oóòõôöOÓÒÕÔÖ]",
+        u: "[uúùûüUÚÙÛÜ]",
+        c: "[cçCÇ]",
+        n: "[nñNÑ]",
+      };
+
+      const pattern = trimmed
+        .split("")
+        .map(char => {
+          if (/[.*+?^${}()|[\]\\]/.test(char)) {
+            return `\\${char}`;
+          }
+          const lower = char.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+          return diacriticsMap[lower] || char;
+        })
+        .join("");
+
+      try {
+        return new RegExp(`(${pattern})`, "gi");
+      } catch {
+        return null;
+      }
+    },
+    formatLyricLine(text: string): string {
+      const safe = this.escapeHtml(text || "");
+      if (!this.highlightQuery) return safe;
+      const regex = this.createDiacriticRegex(this.highlightQuery);
+      if (!regex) return safe;
+      return safe.replace(regex, '<mark class="lyric-highlight">$1</mark>');
+    },
+    scrollToHighlight() {
+      if (!this.highlightQuery) return;
+      this.$nextTick(() => {
+        setTimeout(() => {
+          const container = this.$refs.lyricScrollBody as HTMLElement | null;
+          const mark = container?.querySelector?.(".lyric-highlight") as HTMLElement | null;
+          if (mark && container) {
+            mark.scrollIntoView({ behavior: "smooth", block: "center" });
+          }
+        }, 150);
+      });
+    },
   },
 });
 </script>
@@ -131,5 +209,15 @@ export default defineComponent({
   font-weight: 500;
   white-space: pre-wrap;
   display: block;
+}
+
+mark.lyric-highlight {
+  background: rgba(255, 213, 0, 0.45) !important;
+  color: inherit !important;
+  border-bottom: 2px solid #ffd500;
+  border-radius: 4px;
+  padding: 1px 4px;
+  font-weight: 700;
+  box-shadow: 0 0 6px rgba(255, 213, 0, 0.35);
 }
 </style>

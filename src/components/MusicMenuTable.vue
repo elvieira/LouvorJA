@@ -8,12 +8,14 @@
       :color="color ? color : $theme.primary()"
       :density="compact ? 'compact' : 'compact'"
       :size="compact ? 'x-small' : undefined"
-      :class="compact ? 'mx-0 px-0' : 'mx-1'"
+      :class="[compact ? 'mx-0 px-0' : 'mx-1', btn.class]"
       :style="compact ? 'min-width: 26px; width: 26px; height: 26px;' : ''"
       icon
       @click.stop="btn.click"
     >
-      <v-icon :size="compact ? 17 : undefined">{{ btn.icon }}</v-icon>
+      <v-icon :size="compact ? 17 : undefined">
+        {{ btn.icon }}
+      </v-icon>
       <v-tooltip
         activator="parent"
         location="top"
@@ -104,7 +106,9 @@
       icon
       @click.stop="canQueue ? addToQueue('audio') : null"
     >
-      <v-icon :size="compact ? 17 : undefined">mdi-playlist-plus</v-icon>
+      <v-icon :size="compact ? 17 : undefined">
+        mdi-playlist-plus
+      </v-icon>
       <v-tooltip
         activator="parent"
         location="top"
@@ -128,12 +132,16 @@ const props = withDefaults(defineProps<{
   color?: string;
   compact?: boolean;
   item?: any;
+  pulseLyric?: boolean;
+  searchQuery?: string;
 }>(), {
   idMusic: 0,
   hasInstrumentalMusic: false,
   color: "",
   compact: false,
   item: null,
+  pulseLyric: false,
+  searchQuery: "",
 });
 
 const emit = defineEmits(["action"]);
@@ -247,6 +255,8 @@ const buttons = computed(() => {
         tooltip: isSlja ? "Letra" : "Letra indisponível",
         disabled: !isSlja,
         icon: "mdi-text-box-outline",
+        pulse: isSlja && props.pulseLyric,
+        class: (isSlja && props.pulseLyric) ? "pulse-lyric-btn" : "",
         click: () => {
           if (isSlja) {
             (media as any).playExternalSlja(item.filePathAudio, "no_audio");
@@ -291,11 +301,40 @@ const buttons = computed(() => {
       tooltip: "Letra",
       disabled: false,
       icon: "mdi-text-box-outline",
+      pulse: props.pulseLyric,
+      class: props.pulseLyric ? "pulse-lyric-btn" : "",
       click: () => {
-        media.openLyric(numId);
+        media.openLyric({
+          id_music: numId,
+          highlight: props.searchQuery,
+        });
         emit("action", "lyric");
       },
     },
   ];
 });
 </script>
+
+<style scoped>
+@keyframes lyricPulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(0, 151, 215, 0.7);
+  }
+  50% {
+    transform: scale(1.18);
+    box-shadow: 0 0 8px 3px rgba(0, 151, 215, 0.5);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(0, 151, 215, 0);
+  }
+}
+
+.pulse-lyric-btn {
+  animation: lyricPulse 1.5s infinite ease-in-out !important;
+  color: var(--accent-blue, #0097d7) !important;
+  background: rgba(0, 151, 215, 0.15) !important;
+  border-radius: 50% !important;
+}
+</style>

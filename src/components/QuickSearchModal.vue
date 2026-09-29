@@ -182,6 +182,8 @@
                         :has-instrumental-music="item.has_instrumental_music"
                         :item="item"
                         compact
+                        :pulse-lyric="searchFilters.includes('lyric')"
+                        :search-query="searchQuery"
                         @action="onMenuAction"
                       />
                     </div>
