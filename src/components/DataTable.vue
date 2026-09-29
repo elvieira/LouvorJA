@@ -2,13 +2,12 @@
   <v-table
     ref="tableRoot"
     fixed-header
-    loading
     density="compact"
     class="__table-data"
   >
     <template #bottom>
       <v-progress-linear
-        v-if="loading"
+        v-if="loading && !hideLoading"
         :color="$theme.primary()"
         indeterminate
       />
@@ -44,6 +43,7 @@ const props = withDefaults(defineProps<{
   letter?: string;
   sortBy?: string;
   initialLimit?: number;
+  hideLoading?: boolean;
 }>(), {
   modelValue: () => ({}),
   search: "",
@@ -54,6 +54,7 @@ const props = withDefaults(defineProps<{
   letter: "",
   sortBy: "",
   initialLimit: undefined,
+  hideLoading: true,
 });
 
 const emit = defineEmits(["update:modelValue"]);

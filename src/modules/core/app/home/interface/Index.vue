@@ -142,6 +142,7 @@
               :file="`${$i18n.locale}_musics`"
               class="flex-grow-1 d-flex flex-column"
               style="background: transparent; min-height: 0;"
+              hide-loading
             >
               <div v-if="searchData.loading === false && searchData.data && searchData.data.length === 0" class="d-flex flex-column align-center justify-center w-100" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none;">
                 <v-icon size="48" color="var(--sidebar-text-secondary)" class="mb-3">
@@ -305,7 +306,6 @@ export default defineComponent({
     show_home_history: true,
     hymnalImg,
     hymnal1996Img,
-    searchFilters: ["name"] as string[],
   }),
   computed: {
     /* COMPUTEDS OBRIGATÓRIAS - INÍCIO */
@@ -361,6 +361,13 @@ export default defineComponent({
     compact(): boolean {
       return this.$vuetify.display.width <= 800;
     },
+    searchFilters(): string[] {
+      const sf = (this as any).$store?.state?.user_data?.search_filters;
+      if (Array.isArray(sf) && sf.length > 0) {
+        return sf;
+      }
+      return ["name"];
+    },
     searchableFields(): any {
       const fields: any = {};
       this.searchFilters.forEach(f => { fields[f] = true; });
@@ -374,16 +381,6 @@ export default defineComponent({
       },
       deep: true,
       immediate: true,
-    },
-    searchFilters: {
-      handler(val) {
-        if (val.length === 0) {
-          this.$nextTick(() => { this.searchFilters = ["name"]; });
-        } else {
-          this.$userdata.set("search_filters", val);
-        }
-      },
-      deep: true,
     },
     searchQuery(newVal: string) {
       if (!newVal) {
@@ -413,11 +410,6 @@ export default defineComponent({
     },
   },
   mounted() {
-    const savedFilters = this.$userdata.get("search_filters");
-    if (savedFilters && Array.isArray(savedFilters) && savedFilters.length > 0) {
-      this.searchFilters = savedFilters;
-    }
-    
     this.fetchCollectionInfo();
     const setting = this.$userdata.get("show_home_history");
     this.show_home_history = setting !== false;
@@ -633,11 +625,16 @@ export default defineComponent({
     },
     
     toggleSearchFilter(filter: string) {
+      let updated: string[];
       if (this.searchFilters.includes(filter)) {
-        this.searchFilters = this.searchFilters.filter((f: string) => f !== filter);
+        updated = this.searchFilters.filter((f: string) => f !== filter);
       } else {
-        this.searchFilters.push(filter);
+        updated = [...this.searchFilters, filter];
       }
+      if (updated.length === 0) {
+        updated = ["name"];
+      }
+      this.$userdata.set("search_filters", updated);
     },
   },
 });

@@ -47,6 +47,7 @@ export default {
 
     // Padrões Globais Estáticos
     const staticDefaults: Record<string, any> = {
+      search_filters: ["name"],
       remember_window_bounds: false,
       "modules.config.remember_window_bounds": false,
       "modules.config.slide_fullscreen": true,

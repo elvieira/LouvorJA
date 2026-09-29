@@ -360,7 +360,7 @@ export default defineComponent({
         if (val.length === 0) {
           this.$nextTick(() => { this.searchFilters = ["name"]; });
         } else {
-          this.$userdata.set("search_filters", val);
+          this.$userdata.set("collections_search_filters", val);
         }
       },
       deep: true,
@@ -372,7 +372,7 @@ export default defineComponent({
     },
   },
   async mounted() {
-    const savedFilters = this.$userdata.get("search_filters");
+    const savedFilters = this.$userdata.get("collections_search_filters");
     if (savedFilters && Array.isArray(savedFilters) && savedFilters.length > 0) {
       this.searchFilters = savedFilters;
     }

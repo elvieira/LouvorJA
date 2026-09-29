@@ -145,6 +145,7 @@
               sort-by="name"
               :file="`${$i18n.locale}_musics`"
               style="background: transparent;"
+              hide-loading
             >
               <div v-if="searchData.loading === false && searchData.data && searchData.data.length === 0" class="d-flex flex-column align-center justify-center w-100 py-10 pointer-events-none">
                 <v-icon size="48" color="var(--sidebar-text-secondary)" class="mb-3">
@@ -198,6 +199,7 @@
 <script lang="ts">
 import { defineComponent, ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from "vue";
 import { useTheme } from "vuetify";
+import { useStore } from "vuex";
 import { useUserData } from "@/composables/useHelpers";
 import LTable from "@/components/DataTable.vue";
 import LMusicMenuTable from "@/components/MusicMenuTable.vue";
@@ -224,25 +226,18 @@ export default defineComponent({
     const currentHeight = ref("0px");
     let resizeObserver: ResizeObserver | null = null;
 
+    const store = useStore();
     const theme = useTheme();
     const userdata = useUserData();
     const isDark = computed(() => theme.name.value === "dark");
 
-    const searchFilters = ref<string[]>([]);
-    const savedFilters = userdata.get("search_filters");
-    if (savedFilters && Array.isArray(savedFilters) && savedFilters.length > 0) {
-      searchFilters.value = savedFilters;
-    } else {
-      searchFilters.value = ["name"];
-    }
-
-    watch(searchFilters, (val) => {
-      if (val.length === 0) {
-        nextTick(() => { searchFilters.value = ["name"]; });
-      } else {
-        userdata.set("search_filters", val);
+    const searchFilters = computed<string[]>(() => {
+      const sf = store.state.user_data?.search_filters;
+      if (Array.isArray(sf) && sf.length > 0) {
+        return sf;
       }
-    }, { deep: true });
+      return ["name"];
+    });
 
     const searchableFields = computed(() => {
       const f: Record<string, boolean> = {};
@@ -251,11 +246,16 @@ export default defineComponent({
     });
 
     const toggleSearchFilter = (filter: string) => {
+      let updated: string[];
       if (searchFilters.value.includes(filter)) {
-        searchFilters.value = searchFilters.value.filter((f) => f !== filter);
+        updated = searchFilters.value.filter((f) => f !== filter);
       } else {
-        searchFilters.value.push(filter);
+        updated = [...searchFilters.value, filter];
       }
+      if (updated.length === 0) {
+        updated = ["name"];
+      }
+      userdata.set("search_filters", updated);
     };
 
     onMounted(() => {

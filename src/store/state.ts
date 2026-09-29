@@ -33,6 +33,7 @@ export interface AppState {
   user_data: {
     theme: string;
     language: string;
+    search_filters?: string[];
     modules: {
       musics: {
         search: {
@@ -113,6 +114,7 @@ const state: AppState = {
   user_data: {
     theme: "",
     language: "",
+    search_filters: ["name"],
     modules: {
       musics: {
         search: {
