@@ -274,14 +274,7 @@ export default defineComponent({
           el.currentTime = (this.duration * req.value) / 100;
         }
       } else if (req.action === "set_volume") {
-        if (this.isYoutube) {
-          if (this.youtubePlayer) this.youtubePlayer.setVolume(req.value);
-          this.volume = req.value;
-          return;
-        }
-        const el = this.getMediaEl();
-        if (el) el.volume = req.value / 100;
-        this.volume = req.value;
+        this.setVolume(req.value);
       } else if (req.action === "minimize") {
         this.minimizeMedia();
       } else if (req.action === "close") {
@@ -339,6 +332,11 @@ export default defineComponent({
     },
   },
   mounted() {
+    const savedVol = this.$userdata.get("modules.external_media.volume");
+    if (typeof savedVol === "number" && !isNaN(savedVol)) {
+      this.volume = savedVol;
+      this.$appdata.set("modules.external_media.config.volume", savedVol);
+    }
     if (this.filePath) {
       this.$nextTick(() => {
         this.initPlayback();
@@ -387,6 +385,11 @@ export default defineComponent({
 
     // Initialize playback - waits for canplay before playing
     initPlayback() {
+      const savedVol = this.$userdata.get("modules.external_media.volume");
+      if (typeof savedVol === "number" && !isNaN(savedVol)) {
+        this.volume = savedVol;
+        this.$appdata.set("modules.external_media.config.volume", savedVol);
+      }
       if (this.isYoutube) {
         this.initYoutubePlayer();
       } else {
@@ -594,6 +597,7 @@ export default defineComponent({
 
     setVolume(val: number) {
       this.volume = val;
+      this.$userdata.set("modules.external_media.volume", this.volume);
       if (this.isYoutube) {
         if (this.youtubePlayer) this.youtubePlayer.setVolume(this.volume);
         this.$appdata.set("modules.external_media.config.volume", this.volume);

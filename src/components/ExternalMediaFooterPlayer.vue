@@ -139,16 +139,17 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import { useTheme } from "vuetify";
-import { useAppData } from "@/composables/useHelpers";
+import { useAppData, useUserData } from "@/composables/useHelpers";
 import ButtonScreen from "@/components/buttons/Screen.vue";
 
 const theme = useTheme();
 const appdata = useAppData();
+const userdata = useUserData();
 
 const playerWidth = ref(0);
 const playerContainer = ref<HTMLElement | null>(null);
 let resizeObserver: ResizeObserver | null = null;
-const volume = ref(100);
+const volume = ref(appdata.get("modules.external_media.config.volume") ?? (userdata.get("modules.external_media.volume") ?? 100));
 const savedVolume = ref(100);
 
 const isDark = computed(() => theme.name.value === "dark");
@@ -218,6 +219,7 @@ const onVolumeChange = () => {
     timestamp: Date.now(),
   });
   appdata.set("modules.external_media.config.volume", volume.value);
+  userdata.set("modules.external_media.volume", volume.value);
 };
 
 const toggleMute = () => {
@@ -252,7 +254,7 @@ onMounted(() => {
     resizeObserver.observe(playerContainer.value);
   }
 
-  const savedVol = appdata.get("modules.external_media.config.volume");
+  const savedVol = appdata.get("modules.external_media.config.volume") ?? userdata.get("modules.external_media.volume");
   if (savedVol !== undefined && savedVol !== null) {
     volume.value = savedVol;
   }

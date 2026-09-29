@@ -172,7 +172,8 @@ export default {
     if (mode === "audio" || mode === "instrumental") {
       //Será executado com áudio... cria o elemento de audio
       const audio = this.getElement();
-      const volume = $appdata.get("modules.media.config.volume");
+      const volume = this.getVolume();
+      $appdata.set("modules.media.config.volume", volume);
       audio.volume = volume / 100;
 
       this.pause(true);
@@ -741,7 +742,7 @@ export default {
     $appdata.set("modules.media.config.progress", 0);
     $appdata.set("modules.media.config.slide_progress", 0);
     $appdata.set("modules.media.config.buffered", 0);
-    $appdata.set("modules.media.config.volume", 100);
+    $appdata.set("modules.media.config.volume", this.getVolume());
     $appdata.set("modules.media.config.is_paused", false);
     $appdata.set("modules.media.config.is_fading", false);
     $appdata.set("modules.media.config.fullscreen", false);
@@ -862,7 +863,7 @@ export default {
           removeTextBg: $userdata.get("modules.config.slide_remove_text_bg") || false,
         },
         isPaused: $appdata.get("modules.media.config.is_paused") === true,
-        volume: $appdata.get("modules.media.config.volume") ?? 100,
+        volume: this.getVolume(),
         updatedAt: Date.now(),
       });
     }
@@ -974,7 +975,7 @@ export default {
           },
         );
       });
-      const volume = $appdata.get("modules.media.config.volume") / 100;
+      const volume = this.getVolume() / 100;
       audio.volume = volume;
       $appdata.set("modules.media.config.is_paused", bool);
       this.syncStreaming();
@@ -1023,26 +1024,45 @@ export default {
     this.syncStreaming();
     return !isPaused;
   },
+  getVolume(): number {
+    const appVol = $appdata.get("modules.media.config.volume");
+    if (typeof appVol === "number" && !isNaN(appVol)) {
+      return appVol;
+    }
+    const userVol = $userdata.get("modules.media.volume");
+    if (typeof userVol === "number" && !isNaN(userVol)) {
+      return userVol;
+    }
+    return 100;
+  },
   setVolume(val: number) {
+    const clampedVal = Math.max(0, Math.min(100, Math.round(val)));
     const audio = this.getElement();
-    audio.volume = val / 100;
-    $appdata.set("modules.media.config.volume", val);
+    audio.volume = clampedVal / 100;
+
+    const audioA = document.getElementById("__audio_a") as HTMLAudioElement | null;
+    const audioB = document.getElementById("__audio_b") as HTMLAudioElement | null;
+    if (audioA) audioA.volume = clampedVal / 100;
+    if (audioB) audioB.volume = clampedVal / 100;
+
+    $appdata.set("modules.media.config.volume", clampedVal);
+    $userdata.set("modules.media.volume", clampedVal);
     this.syncStreaming();
   },
   volumeUp(step = 5) {
-    const current = $appdata.get("modules.media.config.volume") ?? 100;
+    const current = this.getVolume();
     const next = Math.min(100, current + step);
     this.setVolume(next);
     return next;
   },
   volumeDown(step = 5) {
-    const current = $appdata.get("modules.media.config.volume") ?? 100;
+    const current = this.getVolume();
     const next = Math.max(0, current - step);
     this.setVolume(next);
     return next;
   },
   toogleVolume() {
-    let volume = $appdata.get("modules.media.config.volume");
+    let volume = this.getVolume();
     volume = volume < 100 ? 100 : 0;
     this.setVolume(volume);
   },
@@ -1293,6 +1313,7 @@ export default {
       el = document.createElement("audio");
       el.setAttribute("id", id);
       el.setAttribute("preload", "auto");
+      el.volume = this.getVolume() / 100;
       document.body.appendChild(el);
 
       el.addEventListener("timeupdate", () => {

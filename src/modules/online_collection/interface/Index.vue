@@ -321,12 +321,13 @@ export default defineComponent({
       appdata.set("modules.external_media.image", video.image);
       appdata.set("modules.external_media.minimized", false);
       appdata.set("modules.external_media.show", true);
+      const currentVolume = appdata.get("modules.external_media.config.volume") ?? ((this as any).$userdata?.get?.("modules.external_media.volume") ?? 100);
       appdata.set("modules.external_media.config", {
         is_paused: true,
         current_time: 0,
         progress: 0,
         duration: 0,
-        volume: 100,
+        volume: currentVolume,
       });
     },
     async loadAllVideosForSearch() {

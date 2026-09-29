@@ -71,6 +71,8 @@ export default {
       "modules.config.media_slide_minimize_player": false,
 
       "modules.media.miniplayer_corner": "bottom-left",
+      "modules.media.volume": 100,
+      "modules.external_media.volume": 100,
     };
 
     return staticDefaults[param];

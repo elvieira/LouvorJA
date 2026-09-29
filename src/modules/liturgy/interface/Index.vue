@@ -1181,12 +1181,13 @@ export default defineComponent({
             this.$appdata.set("modules.external_media.title", item.name || "");
             this.$appdata.set("modules.external_media.subtitle", item.subtitle || "");
             this.$appdata.set("modules.external_media.minimized", false);
+            const currentVolume = this.$appdata.get("modules.external_media.config.volume") ?? (this.$userdata.get("modules.external_media.volume") ?? 100);
             this.$appdata.set("modules.external_media.config", {
               is_paused: action === "view",
               current_time: 0,
               progress: 0,
               duration: 0,
-              volume: 100,
+              volume: currentVolume,
             });
 
             // Check if it's audio-only

@@ -50,6 +50,10 @@ export default {
   },
   created() {
     this.$userdata.load();
+    const savedVolume = this.$userdata.get("modules.media.volume");
+    if (typeof savedVolume === "number" && !isNaN(savedVolume)) {
+      this.$appdata.set("modules.media.config.volume", savedVolume);
+    }
     const theme = this.$userdata.get("theme");
     if (theme !== "") {
       this.$vuetify.theme.global.name = theme;
