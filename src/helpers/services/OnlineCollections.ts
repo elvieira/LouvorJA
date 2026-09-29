@@ -97,6 +97,13 @@ async function fetchRows(tipo: "canais" | "playlists" | "videos", id: string, la
   return parseInsertRows(text);
 }
 
+export interface SearchableOnlineVideo extends OnlineVideo {
+  channelName?: string;
+  playlistName?: string;
+}
+
+const memoryVideoCache: Record<string, { time: number; videos: SearchableOnlineVideo[] }> = {};
+
 export default {
   async getChannels(lang = "pt"): Promise<OnlineChannel[]> {
     const rows = await fetchRows("canais", "", lang);
@@ -124,5 +131,67 @@ export default {
         image: r.IMAGEM,
       }))
       .sort((a, b) => a.position - b.position);
+  },
+
+  async getAllVideos(lang = "pt"): Promise<SearchableOnlineVideo[]> {
+    const cached = memoryVideoCache[lang];
+    if (cached && Date.now() - cached.time < 3600000 && cached.videos.length > 0) {
+      return cached.videos;
+    }
+
+    try {
+      const stored = localStorage.getItem(`online_videos_cache_${lang}`);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed.time && Date.now() - parsed.time < 86400000 && Array.isArray(parsed.videos) && parsed.videos.length > 0) {
+          memoryVideoCache[lang] = parsed;
+          return parsed.videos;
+        }
+      }
+    } catch { /* ignore */ }
+
+    try {
+      const channels = await this.getChannels(lang);
+      const playlistPromises = channels.map(async (channel) => {
+        try {
+          const playlists = await this.getPlaylists(channel.id, lang);
+          return playlists.map((p) => ({ ...p, channelName: channel.name }));
+        } catch {
+          return [];
+        }
+      });
+      const playlistsNested = await Promise.all(playlistPromises);
+      const allPlaylists = playlistsNested.flat();
+
+      const videoPromises = allPlaylists.map(async (playlist) => {
+        try {
+          const videos = await this.getVideos(playlist.id, lang);
+          return videos.map((v) => ({
+            ...v,
+            channelName: playlist.channelName,
+            playlistName: playlist.name,
+          }));
+        } catch {
+          return [];
+        }
+      });
+      const videosNested = await Promise.all(videoPromises);
+      const allVideos = videosNested.flat();
+
+      if (allVideos.length > 0) {
+        memoryVideoCache[lang] = { time: Date.now(), videos: allVideos };
+        try {
+          localStorage.setItem(
+            `online_videos_cache_${lang}`,
+            JSON.stringify({ time: Date.now(), videos: allVideos })
+          );
+        } catch { /* ignore */ }
+      }
+
+      return allVideos;
+    } catch (e) {
+      console.error("[OnlineCollections] Erro ao carregar todos os vídeos:", e);
+      return cached?.videos || [];
+    }
   },
 };

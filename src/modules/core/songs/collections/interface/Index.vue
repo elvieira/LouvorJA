@@ -68,13 +68,15 @@
                       </div>
                     </v-list-item>
                     <v-list-item
-                      disabled
+                      :active="searchFilters.includes('lyric')"
+                      active-color="var(--accent-blue)"
                       class="mx-2 rounded-lg mb-1"
                       style="min-height: 40px;"
+                      @click="toggleSearchFilter('lyric')"
                     >
                       <div class="d-flex align-center">
-                        <v-icon icon="mdi-circle-outline" size="small" class="mr-3" />
-                        <span class="text-body-2 font-weight-medium">{{ t('filter_lyrics_soon') }}</span>
+                        <v-icon :icon="searchFilters.includes('lyric') ? 'mdi-check-circle' : 'mdi-circle-outline'" size="small" class="mr-3" />
+                        <span class="text-body-2 font-weight-medium">{{ t('filter_lyrics') }}</span>
                       </div>
                     </v-list-item>
                   </v-list>
@@ -299,11 +301,12 @@ export default defineComponent({
       const results = this.all_musics.filter((m: any) => {
         const matchesName = this.searchFilters.includes("name") ? this.$string.matchesSearch(m.name, this.search) : false;
         const matchesAlbum = (this.searchFilters.includes("albums") && m.album_name) ? this.$string.matchesSearch(m.album_name, this.search) : false;
+        const matchesLyric = (this.searchFilters.includes("lyric") && m.lyric) ? this.$string.matchesSearch(m.lyric, this.search) : false;
 
         if (isNum && !isNaN(m.track)) {
-          return Number(m.track) === Number(term) || matchesName || matchesAlbum;
+          return Number(m.track) === Number(term) || matchesName || matchesAlbum || matchesLyric;
         }
-        return matchesName || matchesAlbum;
+        return matchesName || matchesAlbum || matchesLyric;
       });
 
       const cleanQuery = term;
@@ -329,6 +332,11 @@ export default defineComponent({
             const cleanAlbum = this.$string.clean(item.album_name);
             if (cleanAlbum.startsWith(cleanQuery)) maxScore = Math.max(maxScore, 2);
             else if (cleanAlbum.includes(` ${cleanQuery}`)) maxScore = Math.max(maxScore, 1);
+          }
+
+          if (this.searchFilters.includes("lyric") && item.lyric) {
+            const cleanLyric = this.$string.clean(item.lyric);
+            if (cleanLyric.includes(cleanQuery)) maxScore = Math.max(maxScore, 1);
           }
           
           return maxScore;
@@ -460,12 +468,21 @@ export default defineComponent({
         const promises = uniqueAlbums.map((a: any) => this.$database.get(`album_${a.id_album}`));
         const results = await Promise.all(promises);
         
+        const lyricsMap: Record<number, string> = {};
+        const allMusicsData = (await this.$database.get(`${this.$i18n.locale}_musics`)) || [];
+        allMusicsData.forEach((m: any) => {
+          if (m.id_music && m.lyric) {
+            lyricsMap[m.id_music] = m.lyric;
+          }
+        });
+
         results.forEach((albumData: any) => {
           if (albumData && albumData.musics) {
             albumData.musics.forEach((m: any) => {
               musics.push({
                 ...m,
                 album_name: albumData.name,
+                lyric: lyricsMap[m.id_music] || "",
               });
             });
           }

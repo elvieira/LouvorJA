@@ -1530,4 +1530,53 @@ export default {
       this.open({ id_music: item.id_music, mode: item.mode, id_album: item.id_album, fromQueue: true });
     }
   },
+  playOnlineVideo(video: { id: string; name: string; channelName?: string; image?: string; isMuted?: boolean }) {
+    if ($appdata.get("modules.media.id_music")) {
+      this.close(true);
+    }
+    $appdata.set("modules.external_media.filePath", `youtube:${video.id}`);
+    $appdata.set("modules.external_media.title", video.name);
+    $appdata.set("modules.external_media.subtitle", video.channelName || "Coletânea Online");
+    $appdata.set("modules.external_media.image", video.image || "");
+    $appdata.set("modules.external_media.minimized", false);
+    $appdata.set("modules.external_media.show", true);
+    const currentVol = $appdata.get("modules.external_media.config.volume") ?? ($userdata.get("modules.external_media.volume") ?? 100);
+    $appdata.set("modules.external_media.config", {
+      is_paused: false,
+      current_time: 0,
+      progress: 0,
+      duration: 0,
+      volume: video.isMuted ? 0 : currentVol,
+    });
+  },
+  async playExternalFile(item: { name: string; filePathAudio?: string | null; filePathInstrumental?: string | null; custom_collection_name?: string }, mode: "audio" | "instrumental" | "no_audio" = "audio") {
+    const rawPath = mode === "instrumental" ? item.filePathInstrumental : item.filePathAudio;
+    if (!rawPath) return;
+
+    if (/\.(slja|sja|lja)$/i.test(rawPath)) {
+      await this.playExternalSlja(rawPath, mode);
+      return;
+    }
+
+    if ($appdata.get("modules.media.id_music")) {
+      this.close(true);
+    }
+    const ext = rawPath.split(".").pop()?.toLowerCase() || "";
+    const isAudio = ["mp3", "wav", "flac", "aac", "ogg", "wma", "m4a"].includes(ext);
+
+    $appdata.set("modules.external_media.filePath", rawPath);
+    $appdata.set("modules.external_media.title", item.name);
+    $appdata.set("modules.external_media.subtitle", mode === "instrumental" ? "Playback" : mode === "no_audio" ? "Sem Áudio" : (item.custom_collection_name || ""));
+    $appdata.set("modules.external_media.image", "");
+    $appdata.set("modules.external_media.minimized", isAudio);
+    $appdata.set("modules.external_media.show", !isAudio);
+    const currentVol = $appdata.get("modules.external_media.config.volume") ?? ($userdata.get("modules.external_media.volume") ?? 100);
+    $appdata.set("modules.external_media.config", {
+      is_paused: false,
+      current_time: 0,
+      progress: 0,
+      duration: 0,
+      volume: mode === "no_audio" ? 0 : currentVol,
+    });
+  },
 };

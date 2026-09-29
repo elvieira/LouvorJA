@@ -82,13 +82,40 @@
                       </div>
                     </v-list-item>
                     <v-list-item
-                      disabled
+                      :active="searchFilters.includes('lyric')"
+                      active-color="var(--accent-blue)"
                       class="mx-2 rounded-lg mb-1"
                       style="min-height: 40px;"
+                      @click="toggleSearchFilter('lyric')"
                     >
                       <div class="d-flex align-center">
-                        <v-icon icon="mdi-circle-outline" size="small" class="mr-3" />
-                        <span class="text-body-2 font-weight-medium">Letra da música (em breve)</span>
+                        <v-icon :icon="searchFilters.includes('lyric') ? 'mdi-check-circle' : 'mdi-circle-outline'" size="small" class="mr-3" />
+                        <span class="text-body-2 font-weight-medium">Letra da música</span>
+                      </div>
+                    </v-list-item>
+                    <v-divider class="my-1 border-opacity-25" />
+                    <v-list-item
+                      :active="searchFilters.includes('online_collection')"
+                      active-color="var(--accent-blue)"
+                      class="mx-2 rounded-lg mb-1"
+                      style="min-height: 40px;"
+                      @click="toggleSearchFilter('online_collection')"
+                    >
+                      <div class="d-flex align-center">
+                        <v-icon :icon="searchFilters.includes('online_collection') ? 'mdi-check-circle' : 'mdi-circle-outline'" size="small" class="mr-3" />
+                        <span class="text-body-2 font-weight-medium">Coletâneas Online</span>
+                      </div>
+                    </v-list-item>
+                    <v-list-item
+                      :active="searchFilters.includes('custom_collection')"
+                      active-color="var(--accent-blue)"
+                      class="mx-2 rounded-lg mb-1"
+                      style="min-height: 40px;"
+                      @click="toggleSearchFilter('custom_collection')"
+                    >
+                      <div class="d-flex align-center">
+                        <v-icon :icon="searchFilters.includes('custom_collection') ? 'mdi-check-circle' : 'mdi-circle-outline'" size="small" class="mr-3" />
+                        <span class="text-body-2 font-weight-medium">Coletâneas Personalizadas</span>
                       </div>
                     </v-list-item>
                   </v-list>
@@ -116,7 +143,7 @@
               class="flex-grow-1 d-flex flex-column"
               style="background: transparent; min-height: 0;"
             >
-              <div v-if="searchData.data && searchData.data.length === 0" class="d-flex flex-column align-center justify-center w-100" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none;">
+              <div v-if="searchData.loading === false && searchData.data && searchData.data.length === 0" class="d-flex flex-column align-center justify-center w-100" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none;">
                 <v-icon size="48" color="var(--sidebar-text-secondary)" class="mb-3">
                   mdi-magnify
                 </v-icon>
@@ -127,10 +154,10 @@
               <tbody v-else class="music-list-container">
                 <tr 
                   v-for="item in searchData.data" 
-                  :key="item.id_music"
+                  :key="item.id || item.id_music"
                   class="music-item w-100"
                   style="cursor: pointer;"
-                  @click="$media.open({ id_music: item.id_music, mode: 'audio' })"
+                  @click="playSong(item)"
                 >
                   <td class="music-info flex-grow-1" style="border-bottom: none; padding-left: 24px !important;">
                     <h4 class="music-title">
@@ -138,17 +165,18 @@
                       {{ item.name }}
                     </h4>
                     <p class="music-artist" style="margin-top: 4px;">
-                      {{ item.albums ? item.albums.map((a: any) => a.name).join(', ') : '' }}
+                      {{ item.subtitle || (item.albums ? item.albums.map((a: any) => a.name).join(', ') : '') }}
                     </p>
                   </td>
                   <td class="music-duration pr-4" style="border-bottom: none;">
-                    {{ $datetime.shortTime(item.duration) }}
+                    {{ item.duration ? $datetime.shortTime(item.duration) : '' }}
                   </td>
                   <td style="border-bottom: none;">
                     <div class="d-flex justify-end pr-4">
                       <LMusicMenuTable
                         :id-music="item.id_music"
                         :has-instrumental-music="item.has_instrumental_music"
+                        :item="item"
                       />
                     </div>
                   </td>
@@ -271,7 +299,7 @@ export default defineComponent({
   },
   data: () => ({
     searchQuery: "",
-    searchData: { data: [] } as any,
+    searchData: { data: [], loading: true } as any,
     manifest,
     dynamicCollectionInfo: {} as Record<string, any>,
     show_home_history: true,
@@ -364,6 +392,8 @@ export default defineComponent({
             (this.$refs.searchInput as any).focus();
           }
         });
+      } else {
+        this.searchData.loading = true;
       }
     },
     "module.show": {
@@ -557,12 +587,25 @@ export default defineComponent({
     },
     
     playSong(song: any) {
+      if (song.is_online_collection) {
+        (this.$media as any).playOnlineVideo({
+          id: song.video_id,
+          name: song.name,
+          channelName: song.channel_name,
+          image: song.image,
+        });
+        return;
+      }
+      if (song.is_external_song) {
+        (this.$media as any).playExternalFile(song, "audio");
+        return;
+      }
       if (!song.id_music) return;
       if (typeof song.id_music === "string" && song.id_music.startsWith("slja:")) {
         this.$media.playExternalSlja(song.id_music.slice("slja:".length));
         return;
       }
-      this.$media.open({ id_music: song.id_music, mode: "audio" });
+      this.$media.open({ id_music: Number(song.id_music), mode: "audio" });
     },
     
     getCollectionName(collection: any): string {
@@ -571,10 +614,7 @@ export default defineComponent({
     
     playFirstResult() {
       if (this.searchData && this.searchData.data && this.searchData.data.length > 0) {
-        const first = this.searchData.data[0];
-        if (first.id_music) {
-          this.$media.open({ id_music: first.id_music, mode: "audio" });
-        }
+        this.playSong(this.searchData.data[0]);
       }
     },
     

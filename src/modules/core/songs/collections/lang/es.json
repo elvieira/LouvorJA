@@ -6,6 +6,7 @@
     "filter_by": "Filtrar búsqueda por:",
     "filter_song_name": "Nombre de la canción",
     "filter_album": "Álbum/Colección",
+    "filter_lyrics": "Letra de la canción",
     "filter_lyrics_soon": "Letra de la canción (próximamente)",
     "building_index": "Construyendo índice de búsqueda...",
     "no_songs_found": "Ninguna canción encontrada"
