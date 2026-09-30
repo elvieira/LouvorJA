@@ -23,20 +23,22 @@
     "annotation": "Anotação",
     "category": "Categoria",
     "music": "Música",
+    "collection_item": "Coletâneas Online e Personalizadas",
     "verse": "Versículo",
-    "media": "Mídia",
+    "media": "Mídia e Arquivos",
     "link": "Link",
-    "file": "Arquivo/Diretório",
+    "file": "Mídia e Arquivos",
     "scheduled_item": "Item Agendado"
   },
   "type_descriptions": {
     "annotation": "Texto livre sem ação (ex: Oração, Doxologia)",
     "category": "Separador visual de seção",
     "music": "Selecione uma música do Hinário ou Coletânea",
+    "collection_item": "Músicas de coletâneas ou vídeos do YouTube",
     "verse": "Selecione um versículo bíblico",
-    "media": "Selecione um arquivo de vídeo",
+    "media": "Vídeos, áudios, slides PPTX, PDFs ou outros arquivos",
     "link": "Adicione uma URL para abrir no navegador",
-    "file": "Abrir um arquivo ou pasta externa (não mídia)",
+    "file": "Vídeos, áudios, slides PPTX, PDFs ou outros arquivos",
     "scheduled_item": "Selecione uma categoria de agendamento"
   },
   "fields": {
@@ -56,7 +58,15 @@
     "url_placeholder": "https://...",
     "music_mode": "Modo de Reprodução",
     "music_mode_audio": "Cantado",
-    "music_mode_instrumental": "Playback"
+    "music_mode_instrumental": "Playback",
+    "collection_type": "Origem da Coletânea",
+    "custom_collections": "Personalizadas",
+    "online_collections": "Online",
+    "select_collection": "Selecionar Coletânea",
+    "select_song": "Selecionar Música",
+    "search_online_videos": "Buscar vídeo online...",
+    "no_custom_collections": "Nenhuma coletânea personalizada encontrada",
+    "no_custom_collections_hint": "Crie coletâneas no módulo Coletâneas Personalizadas para adicioná-las aqui."
   },
   "actions": {
     "save": "Salvar",

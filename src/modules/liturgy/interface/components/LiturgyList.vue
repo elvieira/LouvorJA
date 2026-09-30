@@ -288,7 +288,7 @@
                   </v-btn>
                   
                   <div class="item-icon-wrapper mr-4">
-                    <v-icon size="18" :color="element.color || 'grey-lighten-1'">
+                    <v-icon size="18" :color="element.color || getItemColor(element)">
                       {{ getItemIcon(element) }}
                     </v-icon>
                   </div>
@@ -321,6 +321,52 @@
                         </v-icon>
                         {{ element.musicMode === 'instrumental' ? t('fields.music_mode_instrumental') : t('fields.music_mode_audio') }}
                       </v-chip>
+                      <v-chip
+                        v-if="(element.type === 'file' || element.type === 'media') && element.filePath"
+                        size="x-small"
+                        :color="getFileInfo(element.filePath).color"
+                        variant="tonal"
+                        class="ml-2 font-weight-bold px-2"
+                        style="height: 18px; font-size: 0.65rem;"
+                      >
+                        <v-icon start size="11" class="mr-1">
+                          {{ getFileInfo(element.filePath).icon }}
+                        </v-icon>
+                        {{ getFileInfo(element.filePath).label }}
+                        <span v-if="getFileInfo(element.filePath).extension" class="ml-1 opacity-70">
+                          ({{ getFileInfo(element.filePath).extension }})
+                        </span>
+                      </v-chip>
+                      <v-chip
+                        v-if="element.type === 'collection_item'"
+                        size="x-small"
+                        :color="element.collectionType === 'online' ? 'red' : 'teal'"
+                        variant="tonal"
+                        class="ml-2 font-weight-bold px-2"
+                        style="height: 18px; font-size: 0.65rem;"
+                      >
+                        <v-icon start size="11" class="mr-1">
+                          {{ element.collectionType === 'online' ? 'mdi-youtube' : 'mdi-folder-music' }}
+                        </v-icon>
+                        {{ element.collectionType === 'online' ? 'Coletânea Online' : 'Coletânea Personalizada' }}
+                      </v-chip>
+                      <v-chip
+                        v-if="element.type === 'collection_item' && element.collectionType === 'custom' && element.musicMode === 'instrumental'"
+                        size="x-small"
+                        color="purple"
+                        variant="tonal"
+                        class="ml-2 font-weight-bold px-2"
+                        style="height: 18px; font-size: 0.65rem;"
+                      >
+                        <v-icon
+                          start
+                          size="11"
+                          class="mr-1"
+                        >
+                          mdi-music-note
+                        </v-icon>
+                        {{ t('fields.music_mode_instrumental') }}
+                      </v-chip>
                     </div>
                     <div v-if="element.subtitle && !isItemPlaceholder(element)" class="text-caption" style="color: rgba(var(--v-theme-on-surface), 0.5); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                       {{ element.subtitle }}
@@ -331,9 +377,9 @@
                   </div>
 
                   <div class="d-flex align-center item-actions" style="gap: 4px; flex-shrink: 0;">
-                    <!-- Botão Reproduzir: Para música e mídia -->
+                    <!-- Botão Reproduzir: Para música e arquivos de mídia (áudio, vídeo, LouvorJA) -->
                     <v-btn
-                      v-if="(element.type === 'music' || element.type === 'media') && isExecutable(element)"
+                      v-if="isPlayable(element) && isExecutable(element)"
                       icon
                       size="x-small"
                       variant="text"
@@ -352,9 +398,9 @@
                       </v-tooltip>
                     </v-btn>
 
-                    <!-- Botão Visualizar: Exclusivo para músicas (projeção de letra) -->
+                    <!-- Botão Visualizar: Exclusivo para músicas e arquivos LouvorJA (.slja) -->
                     <v-btn
-                      v-if="element.type === 'music' && isExecutable(element)"
+                      v-if="isViewable(element) && isExecutable(element)"
                       icon
                       size="x-small"
                       variant="text"
@@ -373,9 +419,9 @@
                       </v-tooltip>
                     </v-btn>
 
-                    <!-- Botão Abrir: Para link, item agendado, texto bíblico e arquivo/diretório -->
+                    <!-- Botão Abrir: Para link, item agendado, texto bíblico e arquivos externos (pptx, pdf, imagem, pasta, etc.) -->
                     <v-btn
-                      v-if="['link', 'scheduled_item', 'verse', 'file'].includes(element.type) && isExecutable(element)"
+                      v-if="isOpenable(element) && isExecutable(element)"
                       icon
                       size="x-small"
                       variant="text"
@@ -477,6 +523,7 @@
 <script lang="ts">
 import { defineComponent, PropType } from "vue";
 import draggable from "vuedraggable";
+import { getLiturgyFileInfo } from "../../helpers/fileHelper";
 
 export default defineComponent({
   name: "LiturgyList",
@@ -556,24 +603,36 @@ export default defineComponent({
       }
       return count;
     },
+    getFileInfo(filePath?: string) {
+      return getLiturgyFileInfo(filePath);
+    },
     getTypeIcon(type: string): string {
-      const map: Record<string, string> = { annotation: "mdi-text", category: "mdi-tag", music: "mdi-music", verse: "mdi-book-open-variant", media: "mdi-file-video", link: "mdi-link", file: "mdi-folder-file-outline", scheduled_item: "mdi-calendar-clock" };
+      const map: Record<string, string> = { annotation: "mdi-text", category: "mdi-tag", music: "mdi-music", collection_item: "mdi-music-box-multiple", verse: "mdi-book-open-variant", media: "mdi-folder-file-outline", link: "mdi-link", file: "mdi-folder-file-outline", scheduled_item: "mdi-calendar-clock" };
       return map[type] || "mdi-help";
     },
     getItemIcon(element: any): string {
-      if (element.type === "media" && element.filePath) {
-        const ext = element.filePath.split(".").pop()?.toLowerCase() || "";
-        const audioExts = ["mp3", "wav", "flac", "aac", "ogg", "wma", "m4a"];
-        if (audioExts.includes(ext)) return "mdi-headphones";
-        return "mdi-video-outline";
+      if (element.type === "collection_item") {
+        return element.collectionType === "online" ? "mdi-youtube" : "mdi-folder-music";
+      }
+      if ((element.type === "file" || element.type === "media") && element.filePath) {
+        return getLiturgyFileInfo(element.filePath).icon;
       }
       if (element.type === "music") {
         return element.musicMode === "instrumental" ? "mdi-music-note" : "mdi-account-voice";
       }
       return this.getTypeIcon(element.type);
     },
+    getItemColor(element: any): string {
+      if (element.type === "collection_item") {
+        return element.collectionType === "online" ? "red" : "teal";
+      }
+      if ((element.type === "file" || element.type === "media") && element.filePath) {
+        return getLiturgyFileInfo(element.filePath).color;
+      }
+      return this.getTypeColor(element.type);
+    },
     getTypeColor(type: string): string {
-      const map: Record<string, string> = { annotation: "info", category: "warning", music: "indigo", verse: "purple", media: "orange", link: "cyan", file: "blue", scheduled_item: "pink" };
+      const map: Record<string, string> = { annotation: "info", category: "warning", music: "indigo", collection_item: "teal", verse: "purple", media: "orange", link: "cyan", file: "blue-grey", scheduled_item: "pink" };
       return map[type] || "grey";
     },
     toggleCategory(id: string) {
@@ -618,10 +677,14 @@ export default defineComponent({
     },
     isExecutable(item: any): boolean {
       if (this.isItemPlaceholder(item)) return false;
-      return ["music", "verse", "link", "media", "file", "scheduled_item"].includes(item.type);
+      return ["music", "verse", "link", "media", "file", "scheduled_item", "collection_item"].includes(item.type);
     },
     isItemPlaceholder(item: any): boolean {
       if (item.type === "music" && !item.musicId) return true;
+      if (item.type === "collection_item") {
+        if (item.collectionType === "online") return !item.onlineVideoId;
+        return !item.musicId && !item.filePath && !item.filePathAudio;
+      }
       if (item.type === "verse" && (!item.verseBookId || !item.verseChapter)) return true;
       if (item.type === "media" && !item.filePath) return true;
       if (item.type === "file" && !item.filePath) return true;
@@ -629,15 +692,50 @@ export default defineComponent({
       if (item.type === "scheduled_item" && !item.categoryId) return true;
       return false;
     },
+    isPlayable(element: any): boolean {
+      if (element.type === "music" || element.type === "collection_item") return true;
+      if (element.type === "file" || element.type === "media") {
+        if (!element.filePath) return false;
+        return getLiturgyFileInfo(element.filePath).isMedia;
+      }
+      return false;
+    },
+    isViewable(element: any): boolean {
+      if (element.type === "music") return true;
+      if (element.type === "collection_item" && element.collectionType === "custom") {
+        if (element.collectionSongType === "internal") return true;
+        const raw = element.filePathAudio || element.filePath;
+        if (raw && getLiturgyFileInfo(raw).isLouvorJa) return true;
+      }
+      if (element.type === "file" || element.type === "media") {
+        if (!element.filePath) return false;
+        return getLiturgyFileInfo(element.filePath).isLouvorJa;
+      }
+      return false;
+    },
+    isOpenable(element: any): boolean {
+      if (["link", "scheduled_item", "verse"].includes(element.type)) return true;
+      if (element.type === "file" || element.type === "media") {
+        if (!element.filePath) return false;
+        return !getLiturgyFileInfo(element.filePath).isMedia;
+      }
+      return false;
+    },
     getItemActionIcon(element: any): string {
-      if (element.type === "music" || element.type === "media") {
+      if (this.isPlayable(element)) {
         return "mdi-play-outline";
+      }
+      if (this.isOpenable(element)) {
+        return "mdi-open-in-new";
       }
       return "mdi-eye-outline";
     },
     getItemActionTooltip(element: any): string {
-      if (element.type === "music" || element.type === "media") {
+      if (this.isPlayable(element)) {
         return this.t("actions.play");
+      }
+      if (this.isOpenable(element)) {
+        return this.t("actions.open");
       }
       return this.t("actions.view");
     },

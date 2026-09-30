@@ -171,13 +171,14 @@
                   style="background: rgba(var(--v-theme-on-surface), 0.04); border-color: rgba(128,128,128,0.1) !important;"
                 >
                   <v-avatar
-                    color="rgba(var(--v-theme-primary), 0.1)"
+                    :color="getFileInfo(item.filePath).color"
                     size="42"
                     rounded="lg"
                     class="mr-4 flex-shrink-0"
+                    variant="tonal"
                   >
-                    <v-icon size="20" color="primary">
-                      mdi-file-video
+                    <v-icon size="20" :color="getFileInfo(item.filePath).color">
+                      {{ getFileInfo(item.filePath).icon }}
                     </v-icon>
                   </v-avatar>
                   <div class="flex-grow-1" style="min-width: 0;">
@@ -247,6 +248,7 @@
 <script lang="ts">
 import { defineComponent, PropType } from "vue";
 import $snackbar from "@/helpers/ui/Snackbar";
+import { getLiturgyFileInfo } from "../../helpers/fileHelper";
 
 
 
@@ -339,6 +341,9 @@ export default defineComponent({
     close() {
       this.$emit("update:modelValue", false);
     },
+    getFileInfo(filePath?: string) {
+      return getLiturgyFileInfo(filePath);
+    },
     promptNewCategory() {
       // Usamos a nova forma de adicionar inline para evitar problemas com prompts globais
       this.showNewCategoryForm = true;
@@ -382,8 +387,10 @@ export default defineComponent({
         const filePath = (await window.electronAPI.openFileDialog({
           title: "Selecionar Arquivo para Agendar",
           filters: [
-            { name: "Mídia", extensions: ["mp4", "webm", "mkv", "avi", "mp3", "wav", "jpg", "png", "jpeg"] },
-            { name: "Todos os Arquivos", extensions: ["*"] },
+            { name: "Todos os Arquivos e Mídias", extensions: ["*"] },
+            { name: "Mídias (Áudio / Vídeo)", extensions: ["mp4", "webm", "mkv", "avi", "mov", "wmv", "mp3", "wav", "flac", "aac", "ogg", "wma", "m4a"] },
+            { name: "Apresentações e Documentos", extensions: ["pptx", "ppt", "ppsx", "pps", "pdf", "key", "odp", "doc", "docx", "txt"] },
+            { name: "Imagens", extensions: ["jpg", "png", "jpeg", "webp", "gif", "bmp", "svg"] },
           ],
         })) as string | null;
 

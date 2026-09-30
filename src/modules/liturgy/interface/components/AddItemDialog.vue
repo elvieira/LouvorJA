@@ -7,7 +7,7 @@
   >
     <v-card 
       class="rounded-xl"
-      style="background: var(--card-bg, #ffffff); box-shadow: 0 10px 40px rgba(0,0,0,0.5); display: flex; flex-direction: column; max-height: 90vh; max-width: 600px; width: 100%; margin: 0 auto;"
+      style="background: var(--card-bg, #ffffff); box-shadow: 0 10px 40px rgba(0,0,0,0.5); display: flex; flex-direction: column; max-height: 90vh; max-width: 680px; width: 100%; margin: 0 auto;"
     >
       <v-window v-model="addStep">
         <!-- Step 1: Type Selection -->
@@ -38,11 +38,11 @@
           </div>
           
           <div style="background: var(--main-bg, #f5f5f5); padding: 24px; flex: 1; min-height: 0; overflow-y: auto;">
-            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+            <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: 1fr; gap: 12px;">
               <v-hover v-for="type in itemTypes" :key="type.value" v-slot="{ isHovering, props }">
                 <div
                   v-bind="props"
-                  class="pa-4 d-flex align-center"
+                  class="pa-4 d-flex align-center h-100"
                   :style="{ 
                     borderRadius: '16px',
                     border: '1px solid',
@@ -51,12 +51,13 @@
                     boxShadow: isHovering ? '0 8px 24px rgba(0,0,0,0.08)' : '0 2px 8px rgba(0,0,0,0.04)',
                     cursor: 'pointer',
                     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                    transform: isHovering ? 'translateY(-2px)' : 'none'
+                    transform: isHovering ? 'translateY(-2px)' : 'none',
+                    minWidth: 0,
                   }"
                   @click="openAddForm(type.value)"
                 >
                   <div
-                    class="mr-4 d-flex align-center justify-center flex-shrink-0"
+                    class="mr-3 d-flex align-center justify-center flex-shrink-0"
                     :style="{
                       width: '42px', height: '42px', borderRadius: '12px',
                       background: isHovering ? 'rgba(var(--v-theme-primary), 0.1)' : 'rgba(var(--v-theme-on-surface), 0.04)',
@@ -67,11 +68,18 @@
                       {{ type.icon }}
                     </v-icon>
                   </div>
-                  <div style="min-width: 0;">
-                    <div class="font-weight-medium mb-1" style="font-size: 0.95rem; color: var(--sidebar-text); line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                  <div style="min-width: 0; flex: 1;">
+                    <div
+                      class="font-weight-medium mb-1"
+                      :title="type.label"
+                      style="font-size: 0.92rem; color: var(--sidebar-text); line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                    >
                       {{ type.label }}
                     </div>
-                    <div class="text-caption" style="color: var(--sidebar-text-secondary); line-height: 1.2;">
+                    <div
+                      class="text-caption"
+                      style="color: var(--sidebar-text-secondary); line-height: 1.25; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;"
+                    >
                       {{ type.description }}
                     </div>
                   </div>
@@ -105,7 +113,7 @@
                   rounded="lg"
                   class="mr-3"
                 >
-                  <v-icon color="primary" size="20">
+                  <v-icon :color="getTypeColor(addForm.type)" size="20">
                     {{ getTypeIcon(addForm.type) }}
                   </v-icon>
                 </v-avatar>
@@ -268,6 +276,286 @@
               </div>
             </div>
 
+            <!-- Coletâneas Selector (Personalizadas & Online) -->
+            <div v-if="addForm.type === 'collection_item'" class="mb-4">
+              <!-- PillSwitch: Personalizadas / Online -->
+              <div class="mb-4">
+                <div class="text-body-2 font-weight-medium mb-1" style="color: var(--sidebar-text-secondary); margin-left: 4px;">
+                  {{ t('fields.collection_type') }}
+                </div>
+                <PillSwitch
+                  v-model="addForm.collectionType"
+                  block
+                  :items="collectionTypeItems"
+                  @update:model-value="onCollectionTypeChanged"
+                />
+              </div>
+
+              <!-- ABA 1: COLETÂNEAS PERSONALIZADAS -->
+              <div v-if="addForm.collectionType === 'custom'">
+                <div
+                  v-if="customCollections.length === 0"
+                  class="text-center pa-6 rounded-xl border"
+                  style="background: rgba(var(--v-theme-on-surface), 0.02); border-color: rgba(128,128,128,0.15) !important;"
+                >
+                  <v-icon
+                    size="40"
+                    color="teal"
+                    class="mb-2"
+                    style="opacity: 0.6;"
+                  >
+                    mdi-folder-music-outline
+                  </v-icon>
+                  <div class="text-body-2 font-weight-bold" style="color: var(--sidebar-text);">
+                    {{ t('fields.no_custom_collections') }}
+                  </div>
+                  <div class="text-caption mt-1" style="color: var(--sidebar-text-secondary);">
+                    {{ t('fields.no_custom_collections_hint') }}
+                  </div>
+                </div>
+
+                <div v-else>
+                  <!-- Selecionar Coletânea -->
+                  <div class="mb-3">
+                    <div class="text-body-2 font-weight-medium mb-1" style="color: var(--sidebar-text-secondary); margin-left: 4px;">
+                      {{ t('fields.select_collection') }}
+                    </div>
+                    <v-select
+                      v-model="addForm.collectionId"
+                      :items="customCollections"
+                      item-title="name"
+                      item-value="id"
+                      variant="outlined"
+                      color="teal"
+                      rounded="lg"
+                      density="compact"
+                      hide-details
+                      class="modern-input-compact"
+                      :placeholder="t('fields.select_collection')"
+                      @update:model-value="onSelectCustomCollection"
+                    >
+                      <template #item="{ item, props }">
+                        <v-list-item
+                          v-bind="props"
+                          :title="undefined"
+                          class="mx-2 rounded-lg mb-1"
+                          color="teal"
+                        >
+                          <template #title>
+                            <div class="d-flex align-center justify-space-between w-100">
+                              <span class="text-body-2 font-weight-medium">{{ item.title }}</span>
+                              <v-chip
+                                size="x-small"
+                                color="teal"
+                                variant="tonal"
+                                class="ml-2"
+                              >
+                                {{ (item.raw.songs || []).length }} músicas
+                              </v-chip>
+                            </div>
+                          </template>
+                        </v-list-item>
+                      </template>
+                    </v-select>
+                  </div>
+
+                  <!-- Selecionar Música da Coletânea -->
+                  <div v-if="addForm.collectionId" class="mb-3">
+                    <div class="text-body-2 font-weight-medium mb-1" style="color: var(--sidebar-text-secondary); margin-left: 4px;">
+                      {{ t('fields.select_song') }}
+                    </div>
+                    <v-select
+                      v-model="addForm.collectionSongId"
+                      :items="customCollectionSongs"
+                      item-title="name"
+                      item-value="id"
+                      variant="outlined"
+                      color="teal"
+                      rounded="lg"
+                      density="compact"
+                      hide-details
+                      class="modern-input-compact"
+                      :placeholder="t('fields.select_song')"
+                      return-object
+                      @update:model-value="onSelectCustomSong"
+                    >
+                      <template #selection="{ item }">
+                        <div class="d-flex align-center text-truncate">
+                          <span class="text-body-2 font-weight-medium text-truncate">{{ item.raw.name }}</span>
+                        </div>
+                      </template>
+                      <template #item="{ item, props }">
+                        <v-list-item
+                          v-bind="props"
+                          :title="undefined"
+                          class="mx-2 rounded-lg mb-1"
+                          color="teal"
+                        >
+                          <template #title>
+                            <div class="d-flex align-center justify-space-between w-100">
+                              <div class="d-flex flex-column text-truncate" style="min-width: 0;">
+                                <span class="text-body-2 font-weight-medium text-truncate">{{ item.raw.name }}</span>
+                                <span class="text-caption text-truncate opacity-60">{{ item.raw.album }}</span>
+                              </div>
+                              <v-chip
+                                size="x-small"
+                                :color="item.raw.type === 'internal' ? 'primary' : 'deep-orange'"
+                                variant="tonal"
+                                class="ml-2 flex-shrink-0"
+                              >
+                                {{ item.raw.type === 'internal' ? 'Interna' : 'Arquivo' }}
+                              </v-chip>
+                            </div>
+                          </template>
+                        </v-list-item>
+                      </template>
+                    </v-select>
+                  </div>
+
+                  <!-- Seletor Modo da Música se tiver playback -->
+                  <div v-if="selectedCustomCollectionSong" class="mt-4">
+                    <div class="text-body-2 font-weight-medium mb-1" style="color: var(--sidebar-text-secondary); margin-left: 4px;">
+                      {{ t('fields.music_mode') }}
+                    </div>
+                    <PillSwitch
+                      v-model="addForm.musicMode"
+                      block
+                      :items="[
+                        { value: 'audio', label: t('fields.music_mode_audio'), icon: 'mdi-account-voice' },
+                        { value: 'instrumental', label: t('fields.music_mode_instrumental'), icon: 'mdi-music-note', disabled: !selectedCustomCollectionSong.hasPlayback }
+                      ]"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <!-- ABA 2: COLETÂNEAS ONLINE (YOUTUBE) -->
+              <div v-else-if="addForm.collectionType === 'online'">
+                <!-- Se um vídeo já estiver selecionado, exibe preview card com opção de trocar -->
+                <div
+                  v-if="addForm.onlineVideoId"
+                  class="rounded-xl pa-3 d-flex align-center justify-space-between mb-3"
+                  style="border: 1px solid var(--border-color, rgba(128,128,128,0.2)); background: rgba(var(--v-theme-on-surface), 0.06);"
+                >
+                  <div class="d-flex align-center" style="overflow: hidden;">
+                    <div
+                      class="mr-3 flex-shrink-0 rounded-lg overflow-hidden position-relative"
+                      style="width: 72px; height: 48px; background: #000;"
+                    >
+                      <img
+                        v-if="addForm.onlineVideoImage"
+                        :src="addForm.onlineVideoImage"
+                        style="width: 100%; height: 100%; object-fit: cover;"
+                      />
+                      <v-icon
+                        v-else
+                        size="24"
+                        color="red"
+                        style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);"
+                      >
+                        mdi-youtube
+                      </v-icon>
+                    </div>
+                    <div class="d-flex flex-column" style="overflow: hidden;">
+                      <div class="d-flex align-center">
+                        <span class="font-weight-bold text-truncate" style="color: var(--sidebar-text); max-width: 250px;">
+                          {{ addForm.name }}
+                        </span>
+                        <v-chip
+                          size="x-small"
+                          color="red"
+                          variant="flat"
+                          class="ml-2 font-weight-bold px-2 flex-shrink-0"
+                          style="height: 18px; font-size: 0.65rem;"
+                        >
+                          YouTube
+                        </v-chip>
+                      </div>
+                      <span class="text-caption text-truncate mt-1" style="color: var(--sidebar-text-secondary); max-width: 320px;">
+                        {{ addForm.onlineChannelName || 'Coletânea Online' }}
+                      </span>
+                    </div>
+                  </div>
+                  <div class="d-flex align-center flex-shrink-0 ml-2">
+                    <v-btn
+                      icon
+                      size="small"
+                      variant="text"
+                      color="error"
+                      @click="addForm.onlineVideoId = ''; addForm.name = ''; addForm.subtitle = '';"
+                    >
+                      <v-icon>mdi-delete</v-icon>
+                      <v-tooltip activator="parent" location="top">
+                        {{ t('actions.delete') }}
+                      </v-tooltip>
+                    </v-btn>
+                  </div>
+                </div>
+
+                <!-- Lista de busca / seleção de vídeos online -->
+                <div v-else>
+                  <div class="mb-3">
+                    <v-text-field
+                      v-model="onlineSearchQuery"
+                      variant="outlined"
+                      color="red"
+                      rounded="lg"
+                      density="compact"
+                      hide-details
+                      prepend-inner-icon="mdi-magnify"
+                      class="modern-input-compact"
+                      :placeholder="t('fields.search_online_videos')"
+                      clearable
+                    />
+                  </div>
+
+                  <div v-if="onlineLoading" class="d-flex align-center justify-center py-6">
+                    <v-progress-circular indeterminate color="red" size="32" />
+                    <span class="ml-3 text-caption" style="color: var(--sidebar-text-secondary);">Carregando vídeos online...</span>
+                  </div>
+
+                  <div
+                    v-else
+                    class="rounded-xl border pa-2 overflow-y-auto"
+                    style="max-height: 240px; background: rgba(var(--v-theme-on-surface), 0.02); border-color: rgba(128,128,128,0.15) !important;"
+                  >
+                    <template v-if="filteredOnlineVideos.length > 0">
+                      <div
+                        v-for="video in filteredOnlineVideos"
+                        :key="video.id"
+                        class="d-flex align-center pa-2 rounded-lg cursor-pointer mb-1 transition-all"
+                        style="background: transparent;"
+                        onmouseover="this.style.background='rgba(var(--v-theme-on-surface), 0.06)'"
+                        onmouseout="this.style.background='transparent'"
+                        @click="onSelectOnlineVideo(video)"
+                      >
+                        <div
+                          class="mr-3 flex-shrink-0 rounded-lg overflow-hidden position-relative"
+                          style="width: 64px; height: 38px; background: #000;"
+                        >
+                          <img :src="video.image" style="width: 100%; height: 100%; object-fit: cover;" loading="lazy" />
+                          <v-icon size="16" color="white" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0.9;">
+                            mdi-play-circle
+                          </v-icon>
+                        </div>
+                        <div class="d-flex flex-column text-truncate" style="min-width: 0;">
+                          <span class="text-body-2 font-weight-medium text-truncate" style="color: var(--sidebar-text);">
+                            {{ video.name }}
+                          </span>
+                          <span class="text-caption text-truncate opacity-60">
+                            {{ video.channelName }}
+                          </span>
+                        </div>
+                      </div>
+                    </template>
+                    <div v-else class="text-center py-6 text-caption" style="color: var(--sidebar-text-secondary);">
+                      Nenhum vídeo encontrado.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <!-- Verse selector -->
             <div v-if="addForm.type === 'verse'">
               <div class="mb-3">
@@ -378,34 +666,51 @@
               </div>
             </div>
 
-            <!-- Media file selector -->
-            <div v-if="addForm.type === 'media'" class="mb-4">
+            <!-- Unified Media & File selector -->
+            <div v-if="addForm.type === 'file' || addForm.type === 'media'" class="mb-4">
               <div
                 v-if="addForm.filePath"
                 class="rounded-xl pa-4 d-flex align-center justify-space-between"
                 style="border: 1px solid var(--border-color, rgba(128,128,128,0.2)); background: rgba(var(--v-theme-on-surface), 0.06);"
               >
                 <div class="d-flex align-center" style="overflow: hidden;">
-                  <v-icon color="primary" size="32" class="mr-3">
-                    mdi-file-video
-                  </v-icon>
+                  <v-avatar
+                    size="44"
+                    rounded="lg"
+                    class="mr-3 flex-shrink-0"
+                    :color="selectedFileInfo.color"
+                    variant="tonal"
+                  >
+                    <v-icon :icon="selectedFileInfo.icon" size="26" />
+                  </v-avatar>
                   <div class="d-flex flex-column" style="overflow: hidden;">
-                    <span class="font-weight-bold text-truncate" style="color: var(--sidebar-text); max-width: 250px;">
-                      {{ addForm.filePath.split(/[\\/]/).pop() }}
-                    </span>
-                    <span class="text-caption text-truncate" style="color: var(--sidebar-text-secondary); max-width: 250px;" :title="addForm.filePath">
+                    <div class="d-flex align-center">
+                      <span class="font-weight-bold text-truncate" style="color: var(--sidebar-text); max-width: 250px;">
+                        {{ selectedFileInfo.fileName }}
+                      </span>
+                      <v-chip
+                        size="x-small"
+                        :color="selectedFileInfo.color"
+                        variant="flat"
+                        class="ml-2 font-weight-bold px-2 flex-shrink-0"
+                        style="height: 18px; font-size: 0.65rem;"
+                      >
+                        {{ selectedFileInfo.label }}
+                      </v-chip>
+                    </div>
+                    <span class="text-caption text-truncate mt-1" style="color: var(--sidebar-text-secondary); max-width: 320px;" :title="addForm.filePath">
                       {{ addForm.filePath }}
                     </span>
                   </div>
                 </div>
-                <div class="d-flex align-center">
+                <div class="d-flex align-center flex-shrink-0 ml-2">
                   <v-btn
                     icon
                     size="small"
                     variant="text"
                     color="primary"
                     class="mr-1"
-                    @click="selectMediaFile"
+                    @click="selectUnifiedFile"
                   >
                     <v-icon>mdi-pencil</v-icon>
                     <v-tooltip activator="parent" location="top">
@@ -429,92 +734,30 @@
 
               <div
                 v-else
-                class="rounded-xl d-flex flex-column align-center justify-center cursor-pointer"
-                style="height: 120px; border: 2px dashed var(--border-color, rgba(128,128,128,0.2)); background: rgba(128,128,128,0.02); transition: all 0.2s;"
-                onmouseover="this.style.background='rgba(128,128,128,0.04)'; this.style.borderColor='rgba(128,128,128,0.5)'"
-                onmouseout="this.style.background='rgba(128,128,128,0.02)'; this.style.borderColor='var(--border-color, rgba(128,128,128,0.2))'"
-                @click="selectMediaFile"
+                class="rounded-xl d-flex flex-column align-center justify-center cursor-pointer pa-6"
+                style="border: 2px dashed var(--border-color, rgba(128,128,128,0.25)); background: rgba(128,128,128,0.02); transition: all 0.2s;"
+                onmouseover="this.style.background='rgba(128,128,128,0.05)'; this.style.borderColor='rgba(var(--v-theme-primary), 0.5)'"
+                onmouseout="this.style.background='rgba(128,128,128,0.02)'; this.style.borderColor='var(--border-color, rgba(128,128,128,0.25))'"
+                @click="selectUnifiedFile"
               >
-                <v-icon
-                  size="36"
-                  color="primary"
-                  class="mb-2"
-                  style="opacity: 0.8;"
+                <v-avatar
+                  size="52"
+                  color="rgba(var(--v-theme-primary), 0.1)"
+                  class="mb-3"
                 >
-                  mdi-cloud-upload
-                </v-icon>
-                <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text);">{{ t('fields.select_file') || 'Selecionar Arquivo' }}</span>
-                <span class="text-caption mt-1" style="color: var(--sidebar-text-secondary);">{{ t('fields.click_to_browse') }}</span>
-              </div>
-            </div>
-
-            <!-- External File/Directory selector -->
-            <div v-if="addForm.type === 'file'" class="mb-4">
-              <div
-                v-if="addForm.filePath"
-                class="rounded-xl pa-4 d-flex align-center justify-space-between"
-                style="border: 1px solid var(--border-color, rgba(128,128,128,0.2)); background: rgba(var(--v-theme-on-surface), 0.06);"
-              >
-                <div class="d-flex align-center" style="overflow: hidden;">
-                  <v-icon color="primary" size="32" class="mr-3">
+                  <v-icon
+                    size="28"
+                    color="primary"
+                  >
                     mdi-folder-file-outline
                   </v-icon>
-                  <div class="d-flex flex-column" style="overflow: hidden;">
-                    <span class="font-weight-bold text-truncate" style="color: var(--sidebar-text); max-width: 250px;">
-                      {{ addForm.filePath.split(/[\\/]/).pop() }}
-                    </span>
-                    <span class="text-caption text-truncate" style="color: var(--sidebar-text-secondary); max-width: 250px;" :title="addForm.filePath">
-                      {{ addForm.filePath }}
-                    </span>
-                  </div>
-                </div>
-                <div class="d-flex align-center">
-                  <v-btn
-                    icon
-                    size="small"
-                    variant="text"
-                    color="primary"
-                    class="mr-1"
-                    @click="selectExternalFile"
-                  >
-                    <v-icon>mdi-pencil</v-icon>
-                    <v-tooltip activator="parent" location="top">
-                      {{ t('actions.change') }}
-                    </v-tooltip>
-                  </v-btn>
-                  <v-btn
-                    icon
-                    size="small"
-                    variant="text"
-                    color="error"
-                    @click="addForm.filePath = ''"
-                  >
-                    <v-icon>mdi-delete</v-icon>
-                    <v-tooltip activator="parent" location="top">
-                      {{ t('actions.delete') }}
-                    </v-tooltip>
-                  </v-btn>
-                </div>
-              </div>
-
-              <div
-                v-else
-                class="rounded-xl d-flex flex-column align-center justify-center cursor-pointer"
-                style="height: 120px; border: 2px dashed var(--border-color, rgba(128,128,128,0.2)); background: rgba(128,128,128,0.02); transition: all 0.2s;"
-                onmouseover="this.style.background='rgba(128,128,128,0.04)'; this.style.borderColor='rgba(128,128,128,0.5)'"
-                onmouseout="this.style.background='rgba(128,128,128,0.02)'; this.style.borderColor='var(--border-color, rgba(128,128,128,0.2))'"
-                @click="selectExternalFile"
-              >
-                <v-icon
-                  size="36"
-                  color="primary"
-                  class="mb-2"
-                  style="opacity: 0.8;"
-                >
-                  mdi-file-find
-                </v-icon>
-                <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text);">Selecionar Arquivo ou Pasta</span>
-                <span class="text-caption mt-1" style="color: var(--sidebar-text-secondary);">{{ t('fields.click_to_browse') }}</span>
+                </v-avatar>
+                <span class="text-body-1 font-weight-bold mb-1" style="color: var(--sidebar-text);">
+                  {{ t('fields.select_file') || 'Selecionar Arquivo ou Pasta' }}
+                </span>
+                <span class="text-caption text-center" style="color: var(--sidebar-text-secondary); max-width: 320px;">
+                  {{ t('type_descriptions.file') }}
+                </span>
               </div>
             </div>
 
@@ -617,6 +860,8 @@
 <script lang="ts">
 import { defineComponent, PropType } from "vue";
 import PillSwitch from "@/components/inputs/PillSwitch.vue";
+import { getLiturgyFileInfo, LiturgyFileInfo } from "../../helpers/fileHelper";
+import OnlineCollections from "@/helpers/services/OnlineCollections";
 
 export default defineComponent({
   name: "AddItemDialog",
@@ -661,25 +906,93 @@ export default defineComponent({
       url: "",
       categoryId: null as string | null,
       color: "",
+      collectionType: "custom" as "custom" | "online",
+      collectionId: null as string | null,
+      collectionSongId: null as any,
+      collectionSongType: "internal" as "internal" | "external",
+      collectionSongFilePath: "",
+      collectionSongFilePathAudio: "",
+      collectionSongFilePathInstrumental: "",
+      onlineVideoId: "",
+      onlineVideoImage: "",
+      onlineChannelName: "",
+      onlinePlaylistName: "",
     },
     musicSearchQuery: "",
     musicList: [] as any[],
     bibleBooks: [] as any[],
     bibleVersions: [] as any[],
+    customCollections: [] as any[],
+    onlineVideos: [] as any[],
+    onlineSearchQuery: "",
+    onlineLoading: false,
     dataLoaded: false,
   }),
   computed: {
     itemTypes(): any[] {
       return [
+        { value: "music", icon: "mdi-music-note", color: "success", label: this.t("types.music"), description: this.t("type_descriptions.music") },
+        { value: "collection_item", icon: "mdi-music-box-multiple", color: "teal", label: this.t("types.collection_item"), description: this.t("type_descriptions.collection_item") },
+        { value: "verse", icon: "mdi-book-open-variant", color: "purple", label: this.t("types.verse"), description: this.t("type_descriptions.verse") },
+        { value: "file", icon: "mdi-folder-file-outline", color: "blue-grey", label: this.t("types.file"), description: this.t("type_descriptions.file") },
+        { value: "link", icon: "mdi-link", color: "indigo", label: this.t("types.link"), description: this.t("type_descriptions.link") },
+        { value: "scheduled_item", icon: "mdi-calendar-check", color: "deep-purple", label: this.t("types.scheduled_item"), description: this.t("type_descriptions.scheduled_item") },
         { value: "annotation", icon: "mdi-text", color: "info", label: this.t("types.annotation"), description: this.t("type_descriptions.annotation") },
         { value: "category", icon: "mdi-tag", color: "warning", label: this.t("types.category"), description: this.t("type_descriptions.category") },
-        { value: "music", icon: "mdi-music-note", color: "success", label: this.t("types.music"), description: this.t("type_descriptions.music") },
-        { value: "verse", icon: "mdi-book-open-variant", color: "purple", label: this.t("types.verse"), description: this.t("type_descriptions.verse") },
-        { value: "media", icon: "mdi-file-video", color: "orange", label: this.t("types.media"), description: this.t("type_descriptions.media") },
-        { value: "link", icon: "mdi-link", color: "indigo", label: this.t("types.link"), description: this.t("type_descriptions.link") },
-        { value: "file", icon: "mdi-file-document-outline", color: "blue-grey", label: this.t("types.file"), description: this.t("type_descriptions.file") },
-        { value: "scheduled_item", icon: "mdi-calendar-check", color: "deep-purple", label: this.t("types.scheduled_item"), description: this.t("type_descriptions.scheduled_item") },
       ];
+    },
+    collectionTypeItems(): any[] {
+      return [
+        { value: "custom", label: this.t("fields.custom_collections"), icon: "mdi-folder-music" },
+        { value: "online", label: this.t("fields.online_collections"), icon: "mdi-youtube" },
+      ];
+    },
+    selectedCustomCollection(): any {
+      if (!this.addForm.collectionId) return null;
+      return this.customCollections.find((c: any) => c.id === this.addForm.collectionId) || null;
+    },
+    customCollectionSongs(): any[] {
+      if (!this.selectedCustomCollection?.songs) return [];
+      return this.selectedCustomCollection.songs.map((song: any) => {
+        if (song.type === "internal") {
+          const m = this.musicList.find((music: any) => music.id_music === song.id_music);
+          const name = m ? (m.hymnal_track ? `${m.hymnal_track} - ${m.name}` : m.name) : `Música #${song.id_music}`;
+          const hasPlayback = m ? (m.has_instrumental_music === 1 || m.has_instrumental_music === true) : false;
+          return {
+            id: song.id_music,
+            name,
+            type: "internal",
+            album: m?.album_names || "",
+            hasPlayback,
+            raw: song,
+          };
+        }
+        return {
+          id: song.id || song.name,
+          name: song.name,
+          type: "external",
+          album: "Arquivo Externo",
+          hasPlayback: !!song.filePathInstrumental,
+          raw: song,
+        };
+      });
+    },
+    selectedCustomCollectionSong(): any {
+      if (!this.addForm.collectionSongId) return null;
+      const targetId = typeof this.addForm.collectionSongId === "object" ? (this.addForm.collectionSongId as any).id : this.addForm.collectionSongId;
+      return this.customCollectionSongs.find((s: any) => s.id === targetId) || null;
+    },
+    filteredOnlineVideos(): any[] {
+      const q = (this.onlineSearchQuery || "").trim().toLowerCase();
+      if (!q) {
+        return this.onlineVideos.slice(0, 30);
+      }
+      return this.onlineVideos.filter((v: any) => {
+        return (v.name && v.name.toLowerCase().includes(q)) || (v.channelName && v.channelName.toLowerCase().includes(q));
+      }).slice(0, 50);
+    },
+    selectedFileInfo(): LiturgyFileInfo {
+      return getLiturgyFileInfo(this.addForm.filePath);
     },
     isFormValid(): boolean {
       if (this.isTemplateMode && !this.isFillingPlaceholder) {
@@ -689,6 +1002,13 @@ export default defineComponent({
       if (!this.addForm.name.trim()) return false;
 
       if (this.addForm.type === "music" && !this.addForm.musicId) return false;
+      if (this.addForm.type === "collection_item") {
+        if (this.addForm.collectionType === "custom") {
+          if (!this.addForm.collectionId || !this.addForm.collectionSongId) return false;
+        } else if (this.addForm.collectionType === "online") {
+          if (!this.addForm.onlineVideoId) return false;
+        }
+      }
       if (this.addForm.type === "verse" && (!this.addForm.verseBookId || !this.addForm.verseChapter)) return false;
       if (this.addForm.type === "media" && !this.addForm.filePath) return false;
       if (this.addForm.type === "file" && !this.addForm.filePath) return false;
@@ -798,10 +1118,17 @@ export default defineComponent({
       if (!this.dataLoaded) {
         this.loadData();
       }
+      this.loadCustomCollections();
       if (this.editData) {
         this.addForm = { ...this.editData };
         if (!this.addForm.musicMode) {
           this.addForm.musicMode = "audio";
+        }
+        if (!this.addForm.collectionType) {
+          this.addForm.collectionType = "custom";
+        }
+        if (this.addForm.type === "collection_item" && this.addForm.collectionType === "online") {
+          this.loadOnlineVideos();
         }
         this.addStep = 2;
       } else {
@@ -835,14 +1162,57 @@ export default defineComponent({
         url: "",
         categoryId: null,
         color: "",
+        collectionType: "custom",
+        collectionId: null,
+        collectionSongId: null,
+        collectionSongType: "internal",
+        collectionSongFilePath: "",
+        collectionSongFilePathAudio: "",
+        collectionSongFilePathInstrumental: "",
+        onlineVideoId: "",
+        onlineVideoImage: "",
+        onlineChannelName: "",
+        onlinePlaylistName: "",
       };
     },
     getTypeIcon(type: string): string {
-      const map: Record<string, string> = { annotation: "mdi-text", category: "mdi-tag", music: "mdi-music-note", verse: "mdi-book-open-variant", media: "mdi-file-video", link: "mdi-link", file: "mdi-folder-file-outline", scheduled_item: "mdi-calendar-clock" };
+      if ((type === "file" || type === "media") && this.addForm.filePath) {
+        return this.selectedFileInfo.icon;
+      }
+      if (type === "collection_item") {
+        return this.addForm.collectionType === "online" ? "mdi-youtube" : "mdi-folder-music";
+      }
+      const map: Record<string, string> = {
+        annotation: "mdi-text",
+        category: "mdi-tag",
+        music: "mdi-music-note",
+        collection_item: "mdi-music-box-multiple",
+        verse: "mdi-book-open-variant",
+        media: "mdi-folder-file-outline",
+        link: "mdi-link",
+        file: "mdi-folder-file-outline",
+        scheduled_item: "mdi-calendar-clock",
+      };
       return map[type] || "mdi-help";
     },
     getTypeColor(type: string): string {
-      const map: Record<string, string> = { annotation: "info", category: "warning", music: "success", verse: "purple", media: "orange", link: "cyan" };
+      if ((type === "file" || type === "media") && this.addForm.filePath) {
+        return this.selectedFileInfo.color;
+      }
+      if (type === "collection_item") {
+        return this.addForm.collectionType === "online" ? "red" : "teal";
+      }
+      const map: Record<string, string> = {
+        annotation: "info",
+        category: "warning",
+        music: "success",
+        collection_item: "teal",
+        verse: "purple",
+        media: "orange",
+        link: "cyan",
+        file: "blue-grey",
+        scheduled_item: "deep-purple",
+      };
       return map[type] || "grey";
     },
     getTypeLabel(type: string): string {
@@ -853,9 +1223,11 @@ export default defineComponent({
         annotation: "",
         category: "",
         music: "",
+        collection_item: "",
         verse: "",
         media: "",
         link: "",
+        file: "",
       };
       return map[type] || "";
     },
@@ -863,6 +1235,70 @@ export default defineComponent({
       this.resetForm();
       this.addForm.type = type;
       this.addStep = 2;
+      if (type === "collection_item") {
+        this.loadCustomCollections();
+        this.loadOnlineVideos();
+      }
+    },
+    loadCustomCollections() {
+      this.customCollections = this.$userdata.get("modules.custom_collection.list") || [];
+    },
+    async loadOnlineVideos() {
+      if (this.onlineVideos.length > 0) return;
+      this.onlineLoading = true;
+      try {
+        const lang = this.$i18n?.locale || "pt";
+        this.onlineVideos = await OnlineCollections.getAllVideos(lang);
+      } catch (e) {
+        console.error("Failed to load online collections:", e);
+      } finally {
+        this.onlineLoading = false;
+      }
+    },
+    onCollectionTypeChanged(type: string) {
+      if (type === "online") {
+        this.loadOnlineVideos();
+      }
+    },
+    onSelectCustomCollection(colId: string) {
+      this.addForm.collectionId = colId;
+      this.addForm.collectionSongId = null;
+      this.addForm.name = "";
+      this.addForm.subtitle = "";
+    },
+    onSelectCustomSong(songItem: any) {
+      if (!songItem) return;
+      const song = typeof songItem === "object" && songItem.raw ? songItem : this.customCollectionSongs.find((s: any) => s.id === songItem);
+      if (!song) return;
+
+      this.addForm.collectionSongId = song.id;
+      this.addForm.collectionSongType = song.type;
+      this.addForm.name = song.name;
+
+      const colName = this.selectedCustomCollection?.name || "";
+      if (song.type === "internal") {
+        this.addForm.musicId = song.id;
+        this.addForm.subtitle = `Coletânea: ${colName}${song.album ? ` - ${song.album}` : ""}`;
+        this.addForm.musicMode = "audio";
+      } else {
+        const raw = song.raw;
+        this.addForm.collectionSongFilePath = raw.filePathAudio || raw.filePathInstrumental || "";
+        this.addForm.collectionSongFilePathAudio = raw.filePathAudio || "";
+        this.addForm.collectionSongFilePathInstrumental = raw.filePathInstrumental || "";
+        this.addForm.filePath = raw.filePathAudio || raw.filePathInstrumental || "";
+        this.addForm.subtitle = `Coletânea: ${colName}`;
+        this.addForm.musicMode = "audio";
+      }
+    },
+    onSelectOnlineVideo(video: any) {
+      if (!video) return;
+      this.addForm.onlineVideoId = video.id;
+      this.addForm.onlineVideoImage = video.image || "";
+      this.addForm.onlineChannelName = video.channelName || "";
+      this.addForm.onlinePlaylistName = video.playlistName || "";
+      this.addForm.filePath = `youtube:${video.id}`;
+      this.addForm.name = video.name;
+      this.addForm.subtitle = video.channelName ? `Canal: ${video.channelName}` : "Coletânea Online";
     },
     onMusicSelect(musicId: number | string | null) {
       if (!musicId) return;
@@ -885,54 +1321,34 @@ export default defineComponent({
         this.addForm.name = book.name;
       }
     },
-    async selectMediaFile() {
+    async selectUnifiedFile() {
       if (window.electronAPI?.openFileDialog) {
         const filePath = await window.electronAPI.openFileDialog({
-          title: this.t("fields.select_media"),
-          filters: [
-            { name: "Mídia", extensions: ["mp4", "mkv", "avi", "mov", "wmv", "webm", "mp3", "wav", "flac", "aac", "ogg", "wma", "m4a"] },
-            { name: "Vídeos", extensions: ["mp4", "mkv", "avi", "mov", "wmv", "webm"] },
-            { name: "Áudios", extensions: ["mp3", "wav", "flac", "aac", "ogg", "wma", "m4a"] },
-            { name: "Todos", extensions: ["*"] },
-          ],
-        });
-        if (filePath) {
-          this.addForm.filePath = filePath as string;
-          if (!this.addForm.name) {
-            const fileName = (filePath as string).split(/[\\/]/).pop() || "";
-            this.addForm.name = fileName;
-          }
-        }
-      }
-    },
-    async selectExternalFile() {
-      if (window.electronAPI?.openFileDialog) {
-        const filePath = await window.electronAPI.openFileDialog({
-          title: "Selecionar Arquivo ou Pasta",
+          title: this.t("fields.select_file") || "Selecionar Arquivo ou Pasta",
           properties: ["openFile", "openDirectory"],
           filters: [
-            { name: "Todos os Arquivos", extensions: ["*"] },
+            { name: "Todos os Arquivos e Mídias", extensions: ["*"] },
+            { name: "Mídias (Áudio / Vídeo)", extensions: ["mp4", "mkv", "avi", "mov", "wmv", "webm", "mp3", "wav", "flac", "aac", "ogg", "wma", "m4a"] },
+            { name: "Apresentações e Documentos", extensions: ["pptx", "ppt", "ppsx", "pps", "pdf", "key", "odp", "doc", "docx", "txt"] },
+            { name: "Músicas LouvorJA (.slja)", extensions: ["slja", "sja", "lja"] },
+            { name: "Imagens", extensions: ["jpg", "jpeg", "png", "gif", "webp", "bmp", "svg"] },
           ],
         });
         if (filePath) {
           const pathStr = filePath as string;
-          const ext = pathStr.split(".").pop()?.toLowerCase() || "";
-          const blockedExts = ["mp4", "mkv", "avi", "mov", "wmv", "webm", "mp3", "wav", "flac", "aac", "ogg", "wma", "m4a"];
-          if (blockedExts.includes(ext)) {
-            if (this.$alert && typeof this.$alert.error === "function") {
-              this.$alert.error({ text: "Arquivos de áudio e vídeo devem ser adicionados usando o tipo 'Mídia'.", translate: false });
-            } else {
-              alert("Arquivos de áudio e vídeo devem ser adicionados usando o tipo 'Mídia'.");
-            }
-            return;
-          }
           this.addForm.filePath = pathStr;
           if (!this.addForm.name) {
-            const fileName = pathStr.split(/[\\/]/).pop() || "";
-            this.addForm.name = fileName;
+            const info = getLiturgyFileInfo(pathStr);
+            this.addForm.name = info.fileName;
           }
         }
       }
+    },
+    async selectMediaFile() {
+      return this.selectUnifiedFile();
+    },
+    async selectExternalFile() {
+      return this.selectUnifiedFile();
     },
     async loadData() {
       // Load music list
@@ -1030,6 +1446,29 @@ export default defineComponent({
           } else {
             item.subtitle = music.album_names || "";
           }
+        }
+      }
+
+      if (this.addForm.type === "collection_item") {
+        item.collectionType = this.addForm.collectionType;
+        if (this.addForm.collectionType === "custom") {
+          item.collectionId = this.addForm.collectionId;
+          item.collectionName = this.selectedCustomCollection?.name || "";
+          item.collectionSongType = this.addForm.collectionSongType;
+          item.musicMode = this.addForm.musicMode;
+          if (this.addForm.collectionSongType === "internal") {
+            const rawId = typeof this.addForm.collectionSongId === "object" ? (this.addForm.collectionSongId as any).id : this.addForm.collectionSongId;
+            item.musicId = rawId;
+          } else {
+            item.filePath = this.addForm.collectionSongFilePath;
+            item.filePathAudio = this.addForm.collectionSongFilePathAudio;
+            item.filePathInstrumental = this.addForm.collectionSongFilePathInstrumental;
+          }
+        } else {
+          item.onlineVideoId = this.addForm.onlineVideoId;
+          item.onlineVideoImage = this.addForm.onlineVideoImage;
+          item.onlineChannelName = this.addForm.onlineChannelName;
+          item.filePath = `youtube:${this.addForm.onlineVideoId}`;
         }
       }
 

@@ -23,20 +23,22 @@
     "annotation": "Anotación",
     "category": "Categoría",
     "music": "Música",
+    "collection_item": "Colecciones Online y Personalizadas",
     "verse": "Versículo",
-    "media": "Medio",
+    "media": "Medios y Archivos",
     "link": "Enlace",
-    "file": "Archivo/Directorio",
+    "file": "Medios y Archivos",
     "scheduled_item": "Ítem Programado"
   },
   "type_descriptions": {
     "annotation": "Texto libre sin acción (ej: Oración, Doxología)",
     "category": "Separador visual de sección",
     "music": "Seleccione una música del Himnario o Colección",
+    "collection_item": "Canciones de colecciones o videos de YouTube",
     "verse": "Seleccione un versículo bíblico",
-    "media": "Seleccione un archivo de video",
+    "media": "Videos, audios, diapositivas PPTX, PDFs u otros archivos",
     "link": "Agregue una URL para abrir en el navegador",
-    "file": "Abrir un archivo o carpeta externa (no medio)",
+    "file": "Videos, audios, diapositivas PPTX, PDFs u otros archivos",
     "scheduled_item": "Seleccione una categoría de programación"
   },
   "fields": {
@@ -56,7 +58,15 @@
     "url_placeholder": "https://...",
     "music_mode": "Modo de Reproducción",
     "music_mode_audio": "Cantado",
-    "music_mode_instrumental": "Playback"
+    "music_mode_instrumental": "Playback",
+    "collection_type": "Origen de la Colección",
+    "custom_collections": "Personalizadas",
+    "online_collections": "Online",
+    "select_collection": "Seleccionar Colección",
+    "select_song": "Seleccionar Canción",
+    "search_online_videos": "Buscar video online...",
+    "no_custom_collections": "No se encontraron colecciones personalizadas",
+    "no_custom_collections_hint": "Cree colecciones en el módulo Colecciones Personalizadas para agregarlas aquí."
   },
   "actions": {
     "save": "Guardar",

@@ -62,22 +62,28 @@
     </p>
     <ul class="mb-4 pl-6 text-body-2" style="color: var(--sidebar-text-secondary);">
       <li class="mb-1">
-        <strong>Anotação:</strong> Apenas informativo, não possui ação de clique.
+        <strong>Música:</strong> Configura a execução direta de uma música do Hinário ou coletâneas (cantado ou playback).
       </li>
       <li class="mb-1">
-        <strong>Arquivo/Diretório:</strong> Abre um vídeo, imagem ou apresentação.
+        <strong>Coletâneas Online e Personalizadas:</strong> Adiciona músicas de coletâneas locais ou vídeos online do YouTube.
       </li>
       <li class="mb-1">
-        <strong>Categoria:</strong> Para separar os grupos de itens na lista.
+        <strong>Bíblia:</strong> Passagens bíblicas para leitura e projeção direta.
       </li>
       <li class="mb-1">
-        <strong>Música:</strong> Configura a execução direta de um slide/hino.
+        <strong>Mídia e Arquivos:</strong> Seleciona vídeos, áudios, imagens, slides PPTX, PDFs ou pastas do computador.
       </li>
       <li class="mb-1">
-        <strong>Site:</strong> Abre um link ao clicar.
+        <strong>Link:</strong> Abre uma página da web no navegador ao clicar.
       </li>
       <li class="mb-1">
-        <strong>Itens Agendados:</strong> Mostra os itens programados para o dia (ex: Provai e Vede).
+        <strong>Itens Agendados:</strong> Executa mídias programadas por data (ex: Provai e Vede).
+      </li>
+      <li class="mb-1">
+        <strong>Anotação:</strong> Apenas informativo na ordem do culto, sem ação de clique.
+      </li>
+      <li class="mb-1">
+        <strong>Categoria:</strong> Para separar e organizar os grupos de itens na lista.
       </li>
     </ul>
 

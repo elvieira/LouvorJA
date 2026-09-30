@@ -124,7 +124,7 @@
             @add-item="openAddMenu"
             @add-item-to-category="openAddMenuWithCategory"
             @drag-end="saveLiturgy"
-            @toggle-notes="showNotes = !showNotes"
+            @toggle-notes="toggleNotes"
           />
 
           <!-- Right Panel: Sidebar (Notes Only) -->
@@ -413,6 +413,7 @@ import NewCustomDialog from "./components/NewCustomDialog.vue";
 import ScheduledItemsDialog from "./components/ScheduledItemsDialog.vue";
 import TemplatesDialog from "./components/TemplatesDialog.vue";
 import { parseClassicLiturgy, generateClassicLiturgy } from "@/helpers/LiturgyParser";
+import { getLiturgyFileInfo } from "../helpers/fileHelper";
 
 
 export default defineComponent({
@@ -581,6 +582,10 @@ export default defineComponent({
         });
         this.resizeObserver.observe(this.$refs.moduleContainer as Element);
       }
+    },
+    toggleNotes() {
+      this.showNotes = !this.showNotes;
+      this.saveLiturgy();
     },
     t(text: string): string {
       return this.$t(`modules.${this.module_id}.${text}`);
@@ -847,6 +852,10 @@ export default defineComponent({
     },
     isItemPlaceholder(item: any): boolean {
       if (item.type === "music" && !item.musicId) return true;
+      if (item.type === "collection_item") {
+        if (item.collectionType === "online") return !item.onlineVideoId;
+        return !item.musicId && !item.filePath && !item.filePathAudio;
+      }
       if (item.type === "verse" && (!item.verseBookId || !item.verseChapter)) return true;
       if (item.type === "media" && !item.filePath) return true;
       if (item.type === "file" && !item.filePath) return true;
@@ -1156,56 +1165,154 @@ export default defineComponent({
             });
           });
         }
-      } else if (item.type === "file") {
-        if (item.filePath && window.electronAPI?.openPath) {
-          window.electronAPI.openPath(item.filePath);
-        }
-      } else if (item.type === "media") {
+      } else if (item.type === "file" || item.type === "media") {
         if (item.filePath) {
-          const useInternal = this.$userdata.get("modules.config.media_use_internal_player");
-          
-          if (useInternal) {
-            if (this.$appdata.get("modules.media.id_music") && action !== "view") {
-              const confirmed = await new Promise((resolve) => {
-                this.$alert.yesno({
-                  text: "Uma música está em reprodução no momento. Deseja encerrá-la e reproduzir esta mídia?",
-                  translate: false,
-                }, (res: string) => resolve(res === "yes"));
-              });
-              if (!confirmed) return;
-              this.$media.close(true);
-            }
+          const fileInfo = getLiturgyFileInfo(item.filePath);
 
-            // Define arquivo de mídia no reprodutor interno (external_media)
-            this.$appdata.set("modules.external_media.filePath", item.filePath);
-            this.$appdata.set("modules.external_media.title", item.name || "");
-            this.$appdata.set("modules.external_media.subtitle", item.subtitle || "");
-            this.$appdata.set("modules.external_media.minimized", false);
-            const currentVolume = this.$appdata.get("modules.external_media.config.volume") ?? (this.$userdata.get("modules.external_media.volume") ?? 100);
-            this.$appdata.set("modules.external_media.config", {
-              is_paused: action === "view",
-              current_time: 0,
-              progress: 0,
-              duration: 0,
-              volume: currentVolume,
-            });
-
-            // Check if it's audio-only
-            const ext = item.filePath.split(".").pop()?.toLowerCase() || "";
-            const isAudio = ["mp3", "wav", "flac", "aac", "ogg", "wma", "m4a"].includes(ext);
-
-            if (isAudio && action !== "view") {
-              // Audio goes straight to footer bar (minimized)
-              this.$appdata.set("modules.external_media.minimized", true);
+          if (fileInfo.isLouvorJa) {
+            // Músicas LouvorJA (.slja, .sja, .lja)
+            if (action === "view") {
+              await this.$media.playExternalSlja(item.filePath, "no_audio");
+              targetModule = "lyric";
             } else {
-              // Video (ou Visualizar) opens the full module
-              this.$appdata.set("modules.external_media.show", true);
-              targetModule = "external_media";
+              await this.$media.playExternalSlja(item.filePath, "audio");
+              targetModule = "media";
+            }
+          } else if (fileInfo.isMedia) {
+            // Mídias de Áudio e Vídeo
+            const useInternal = this.$userdata.get("modules.config.media_use_internal_player");
+            
+            if (useInternal) {
+              if (this.$appdata.get("modules.media.id_music") && action !== "view") {
+                const confirmed = await new Promise((resolve) => {
+                  this.$alert.yesno({
+                    text: "Uma música está em reprodução no momento. Deseja encerrá-la e reproduzir esta mídia?",
+                    translate: false,
+                  }, (res: string) => resolve(res === "yes"));
+                });
+                if (!confirmed) return;
+                this.$media.close(true);
+              }
+
+              // Define arquivo de mídia no reprodutor interno (external_media)
+              this.$appdata.set("modules.external_media.filePath", item.filePath);
+              this.$appdata.set("modules.external_media.title", item.name || "");
+              this.$appdata.set("modules.external_media.subtitle", item.subtitle || "");
+              this.$appdata.set("modules.external_media.minimized", false);
+              const currentVolume = this.$appdata.get("modules.external_media.config.volume") ?? (this.$userdata.get("modules.external_media.volume") ?? 100);
+              this.$appdata.set("modules.external_media.config", {
+                is_paused: action === "view",
+                current_time: 0,
+                progress: 0,
+                duration: 0,
+                volume: currentVolume,
+              });
+
+              if (fileInfo.isAudio && action !== "view") {
+                // Audio goes straight to footer bar (minimized)
+                this.$appdata.set("modules.external_media.minimized", true);
+              } else {
+                // Video (ou Visualizar) opens the full module
+                this.$appdata.set("modules.external_media.show", true);
+                targetModule = "external_media";
+              }
+            } else {
+              // Reproduz no reprodutor padrão do sistema operacional
+              if (window.electronAPI && window.electronAPI.openPath) {
+                window.electronAPI.openPath(item.filePath);
+              }
             }
           } else {
-            // Reproduz no reprodutor padrão do sistema operacional
-            if (window.electronAPI && window.electronAPI.openPath) {
+            // Apresentação PPTX, PDF, Imagens, Documentos, Pastas ou Arquivo Genérico
+            if (window.electronAPI?.openPath) {
               window.electronAPI.openPath(item.filePath);
+            }
+          }
+        }
+      } else if (item.type === "collection_item") {
+        if (item.collectionType === "online" || item.onlineVideoId) {
+          // Coletânea Online (YouTube)
+          if (this.$appdata.get("modules.media.id_music") && action !== "view") {
+            const confirmed = await new Promise((resolve) => {
+              this.$alert.yesno({
+                text: "Uma música está em reprodução no momento. Deseja encerrá-la e reproduzir este vídeo?",
+                translate: false,
+              }, (res: string) => resolve(res === "yes"));
+            });
+            if (!confirmed) return;
+            this.$media.close(true);
+          }
+
+          this.$appdata.set("modules.external_media.filePath", `youtube:${item.onlineVideoId}`);
+          this.$appdata.set("modules.external_media.title", item.name || "");
+          this.$appdata.set("modules.external_media.subtitle", item.subtitle || "Coletânea Online");
+          this.$appdata.set("modules.external_media.image", item.onlineVideoImage || "");
+          this.$appdata.set("modules.external_media.minimized", false);
+          this.$appdata.set("modules.external_media.show", true);
+          const currentVolume = this.$appdata.get("modules.external_media.config.volume") ?? (this.$userdata.get("modules.external_media.volume") ?? 100);
+          this.$appdata.set("modules.external_media.config", {
+            is_paused: action === "view",
+            current_time: 0,
+            progress: 0,
+            duration: 0,
+            volume: currentVolume,
+          });
+          targetModule = "external_media";
+        } else if (item.collectionType === "custom") {
+          // Coletânea Personalizada
+          if (item.collectionSongType === "internal" && item.musicId) {
+            if (action === "view") {
+              await this.$media.openLyric(item.musicId);
+              targetModule = "lyric";
+            } else {
+              const mode = item.musicMode === "instrumental" ? "instrumental" : "audio";
+              const success = await this.$media.open({ id_music: item.musicId, mode });
+              if (success !== false) {
+                targetModule = "media";
+              }
+            }
+          } else {
+            // Arquivo externo da coletânea personalizada
+            const rawPath = item.musicMode === "instrumental" ? (item.filePathInstrumental || item.filePath) : (item.filePathAudio || item.filePath);
+            if (rawPath) {
+              const fileInfo = getLiturgyFileInfo(rawPath);
+              if (fileInfo.isLouvorJa) {
+                if (action === "view") {
+                  await this.$media.playExternalSlja(rawPath, "no_audio");
+                  targetModule = "lyric";
+                } else {
+                  await this.$media.playExternalSlja(rawPath, "audio");
+                  targetModule = "media";
+                }
+              } else {
+                if (this.$appdata.get("modules.media.id_music") && action !== "view") {
+                  const confirmed = await new Promise((resolve) => {
+                    this.$alert.yesno({
+                      text: "Uma música está em reprodução no momento. Deseja encerrá-la e reproduzir este item?",
+                      translate: false,
+                    }, (res: string) => resolve(res === "yes"));
+                  });
+                  if (!confirmed) return;
+                  this.$media.close(true);
+                }
+
+                this.$appdata.set("modules.external_media.filePath", rawPath);
+                this.$appdata.set("modules.external_media.title", item.name || "");
+                this.$appdata.set("modules.external_media.subtitle", item.subtitle || item.collectionName || "");
+                this.$appdata.set("modules.external_media.minimized", fileInfo.isAudio && action !== "view");
+                this.$appdata.set("modules.external_media.show", !fileInfo.isAudio || action === "view");
+                const currentVolume = this.$appdata.get("modules.external_media.config.volume") ?? (this.$userdata.get("modules.external_media.volume") ?? 100);
+                this.$appdata.set("modules.external_media.config", {
+                  is_paused: action === "view",
+                  current_time: 0,
+                  progress: 0,
+                  duration: 0,
+                  volume: currentVolume,
+                });
+                if (!fileInfo.isAudio || action === "view") {
+                  targetModule = "external_media";
+                }
+              }
             }
           }
         }
@@ -1297,14 +1404,26 @@ export default defineComponent({
         custom: JSON.parse(JSON.stringify(this.customLiturgies)),
         scheduled_items: JSON.parse(JSON.stringify(this.extraData.scheduled_items || [])),
         templates: JSON.parse(JSON.stringify(this.extraData.templates || [])),
+        showNotes: this.showNotes,
       };
+      if (this.$userdata && this.$userdata.set) {
+        this.$userdata.set("modules.liturgy.showNotes", this.showNotes);
+      }
       if (window.electronAPI && window.electronAPI.saveLiturgyData) {
         await window.electronAPI.saveLiturgyData(dataToSave);
       }
     },
     async loadSavedLiturgies() {
       try {
-        if (!window.electronAPI || !window.electronAPI.getLiturgyData) return;
+        if (!window.electronAPI || !window.electronAPI.getLiturgyData) {
+          if (this.$userdata && this.$userdata.get) {
+            const prefShowNotes = await this.$userdata.get("modules.liturgy.showNotes");
+            if (prefShowNotes !== undefined && prefShowNotes !== null) {
+              this.showNotes = !!prefShowNotes;
+            }
+          }
+          return;
+        }
         
         let saved = await window.electronAPI.getLiturgyData() as any;
         
@@ -1327,6 +1446,14 @@ export default defineComponent({
         }
         
         if (saved) {
+          if (saved.showNotes !== undefined) {
+            this.showNotes = !!saved.showNotes;
+          } else if (this.$userdata && this.$userdata.get) {
+            const prefShowNotes = await this.$userdata.get("modules.liturgy.showNotes");
+            if (prefShowNotes !== undefined && prefShowNotes !== null) {
+              this.showNotes = !!prefShowNotes;
+            }
+          }
           if (saved.liturgies) {
             for (const day in this.liturgies) {
               if (saved.liturgies[day]) this.liturgies[day] = saved.liturgies[day];
@@ -1369,9 +1496,34 @@ export default defineComponent({
           this.$appdata.get("modules.bible.chapter") === item.verseChapter && 
           this.$appdata.get("modules.bible.show") === true;
       }
-      if (item.type === "media" && currentModule === "external_media") {
-        return this.$appdata.get("modules.external_media.filePath") === item.filePath && 
-          this.$appdata.get("modules.external_media.show") === true;
+      if (item.type === "media" || item.type === "file") {
+        if (currentModule === "external_media") {
+          return this.$appdata.get("modules.external_media.filePath") === item.filePath && 
+            this.$appdata.get("modules.external_media.show") === true;
+        }
+        if (currentModule === "media" || currentModule === "lyric") {
+          return this.$appdata.get("modules.media.id_music") === `slja:${item.filePath}` && 
+            (this.$appdata.get("modules.lyric.show") === true || this.$appdata.get("modules.media.show") === true);
+        }
+      }
+      if (item.type === "collection_item") {
+        if (item.collectionType === "online" && currentModule === "external_media") {
+          return this.$appdata.get("modules.external_media.filePath") === `youtube:${item.onlineVideoId}` &&
+            this.$appdata.get("modules.external_media.show") === true;
+        }
+        if (item.collectionType === "custom") {
+          if (item.collectionSongType === "internal") {
+            return (this.$appdata.get("modules.lyric.id_music") === item.musicId || this.$appdata.get("modules.media.id_music") === item.musicId) &&
+              (this.$appdata.get("modules.lyric.show") === true || this.$appdata.get("modules.media.show") === true);
+          }
+          const rawPath = item.filePathAudio || item.filePath;
+          if (rawPath && getLiturgyFileInfo(rawPath).isLouvorJa) {
+            return this.$appdata.get("modules.media.id_music") === `slja:${rawPath}` &&
+              (this.$appdata.get("modules.lyric.show") === true || this.$appdata.get("modules.media.show") === true);
+          }
+          return this.$appdata.get("modules.external_media.filePath") === rawPath &&
+            this.$appdata.get("modules.external_media.show") === true;
+        }
       }
       return false;
     },
@@ -1381,10 +1533,12 @@ export default defineComponent({
         this.$appdata.set("modules.media.show", false);
       } else if (type === "verse" || type === "bible") {
         this.$appdata.set("modules.bible.show", false);
-      } else if (type === "media") {
+      } else if (type === "media" || type === "file" || type === "collection_item") {
         this.$appdata.set("modules.external_media.show", false);
         this.$appdata.set("modules.external_media.minimized", false);
         this.$appdata.set("modules.external_media.filePath", null);
+        this.$appdata.set("modules.media.show", false);
+        this.$appdata.set("modules.lyric.show", false);
       }
       
       // Fecha a janela de projeção caso esteja aberta
