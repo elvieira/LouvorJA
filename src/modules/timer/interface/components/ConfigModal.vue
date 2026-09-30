@@ -65,7 +65,7 @@
               boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
             }"
           >
-            <div :style="{ fontSize: '64px', fontWeight: '900', lineHeight: '1', textShadow: localConfig.bgImage ? '0 4px 20px rgba(0,0,0,0.8), 0 2px 8px rgba(0,0,0,0.9)' : 'none' }">
+            <div :style="{ fontSize: '64px', fontWeight: '900', lineHeight: '1', textShadow: previewStandardTextShadow }">
               05:00
             </div>
           </div>
@@ -91,9 +91,10 @@
             <div
               class="font-weight-bold mb-1"
               :style="{
-                color: localConfig.cultClockColor || '#ffffff',
+                color: previewCultClockColor,
                 fontSize: '28px',
-                lineHeight: '1'
+                lineHeight: '1',
+                textShadow: previewCultClockShadow
               }"
             >
               10:45:00
@@ -105,7 +106,8 @@
               :style="{
                 color: previewAlert ? (localConfig.cultWarningColor || '#ef4444') : (localConfig.cultTimerColor || '#38bdf8'),
                 fontSize: '44px',
-                lineHeight: '1'
+                lineHeight: '1',
+                textShadow: previewCultTimerShadow
               }"
             >
               {{ previewAlert ? '-00:02:15' : '00:15:00' }}
@@ -175,7 +177,7 @@
                       transition: 'all 0.2s',
                       transform: localConfig.bgColor === color ? 'scale(1.15)' : 'scale(1)',
                     }"
-                    @click="localConfig.bgColor = color"
+                    @click="setBgColor(color)"
                   />
                   <ModernColorPicker v-model="localConfig.bgColor">
                     <template #activator="{ props }">
@@ -416,7 +418,7 @@
                       transition: 'all 0.2s',
                       transform: localConfig.cultBgColor === color ? 'scale(1.15)' : 'scale(1)',
                     }"
-                    @click="localConfig.cultBgColor = color"
+                    @click="setCultBgColor(color)"
                   />
                   <ModernColorPicker v-model="localConfig.cultBgColor">
                     <template #activator="{ props }">
@@ -822,6 +824,33 @@ import { defineComponent, PropType } from "vue";
 import ModernColorPicker from "@/components/inputs/ModernColorPicker.vue";
 import { playSchoolBellAlert, stopSchoolBellAlert } from "../../helpers/audioAlert";
 
+function getLuminance(colorStr?: string | null): number {
+  if (!colorStr) return 0;
+  const hex = colorStr.trim();
+  if (hex.startsWith("#")) {
+    let cleanHex = hex.slice(1);
+    if (cleanHex.length === 3) {
+      cleanHex = cleanHex.split("").map((c) => c + c).join("");
+    }
+    const r = parseInt(cleanHex.substring(0, 2), 16) || 0;
+    const g = parseInt(cleanHex.substring(2, 4), 16) || 0;
+    const b = parseInt(cleanHex.substring(4, 6), 16) || 0;
+    return (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  }
+  const rgbMatch = colorStr.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+  if (rgbMatch) {
+    const r = parseInt(rgbMatch[1], 10);
+    const g = parseInt(rgbMatch[2], 10);
+    const b = parseInt(rgbMatch[3], 10);
+    return (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  }
+  return 0;
+}
+
+function isLightColor(colorStr?: string | null): boolean {
+  return getLuminance(colorStr) > 0.6;
+}
+
 export default defineComponent({
   name: "ConfigModal",
   components: {
@@ -893,6 +922,33 @@ export default defineComponent({
         this.$emit("update:modelValue", val);
       },
     },
+    previewStandardTextShadow(): string {
+      if (this.localConfig.bgImage) return "0 4px 20px rgba(0,0,0,0.7), 0 2px 6px rgba(0,0,0,0.8)";
+      if (isLightColor(this.localConfig.bgColor)) return "0 2px 8px rgba(0,0,0,0.12)";
+      return "0 4px 20px rgba(0,0,0,0.5)";
+    },
+    previewCultClockColor(): string {
+      const color = this.localConfig.cultClockColor || "#ffffff";
+      const hasImage = Boolean(this.localConfig.cultBgImage || this.localConfig.bgImage);
+      if (!hasImage && isLightColor(this.localConfig.cultBgColor || this.localConfig.bgColor) && isLightColor(color)) {
+        return "#0f172a";
+      }
+      return color;
+    },
+    previewCultClockShadow(): string {
+      const hasImage = Boolean(this.localConfig.cultBgImage || this.localConfig.bgImage);
+      if (hasImage) return "0 2px 10px rgba(0,0,0,0.7)";
+      const isLight = isLightColor(this.localConfig.cultBgColor || this.localConfig.bgColor);
+      if (isLight) return "0 2px 8px rgba(0,0,0,0.10)";
+      return "0 3px 14px rgba(0,0,0,0.5)";
+    },
+    previewCultTimerShadow(): string {
+      const hasImage = Boolean(this.localConfig.cultBgImage || this.localConfig.bgImage);
+      if (hasImage) return "0 4px 16px rgba(0,0,0,0.7)";
+      const isLight = isLightColor(this.localConfig.cultBgColor || this.localConfig.bgColor);
+      if (isLight) return "0 3px 12px rgba(0,0,0,0.12)";
+      return "0 4px 20px rgba(0,0,0,0.5)";
+    },
   },
   watch: {
     internalValue(val: boolean) {
@@ -900,6 +956,20 @@ export default defineComponent({
         this.loadConfig();
         if (this.initialTab) {
           this.activeTab = this.initialTab;
+        }
+      }
+    },
+    "localConfig.cultBgColor"(newColor: string) {
+      if (isLightColor(newColor)) {
+        if (!this.localConfig.cultClockColor || isLightColor(this.localConfig.cultClockColor)) {
+          this.localConfig.cultClockColor = "#000000";
+        }
+      }
+    },
+    "localConfig.bgColor"(newColor: string) {
+      if (isLightColor(newColor)) {
+        if (!this.localConfig.fontColor || isLightColor(this.localConfig.fontColor)) {
+          this.localConfig.fontColor = "#000000";
         }
       }
     },
@@ -914,6 +984,30 @@ export default defineComponent({
     stopSchoolBellAlert();
   },
   methods: {
+    setCultBgColor(color: string) {
+      this.localConfig.cultBgColor = color;
+      if (isLightColor(color)) {
+        if (!this.localConfig.cultClockColor || isLightColor(this.localConfig.cultClockColor)) {
+          this.localConfig.cultClockColor = "#000000";
+        }
+      } else {
+        if (this.localConfig.cultClockColor === "#000000" || this.localConfig.cultClockColor === "#0F172A") {
+          this.localConfig.cultClockColor = "#FFFFFF";
+        }
+      }
+    },
+    setBgColor(color: string) {
+      this.localConfig.bgColor = color;
+      if (isLightColor(color)) {
+        if (!this.localConfig.fontColor || isLightColor(this.localConfig.fontColor)) {
+          this.localConfig.fontColor = "#000000";
+        }
+      } else {
+        if (this.localConfig.fontColor === "#000000" || this.localConfig.fontColor === "#0F172A") {
+          this.localConfig.fontColor = "#FFFFFF";
+        }
+      }
+    },
     t(text: string): string {
       return this.$t(`modules.${this.moduleId}.${text}`);
     },

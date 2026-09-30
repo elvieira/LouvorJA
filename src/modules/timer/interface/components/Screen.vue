@@ -37,7 +37,7 @@
         <!-- Barra de Progresso Inferior (Gauge) -->
         <div
           class="cult-gauge-container position-absolute bottom-0 left-0 w-100"
-          :style="{ height: preview ? '5px' : '10px', background: preview ? 'rgba(128,128,128,0.2)' : 'rgba(255,255,255,0.1)' }"
+          :style="{ height: preview ? '5px' : '10px', background: preview ? 'rgba(128,128,128,0.2)' : (isLightBackground ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.1)') }"
         >
           <div
             class="cult-gauge-fill h-100"
@@ -56,6 +56,33 @@
 <script lang="ts">
 import { defineComponent, PropType } from "vue";
 import { playSchoolBellAlert, stopSchoolBellAlert, playCultAlert } from "../../helpers/audioAlert";
+
+function getLuminance(colorStr?: string | null): number {
+  if (!colorStr) return 0;
+  const hex = colorStr.trim();
+  if (hex.startsWith("#")) {
+    let cleanHex = hex.slice(1);
+    if (cleanHex.length === 3) {
+      cleanHex = cleanHex.split("").map((c) => c + c).join("");
+    }
+    const r = parseInt(cleanHex.substring(0, 2), 16) || 0;
+    const g = parseInt(cleanHex.substring(2, 4), 16) || 0;
+    const b = parseInt(cleanHex.substring(4, 6), 16) || 0;
+    return (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  }
+  const rgbMatch = colorStr.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+  if (rgbMatch) {
+    const r = parseInt(rgbMatch[1], 10);
+    const g = parseInt(rgbMatch[2], 10);
+    const b = parseInt(rgbMatch[3], 10);
+    return (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  }
+  return 0;
+}
+
+function isLightColor(colorStr?: string | null): boolean {
+  return getLuminance(colorStr) > 0.6;
+}
 
 export default defineComponent({
   name: "TimerScreen",
@@ -167,36 +194,101 @@ export default defineComponent({
 
       return isNeg ? `-${text}` : text;
     },
+    effectiveBgColor(): string {
+      if (this.mode === "cult") {
+        return this.config.cultBgColor || this.config.bgColor || "#000000";
+      }
+      return this.config.bgColor || "#000000";
+    },
+    hasBgImage(): boolean {
+      if (this.mode === "cult") {
+        return Boolean(this.config.cultBgImage || this.config.bgImage);
+      }
+      return Boolean(this.config.bgImage);
+    },
+    isLightBackground(): boolean {
+      if (this.hasBgImage) {
+        return false;
+      }
+      return isLightColor(this.effectiveBgColor);
+    },
+    textShadowValue(): string {
+      if (this.preview) return "none";
+      if (this.hasBgImage) {
+        return "0 4px 20px rgba(0, 0, 0, 0.7), 0 2px 6px rgba(0, 0, 0, 0.8)";
+      }
+      if (this.isLightBackground) {
+        return "0 4px 16px rgba(0, 0, 0, 0.12), 0 1px 3px rgba(0, 0, 0, 0.08)";
+      }
+      return "0 4px 24px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.6)";
+    },
+    cultClockTextShadowValue(): string {
+      if (this.preview) return "none";
+      if (this.hasBgImage) {
+        return "0 3px 14px rgba(0, 0, 0, 0.7), 0 1px 4px rgba(0, 0, 0, 0.8)";
+      }
+      if (this.isLightBackground) {
+        return "0 2px 10px rgba(0, 0, 0, 0.10), 0 1px 2px rgba(0, 0, 0, 0.06)";
+      }
+      return "0 3px 16px rgba(0, 0, 0, 0.5), 0 1px 6px rgba(0, 0, 0, 0.6)";
+    },
+    effectiveCultClockColor(): string {
+      if (this.preview) {
+        return "var(--sidebar-text)";
+      }
+      const rawColor = this.config.cultClockColor || "#ffffff";
+      if (this.isLightBackground && isLightColor(rawColor)) {
+        return "#0f172a";
+      }
+      return rawColor;
+    },
+    effectiveCultTimerColor(): string {
+      const color = this.isCultNegative
+        ? (this.config.cultWarningColor || "#ef4444")
+        : (this.config.cultTimerColor || "#38bdf8");
+      if (this.preview) {
+        return color;
+      }
+      if (this.isLightBackground && isLightColor(color) && getLuminance(color) > 0.85) {
+        return "#0284c7";
+      }
+      return color;
+    },
+    effectiveFontColor(): string {
+      if (this.preview) {
+        return "var(--sidebar-text)";
+      }
+      const rawColor = this.config.fontColor || "#ffffff";
+      if (this.isLightBackground && isLightColor(rawColor)) {
+        return "#0f172a";
+      }
+      return rawColor;
+    },
     textStyle(): any {
       return {
         color: this.isAlerting
           ? "#ffffff"
-          : (this.preview ? "var(--sidebar-text)" : this.config.fontColor),
+          : this.effectiveFontColor,
         fontSize: this.preview ? "clamp(4rem, 8vw, 8rem)" : "25vmin",
         lineHeight: 1,
-        textShadow: this.preview ? "none" : "0 10px 40px rgba(0,0,0,0.8), 0 2px 10px rgba(0,0,0,0.9)",
+        textShadow: this.textShadowValue,
       };
     },
     cultClockStyle(): any {
       return {
-        color: this.preview
-          ? "var(--sidebar-text)"
-          : (this.config.cultClockColor || "#ffffff"),
+        color: this.effectiveCultClockColor,
         fontSize: this.preview ? "clamp(2rem, 4vw, 3.6rem)" : "12vmin",
         lineHeight: 1.1,
-        textShadow: this.preview ? "none" : "0 8px 30px rgba(0,0,0,0.8), 0 2px 8px rgba(0,0,0,0.9)",
+        textShadow: this.cultClockTextShadowValue,
         fontVariantNumeric: "tabular-nums",
       };
     },
     cultTimerStyle(): any {
-      const color = this.isCultNegative
-        ? (this.config.cultWarningColor || "#ef4444")
-        : (this.config.cultTimerColor || "#38bdf8");
       return {
-        color,
+        color: this.effectiveCultTimerColor,
         fontSize: this.preview ? "clamp(3.5rem, 7.5vw, 6.8rem)" : "22vmin",
         lineHeight: 1.1,
-        textShadow: this.preview ? "none" : "0 10px 40px rgba(0,0,0,0.8), 0 2px 10px rgba(0,0,0,0.9)",
+        textShadow: this.textShadowValue,
         fontVariantNumeric: "tabular-nums",
       };
     },
