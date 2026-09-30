@@ -160,6 +160,7 @@ export default {
     // Abre o módulo Home automaticamente na inicialização
     if ($appdata.get("modules.home")) {
       $appdata.set("modules.home.show", true);
+      $appdata.set("active_module", "home");
     }
   },
 };

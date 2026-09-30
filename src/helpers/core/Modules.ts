@@ -40,6 +40,7 @@ export default {
           }
         }
       }
+      $appdata.set("active_module", id);
     }
 
     $dev.write("open", id);
@@ -56,9 +57,10 @@ export default {
     this.removeTray(id);
 
     const modules = $appdata.get("modules") || {};
-    const hasActive = Object.keys(modules).some((key) => modules[key].show);
+    const hasActive = Object.keys(modules).some((key) => modules[key].show && !modules[key]?.manifest?.overlay);
     if (!hasActive && this.check("home")) {
       $appdata.set("modules.home.show", true);
+      $appdata.set("active_module", "home");
     }
   },
   minimize(id: string) {
@@ -78,6 +80,13 @@ export default {
     $appdata.set(`modules.${id}.show`, false);
 
     this.addTray(id);
+
+    const modules = $appdata.get("modules") || {};
+    const hasActive = Object.keys(modules).some((key) => modules[key].show && !modules[key]?.manifest?.overlay);
+    if (!hasActive && this.check("home")) {
+      $appdata.set("modules.home.show", true);
+      $appdata.set("active_module", "home");
+    }
   },
   get(list: any = null): any {
     if (list === null) {

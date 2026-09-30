@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export interface AppState {
+  active_module: string;
   is_dev: boolean;
   is_dark: boolean;
   is_popup: boolean;
@@ -57,6 +58,7 @@ export interface AppState {
 }
 
 const state: AppState = {
+  active_module: "home",
   is_dev: false,
   is_dark: false,
   is_popup: false,

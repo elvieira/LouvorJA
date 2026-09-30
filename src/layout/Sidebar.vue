@@ -269,7 +269,26 @@ export default defineComponent({
       return ((this as any).$route.name as string)?.toLowerCase() || "";
     },
     currentModule(): string | null {
-      return this.sidebarSelectedModule;
+      const syncShow = (this as any).$appdata.get("modules.sync.show");
+      if (syncShow) {
+        return "sync";
+      }
+      const updateShow = (this as any).$appdata.get("modules.update.show");
+      if (updateShow) {
+        return "update";
+      }
+      const active = (this as any).$appdata.get("active_module");
+      if (active) {
+        return active;
+      }
+      const modules = (this as any).$appdata.get("modules") || {};
+      const overlays = ["album", "media", "lyric", "sync", "update", "external_media"];
+      for (const [key, module] of Object.entries(modules)) {
+        if ((module as any).show && !overlays.includes(key)) {
+          return key;
+        }
+      }
+      return this.sidebarSelectedModule || "home";
     },
     moduleGroups(): Record<string, any> {
       const groups = (this as any).$appdata.get("module_group") || {};
@@ -335,14 +354,50 @@ export default defineComponent({
       return (this as any).$appdata.get("sync_is_downloading") === true;
     },
   },
+  watch: {
+    currentModule: {
+      immediate: true,
+      handler(newModule) {
+        this.syncSubmenuForModule(newModule);
+      },
+    },
+  },
   mounted() {
     window.addEventListener("resize", this.handleResize);
+    this.syncSubmenuForModule(this.currentModule);
   },
   beforeUnmount() {
     window.removeEventListener("resize", this.handleResize);
   },
 
   methods: {
+    syncSubmenuForModule(moduleId: string | null) {
+      if (!moduleId) return;
+      const groups = (this as any).$appdata.get("module_group") || {};
+      let foundGroup: string | null = null;
+      for (const [key, group] of Object.entries(groups)) {
+        if (key === "bible") continue;
+        if (this.language === "es" && key === "musics") continue;
+        if ((group as any)?.modules && Array.isArray((group as any).modules) && (group as any).modules.includes(moduleId)) {
+          foundGroup = key;
+          break;
+        }
+      }
+      if (foundGroup) {
+        const updated: Record<string, boolean> = {};
+        for (const key of Object.keys(this.submenuOpen)) {
+          updated[key] = false;
+        }
+        updated[foundGroup] = true;
+        this.submenuOpen = updated;
+      } else {
+        const updated: Record<string, boolean> = {};
+        for (const key of Object.keys(this.submenuOpen)) {
+          updated[key] = false;
+        }
+        this.submenuOpen = updated;
+      }
+    },
     handleResize() {
       this.windowWidth = window.innerWidth;
     },

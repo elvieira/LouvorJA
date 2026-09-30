@@ -613,6 +613,7 @@ export default defineComponent({
       }
       if (this.$appdata.get("modules.home")) {
         this.$appdata.set("modules.home.show", true);
+        this.$appdata.set("active_module", "home");
       }
     },
     maximizePlayer() {
