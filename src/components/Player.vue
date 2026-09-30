@@ -95,6 +95,24 @@
           {{ loopTooltip }}
         </v-tooltip>
       </v-btn>
+      <v-btn
+        icon
+        variant="text"
+        :color="shuffleIconColor"
+        size="small"
+        class="mx-1"
+        @click="toggleShuffle"
+      >
+        <v-icon>mdi-shuffle</v-icon>
+        <v-tooltip
+          activator="parent"
+          location="top"
+          open-delay="300"
+          content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+        >
+          {{ shuffleTooltip }}
+        </v-tooltip>
+      </v-btn>
     </div>
 
     <div v-if="media.config.audio" class="player-timeline-wrapper d-flex align-center flex-grow-1 mr-6" style="min-width: 150px;">
@@ -556,6 +574,25 @@ const toggleLoop = () => {
   appdata.set("modules.media.config.loop", nextMode);
 };
 
+const isShuffle = computed(() => {
+  const current = appdata.get("modules.media.config.shuffle");
+  if (typeof current === "boolean") return current;
+  return userdata.get("modules.media.config.shuffle") === true;
+});
+
+const shuffleIconColor = computed(() => {
+  if (!isShuffle.value) return secondaryTextColor.value;
+  return "var(--accent-blue)";
+});
+
+const shuffleTooltip = computed(() => {
+  return isShuffle.value ? t("modules.media.controls.shuffle_disable") : t("modules.media.controls.shuffle_enable");
+});
+
+const toggleShuffle = () => {
+  mediaHelper.toggleShuffle();
+};
+
 const menu_modes = computed(() => [
   {
     mode: "audio",
@@ -622,8 +659,25 @@ const play = () => {
   }
 };
 
-const prev = () => mediaHelper.prevSlide();
-const next = () => mediaHelper.nextSlide();
+const prev = () => {
+  const lastSlide = media.value?.config?.last_slide || 0;
+  const slideIndex = media.value?.config?.slide_index || 0;
+  if (queueCount.value > 1 && (lastSlide <= 1 || slideIndex <= 0)) {
+    mediaHelper.playPrev();
+  } else {
+    mediaHelper.prevSlide();
+  }
+};
+
+const next = () => {
+  const lastSlide = media.value?.config?.last_slide || 0;
+  const slideIndex = media.value?.config?.slide_index || 0;
+  if (queueCount.value > 1 && (lastSlide <= 1 || slideIndex >= lastSlide - 1)) {
+    mediaHelper.playNext();
+  } else {
+    mediaHelper.nextSlide();
+  }
+};
 const openMedia = (data: any) => mediaHelper.open(data);
 const openLyric = () => mediaHelper.openLyric();
 const maximize = () => mediaHelper.maximize();

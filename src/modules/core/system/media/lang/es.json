@@ -9,7 +9,10 @@
         "maximize": "Maximizar",
         "close": "Cerrar",
         "fullscreen": "Pantalla Completa",
-        "exit_fullscreen": "Salir de Pantalla Completa"
+        "exit_fullscreen": "Salir de Pantalla Completa",
+        "shuffle": "Aleatorio",
+        "shuffle_enable": "Activar reproducción aleatoria",
+        "shuffle_disable": "Desactivar reproducción aleatoria"
     },
     "general": {
         "sung": "Cantado",

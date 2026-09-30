@@ -25,6 +25,18 @@
         <v-btn
           v-if="queueItems.length > 0"
           variant="tonal"
+          :color="isShuffle ? 'primary' : undefined"
+          size="small"
+          class="text-none mr-2"
+          :prepend-icon="isShuffle ? 'mdi-shuffle' : 'mdi-shuffle-disabled'"
+          @click="toggleShuffle"
+        >
+          {{ $t('modules.media.controls.shuffle') }}
+        </v-btn>
+
+        <v-btn
+          v-if="queueItems.length > 0"
+          variant="tonal"
           color="error"
           size="small"
           class="text-none"
@@ -171,6 +183,12 @@ const onDragEnd = (event: any) => {
 
 const closeQueue = () => {
   appdata.set("modules.media.show_queue", false);
+};
+
+const isShuffle = computed(() => appdata.get("modules.media.config.shuffle") === true);
+
+const toggleShuffle = () => {
+  media.toggleShuffle();
 };
 
 const clearQueue = () => {

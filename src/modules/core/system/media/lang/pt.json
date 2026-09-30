@@ -9,7 +9,10 @@
         "maximize": "Maximizar",
         "close": "Fechar",
         "fullscreen": "Tela Cheia",
-        "exit_fullscreen": "Sair da Tela Cheia"
+        "exit_fullscreen": "Sair da Tela Cheia",
+        "shuffle": "Ordem aleatória",
+        "shuffle_enable": "Ativar ordem aleatória",
+        "shuffle_disable": "Desativar ordem aleatória"
     },
     "general": {
         "sung": "Cantado",

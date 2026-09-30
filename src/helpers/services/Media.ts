@@ -1379,9 +1379,38 @@ export default {
   },
 
   // --- Queue Methods ---
+  isShuffle(): boolean {
+    const current = $appdata.get("modules.media.config.shuffle");
+    if (typeof current === "boolean") {
+      return current;
+    }
+    const saved = $userdata.get("modules.media.config.shuffle");
+    const val = typeof saved === "boolean" ? saved : false;
+    $appdata.set("modules.media.config.shuffle", val);
+    return val;
+  },
+  toggleShuffle(force?: boolean): boolean {
+    const nextVal = typeof force === "boolean" ? force : !this.isShuffle();
+    $appdata.set("modules.media.config.shuffle", nextVal);
+    $userdata.set("modules.media.config.shuffle", nextVal);
+
+    const queue = $appdata.get("modules.media.queue");
+    if (queue && queue.items && queue.items.length > 0) {
+      if (nextVal) {
+        const curr = queue.currentIndex >= 0 ? queue.currentIndex : 0;
+        queue.shuffleHistory = [curr];
+        queue.historyIndex = 0;
+      } else {
+        queue.shuffleHistory = [];
+        queue.historyIndex = -1;
+      }
+      $appdata.set("modules.media.queue", queue);
+    }
+    return nextVal;
+  },
   initQueue() {
     if (!$appdata.get("modules.media.queue")) {
-      $appdata.set("modules.media.queue", { items: [], currentIndex: -1 });
+      $appdata.set("modules.media.queue", { items: [], currentIndex: -1, shuffleHistory: [], historyIndex: -1 });
     }
   },
   async playAll(musics: any[], mode: string = "audio", id_album: number | null = null, albumImage: string = "") {
@@ -1415,12 +1444,18 @@ export default {
       id_album,
     }));
     
-    queue.currentIndex = 0;
+    const isShuffle = this.isShuffle();
+    const startIndex = (isShuffle && queue.items.length > 1)
+      ? Math.floor(Math.random() * queue.items.length)
+      : 0;
+    queue.currentIndex = startIndex;
+    queue.shuffleHistory = queue.items.length > 0 ? [startIndex] : [];
+    queue.historyIndex = queue.items.length > 0 ? 0 : -1;
     $appdata.set("modules.media.queue", queue);
     
-    // Play the first item
+    // Play the item
     if (queue.items.length > 0) {
-      this.playFromQueue(0);
+      this.playFromQueue(startIndex);
     }
   },
   async addToQueue(item: { id_music: number, mode: string }) {
@@ -1461,6 +1496,16 @@ export default {
     const queue = $appdata.get("modules.media.queue");
     if (queue && queue.items[index]) {
       queue.items.splice(index, 1);
+
+      if (Array.isArray(queue.shuffleHistory)) {
+        queue.shuffleHistory = queue.shuffleHistory
+          .filter((i: number) => i !== index)
+          .map((i: number) => (i > index ? i - 1 : i));
+        if (queue.historyIndex >= queue.shuffleHistory.length) {
+          queue.historyIndex = queue.shuffleHistory.length - 1;
+        }
+      }
+
       if (index < queue.currentIndex) {
         queue.currentIndex--;
       } else if (index === queue.currentIndex) {
@@ -1471,7 +1516,7 @@ export default {
     }
   },
   clearQueue() {
-    $appdata.set("modules.media.queue", { items: [], currentIndex: -1 });
+    $appdata.set("modules.media.queue", { items: [], currentIndex: -1, shuffleHistory: [], historyIndex: -1 });
   },
   reorderQueue(fromIndex: number, toIndex: number) {
     const queue = $appdata.get("modules.media.queue");
@@ -1479,6 +1524,17 @@ export default {
       const item = queue.items.splice(fromIndex, 1)[0];
       queue.items.splice(toIndex, 0, item);
       
+      const remap = (idx: number) => {
+        if (idx === fromIndex) return toIndex;
+        if (fromIndex < toIndex && idx > fromIndex && idx <= toIndex) return idx - 1;
+        if (fromIndex > toIndex && idx >= toIndex && idx < fromIndex) return idx + 1;
+        return idx;
+      };
+
+      if (Array.isArray(queue.shuffleHistory)) {
+        queue.shuffleHistory = queue.shuffleHistory.map(remap);
+      }
+
       // Update currentIndex if affected
       if (queue.currentIndex === fromIndex) {
         queue.currentIndex = toIndex;
@@ -1500,8 +1556,74 @@ export default {
       return;
     }
 
-    // Find next valid index
-    let nextIndex = stayOnCurrentIndex ? queue.currentIndex : queue.currentIndex + 1;
+    if (stayOnCurrentIndex) {
+      const idx = queue.currentIndex >= 0 && queue.currentIndex < queue.items.length ? queue.currentIndex : 0;
+      this.playFromQueue(idx);
+      return;
+    }
+
+    const isShuffle = this.isShuffle();
+    if (isShuffle && queue.items.length > 1) {
+      if (!Array.isArray(queue.shuffleHistory)) {
+        queue.shuffleHistory = queue.currentIndex >= 0 ? [queue.currentIndex] : [];
+        queue.historyIndex = queue.shuffleHistory.length - 1;
+      }
+
+      // If user navigated backwards previously with playPrev, advance in history first
+      if (queue.historyIndex >= 0 && queue.historyIndex < queue.shuffleHistory.length - 1) {
+        queue.historyIndex++;
+        const targetIndex = queue.shuffleHistory[queue.historyIndex];
+        if (targetIndex >= 0 && targetIndex < queue.items.length) {
+          $appdata.set("modules.media.queue", queue);
+          this.playFromQueue(targetIndex);
+          return;
+        }
+      }
+
+      // Find all unplayed indices in the queue
+      const playedSet = new Set(queue.shuffleHistory);
+      const unplayed: number[] = [];
+      for (let i = 0; i < queue.items.length; i++) {
+        if (!playedSet.has(i)) {
+          unplayed.push(i);
+        }
+      }
+
+      if (unplayed.length > 0) {
+        const nextIndex = unplayed[Math.floor(Math.random() * unplayed.length)];
+        queue.shuffleHistory.push(nextIndex);
+        queue.historyIndex = queue.shuffleHistory.length - 1;
+        $appdata.set("modules.media.queue", queue);
+        this.playFromQueue(nextIndex);
+        return;
+      }
+
+      // All items in the queue have been played in this shuffle cycle!
+      const loopMode = $appdata.get("modules.media.config.loop") || "none";
+      if (loopMode === "queue") {
+        // Reset shuffle history for next cycle, avoiding repeating the song that just played
+        const candidates: number[] = [];
+        for (let i = 0; i < queue.items.length; i++) {
+          if (i !== queue.currentIndex) {
+            candidates.push(i);
+          }
+        }
+        const nextIndex = candidates.length > 0
+          ? candidates[Math.floor(Math.random() * candidates.length)]
+          : 0;
+        queue.shuffleHistory = [nextIndex];
+        queue.historyIndex = 0;
+        $appdata.set("modules.media.queue", queue);
+        this.playFromQueue(nextIndex);
+        return;
+      }
+      this.markNaturalEnd();
+      this.close(true);
+      return;
+    }
+
+    // Normal sequential playback
+    let nextIndex = queue.currentIndex + 1;
 
     if (nextIndex >= queue.items.length || nextIndex < 0) {
       const loopMode = $appdata.get("modules.media.config.loop") || "none";
@@ -1521,6 +1643,21 @@ export default {
     if ($appdata.get("modules.media.loading")) return;
     const queue = $appdata.get("modules.media.queue");
     if (!queue || queue.items.length === 0) return;
+
+    const isShuffle = this.isShuffle();
+    if (isShuffle && Array.isArray(queue.shuffleHistory) && queue.shuffleHistory.length > 0) {
+      if (queue.historyIndex > 0) {
+        queue.historyIndex--;
+        const prevIndex = queue.shuffleHistory[queue.historyIndex];
+        if (prevIndex >= 0 && prevIndex < queue.items.length) {
+          $appdata.set("modules.media.queue", queue);
+          this.playFromQueue(prevIndex);
+          return;
+        }
+      }
+      this.goToTime(0);
+      return;
+    }
 
     let prevIndex = queue.currentIndex - 1;
     if (prevIndex < 0) {
@@ -1556,6 +1693,24 @@ export default {
     const queue = $appdata.get("modules.media.queue");
     if (queue && queue.items[index]) {
       queue.currentIndex = index;
+
+      const isShuffle = this.isShuffle();
+      if (isShuffle) {
+        if (!Array.isArray(queue.shuffleHistory)) {
+          queue.shuffleHistory = [index];
+          queue.historyIndex = 0;
+        } else {
+          const currHistoryItem = queue.historyIndex >= 0 ? queue.shuffleHistory[queue.historyIndex] : -1;
+          if (currHistoryItem !== index) {
+            if (queue.historyIndex >= 0 && queue.historyIndex < queue.shuffleHistory.length - 1) {
+              queue.shuffleHistory = queue.shuffleHistory.slice(0, queue.historyIndex + 1);
+            }
+            queue.shuffleHistory.push(index);
+            queue.historyIndex = queue.shuffleHistory.length - 1;
+          }
+        }
+      }
+
       $appdata.set("modules.media.queue", queue);
       const item = queue.items[index];
       this.open({ id_music: item.id_music, mode: item.mode, id_album: item.id_album, fromQueue: true });
