@@ -563,7 +563,7 @@
                     class="slide-item-card d-flex align-center mb-2"
                     :class="{ active: index === activeSlideIndex }"
                     :data-slide-index="index"
-                    @click="activeSlideIndex = index"
+                    @click="selectSlide(index)"
                   >
                     <!-- Slide Number Chip -->
                     <div class="slide-item-chip d-flex align-center justify-center mr-3">
@@ -658,26 +658,6 @@
               <!-- Widescreen Monitor Container -->
               <div class="preview-monitor-wrapper w-100 d-flex align-center justify-center">
                 <div class="preview-monitor-card position-relative overflow-hidden">
-                  <!-- Top Badges Overlay (Audio Tag Info) -->
-                  <div
-                    v-if="externalAudioFilePath"
-                    class="preview-monitor-topbar position-absolute d-flex align-center px-4 py-3"
-                    style="top: 0; left: 0; z-index: 10;"
-                  >
-                    <div class="preview-audio-tag d-flex align-center px-3 py-1">
-                      <v-icon
-                        icon="mdi-music"
-                        size="14"
-                        color="var(--accent-blue)"
-                        class="mr-1.5"
-                      />
-                      <span class="text-caption font-weight-bold text-white text-truncate" style="max-width: 200px;">
-                        {{ externalAudioFileName }}
-                      </span>
-                      <span v-if="isPreviewingThisAudio" class="ml-2 preview-live-dot" />
-                    </div>
-                  </div>
-
                   <!-- Live Slide Render -->
                   <div class="preview-slide-canvas w-100 h-100">
                     <LSlide
@@ -1650,17 +1630,38 @@ export default defineComponent({
         this.activeSlideIndex = this.slidesInput.length - 1;
       }
     },
+    selectSlide(index: number) {
+      if (index < 0 || index >= this.slidesInput.length) return;
+      this.activeSlideIndex = index;
+      this.lastManualNavTime = Date.now();
+      const target = this.slidesInput[index];
+      const audio = this.$refs.editorAudio as HTMLAudioElement | undefined;
+      if (audio && target) {
+        if (typeof target.time === "number") {
+          audio.currentTime = Math.max(0, target.time);
+          this.audioCurrentTime = target.time;
+          if (this.audioDuration > 0) {
+            this.audioProgress = (target.time / this.audioDuration) * 100;
+          }
+        } else if (index === 0) {
+          audio.currentTime = 0;
+          this.audioCurrentTime = 0;
+          this.audioProgress = 0;
+        }
+      }
+      this.scrollActiveSlideIntoView();
+    },
     goToFirstSlide() {
-      this.activeSlideIndex = 0;
+      this.selectSlide(0);
     },
     goToLastSlide() {
-      this.activeSlideIndex = this.slidesInput.length - 1;
+      this.selectSlide(this.slidesInput.length - 1);
     },
     goToPrevSlide() {
-      if (this.activeSlideIndex > 0) this.activeSlideIndex--;
+      this.selectSlide(this.activeSlideIndex - 1);
     },
     goToNextSlide() {
-      if (this.activeSlideIndex < this.slidesInput.length - 1) this.activeSlideIndex++;
+      this.selectSlide(this.activeSlideIndex + 1);
     },
     resetExternalPick() {
       const audio = this.$refs.editorAudio as HTMLAudioElement | undefined;
@@ -1715,6 +1716,7 @@ export default defineComponent({
         });
         if (bestIndex >= 0 && bestIndex !== this.activeSlideIndex) {
           this.activeSlideIndex = bestIndex;
+          this.scrollActiveSlideIntoView();
         }
       }
     },
@@ -1838,12 +1840,29 @@ export default defineComponent({
       this.syncSlideToScreen();
 
       const audio = this.$refs.editorAudio as HTMLAudioElement | undefined;
+      const wasPlaying = audio ? !audio.paused : !this.audioIsPaused;
+      const savedTime = audio ? audio.currentTime : this.audioCurrentTime;
+
+      this.presentingSong = {
+        name: this.nameInput.trim() || this.t("new_song"),
+        slides,
+        filePathAudio: this.externalAudioFilePath,
+        filePathInstrumental: this.externalInstrumentalFilePath,
+      };
+      this.presentSlideIndex = Math.min(this.activeSlideIndex, slides.length - 1);
+      this.presentAudioKind = this.presentingSong.filePathAudio ? "audio" : "instrumental";
+      this.syncSlideToScreen();
+
       if (audio) {
-        audio.pause();
-        audio.currentTime = 0;
-        this.audioCurrentTime = 0;
-        this.audioProgress = 0;
-        this.audioIsPaused = true;
+        this.$nextTick(() => {
+          if (audio) {
+            audio.currentTime = savedTime;
+            this.audioCurrentTime = savedTime;
+            if (wasPlaying) {
+              audio.play().catch(() => {});
+            }
+          }
+        });
       }
     },
     syncSlideToScreen() {
@@ -1859,12 +1878,26 @@ export default defineComponent({
       });
     },
     exitPresentation() {
+      const audio = this.$refs.editorAudio as HTMLAudioElement | undefined;
+      const wasPlaying = audio ? !audio.paused : !this.audioIsPaused;
+      const savedTime = audio ? audio.currentTime : this.audioCurrentTime;
+
+      this.activeSlideIndex = Math.min(this.presentSlideIndex, this.slidesInput.length - 1);
       this.presentingSong = null;
       this.presentSlideIndex = 0;
-      const audio = this.$refs.editorAudio as HTMLAudioElement | undefined;
+
       if (audio) {
-        audio.pause();
+        this.$nextTick(() => {
+          if (audio) {
+            audio.currentTime = savedTime;
+            this.audioCurrentTime = savedTime;
+            if (wasPlaying) {
+              audio.play().catch(() => {});
+            }
+          }
+        });
       }
+
       const appdata = (this as any).$appdata;
       if (appdata.get("popup_module") === "music_editor") {
         import("@/helpers/ui/Popup").then(({ default: $popup }) => {
