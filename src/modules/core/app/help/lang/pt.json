@@ -628,5 +628,36 @@
       "preview_dialog_btn_cancel": "Cancelar",
       "preview_dialog_btn_save": "Salvar Coletânea"
     }
+  },
+  "support": {
+    "title": "Suporte e Dúvidas",
+    "subtitle": "Envie sua dúvida, sugestão ou relato diretamente à equipe de desenvolvimento.",
+    "name": "Seu Nome Completo",
+    "name_placeholder": "Ex: João da Silva",
+    "email": "E-mail de Contato",
+    "email_placeholder": "Ex: joao@email.com",
+    "category": "Tipo de Mensagem",
+    "categories": {
+      "doubt": "Dúvida sobre o aplicativo",
+      "suggestion": "Sugestão de melhoria",
+      "bug": "Problema ou erro encontrado",
+      "other": "Outro assunto"
+    },
+    "subject": "Assunto",
+    "subject_placeholder": "Resumo em poucas palavras",
+    "message": "Mensagem",
+    "message_placeholder": "Descreva detalhadamente o que você precisa ou gostaria de compartilhar...",
+    "include_diagnostics": "Anexar diagnóstico do sistema",
+    "include_diagnostics_hint": "Inclui versão do Louvor JA, sistema operacional e dados técnicos para agilizar o suporte.",
+    "diagnostics_preview": "Dados que serão anexados:",
+    "send_btn": "Enviar Mensagem",
+    "sending": "Enviando...",
+    "notice_desc": "O canal direto de envio está em fase de configuração. Sua mensagem foi validada e estruturada com sucesso!",
+    "success_title": "Mensagem Estruturada!",
+    "validation": {
+      "required": "Campo obrigatório",
+      "email_invalid": "Informe um e-mail válido",
+      "message_min": "A mensagem deve ter pelo menos 10 caracteres"
+    }
   }
 }

@@ -21,6 +21,8 @@
     "empty_collections_desc": "Crie sua primeira coletânea personalizada para organizar músicas do seu jeito.",
     "empty_songs_title": "Essa coletânea está vazia",
     "empty_songs_desc": "Nenhuma música foi adicionada a essa coletânea ainda.",
+    "empty_favorites_title": "Nenhum favorito ainda",
+    "empty_favorites_desc": "Clique no coração em qualquer música para adicioná-la aos favoritos.",
     "add_content_title": "Como você quer montar essa coletânea?",
     "add_single_song": "Adicionar uma música (cantado + playback)",
     "add_folder": "Adicionar uma pasta inteira",
@@ -47,5 +49,22 @@
     "actions": {
         "change": "Alterar",
         "delete": "Remover"
-    }
+    },
+    "internal_songs": "Músicas do Programa",
+    "external_file": "Arquivo do Computador",
+    "search_song_placeholder": "Buscar por título, número do hino ou coletânea...",
+    "all": "Todas",
+    "hymnals": "Hinários",
+    "albums": "Álbuns e Coletâneas",
+    "in_collection": "Na coletânea",
+    "add_selected": "Adicionar Selecionadas",
+    "create_empty_collection": "Criar coletânea vazia",
+    "create_empty_collection_desc": "Monte sua lista adicionando músicas do programa ou do computador depois.",
+    "song_added_success": "Música adicionada à coletânea!",
+    "songs_added_success": "{count} música(s) adicionada(s) à coletânea!",
+    "favorites": "Favoritos",
+    "added_to_favorites": "Adicionado aos favoritos!",
+    "removed_from_favorites": "Removido dos favoritos",
+    "add_to_favorites": "Adicionar aos favoritos",
+    "remove_from_favorites": "Remover dos favoritos"
 }

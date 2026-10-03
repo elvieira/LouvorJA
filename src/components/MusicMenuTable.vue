@@ -118,13 +118,41 @@
         {{ canQueue ? $t('modules.media.queue.add_to_queue') : 'Fila disponível para músicas locais' }}
       </v-tooltip>
     </v-btn>
+
+    <!-- Favoritos (Coração) -->
+    <v-btn
+      v-if="canFavorite"
+      variant="text"
+      :color="isFavorite ? '#e91e63' : (color ? color : $theme.primary())"
+      :density="compact ? 'compact' : 'compact'"
+      :size="compact ? 'x-small' : undefined"
+      :class="[compact ? 'mx-0 px-0' : 'mx-1', isFavorite ? 'favorite-active-btn' : '']"
+      :style="compact ? 'min-width: 26px; width: 26px; height: 26px;' : ''"
+      icon
+      @click.stop="toggleFavorite"
+    >
+      <v-icon :size="compact ? 17 : undefined">
+        {{ isFavorite ? 'mdi-heart' : 'mdi-heart-outline' }}
+      </v-icon>
+      <v-tooltip
+        activator="parent"
+        location="top"
+        open-delay="300"
+        content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+      >
+        {{ isFavorite ? favoriteRemoveTooltip : favoriteAddTooltip }}
+      </v-tooltip>
+    </v-btn>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, ref } from "vue";
+import { useStore } from "vuex";
+import { useI18n } from "vue-i18n";
 import { useTheme } from "vuetify";
 import { useMedia } from "@/composables/useHelpers";
+import { toggleFavoriteSong } from "@/helpers/services/Favorites";
 
 const props = withDefaults(defineProps<{
   idMusic?: number | string;
@@ -146,12 +174,60 @@ const props = withDefaults(defineProps<{
 
 const emit = defineEmits(["action"]);
 
+const store = useStore();
+const { t } = useI18n();
 const theme = useTheme();
 const media = useMedia();
 
 const isDark = computed(() => theme.name.value === "dark");
 
 const queueMenuOpen = ref(false);
+
+const canFavorite = computed(() => {
+  const numId = Number(props.idMusic);
+  const isNum = !isNaN(numId) && numId > 0;
+  const isExt = Boolean(props.item?.is_external_song && props.item?.filePathAudio);
+  return isNum || isExt;
+});
+
+const isFavorite = computed(() => {
+  const list = store?.getters?.getData?.("user_data.modules.custom_collection.list") || [];
+  const fav = list.find((c: any) => c.id === "favorites" || c.is_favorites);
+  if (!fav || !Array.isArray(fav.songs)) return false;
+
+  const numId = Number(props.idMusic);
+  if (!isNaN(numId) && numId > 0) {
+    return fav.songs.some((s: any) => s.type === "internal" && Number(s.id_music) === numId);
+  }
+
+  if (props.item?.is_external_song && props.item?.filePathAudio) {
+    return fav.songs.some((s: any) => s.type === "external" && s.filePathAudio === props.item.filePathAudio);
+  }
+
+  return false;
+});
+
+const favoriteAddTooltip = computed(() => {
+  return t("modules.custom_collection.add_to_favorites") || "Adicionar aos favoritos";
+});
+
+const favoriteRemoveTooltip = computed(() => {
+  return t("modules.custom_collection.remove_from_favorites") || "Remover dos favoritos";
+});
+
+const toggleFavorite = () => {
+  const added = toggleFavoriteSong(props.idMusic, props.item);
+  import("@/helpers/ui/Snackbar").then(({ default: $snackbar }) => {
+    $snackbar.show({
+      text: added
+        ? (t("modules.custom_collection.added_to_favorites") || "Adicionado aos favoritos!")
+        : (t("modules.custom_collection.removed_from_favorites") || "Removido dos favoritos"),
+      color: added ? "success" : "info",
+      timeout: 2000,
+    });
+  });
+  emit("action", "favorite");
+};
 
 const canQueue = computed(() => {
   if (props.item?.is_online_collection) return false;
@@ -336,5 +412,9 @@ const buttons = computed(() => {
   color: var(--accent-blue, #0097d7) !important;
   background: rgba(0, 151, 215, 0.15) !important;
   border-radius: 50% !important;
+}
+
+.favorite-active-btn {
+  color: #e91e63 !important;
 }
 </style>

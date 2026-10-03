@@ -54,6 +54,7 @@
           :title="$t('modules.help.support_title')"
           :subtitle="$t('modules.help.support_desc')"
           :button-text="$t('modules.help.support_btn')"
+          @action="$emit('open-support')"
         />
       </v-card-text>
     </v-card>
@@ -102,6 +103,6 @@ export default defineComponent({
       required: true,
     },
   },
-  emits: ["open-update", "open-manual"],
+  emits: ["open-update", "open-manual", "open-support"],
 });
 </script>

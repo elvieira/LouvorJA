@@ -3,23 +3,47 @@
     ref="playerContainer"
     :class="location === 'footer' ? 'footer-player-bar d-flex align-center w-100 px-4 py-2' : (location === 'fullscreen' ? 'fullscreen-player-bar d-flex align-center px-6 py-2 w-100' : 'modern-pill-player d-flex align-center px-6 py-2 mx-auto')"
   >
-    <div v-if="playerWidth >= 880" class="player-info d-flex flex-column mr-6" :style="location === 'footer' ? 'max-width: 320px; min-width: 200px;' : 'max-width: 280px; min-width: 150px;'">
-      <span
-        class="text-subtitle-2 font-weight-bold text-truncate"
-        :class="defaultTextClass"
-        style="line-height: 1.2;"
-        :title="media.config.title"
+    <div v-if="playerWidth >= 880" class="player-info d-flex align-center mr-6" :style="location === 'footer' ? 'max-width: 320px; min-width: 200px;' : 'max-width: 280px; min-width: 150px;'">
+      <div class="d-flex flex-column mr-2 text-truncate" style="min-width: 0; flex: 1;">
+        <span
+          class="text-subtitle-2 font-weight-bold text-truncate"
+          :class="defaultTextClass"
+          style="line-height: 1.2;"
+          :title="media.config.title"
+        >
+          {{ media.config.title }}
+        </span>
+        <span
+          class="text-caption text-truncate"
+          :class="secondaryTextClass"
+          style="line-height: 1.2; cursor: pointer;"
+          :title="media.config.subtitle"
+          @click="maximize"
+        >
+          {{ media.config.subtitle }}
+        </span>
+      </div>
+
+      <!-- Favorite button in Player -->
+      <v-btn
+        v-if="currentPlayingIdMusic"
+        icon
+        variant="text"
+        :color="isPlayerFavorite ? '#e91e63' : defaultTextColor"
+        size="small"
+        class="ml-1"
+        @click="toggleFavoritePlayer"
       >
-        {{ media.config.title }}
-      </span>
-      <span
-        class="text-caption text-truncate"
-        :class="secondaryTextClass"
-        style="line-height: 1.2;"
-        :title="media.config.subtitle"
-      >
-        {{ media.config.subtitle }}
-      </span>
+        <v-icon size="20">{{ isPlayerFavorite ? 'mdi-heart' : 'mdi-heart-outline' }}</v-icon>
+        <v-tooltip
+          activator="parent"
+          location="top"
+          open-delay="300"
+          content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+        >
+          {{ isPlayerFavorite ? t('modules.custom_collection.remove_from_favorites') : t('modules.custom_collection.add_to_favorites') }}
+        </v-tooltip>
+      </v-btn>
     </div>
 
     <div class="d-flex align-center mr-6">
@@ -484,6 +508,7 @@ import { useMedia, useAppData, useModules, useUserData } from "@/composables/use
 import { useI18n } from "vue-i18n";
 import QueuePanel from "@/components/QueuePanel.vue";
 import $snackbar from "@/helpers/ui/Snackbar";
+import { isFavoriteSong, toggleFavoriteSong } from "@/helpers/services/Favorites";
 
 defineOptions({ name: "MediaPlayer" });
 
@@ -747,6 +772,27 @@ const saveQueueAsCollection = () => {
 
   showSaveQueueDialog.value = false;
   $snackbar.show({ text: t("modules.media.queue.collection_saved", { name }), color: "success" });
+};
+
+const currentPlayingIdMusic = computed(() => appdata.get("modules.media.id_music"));
+const isPlayerFavorite = computed(() => {
+  const idMusic = currentPlayingIdMusic.value;
+  if (!idMusic) return false;
+  userdata.get("modules.custom_collection.list");
+  return isFavoriteSong(idMusic);
+});
+
+const toggleFavoritePlayer = () => {
+  const idMusic = currentPlayingIdMusic.value;
+  if (!idMusic) return;
+  const added = toggleFavoriteSong(idMusic);
+  $snackbar.show({
+    text: added
+      ? (t("modules.custom_collection.added_to_favorites") || "Adicionado aos favoritos!")
+      : (t("modules.custom_collection.removed_from_favorites") || "Removido dos favoritos"),
+    color: added ? "success" : "info",
+    timeout: 2000,
+  });
 };
 
 onMounted(() => {

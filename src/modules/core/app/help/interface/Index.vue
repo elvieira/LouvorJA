@@ -19,7 +19,12 @@
             <v-tabs-window v-model="tab" class="h-100 w-100">
               <v-tabs-window-item :value="1" class="h-100">
                 <div class="h-100 overflow-auto px-6 pb-6">
-                  <HelpAbout :app-version="appVersion" @open-update="openUpdate" @open-manual="openManual" />
+                  <HelpAbout
+                    :app-version="appVersion"
+                    @open-update="openUpdate"
+                    @open-manual="openManual"
+                    @open-support="openSupport"
+                  />
                 </div>
               </v-tabs-window-item>
 
@@ -40,6 +45,15 @@
             </div>
           </div>
         </div>
+
+        <!-- Support View -->
+        <div v-else-if="currentView === 'support'" class="d-flex flex-column h-100 w-100" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: var(--main-bg);">
+          <div class="content-main flex-grow-1 w-100 h-100" style="padding-top: 24px;">
+            <div class="h-100 overflow-auto px-6 pb-6">
+              <HelpSupport :app-version="appVersion" @back="closeSupport" />
+            </div>
+          </div>
+        </div>
       </v-slide-x-reverse-transition>
     </div>
   </v-slide-y-reverse-transition>
@@ -53,6 +67,7 @@ import ModuleHeader from "@/components/ModuleHeader.vue";
 import HelpAbout from "./components/HelpAbout.vue";
 import HelpDevelopers from "./components/HelpDevelopers.vue";
 import HelpManual from "./components/HelpManual.vue";
+import HelpSupport from "./components/HelpSupport.vue";
 
 export default defineComponent({
   name: "HelpModule",
@@ -61,6 +76,7 @@ export default defineComponent({
     HelpManual,
     HelpAbout,
     HelpDevelopers,
+    HelpSupport,
   },
   data: () => ({
     tab: 1,
@@ -84,8 +100,12 @@ export default defineComponent({
         if (newVal === "open-manual") {
           this.openManual();
           this.$appdata.set("modules.help.action", null);
+        } else if (newVal === "open-support") {
+          this.openSupport();
+          this.$appdata.set("modules.help.action", null);
         } else if (newVal === "open-about" || newVal === "open-tabs") {
           this.closeManual();
+          this.closeSupport();
           this.$appdata.set("modules.help.action", null);
         }
       },
@@ -110,6 +130,14 @@ export default defineComponent({
       this.currentView = "tabs";
       this.$appdata.set("modules.help.currentView", "tabs");
       this.$appdata.set("modules.help.activeSection", "intro");
+    },
+    openSupport() {
+      this.currentView = "support";
+      this.$appdata.set("modules.help.currentView", "support");
+    },
+    closeSupport() {
+      this.currentView = "tabs";
+      this.$appdata.set("modules.help.currentView", "tabs");
     },
   },
 });

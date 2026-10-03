@@ -628,5 +628,36 @@
       "preview_dialog_btn_cancel": "Cancelar",
       "preview_dialog_btn_save": "Guardar Colección"
     }
+  },
+  "support": {
+    "title": "Soporte y Dudas",
+    "subtitle": "Envíe su duda, sugerencia o informe directamente al equipo de desarrollo.",
+    "name": "Su Nombre Completo",
+    "name_placeholder": "Ej: Juan Pérez",
+    "email": "Correo Electrónico de Contacto",
+    "email_placeholder": "Ej: juan@email.com",
+    "category": "Tipo de Mensaje",
+    "categories": {
+      "doubt": "Duda sobre la aplicación",
+      "suggestion": "Sugerencia de mejora",
+      "bug": "Problema o error encontrado",
+      "other": "Otro asunto"
+    },
+    "subject": "Asunto",
+    "subject_placeholder": "Resumen en pocas palabras",
+    "message": "Mensaje",
+    "message_placeholder": "Describa detalladamente lo que necesita o le gustaría compartir...",
+    "include_diagnostics": "Adjuntar diagnóstico del sistema",
+    "include_diagnostics_hint": "Incluye versión de Louvor JA, sistema operativo y datos técnicos para agilizar el soporte.",
+    "diagnostics_preview": "Datos que se adjuntarán:",
+    "send_btn": "Enviar Mensaje",
+    "sending": "Enviando...",
+    "notice_desc": "El canal directo de envío está en fase de configuración. ¡Su mensaje ha sido validado y estructurado con éxito!",
+    "success_title": "¡Mensaje Estructurado!",
+    "validation": {
+      "required": "Campo obligatorio",
+      "email_invalid": "Ingrese un correo válido",
+      "message_min": "El mensaje debe tener al menos 10 caracteres"
+    }
   }
 }

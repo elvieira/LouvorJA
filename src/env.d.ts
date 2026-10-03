@@ -15,6 +15,7 @@ declare module "*.json" {
 interface ElectronAPI {
   isElectron: boolean
   isWindows?: boolean
+  isMac?: boolean
 
   saveLocalDb: (filename: string, data: unknown) => Promise<void>
   getLiturgyData: () => Promise<unknown | null>

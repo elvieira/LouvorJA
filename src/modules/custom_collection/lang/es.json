@@ -21,6 +21,8 @@
     "empty_collections_desc": "Crea tu primera colección personalizada para organizar canciones a tu manera.",
     "empty_songs_title": "Esta colección está vacía",
     "empty_songs_desc": "Todavía no se agregó ninguna canción a esta colección.",
+    "empty_favorites_title": "Ningún favorito aún",
+    "empty_favorites_desc": "Haz clic en el corazón en cualquier canción para agregarla a favoritos.",
     "add_content_title": "¿Cómo quieres armar esta colección?",
     "add_single_song": "Agregar una canción (cantada + playback)",
     "add_folder": "Agregar una carpeta entera",
@@ -47,5 +49,22 @@
     "actions": {
         "change": "Cambiar",
         "delete": "Quitar"
-    }
+    },
+    "internal_songs": "Músicas del Programa",
+    "external_file": "Archivo de la Computadora",
+    "search_song_placeholder": "Buscar por título, número de himno o colección...",
+    "all": "Todas",
+    "hymnals": "Himnarios",
+    "albums": "Álbumes y Colecciones",
+    "in_collection": "En la colección",
+    "add_selected": "Agregar Seleccionadas",
+    "create_empty_collection": "Crear colección vacía",
+    "create_empty_collection_desc": "Arma tu lista agregando canciones del programa o de la computadora después.",
+    "song_added_success": "¡Canción agregada a la colección!",
+    "songs_added_success": "¡{count} canción(es) agregada(s) a la colección!",
+    "favorites": "Favoritos",
+    "added_to_favorites": "¡Agregado a favoritos!",
+    "removed_from_favorites": "Eliminado de favoritos",
+    "add_to_favorites": "Agregar a favoritos",
+    "remove_from_favorites": "Eliminar de favoritos"
 }

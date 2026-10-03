@@ -183,7 +183,7 @@ export default {
         try {
           localStorage.setItem(
             `online_videos_cache_${lang}`,
-            JSON.stringify({ time: Date.now(), videos: allVideos })
+            JSON.stringify({ time: Date.now(), videos: allVideos }),
           );
         } catch { /* ignore */ }
       }

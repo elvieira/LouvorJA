@@ -2,8 +2,8 @@
   <v-slide-y-reverse-transition>
     <div v-if="module?.show" class="module-full-page custom-collection-module d-flex flex-column">
       <ModuleHeader
-        :title="detailCollection ? detailCollection.name : t('title')"
-        icon="mdi-music-box-multiple"
+        :title="detailCollection ? (isFavorites(detailCollection) ? t('favorites') : detailCollection.name) : t('title')"
+        :icon="detailCollection && isFavorites(detailCollection) ? 'mdi-heart' : 'mdi-music-box-multiple'"
         :image="detailCollection?.coverImage || undefined"
       >
         <template #prefix>
@@ -149,6 +149,7 @@
           </v-menu>
 
           <v-btn
+            v-if="!isFavorites(detailCollection)"
             variant="tonal"
             color="primary"
             class="text-none font-weight-bold rounded-lg"
@@ -261,22 +262,29 @@
               <div v-else class="collections-page-scroll flex-grow-1" style="overflow-y: auto; overflow-x: hidden; padding: 16px 8px;">
                 <div class="collections-grid-wrap">
                   <div
-                    v-for="c in collections"
+                    v-for="c in displayCollections"
                     :key="c.id"
                     class="collection-card"
                     @click="openCollection(c)"
                   >
-                    <div class="card-image">
+                    <div
+                      class="card-image"
+                      :style="isFavorites(c) && !c.coverImage ? 'background: linear-gradient(135deg, #e91e63 0%, #ad1457 100%) !important;' : ''"
+                    >
                       <v-img
                         v-if="c.coverImage"
                         :src="c.coverImage"
                         cover
                         style="width: 100%; height: 100%; position: absolute; inset: 0;"
                       />
-                      <v-icon v-else size="48">
-                        mdi-music-box-multiple
+                      <v-icon
+                        v-else
+                        size="48"
+                        :color="isFavorites(c) ? 'white' : undefined"
+                      >
+                        {{ isFavorites(c) ? 'mdi-heart' : 'mdi-music-box-multiple' }}
                       </v-icon>
-                      <v-menu location="bottom end">
+                      <v-menu v-if="!isFavorites(c)" location="bottom end">
                         <template #activator="{ props: menuProps }">
                           <v-btn
                             v-bind="menuProps"
@@ -328,10 +336,19 @@
                           </v-list>
                         </v-card>
                       </v-menu>
+                      <div
+                        v-else
+                        class="d-flex align-center justify-center rounded-circle"
+                        style="position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; background: rgba(0,0,0,0.25);"
+                      >
+                        <v-icon size="16" color="white">
+                          mdi-heart
+                        </v-icon>
+                      </div>
                     </div>
                     <div class="card-content">
                       <h3 class="card-title">
-                        {{ c.name }}
+                        {{ isFavorites(c) ? t('favorites') : c.name }}
                       </h3>
                       <p class="card-stats">
                         {{ t('songs_count', [c.songs.length]) }}
@@ -352,14 +369,26 @@
           >
             <div v-if="detailCollection.songs.length === 0" class="flex-grow-1 d-flex flex-column align-center justify-center">
               <v-icon size="64" color="grey-lighten-1" class="mb-4">
-                mdi-music-note-off-outline
+                {{ isFavorites(detailCollection) ? 'mdi-heart-outline' : 'mdi-music-note-off-outline' }}
               </v-icon>
               <h3 class="mb-2" style="color: var(--sidebar-text);">
-                {{ t('empty_songs_title') }}
+                {{ isFavorites(detailCollection) ? t('empty_favorites_title') : t('empty_songs_title') }}
               </h3>
-              <p class="text-center" style="color: var(--sidebar-text-secondary); max-width: 360px;">
-                {{ t('empty_songs_desc') }}
+              <p class="text-center mb-4" style="color: var(--sidebar-text-secondary); max-width: 360px;">
+                {{ isFavorites(detailCollection) ? t('empty_favorites_desc') : t('empty_songs_desc') }}
               </p>
+              <v-btn
+                v-if="!isFavorites(detailCollection)"
+                variant="flat"
+                color="primary"
+                class="rounded-lg text-none px-6 font-weight-bold"
+                @click="openAddSongDialog"
+              >
+                <v-icon start>
+                  mdi-plus
+                </v-icon>
+                {{ t('add_song') }}
+              </v-btn>
             </div>
 
             <div v-else class="music-list flex-grow-1 d-flex flex-column" style="background: transparent; box-shadow: none; min-height: 0;">
@@ -439,7 +468,7 @@
                         </v-tooltip>
                       </v-btn>
                     </template>
-                    <v-menu v-if="item.type === 'external'" location="bottom end" content-class="modern-glass-menu border">
+                    <v-menu v-if="item.type === 'external' && !isFavorites(detailCollection)" location="bottom end" content-class="modern-glass-menu border">
                       <template #activator="{ props: menuProps }">
                         <v-btn
                           v-bind="menuProps"
@@ -527,7 +556,7 @@
                       </v-card>
                     </v-menu>
                     <v-btn
-                      v-else
+                      v-else-if="!isFavorites(detailCollection)"
                       icon
                       size="small"
                       variant="text"
@@ -733,6 +762,44 @@
                     </div>
                   </div>
                 </v-hover>
+
+                <v-hover v-slot="{ isHovering, props }">
+                  <div
+                    v-bind="props"
+                    class="d-flex align-center"
+                    :style="{
+                      padding: '16px',
+                      borderRadius: '16px',
+                      border: '1px solid',
+                      borderColor: isHovering ? 'rgba(var(--v-theme-primary), 0.5)' : 'rgba(150, 150, 150, 0.2)',
+                      background: isHovering ? 'rgba(var(--v-theme-primary), 0.03)' : 'transparent',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease'
+                    }"
+                    @click="createEmptyCollection"
+                  >
+                    <div
+                      class="mr-4 d-flex align-center justify-center flex-shrink-0"
+                      :style="{
+                        width: '42px', height: '42px', borderRadius: '12px',
+                        background: isHovering ? 'rgba(var(--v-theme-primary), 0.1)' : 'rgba(var(--v-theme-on-surface), 0.04)',
+                        transition: 'all 0.3s ease',
+                      }"
+                    >
+                      <v-icon :color="isHovering ? 'primary' : 'rgba(var(--v-theme-on-surface), 0.6)'" size="20">
+                        mdi-playlist-plus
+                      </v-icon>
+                    </div>
+                    <div style="min-width: 0;">
+                      <div class="font-weight-medium mb-1" style="font-size: 0.95rem; color: var(--sidebar-text); line-height: 1.2;">
+                        {{ t('create_empty_collection') }}
+                      </div>
+                      <div class="text-caption" style="color: var(--sidebar-text-secondary); line-height: 1.2;">
+                        {{ t('create_empty_collection_desc') }}
+                      </div>
+                    </div>
+                  </div>
+                </v-hover>
               </div>
 
               <div v-else>
@@ -926,166 +993,217 @@
       </v-dialog>
 
       <!-- Dialog: adicionar música na coletânea aberta -->
-      <v-dialog v-model="showAddSongDialog" max-width="500" persistent>
+      <v-dialog v-model="showAddSongDialog" max-width="640" persistent>
         <v-card 
-          class="rounded-xl"
+          class="rounded-xl overflow-hidden"
           :color="isDark ? 'var(--card-bg)' : '#ffffff'"
           :theme="isDark ? 'dark' : 'light'"
           style="border: 1px solid rgba(150, 150, 150, 0.1);"
         >
-          <div class="pt-6 pb-2 px-6">
-            <span class="text-h6 font-weight-bold">{{ t('add_song') }}</span>
+          <!-- Cabeçalho -->
+          <div class="pt-5 pb-2 px-6 d-flex align-center justify-space-between">
+            <span class="text-h6 font-weight-bold" style="color: var(--sidebar-text);">{{ t('add_song') }}</span>
+            <v-btn
+              icon="mdi-close"
+              variant="text"
+              size="small"
+              :color="isDark ? 'white' : 'grey-darken-2'"
+              @click="closeAddSongDialog"
+            />
           </div>
-          
-          <v-card-text class="px-6 pt-2 pb-2">
-            <!-- Audio Dropzone -->
-            <div class="mb-4">
-              <div class="text-body-2 font-weight-medium mb-1" style="color: var(--sidebar-text-secondary); margin-left: 4px;">
-                {{ t('external_audio_file') }}
-              </div>
-              
-              <div
-                v-if="externalAudioFileName"
-                class="rounded-xl pa-4 d-flex align-center justify-space-between"
-                style="border: 1px solid var(--border-color, rgba(128,128,128,0.2)); background: rgba(var(--v-theme-on-surface), 0.06);"
+
+          <!-- Alternador de Abas: Músicas do Programa / Arquivo do Computador -->
+          <div class="px-6 pb-3">
+            <div
+              class="d-flex pa-1 rounded-lg"
+              style="background: rgba(128, 128, 128, 0.08); border: 1px solid rgba(128, 128, 128, 0.12);"
+            >
+              <v-btn
+                variant="flat"
+                size="small"
+                class="flex-grow-1 rounded-md text-none font-weight-bold"
+                :color="addSongTab === 'internal' ? 'primary' : 'transparent'"
+                :style="addSongTab !== 'internal' ? 'color: var(--sidebar-text-secondary);' : ''"
+                @click="addSongTab = 'internal'"
               >
-                <div class="d-flex align-center" style="overflow: hidden;">
-                  <v-icon color="primary" size="32" class="mr-3">
-                    mdi-file-music
+                <v-icon start size="18">
+                  mdi-library-music
+                </v-icon>
+                {{ t('internal_songs') }}
+              </v-btn>
+              <v-btn
+                variant="flat"
+                size="small"
+                class="flex-grow-1 rounded-md text-none font-weight-bold"
+                :color="addSongTab === 'external' ? 'primary' : 'transparent'"
+                :style="addSongTab !== 'external' ? 'color: var(--sidebar-text-secondary);' : ''"
+                @click="addSongTab = 'external'"
+              >
+                <v-icon start size="18">
+                  mdi-folder-upload
+                </v-icon>
+                {{ t('external_file') }}
+              </v-btn>
+            </div>
+          </div>
+
+          <!-- Aba 1: Músicas do Programa -->
+          <template v-if="addSongTab === 'internal'">
+            <!-- Busca e Filtros -->
+            <div class="px-6 pb-2">
+              <v-text-field
+                v-model="internalSearchQuery"
+                :placeholder="t('search_song_placeholder')"
+                density="compact"
+                variant="outlined"
+                hide-details
+                clearable
+                prepend-inner-icon="mdi-magnify"
+                class="rounded-lg mb-2"
+                autofocus
+              />
+
+              <!-- Filtros em chips -->
+              <div class="d-flex align-center flex-wrap" style="gap: 8px;">
+                <v-chip
+                  size="small"
+                  :color="internalSongFilter === 'all' ? 'primary' : undefined"
+                  :variant="internalSongFilter === 'all' ? 'flat' : 'tonal'"
+                  class="font-weight-medium cursor-pointer"
+                  @click="internalSongFilter = 'all'"
+                >
+                  {{ t('all') }}
+                </v-chip>
+                <v-chip
+                  size="small"
+                  :color="internalSongFilter === 'hymnals' ? 'primary' : undefined"
+                  :variant="internalSongFilter === 'hymnals' ? 'flat' : 'tonal'"
+                  class="font-weight-medium cursor-pointer"
+                  @click="internalSongFilter = 'hymnals'"
+                >
+                  <v-icon start size="14">
+                    mdi-book-cross
                   </v-icon>
-                  <div class="d-flex flex-column" style="overflow: hidden;">
-                    <span class="font-weight-bold text-truncate" style="color: var(--sidebar-text); max-width: 250px;">{{ externalAudioFileName }}</span>
-                    <span class="text-caption text-truncate" style="color: var(--sidebar-text-secondary); max-width: 250px;" :title="externalAudioFilePath || undefined">{{ externalAudioFilePath }}</span>
-                  </div>
-                </div>
-                <div class="d-flex align-center">
-                  <v-btn
-                    icon
-                    size="small"
-                    variant="text"
-                    color="primary"
-                    class="mr-1"
-                    @click="pickExternalFile('audio')"
-                  >
-                    <v-icon>mdi-pencil</v-icon>
-                    <v-tooltip activator="parent" location="top">
-                      {{ t('actions.change') || 'Alterar' }}
-                    </v-tooltip>
-                  </v-btn>
-                  <v-btn
-                    icon
-                    size="small"
-                    variant="text"
-                    color="error"
-                    @click="externalAudioFileName = ''; externalAudioFilePath = ''"
-                  >
-                    <v-icon>mdi-delete</v-icon>
-                    <v-tooltip activator="parent" location="top">
-                      {{ t('actions.delete') || 'Remover' }}
-                    </v-tooltip>
-                  </v-btn>
-                </div>
+                  {{ t('hymnals') }}
+                </v-chip>
+                <v-chip
+                  size="small"
+                  :color="internalSongFilter === 'albums' ? 'primary' : undefined"
+                  :variant="internalSongFilter === 'albums' ? 'flat' : 'tonal'"
+                  class="font-weight-medium cursor-pointer"
+                  @click="internalSongFilter = 'albums'"
+                >
+                  <v-icon start size="14">
+                    mdi-album
+                  </v-icon>
+                  {{ t('albums') }}
+                </v-chip>
+
+                <v-spacer />
+
+                <span v-if="selectedInternalSongIds.length > 0" class="text-caption font-weight-bold text-primary">
+                  {{ selectedInternalSongIds.length }} selecionada(s)
+                </span>
+              </div>
+            </div>
+
+            <!-- Lista de Músicas -->
+            <v-card-text class="px-6 pt-1 pb-2">
+              <div
+                v-if="filteredInternalSongs.length === 0"
+                class="d-flex flex-column align-center justify-center py-8 text-center"
+                style="min-height: 260px;"
+              >
+                <v-icon size="48" color="grey-lighten-1" class="mb-2">
+                  mdi-music-off
+                </v-icon>
+                <span class="text-body-2" style="color: var(--sidebar-text-secondary);">
+                  {{ t('no_songs_found') }}
+                </span>
               </div>
 
               <div
                 v-else
-                class="rounded-xl d-flex flex-row align-center pa-3 cursor-pointer"
-                style="border: 2px dashed var(--border-color, rgba(128,128,128,0.2)); background: rgba(128,128,128,0.02); transition: all 0.2s;"
-                onmouseover="this.style.background='rgba(128,128,128,0.04)'; this.style.borderColor='rgba(128,128,128,0.5)'"
-                onmouseout="this.style.background='rgba(128,128,128,0.02)'; this.style.borderColor='var(--border-color, rgba(128,128,128,0.2))'"
-                @click="pickExternalFile('audio')"
+                class="song-select-list"
+                style="max-height: 320px; min-height: 240px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; padding-right: 4px;"
               >
-                <v-icon
-                  size="28"
-                  color="primary"
-                  class="mr-3 ml-2"
-                  style="opacity: 0.8;"
+                <div
+                  v-for="song in filteredInternalSongs"
+                  :key="song.id_music"
+                  class="d-flex align-center pa-2 rounded-lg cursor-pointer"
+                  :style="{
+                    border: '1px solid',
+                    borderColor: isSongSelected(song.id_music)
+                      ? 'rgba(var(--v-theme-primary), 0.5)'
+                      : 'rgba(128, 128, 128, 0.12)',
+                    background: isSongSelected(song.id_music)
+                      ? 'rgba(var(--v-theme-primary), 0.08)'
+                      : 'rgba(128, 128, 128, 0.02)',
+                    transition: 'all 0.15s ease'
+                  }"
+                  @click="toggleSongSelection(song.id_music)"
                 >
-                  mdi-file-find
-                </v-icon>
-                <div class="d-flex flex-column justify-center">
-                  <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text); line-height: 1.2;">Selecionar Arquivo</span>
-                  <span class="text-caption" style="color: var(--sidebar-text-secondary); line-height: 1.2; margin-top: 2px;">Clique para buscar no computador</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Instrumental Dropzone -->
-            <div class="mb-4">
-              <div class="text-body-2 font-weight-medium mb-1" style="color: var(--sidebar-text-secondary); margin-left: 4px;">
-                {{ t('external_instrumental_file') }} ({{ t('optional') }})
-              </div>
-              
-              <div
-                v-if="externalInstrumentalFileName"
-                class="rounded-xl pa-4 d-flex align-center justify-space-between"
-                style="border: 1px solid var(--border-color, rgba(128,128,128,0.2)); background: rgba(var(--v-theme-on-surface), 0.06);"
-              >
-                <div class="d-flex align-center" style="overflow: hidden;">
-                  <v-icon color="primary" size="32" class="mr-3">
-                    mdi-file-music-outline
-                  </v-icon>
-                  <div class="d-flex flex-column" style="overflow: hidden;">
-                    <span class="font-weight-bold text-truncate" style="color: var(--sidebar-text); max-width: 250px;">{{ externalInstrumentalFileName }}</span>
-                    <span class="text-caption text-truncate" style="color: var(--sidebar-text-secondary); max-width: 250px;" :title="externalInstrumentalFilePath || undefined">{{ externalInstrumentalFilePath }}</span>
-                  </div>
-                </div>
-                <div class="d-flex align-center">
-                  <v-btn
-                    icon
-                    size="small"
-                    variant="text"
+                  <!-- Checkbox de seleção -->
+                  <v-checkbox-btn
+                    :model-value="isSongSelected(song.id_music)"
+                    density="compact"
                     color="primary"
-                    class="mr-1"
-                    @click="pickExternalFile('instrumental')"
+                    class="mr-2 flex-shrink-0"
+                    @click.stop="toggleSongSelection(song.id_music)"
+                  />
+
+                  <!-- Número do Hino/Faixa (se houver) -->
+                  <div
+                    v-if="getSongTrack(song)"
+                    class="mr-3 font-weight-bold text-caption d-flex align-center justify-center flex-shrink-0"
+                    style="min-width: 28px; height: 28px; border-radius: 8px; background: rgba(var(--v-theme-primary), 0.12); color: var(--accent-blue);"
                   >
-                    <v-icon>mdi-pencil</v-icon>
-                    <v-tooltip activator="parent" location="top">
-                      {{ t('actions.change') || 'Alterar' }}
-                    </v-tooltip>
-                  </v-btn>
+                    {{ getSongTrack(song) }}
+                  </div>
+
+                  <!-- Título e Álbum -->
+                  <div class="flex-grow-1" style="min-width: 0;">
+                    <div class="text-body-2 font-weight-bold text-truncate" style="color: var(--sidebar-text); line-height: 1.2;">
+                      {{ song.name }}
+                    </div>
+                    <div class="text-caption text-truncate" style="color: var(--sidebar-text-secondary); line-height: 1.2; margin-top: 2px;">
+                      {{ getSongAlbumName(song) }}
+                    </div>
+                  </div>
+
+                  <!-- Chip se já estiver na coletânea -->
+                  <v-chip
+                    v-if="isSongInCollection(song.id_music)"
+                    size="x-small"
+                    variant="tonal"
+                    color="success"
+                    class="mr-2 flex-shrink-0 font-weight-medium"
+                  >
+                    <v-icon start size="12">
+                      mdi-check
+                    </v-icon>
+                    {{ t('in_collection') }}
+                  </v-chip>
+
+                  <!-- Botão de adicionar direto (+) -->
                   <v-btn
                     icon
                     size="small"
-                    variant="text"
-                    color="error"
-                    @click="externalInstrumentalFileName = ''; externalInstrumentalFilePath = ''"
+                    variant="tonal"
+                    color="primary"
+                    class="flex-shrink-0"
+                    :title="t('add')"
+                    @click.stop="addSingleInternalSong(song)"
                   >
-                    <v-icon>mdi-delete</v-icon>
-                    <v-tooltip activator="parent" location="top">
-                      {{ t('actions.delete') || 'Remover' }}
-                    </v-tooltip>
+                    <v-icon size="18">
+                      mdi-plus
+                    </v-icon>
                   </v-btn>
                 </div>
               </div>
+            </v-card-text>
 
-              <div
-                v-else
-                class="rounded-xl d-flex flex-row align-center pa-3 cursor-pointer"
-                style="border: 2px dashed var(--border-color, rgba(128,128,128,0.2)); background: rgba(128,128,128,0.02); transition: all 0.2s;"
-                onmouseover="this.style.background='rgba(128,128,128,0.04)'; this.style.borderColor='rgba(128,128,128,0.5)'"
-                onmouseout="this.style.background='rgba(128,128,128,0.02)'; this.style.borderColor='var(--border-color, rgba(128,128,128,0.2))'"
-                @click="pickExternalFile('instrumental')"
-              >
-                <v-icon
-                  size="28"
-                  color="primary"
-                  class="mr-3 ml-2"
-                  style="opacity: 0.8;"
-                >
-                  mdi-file-find
-                </v-icon>
-                <div class="d-flex flex-column justify-center">
-                  <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text); line-height: 1.2;">Selecionar Arquivo</span>
-                  <span class="text-caption" style="color: var(--sidebar-text-secondary); line-height: 1.2; margin-top: 2px;">Clique para buscar no computador</span>
-                </div>
-              </div>
-            </div>
-          </v-card-text>
-
-          <v-card-actions class="px-6 pb-6 pt-2">
-            <v-spacer />
-            <div class="d-flex" style="gap: 12px;">
+            <v-card-actions class="px-6 pb-5 pt-2 justify-space-between">
               <v-btn
                 variant="tonal"
                 :color="isDark ? 'white' : 'grey-darken-2'"
@@ -1098,13 +1216,185 @@
                 color="primary"
                 variant="flat"
                 class="rounded-lg text-none px-6 font-weight-bold"
-                :disabled="!externalAudioFilePath"
-                @click="addSongToCollection"
+                :disabled="selectedInternalSongIds.length === 0"
+                @click="addSelectedInternalSongs"
               >
-                {{ t('add_song') }}
+                {{ selectedInternalSongIds.length > 0 ? `${t('add_selected')} (${selectedInternalSongIds.length})` : t('add_selected') }}
               </v-btn>
-            </div>
-          </v-card-actions>
+            </v-card-actions>
+          </template>
+
+          <!-- Aba 2: Arquivo do Computador -->
+          <template v-else>
+            <v-card-text class="px-6 pt-2 pb-2">
+              <!-- Audio Dropzone -->
+              <div class="mb-4">
+                <div class="text-body-2 font-weight-medium mb-1" style="color: var(--sidebar-text-secondary); margin-left: 4px;">
+                  {{ t('external_audio_file') }}
+                </div>
+                
+                <div
+                  v-if="externalAudioFileName"
+                  class="rounded-xl pa-4 d-flex align-center justify-space-between"
+                  style="border: 1px solid var(--border-color, rgba(128,128,128,0.2)); background: rgba(var(--v-theme-on-surface), 0.06);"
+                >
+                  <div class="d-flex align-center" style="overflow: hidden;">
+                    <v-icon color="primary" size="32" class="mr-3">
+                      mdi-file-music
+                    </v-icon>
+                    <div class="d-flex flex-column" style="overflow: hidden;">
+                      <span class="font-weight-bold text-truncate" style="color: var(--sidebar-text); max-width: 250px;">{{ externalAudioFileName }}</span>
+                      <span class="text-caption text-truncate" style="color: var(--sidebar-text-secondary); max-width: 250px;" :title="externalAudioFilePath || undefined">{{ externalAudioFilePath }}</span>
+                    </div>
+                  </div>
+                  <div class="d-flex align-center">
+                    <v-btn
+                      icon
+                      size="small"
+                      variant="text"
+                      color="primary"
+                      class="mr-1"
+                      @click="pickExternalFile('audio')"
+                    >
+                      <v-icon>mdi-pencil</v-icon>
+                      <v-tooltip activator="parent" location="top">
+                        {{ t('actions.change') || 'Alterar' }}
+                      </v-tooltip>
+                    </v-btn>
+                    <v-btn
+                      icon
+                      size="small"
+                      variant="text"
+                      color="error"
+                      @click="externalAudioFileName = ''; externalAudioFilePath = ''"
+                    >
+                      <v-icon>mdi-delete</v-icon>
+                      <v-tooltip activator="parent" location="top">
+                        {{ t('actions.delete') || 'Remover' }}
+                      </v-tooltip>
+                    </v-btn>
+                  </div>
+                </div>
+
+                <div
+                  v-else
+                  class="rounded-xl d-flex flex-row align-center pa-3 cursor-pointer"
+                  style="border: 2px dashed var(--border-color, rgba(128,128,128,0.2)); background: rgba(128,128,128,0.02); transition: all 0.2s;"
+                  onmouseover="this.style.background='rgba(128,128,128,0.04)'; this.style.borderColor='rgba(128,128,128,0.5)'"
+                  onmouseout="this.style.background='rgba(128,128,128,0.02)'; this.style.borderColor='var(--border-color, rgba(128,128,128,0.2))'"
+                  @click="pickExternalFile('audio')"
+                >
+                  <v-icon
+                    size="28"
+                    color="primary"
+                    class="mr-3 ml-2"
+                    style="opacity: 0.8;"
+                  >
+                    mdi-file-find
+                  </v-icon>
+                  <div class="d-flex flex-column justify-center">
+                    <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text); line-height: 1.2;">Selecionar Arquivo</span>
+                    <span class="text-caption" style="color: var(--sidebar-text-secondary); line-height: 1.2; margin-top: 2px;">Clique para buscar no computador</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Instrumental Dropzone -->
+              <div class="mb-4">
+                <div class="text-body-2 font-weight-medium mb-1" style="color: var(--sidebar-text-secondary); margin-left: 4px;">
+                  {{ t('external_instrumental_file') }} ({{ t('optional') }})
+                </div>
+                
+                <div
+                  v-if="externalInstrumentalFileName"
+                  class="rounded-xl pa-4 d-flex align-center justify-space-between"
+                  style="border: 1px solid var(--border-color, rgba(128,128,128,0.2)); background: rgba(var(--v-theme-on-surface), 0.06);"
+                >
+                  <div class="d-flex align-center" style="overflow: hidden;">
+                    <v-icon color="primary" size="32" class="mr-3">
+                      mdi-file-music-outline
+                    </v-icon>
+                    <div class="d-flex flex-column" style="overflow: hidden;">
+                      <span class="font-weight-bold text-truncate" style="color: var(--sidebar-text); max-width: 250px;">{{ externalInstrumentalFileName }}</span>
+                      <span class="text-caption text-truncate" style="color: var(--sidebar-text-secondary); max-width: 250px;" :title="externalInstrumentalFilePath || undefined">{{ externalInstrumentalFilePath }}</span>
+                    </div>
+                  </div>
+                  <div class="d-flex align-center">
+                    <v-btn
+                      icon
+                      size="small"
+                      variant="text"
+                      color="primary"
+                      class="mr-1"
+                      @click="pickExternalFile('instrumental')"
+                    >
+                      <v-icon>mdi-pencil</v-icon>
+                      <v-tooltip activator="parent" location="top">
+                        {{ t('actions.change') || 'Alterar' }}
+                      </v-tooltip>
+                    </v-btn>
+                    <v-btn
+                      icon
+                      size="small"
+                      variant="text"
+                      color="error"
+                      @click="externalInstrumentalFileName = ''; externalInstrumentalFilePath = ''"
+                    >
+                      <v-icon>mdi-delete</v-icon>
+                      <v-tooltip activator="parent" location="top">
+                        {{ t('actions.delete') || 'Remover' }}
+                      </v-tooltip>
+                    </v-btn>
+                  </div>
+                </div>
+
+                <div
+                  v-else
+                  class="rounded-xl d-flex flex-row align-center pa-3 cursor-pointer"
+                  style="border: 2px dashed var(--border-color, rgba(128,128,128,0.2)); background: rgba(128,128,128,0.02); transition: all 0.2s;"
+                  onmouseover="this.style.background='rgba(128,128,128,0.04)'; this.style.borderColor='rgba(128,128,128,0.5)'"
+                  onmouseout="this.style.background='rgba(128,128,128,0.02)'; this.style.borderColor='var(--border-color, rgba(128,128,128,0.2))'"
+                  @click="pickExternalFile('instrumental')"
+                >
+                  <v-icon
+                    size="28"
+                    color="primary"
+                    class="mr-3 ml-2"
+                    style="opacity: 0.8;"
+                  >
+                    mdi-file-find
+                  </v-icon>
+                  <div class="d-flex flex-column justify-center">
+                    <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text); line-height: 1.2;">Selecionar Arquivo</span>
+                    <span class="text-caption" style="color: var(--sidebar-text-secondary); line-height: 1.2; margin-top: 2px;">Clique para buscar no computador</span>
+                  </div>
+                </div>
+              </div>
+            </v-card-text>
+
+            <v-card-actions class="px-6 pb-6 pt-2">
+              <v-spacer />
+              <div class="d-flex" style="gap: 12px;">
+                <v-btn
+                  variant="tonal"
+                  :color="isDark ? 'white' : 'grey-darken-2'"
+                  class="rounded-lg text-none px-6 font-weight-bold"
+                  @click="closeAddSongDialog"
+                >
+                  {{ t('cancel') }}
+                </v-btn>
+                <v-btn
+                  color="primary"
+                  variant="flat"
+                  class="rounded-lg text-none px-6 font-weight-bold"
+                  :disabled="!externalAudioFilePath"
+                  @click="addSongToCollection"
+                >
+                  {{ t('add_song') }}
+                </v-btn>
+              </div>
+            </v-card-actions>
+          </template>
         </v-card>
       </v-dialog>
     </div>
@@ -1116,6 +1406,7 @@ import { defineComponent } from "vue";
 import manifest from "../manifest";
 import ModuleHeader from "@/components/ModuleHeader.vue";
 import LMusicMenuTable from "@/components/MusicMenuTable.vue";
+import { FAVORITES_COLLECTION_ID, ensureFavoritesCollection } from "@/helpers/services/Favorites";
 
 interface InternalSong {
   id: string;
@@ -1136,6 +1427,7 @@ interface CustomCollection {
   name: string;
   coverImage: string | null;
   songs: CollectionSong[];
+  is_favorites?: boolean;
 }
 
 const MEDIA_FILTERS = [
@@ -1198,6 +1490,11 @@ export default defineComponent({
       externalInstrumentalFilePath: null as string | null,
       externalInstrumentalFileName: "",
 
+      addSongTab: "internal" as "internal" | "external",
+      internalSearchQuery: "",
+      internalSongFilter: "all" as "all" | "hymnals" | "albums",
+      selectedInternalSongIds: [] as any[],
+
       playQueueItems: [] as CollectionSong[],
       playQueueIndex: -1,
       playQueueMode: "audio" as "audio" | "instrumental",
@@ -1222,6 +1519,11 @@ export default defineComponent({
     detailCollection(): CustomCollection | null {
       return this.collections.find((c) => c.id === this.detailCollectionId) || null;
     },
+    displayCollections(): CustomCollection[] {
+      const fav = this.collections.find((c) => this.isFavorites(c));
+      const others = this.collections.filter((c) => !this.isFavorites(c));
+      return fav ? [fav, ...others] : others;
+    },
     hasPlayableSongsInDetail(): boolean {
       return !!this.detailCollection && this.detailCollection.songs.length > 0;
     },
@@ -1245,6 +1547,60 @@ export default defineComponent({
       if (engine === "media") return (this as any).$appdata.get("modules.media.config.natural_end_seq") || 0;
       if (engine === "external_media") return (this as any).$appdata.get("modules.external_media.config.ended_seq") || 0;
       return 0;
+    },
+    filteredInternalSongs(): any[] {
+      if (!this.allSongs || this.allSongs.length === 0) return [];
+
+      let list = this.allSongs;
+      if (this.internalSongFilter === "hymnals") {
+        list = list.filter((m: any) => m.albums?.some((a: any) => a.type === "hymnal"));
+      } else if (this.internalSongFilter === "albums") {
+        list = list.filter((m: any) => m.albums?.some((a: any) => a.type !== "hymnal"));
+      }
+
+      const rawQuery = (this.internalSearchQuery || "").trim();
+      if (!rawQuery) {
+        return list.slice(0, 50);
+      }
+
+      const stringHelper = (this as any).$string;
+      const isNum = !isNaN(Number(rawQuery)) && rawQuery !== "";
+      const numQuery = isNum ? Number(rawQuery) : null;
+
+      const results = list.filter((m: any) => {
+        const matchesName = stringHelper.matchesSearch(m.name, rawQuery);
+        const matchesAlbum = m.albums ? stringHelper.matchesSearch(m.albums.map((a: any) => a.name).join(" "), rawQuery) : false;
+        if (isNum) {
+          const isHymnalTrack = m.albums?.some((a: any) => a.type === "hymnal" && Number(a.pivot?.track) === numQuery);
+          return matchesName || matchesAlbum || isHymnalTrack;
+        }
+        return matchesName || matchesAlbum;
+      });
+
+      if (isNum) {
+        results.sort((a: any, b: any) => {
+          const getScore = (item: any) => {
+            if (item.albums?.some((al: any) => al.type === "hymnal" && al.name === "Hinário Adventista" && Number(al.pivot?.track) === numQuery)) return 2;
+            if (item.albums?.some((al: any) => al.type === "hymnal" && al.name === "Hinário Adventista 1996" && Number(al.pivot?.track) === numQuery)) return 1;
+            return 0;
+          };
+          return getScore(b) - getScore(a);
+        });
+      } else {
+        const cleanQuery = stringHelper.clean(rawQuery);
+        results.sort((a: any, b: any) => {
+          const getTextScore = (item: any) => {
+            let maxScore = 0;
+            const cleanName = stringHelper.clean(item.name || "");
+            if (cleanName.startsWith(cleanQuery)) maxScore = Math.max(maxScore, 4);
+            else if (cleanName.includes(` ${cleanQuery}`)) maxScore = Math.max(maxScore, 3);
+            return maxScore;
+          };
+          return getTextScore(b) - getTextScore(a);
+        });
+      }
+
+      return results.slice(0, 80);
     },
     searchResults(): { song: CollectionSong; collection: CustomCollection }[] {
       const query = (this.search || "").trim();
@@ -1288,6 +1644,12 @@ export default defineComponent({
         this.advancePlayQueue();
       }
     },
+    "$store.state.user_data.modules.custom_collection.list": {
+      handler() {
+        this.loadCollections();
+      },
+      deep: true,
+    },
   },
   mounted() {
     if (this.module?.show) {
@@ -1313,7 +1675,13 @@ export default defineComponent({
       }
     },
 
+    isFavorites(c: CustomCollection | null | undefined): boolean {
+      if (!c) return false;
+      return c.id === FAVORITES_COLLECTION_ID || Boolean((c as any).is_favorites);
+    },
+
     loadCollections() {
+      ensureFavoritesCollection();
       this.collections = (this as any).$userdata.get("modules.custom_collection.list") || [];
     },
     saveCollections() {
@@ -1573,6 +1941,7 @@ export default defineComponent({
       this.showNameDialog = true;
     },
     openRenameDialog(c: CustomCollection) {
+      if (this.isFavorites(c)) return;
       this.editingCollection = c;
       this.nameInput = c.name;
       this.coverInput = c.coverImage;
@@ -1611,6 +1980,7 @@ export default defineComponent({
       this.dialogStep = 2;
     },
     confirmDelete(c: CustomCollection) {
+      if (this.isFavorites(c)) return;
       (this as any).$alert.yesno({
         title: this.t("delete_collection_title"),
         text: this.t("delete_collection_text"),
@@ -1714,13 +2084,95 @@ export default defineComponent({
       this.saveCollections();
       this.closeCreateDialog();
     },
+    createEmptyCollection() {
+      const newId = crypto.randomUUID();
+      this.collections.push({
+        id: newId,
+        name: this.nameInput.trim(),
+        coverImage: this.coverInput,
+        songs: [],
+      });
+      this.saveCollections();
+      this.closeCreateDialog();
+      this.detailCollectionId = newId;
+    },
     openAddSongDialog() {
+      if (this.isFavorites(this.detailCollection)) return;
       this.resetExternalPick();
+      this.addSongTab = "internal";
+      this.internalSearchQuery = "";
+      this.internalSongFilter = "all";
+      this.selectedInternalSongIds = [];
+      this.loadAllSongs();
       this.showAddSongDialog = true;
     },
     closeAddSongDialog() {
       this.showAddSongDialog = false;
+      this.selectedInternalSongIds = [];
       this.resetExternalPick();
+    },
+    getSongTrack(song: any): string | null {
+      if (!song?.albums) return null;
+      const hymnalAlbum = song.albums.find((a: any) => a.type === "hymnal");
+      if (hymnalAlbum?.pivot?.track) {
+        return String(hymnalAlbum.pivot.track);
+      }
+      const anyAlbum = song.albums.find((a: any) => a.pivot?.track);
+      return anyAlbum?.pivot?.track ? String(anyAlbum.pivot.track) : null;
+    },
+    getSongAlbumName(song: any): string {
+      if (!song?.albums || song.albums.length === 0) return "";
+      return song.albums.map((a: any) => a.name).filter(Boolean).join(", ");
+    },
+    isSongInCollection(musicId: any): boolean {
+      if (!this.detailCollection) return false;
+      return this.detailCollection.songs.some(
+        (s) => s.type === "internal" && s.id_music === musicId,
+      );
+    },
+    isSongSelected(musicId: any): boolean {
+      return this.selectedInternalSongIds.includes(musicId);
+    },
+    toggleSongSelection(musicId: any) {
+      const idx = this.selectedInternalSongIds.indexOf(musicId);
+      if (idx > -1) {
+        this.selectedInternalSongIds.splice(idx, 1);
+      } else {
+        this.selectedInternalSongIds.push(musicId);
+      }
+    },
+    addSingleInternalSong(song: any) {
+      if (!this.detailCollection) return;
+      this.detailCollection.songs.push({
+        id: crypto.randomUUID(),
+        type: "internal",
+        id_music: song.id_music,
+      });
+      this.saveCollections();
+      import("@/helpers/ui/Snackbar").then(({ default: $snackbar }) => {
+        $snackbar.show({ text: this.t("song_added_success"), color: "success", timeout: 2000 });
+      });
+    },
+    addSelectedInternalSongs() {
+      if (!this.detailCollection || this.selectedInternalSongIds.length === 0) return;
+      const count = this.selectedInternalSongIds.length;
+      for (const musicId of this.selectedInternalSongIds) {
+        this.detailCollection.songs.push({
+          id: crypto.randomUUID(),
+          type: "internal",
+          id_music: musicId,
+        });
+      }
+      this.saveCollections();
+      this.selectedInternalSongIds = [];
+      this.closeAddSongDialog();
+      import("@/helpers/ui/Snackbar").then(({ default: $snackbar }) => {
+        $snackbar.show({
+          text: this.t("songs_added_success", [count]) || `${count} música(s) adicionada(s)!`,
+          color: "success",
+          timeout: 2500,
+        });
+      });
     },
     addSongToCollection() {
       if (!this.externalAudioFilePath || !this.detailCollection) return;
