@@ -149,6 +149,7 @@ import ManualSongs from "./manual/ManualSongs.vue";
 import ManualBible from "./manual/ManualBible.vue";
 import ManualLiturgy from "./manual/ManualLiturgy.vue";
 import ManualCustomCollection from "./manual/ManualCustomCollection.vue";
+import ManualFavorites from "./manual/ManualFavorites.vue";
 import ManualMusicEditor from "./manual/ManualMusicEditor.vue";
 import ManualUtilities from "./manual/ManualUtilities.vue";
 import ManualSync from "./manual/ManualSync.vue";
@@ -167,6 +168,7 @@ export default defineComponent({
     ManualBible,
     ManualLiturgy,
     ManualCustomCollection,
+    ManualFavorites,
     ManualOnlineCollection,
     ManualMusicEditor,
     ManualUtilities,
@@ -192,6 +194,7 @@ export default defineComponent({
         { id: "bible", title: (this as any).$t("modules.help.manual.sections.bible"), icon: "mdi-book-cross" },
         { id: "liturgy", title: (this as any).$t("modules.help.manual.sections.liturgy"), icon: "mdi-hands-pray" },
         { id: "custom_collection", title: (this as any).$t("modules.help.manual.sections.custom_collection"), icon: "mdi-music-box-multiple" },
+        { id: "favorites", title: (this as any).$t("modules.help.manual.sections.favorites"), icon: "mdi-heart" },
         { id: "online_collection", title: (this as any).$t("modules.help.manual.sections.online_collection"), icon: "mdi-web" },
         { id: "music_editor", title: (this as any).$t("modules.help.manual.sections.music_editor"), icon: "mdi-music-note-plus" },
         { id: "utilities", title: (this as any).$t("modules.help.manual.sections.utilities"), icon: "mdi-plus-circle" },
@@ -233,6 +236,7 @@ export default defineComponent({
         bible: "ManualBible",
         liturgy: "ManualLiturgy",
         custom_collection: "ManualCustomCollection",
+        favorites: "ManualFavorites",
         online_collection: "ManualOnlineCollection",
         music_editor: "ManualMusicEditor",
         utilities: "ManualUtilities",

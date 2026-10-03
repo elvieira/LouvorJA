@@ -162,6 +162,30 @@
             </div>
           </div>
         </v-col>
+
+        <!-- Card 7: Abrir Coletânea de Favoritos -->
+        <v-col cols="12" sm="6" md="4">
+          <div class="shortcut-hero-card rounded-lg pa-3 d-flex flex-column justify-space-between h-100">
+            <div class="d-flex align-center mb-2">
+              <v-icon
+                icon="mdi-heart"
+                size="18"
+                color="#e91e63"
+                class="mr-2"
+              />
+              <span class="text-caption font-weight-bold" style="color: var(--sidebar-text);">
+                {{ t('shortcuts.action_favorites') }}
+              </span>
+            </div>
+            <div class="d-flex align-center flex-wrap">
+              <kbd class="keycap">Ctrl/ <span class="cmd-symbol">⌘</span></kbd>
+              <span class="shortcut-operator">+</span>
+              <kbd class="keycap">Shift</kbd>
+              <span class="shortcut-operator">+</span>
+              <kbd class="keycap">F</kbd>
+            </div>
+          </div>
+        </v-col>
       </v-row>
     </div>
 
@@ -229,6 +253,14 @@
               </td>
               <td class="desc-cell">
                 {{ t('shortcuts.nav_personalized') }}
+              </td>
+            </tr>
+            <tr>
+              <td class="keys-cell">
+                <kbd class="keycap">Ctrl/ <span class="cmd-symbol">⌘</span></kbd> <span class="shortcut-operator">+</span> <kbd class="keycap">Shift</kbd> <span class="shortcut-operator">+</span> <kbd class="keycap">F</kbd>
+              </td>
+              <td class="desc-cell">
+                {{ t('shortcuts.nav_favorites') }}
               </td>
             </tr>
             <tr>

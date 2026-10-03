@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import $userdata from "@/helpers/config/UserData";
+import $appdata from "@/helpers/config/AppData";
 import store from "@/store";
+import Modules from "@/helpers/core/Modules";
 
 export const FAVORITES_COLLECTION_ID = "favorites";
 
@@ -103,10 +105,18 @@ export function toggleFavoriteSong(idMusic: number | string | undefined, item?: 
   return isNowFavorite;
 }
 
+export function openFavorites(): void {
+  ensureFavoritesCollection();
+  $appdata.set("modules.custom_collection.openCollectionId", FAVORITES_COLLECTION_ID);
+  Modules.open("custom_collection");
+  window.dispatchEvent(new CustomEvent("open-favorites-collection"));
+}
+
 export default {
   FAVORITES_COLLECTION_ID,
   getFavoritesCollection,
   ensureFavoritesCollection,
   isFavoriteSong,
   toggleFavoriteSong,
+  openFavorites,
 };

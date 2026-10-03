@@ -993,261 +993,252 @@
       </v-dialog>
 
       <!-- Dialog: adicionar música na coletânea aberta -->
-      <v-dialog v-model="showAddSongDialog" max-width="640" persistent>
+      <v-dialog
+        v-model="showAddSongDialog"
+        max-width="640"
+        :theme="isDark ? 'dark' : 'light'"
+        content-class="modern-alert-dialog-wrapper add-song-modal"
+        transition="fade-transition"
+        @keydown.esc="closeAddSongDialog"
+      >
         <v-card 
-          class="rounded-xl overflow-hidden"
-          :color="isDark ? 'var(--card-bg)' : '#ffffff'"
-          :theme="isDark ? 'dark' : 'light'"
-          style="border: 1px solid rgba(150, 150, 150, 0.1);"
+          class="modern-alert-card rounded-xl overflow-hidden"
+          style="display: flex; flex-direction: column; max-height: 85vh; background: var(--card-bg); border: 1px solid rgba(150, 150, 150, 0.1);"
         >
-          <!-- Cabeçalho -->
-          <div class="pt-5 pb-2 px-6 d-flex align-center justify-space-between">
-            <span class="text-h6 font-weight-bold" style="color: var(--sidebar-text);">{{ t('add_song') }}</span>
-            <v-btn
-              icon="mdi-close"
-              variant="text"
-              size="small"
-              :color="isDark ? 'white' : 'grey-darken-2'"
-              @click="closeAddSongDialog"
-            />
-          </div>
-
-          <!-- Alternador de Abas: Músicas do Programa / Arquivo do Computador -->
-          <div class="px-6 pb-3">
-            <div
-              class="d-flex pa-1 rounded-lg"
-              style="background: rgba(128, 128, 128, 0.08); border: 1px solid rgba(128, 128, 128, 0.12);"
-            >
-              <v-btn
-                variant="flat"
-                size="small"
-                class="flex-grow-1 rounded-md text-none font-weight-bold"
-                :color="addSongTab === 'internal' ? 'primary' : 'transparent'"
-                :style="addSongTab !== 'internal' ? 'color: var(--sidebar-text-secondary);' : ''"
-                @click="addSongTab = 'internal'"
-              >
-                <v-icon start size="18">
-                  mdi-library-music
+          <!-- Header Fixo -->
+          <div class="pa-4 flex-shrink-0" style="background: rgba(0,0,0,0.02); border-bottom: 1px solid rgba(128,128,128,0.1); z-index: 2;">
+            <div class="d-flex align-center justify-space-between mb-3 px-1">
+              <div class="d-flex align-center">
+                <v-icon color="primary" size="20" class="mr-2">
+                  mdi-plus-circle-outline
                 </v-icon>
-                {{ t('internal_songs') }}
-              </v-btn>
+                <h2 class="text-subtitle-2 font-weight-bold text-uppercase" style="color: var(--sidebar-text-secondary); letter-spacing: 1px; margin: 0;">
+                  {{ t('add_song') }}
+                </h2>
+              </div>
               <v-btn
-                variant="flat"
+                icon="mdi-close"
+                variant="text"
                 size="small"
-                class="flex-grow-1 rounded-md text-none font-weight-bold"
-                :color="addSongTab === 'external' ? 'primary' : 'transparent'"
-                :style="addSongTab !== 'external' ? 'color: var(--sidebar-text-secondary);' : ''"
-                @click="addSongTab = 'external'"
-              >
-                <v-icon start size="18">
-                  mdi-folder-upload
-                </v-icon>
-                {{ t('external_file') }}
-              </v-btn>
+                :color="isDark ? 'white' : 'grey-darken-2'"
+                @click="closeAddSongDialog"
+              />
             </div>
+
+            <!-- PillSwitch de Abas: Músicas do Programa / Arquivo do Computador -->
+            <div class="mb-3">
+              <PillSwitch
+                v-model="addSongTab"
+                block
+                :items="addSongTabItems"
+              />
+            </div>
+
+            <!-- Se for Músicas do Programa: Barra de busca estilo Busca Rápida -->
+            <template v-if="addSongTab === 'internal'">
+              <v-text-field
+                ref="internalSearchInput"
+                v-model="internalSearchQuery"
+                :placeholder="t('search_song_placeholder')"
+                prepend-inner-icon="mdi-magnify"
+                variant="solo"
+                density="comfortable"
+                hide-details
+                clearable
+                rounded="lg"
+                class="search-input-hero"
+                autofocus
+              />
+            </template>
           </div>
 
           <!-- Aba 1: Músicas do Programa -->
           <template v-if="addSongTab === 'internal'">
-            <!-- Busca e Filtros -->
-            <div class="px-6 pb-2">
-              <v-text-field
-                v-model="internalSearchQuery"
-                :placeholder="t('search_song_placeholder')"
-                density="compact"
-                variant="outlined"
-                hide-details
-                clearable
-                prepend-inner-icon="mdi-magnify"
-                class="rounded-lg mb-2"
-                autofocus
-              />
-
-              <!-- Filtros em chips -->
-              <div class="d-flex align-center flex-wrap" style="gap: 8px;">
-                <v-chip
-                  size="small"
-                  :color="internalSongFilter === 'all' ? 'primary' : undefined"
-                  :variant="internalSongFilter === 'all' ? 'flat' : 'tonal'"
-                  class="font-weight-medium cursor-pointer"
-                  @click="internalSongFilter = 'all'"
-                >
-                  {{ t('all') }}
-                </v-chip>
-                <v-chip
-                  size="small"
-                  :color="internalSongFilter === 'hymnals' ? 'primary' : undefined"
-                  :variant="internalSongFilter === 'hymnals' ? 'flat' : 'tonal'"
-                  class="font-weight-medium cursor-pointer"
-                  @click="internalSongFilter = 'hymnals'"
-                >
-                  <v-icon start size="14">
-                    mdi-book-cross
-                  </v-icon>
-                  {{ t('hymnals') }}
-                </v-chip>
-                <v-chip
-                  size="small"
-                  :color="internalSongFilter === 'albums' ? 'primary' : undefined"
-                  :variant="internalSongFilter === 'albums' ? 'flat' : 'tonal'"
-                  class="font-weight-medium cursor-pointer"
-                  @click="internalSongFilter = 'albums'"
-                >
-                  <v-icon start size="14">
-                    mdi-album
-                  </v-icon>
-                  {{ t('albums') }}
-                </v-chip>
-
-                <v-spacer />
-
-                <span v-if="selectedInternalSongIds.length > 0" class="text-caption font-weight-bold text-primary">
-                  {{ selectedInternalSongIds.length }} selecionada(s)
-                </span>
-              </div>
-            </div>
-
-            <!-- Lista de Músicas -->
-            <v-card-text class="px-6 pt-1 pb-2">
+            <div class="add-song-list-scroll flex-grow-1">
+              <!-- Estado inicial antes de digitar -->
               <div
-                v-if="filteredInternalSongs.length === 0"
-                class="d-flex flex-column align-center justify-center py-8 text-center"
+                v-if="!internalSearchQuery || !internalSearchQuery.trim()"
+                class="d-flex flex-column align-center justify-center py-12 text-center w-100"
                 style="min-height: 260px;"
               >
-                <v-icon size="48" color="grey-lighten-1" class="mb-2">
-                  mdi-music-off
+                <v-icon size="48" color="var(--sidebar-text-secondary)" class="mb-3 opacity-40">
+                  mdi-text-search
                 </v-icon>
-                <span class="text-body-2" style="color: var(--sidebar-text-secondary);">
+                <span class="text-body-2 font-weight-medium" style="color: var(--sidebar-text-secondary); opacity: 0.7;">
+                  Digite o nome ou número do hino para buscar...
+                </span>
+              </div>
+
+              <!-- Nenhum resultado -->
+              <div
+                v-else-if="filteredInternalSongs.length === 0"
+                class="d-flex flex-column align-center justify-center py-12 text-center w-100"
+                style="min-height: 260px;"
+              >
+                <v-icon size="48" color="var(--sidebar-text-secondary)" class="mb-3 opacity-40">
+                  mdi-magnify
+                </v-icon>
+                <span class="text-body-2 font-weight-medium" style="color: var(--sidebar-text-secondary);">
                   {{ t('no_songs_found') }}
                 </span>
               </div>
 
-              <div
-                v-else
-                class="song-select-list"
-                style="max-height: 320px; min-height: 240px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; padding-right: 4px;"
-              >
+              <!-- Resultados da busca -->
+              <div v-else class="add-song-list">
                 <div
                   v-for="song in filteredInternalSongs"
                   :key="song.id_music"
-                  class="d-flex align-center pa-2 rounded-lg cursor-pointer"
-                  :style="{
-                    border: '1px solid',
-                    borderColor: isSongSelected(song.id_music)
-                      ? 'rgba(var(--v-theme-primary), 0.5)'
-                      : 'rgba(128, 128, 128, 0.12)',
-                    background: isSongSelected(song.id_music)
-                      ? 'rgba(var(--v-theme-primary), 0.08)'
-                      : 'rgba(128, 128, 128, 0.02)',
-                    transition: 'all 0.15s ease'
-                  }"
+                  class="add-song-row d-flex align-center px-4 py-2"
+                  :class="{ 'selected': isSongSelected(song.id_music) }"
                   @click="toggleSongSelection(song.id_music)"
                 >
-                  <!-- Checkbox de seleção -->
-                  <v-checkbox-btn
-                    :model-value="isSongSelected(song.id_music)"
-                    density="compact"
-                    color="primary"
-                    class="mr-2 flex-shrink-0"
-                    @click.stop="toggleSongSelection(song.id_music)"
-                  />
+                  <!-- Checkbox de Seleção Rápida -->
+                  <div class="mr-3 d-flex align-center flex-shrink-0" @click.stop="toggleSongSelection(song.id_music)">
+                    <v-icon
+                      :icon="isSongSelected(song.id_music) ? 'mdi-checkbox-marked' : 'mdi-checkbox-blank-outline'"
+                      :color="isSongSelected(song.id_music) ? 'primary' : 'rgba(128, 128, 128, 0.4)'"
+                      size="20"
+                      class="cursor-pointer"
+                    />
+                  </div>
 
-                  <!-- Número do Hino/Faixa (se houver) -->
-                  <div
+                  <!-- Número do Hino (azul, exatamente igual à Busca Rápida) -->
+                  <span
                     v-if="getSongTrack(song)"
-                    class="mr-3 font-weight-bold text-caption d-flex align-center justify-center flex-shrink-0"
-                    style="min-width: 28px; height: 28px; border-radius: 8px; background: rgba(var(--v-theme-primary), 0.12); color: var(--accent-blue);"
+                    class="font-weight-bold flex-shrink-0 text-left"
+                    style="color: var(--accent-blue); min-width: 32px; margin-right: 8px; font-size: 0.95rem;"
                   >
                     {{ getSongTrack(song) }}
-                  </div>
+                  </span>
 
-                  <!-- Título e Álbum -->
-                  <div class="flex-grow-1" style="min-width: 0;">
-                    <div class="text-body-2 font-weight-bold text-truncate" style="color: var(--sidebar-text); line-height: 1.2;">
+                  <!-- Informações da Música -->
+                  <div class="flex-grow-1 mr-3" style="min-width: 0;">
+                    <h4
+                      class="music-title text-truncate font-weight-medium"
+                      style="margin: 0; font-size: 0.95rem; color: var(--sidebar-text); line-height: 1.3;"
+                    >
                       {{ song.name }}
-                    </div>
-                    <div class="text-caption text-truncate" style="color: var(--sidebar-text-secondary); line-height: 1.2; margin-top: 2px;">
+                    </h4>
+                    <p
+                      class="music-artist text-truncate"
+                      style="margin: 2px 0 0 0; font-size: 0.78rem; color: var(--sidebar-text-secondary); line-height: 1.2;"
+                    >
                       {{ getSongAlbumName(song) }}
-                    </div>
+                    </p>
                   </div>
 
-                  <!-- Chip se já estiver na coletânea -->
-                  <v-chip
-                    v-if="isSongInCollection(song.id_music)"
-                    size="x-small"
-                    variant="tonal"
-                    color="success"
-                    class="mr-2 flex-shrink-0 font-weight-medium"
+                  <!-- Duração -->
+                  <span
+                    v-if="song.duration"
+                    class="music-duration text-caption mr-3 flex-shrink-0"
+                    style="color: var(--sidebar-text-secondary); font-size: 0.8rem;"
                   >
-                    <v-icon start size="12">
-                      mdi-check
-                    </v-icon>
-                    {{ t('in_collection') }}
-                  </v-chip>
+                    {{ $datetime.shortTime(song.duration) }}
+                  </span>
 
-                  <!-- Botão de adicionar direto (+) -->
-                  <v-btn
-                    icon
-                    size="small"
-                    variant="tonal"
-                    color="primary"
-                    class="flex-shrink-0"
-                    :title="t('add')"
-                    @click.stop="addSingleInternalSong(song)"
-                  >
-                    <v-icon size="18">
-                      mdi-plus
-                    </v-icon>
-                  </v-btn>
+                  <!-- Ações à Direita -->
+                  <div class="d-flex align-center flex-shrink-0" @click.stop>
+                    <v-chip
+                      v-if="isSongInCollection(song.id_music)"
+                      size="x-small"
+                      variant="tonal"
+                      color="success"
+                      class="font-weight-medium"
+                    >
+                      <v-icon start size="12">
+                        mdi-check
+                      </v-icon>
+                      {{ t('in_collection') }}
+                    </v-chip>
+                    <v-btn
+                      v-else
+                      icon
+                      size="small"
+                      variant="text"
+                      color="primary"
+                      class="rounded-lg"
+                      @click.stop="addSingleInternalSong(song)"
+                    >
+                      <v-icon size="20">
+                        mdi-plus
+                      </v-icon>
+                      <v-tooltip
+                        activator="parent"
+                        location="top"
+                        open-delay="300"
+                        content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+                      >
+                        {{ t('add') }}
+                      </v-tooltip>
+                    </v-btn>
+                  </div>
                 </div>
               </div>
-            </v-card-text>
+            </div>
 
-            <v-card-actions class="px-6 pb-5 pt-2 justify-space-between">
-              <v-btn
-                variant="tonal"
-                :color="isDark ? 'white' : 'grey-darken-2'"
-                class="rounded-lg text-none px-6 font-weight-bold"
-                @click="closeAddSongDialog"
-              >
-                {{ t('cancel') }}
-              </v-btn>
-              <v-btn
-                color="primary"
-                variant="flat"
-                class="rounded-lg text-none px-6 font-weight-bold"
-                :disabled="selectedInternalSongIds.length === 0"
-                @click="addSelectedInternalSongs"
-              >
-                {{ selectedInternalSongIds.length > 0 ? `${t('add_selected')} (${selectedInternalSongIds.length})` : t('add_selected') }}
-              </v-btn>
-            </v-card-actions>
+            <!-- Rodapé Fixo da Aba Interna -->
+            <div
+              class="px-6 py-3 d-flex align-center justify-space-between flex-shrink-0"
+              style="background: rgba(0,0,0,0.02); border-top: 1px solid rgba(128,128,128,0.1);"
+            >
+              <div class="d-flex align-center">
+                <span v-if="selectedInternalSongIds.length > 0" class="text-caption font-weight-bold" style="color: var(--accent-blue);">
+                  {{ selectedInternalSongIds.length }} {{ selectedInternalSongIds.length === 1 ? 'música selecionada' : 'músicas selecionadas' }}
+                </span>
+              </div>
+              <div class="d-flex align-center" style="gap: 12px;">
+                <v-btn
+                  variant="tonal"
+                  :color="isDark ? 'white' : 'grey-darken-2'"
+                  class="rounded-lg text-none px-5 font-weight-bold"
+                  @click="closeAddSongDialog"
+                >
+                  {{ t('cancel') }}
+                </v-btn>
+                <v-btn
+                  color="primary"
+                  variant="flat"
+                  class="rounded-lg text-none px-6 font-weight-bold"
+                  :disabled="selectedInternalSongIds.length === 0"
+                  @click="addSelectedInternalSongs"
+                >
+                  <v-icon start size="18">
+                    mdi-plus
+                  </v-icon>
+                  {{ selectedInternalSongIds.length > 0 ? `${t('add_selected')} (${selectedInternalSongIds.length})` : t('add_selected') }}
+                </v-btn>
+              </div>
+            </div>
           </template>
 
           <!-- Aba 2: Arquivo do Computador -->
           <template v-else>
-            <v-card-text class="px-6 pt-2 pb-2">
-              <!-- Audio Dropzone -->
+            <div class="pa-6 flex-grow-1 overflow-y-auto" style="min-height: 240px;">
+              <!-- Dropzone Cantado -->
               <div class="mb-4">
-                <div class="text-body-2 font-weight-medium mb-1" style="color: var(--sidebar-text-secondary); margin-left: 4px;">
+                <div class="text-body-2 font-weight-medium mb-2" style="color: var(--sidebar-text-secondary); margin-left: 2px;">
                   {{ t('external_audio_file') }}
                 </div>
                 
                 <div
                   v-if="externalAudioFileName"
                   class="rounded-xl pa-4 d-flex align-center justify-space-between"
-                  style="border: 1px solid var(--border-color, rgba(128,128,128,0.2)); background: rgba(var(--v-theme-on-surface), 0.06);"
+                  style="border: 1px solid rgba(128,128,128,0.15); background: rgba(var(--v-theme-on-surface), 0.04);"
                 >
                   <div class="d-flex align-center" style="overflow: hidden;">
-                    <v-icon color="primary" size="32" class="mr-3">
+                    <v-icon color="primary" size="28" class="mr-3 flex-shrink-0">
                       mdi-file-music
                     </v-icon>
                     <div class="d-flex flex-column" style="overflow: hidden;">
-                      <span class="font-weight-bold text-truncate" style="color: var(--sidebar-text); max-width: 250px;">{{ externalAudioFileName }}</span>
-                      <span class="text-caption text-truncate" style="color: var(--sidebar-text-secondary); max-width: 250px;" :title="externalAudioFilePath || undefined">{{ externalAudioFilePath }}</span>
+                      <span class="font-weight-bold text-truncate" style="color: var(--sidebar-text); max-width: 320px;">
+                        {{ externalAudioFileName }}
+                      </span>
+                      <span class="text-caption text-truncate" style="color: var(--sidebar-text-secondary); max-width: 320px;" :title="externalAudioFilePath || undefined">
+                        {{ externalAudioFilePath }}
+                      </span>
                     </div>
                   </div>
-                  <div class="d-flex align-center">
+                  <div class="d-flex align-center flex-shrink-0">
                     <v-btn
                       icon
                       size="small"
@@ -1256,7 +1247,9 @@
                       class="mr-1"
                       @click="pickExternalFile('audio')"
                     >
-                      <v-icon>mdi-pencil</v-icon>
+                      <v-icon size="18">
+                        mdi-pencil
+                      </v-icon>
                       <v-tooltip activator="parent" location="top">
                         {{ t('actions.change') || 'Alterar' }}
                       </v-tooltip>
@@ -1268,7 +1261,9 @@
                       color="error"
                       @click="externalAudioFileName = ''; externalAudioFilePath = ''"
                     >
-                      <v-icon>mdi-delete</v-icon>
+                      <v-icon size="18">
+                        mdi-delete
+                      </v-icon>
                       <v-tooltip activator="parent" location="top">
                         {{ t('actions.delete') || 'Remover' }}
                       </v-tooltip>
@@ -1278,48 +1273,49 @@
 
                 <div
                   v-else
-                  class="rounded-xl d-flex flex-row align-center pa-3 cursor-pointer"
-                  style="border: 2px dashed var(--border-color, rgba(128,128,128,0.2)); background: rgba(128,128,128,0.02); transition: all 0.2s;"
-                  onmouseover="this.style.background='rgba(128,128,128,0.04)'; this.style.borderColor='rgba(128,128,128,0.5)'"
-                  onmouseout="this.style.background='rgba(128,128,128,0.02)'; this.style.borderColor='var(--border-color, rgba(128,128,128,0.2))'"
+                  class="rounded-xl d-flex flex-row align-center pa-4 cursor-pointer"
+                  style="border: 1px dashed rgba(128,128,128,0.25); background: rgba(128,128,128,0.02); transition: all 0.2s;"
                   @click="pickExternalFile('audio')"
                 >
-                  <v-icon
-                    size="28"
-                    color="primary"
-                    class="mr-3 ml-2"
-                    style="opacity: 0.8;"
-                  >
-                    mdi-file-find
+                  <v-icon size="28" color="primary" class="mr-3 ml-1 opacity-80">
+                    mdi-file-upload-outline
                   </v-icon>
                   <div class="d-flex flex-column justify-center">
-                    <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text); line-height: 1.2;">Selecionar Arquivo</span>
-                    <span class="text-caption" style="color: var(--sidebar-text-secondary); line-height: 1.2; margin-top: 2px;">Clique para buscar no computador</span>
+                    <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text); line-height: 1.2;">
+                      {{ t('select_file') }}
+                    </span>
+                    <span class="text-caption" style="color: var(--sidebar-text-secondary); line-height: 1.2; margin-top: 2px;">
+                      Clique para buscar o arquivo de áudio cantado
+                    </span>
                   </div>
                 </div>
               </div>
 
-              <!-- Instrumental Dropzone -->
-              <div class="mb-4">
-                <div class="text-body-2 font-weight-medium mb-1" style="color: var(--sidebar-text-secondary); margin-left: 4px;">
+              <!-- Dropzone Instrumental -->
+              <div class="mb-2">
+                <div class="text-body-2 font-weight-medium mb-2" style="color: var(--sidebar-text-secondary); margin-left: 2px;">
                   {{ t('external_instrumental_file') }} ({{ t('optional') }})
                 </div>
                 
                 <div
                   v-if="externalInstrumentalFileName"
                   class="rounded-xl pa-4 d-flex align-center justify-space-between"
-                  style="border: 1px solid var(--border-color, rgba(128,128,128,0.2)); background: rgba(var(--v-theme-on-surface), 0.06);"
+                  style="border: 1px solid rgba(128,128,128,0.15); background: rgba(var(--v-theme-on-surface), 0.04);"
                 >
                   <div class="d-flex align-center" style="overflow: hidden;">
-                    <v-icon color="primary" size="32" class="mr-3">
+                    <v-icon color="primary" size="28" class="mr-3 flex-shrink-0">
                       mdi-file-music-outline
                     </v-icon>
                     <div class="d-flex flex-column" style="overflow: hidden;">
-                      <span class="font-weight-bold text-truncate" style="color: var(--sidebar-text); max-width: 250px;">{{ externalInstrumentalFileName }}</span>
-                      <span class="text-caption text-truncate" style="color: var(--sidebar-text-secondary); max-width: 250px;" :title="externalInstrumentalFilePath || undefined">{{ externalInstrumentalFilePath }}</span>
+                      <span class="font-weight-bold text-truncate" style="color: var(--sidebar-text); max-width: 320px;">
+                        {{ externalInstrumentalFileName }}
+                      </span>
+                      <span class="text-caption text-truncate" style="color: var(--sidebar-text-secondary); max-width: 320px;" :title="externalInstrumentalFilePath || undefined">
+                        {{ externalInstrumentalFilePath }}
+                      </span>
                     </div>
                   </div>
-                  <div class="d-flex align-center">
+                  <div class="d-flex align-center flex-shrink-0">
                     <v-btn
                       icon
                       size="small"
@@ -1328,7 +1324,9 @@
                       class="mr-1"
                       @click="pickExternalFile('instrumental')"
                     >
-                      <v-icon>mdi-pencil</v-icon>
+                      <v-icon size="18">
+                        mdi-pencil
+                      </v-icon>
                       <v-tooltip activator="parent" location="top">
                         {{ t('actions.change') || 'Alterar' }}
                       </v-tooltip>
@@ -1340,7 +1338,9 @@
                       color="error"
                       @click="externalInstrumentalFileName = ''; externalInstrumentalFilePath = ''"
                     >
-                      <v-icon>mdi-delete</v-icon>
+                      <v-icon size="18">
+                        mdi-delete
+                      </v-icon>
                       <v-tooltip activator="parent" location="top">
                         {{ t('actions.delete') || 'Remover' }}
                       </v-tooltip>
@@ -1350,50 +1350,51 @@
 
                 <div
                   v-else
-                  class="rounded-xl d-flex flex-row align-center pa-3 cursor-pointer"
-                  style="border: 2px dashed var(--border-color, rgba(128,128,128,0.2)); background: rgba(128,128,128,0.02); transition: all 0.2s;"
-                  onmouseover="this.style.background='rgba(128,128,128,0.04)'; this.style.borderColor='rgba(128,128,128,0.5)'"
-                  onmouseout="this.style.background='rgba(128,128,128,0.02)'; this.style.borderColor='var(--border-color, rgba(128,128,128,0.2))'"
+                  class="rounded-xl d-flex flex-row align-center pa-4 cursor-pointer"
+                  style="border: 1px dashed rgba(128,128,128,0.25); background: rgba(128,128,128,0.02); transition: all 0.2s;"
                   @click="pickExternalFile('instrumental')"
                 >
-                  <v-icon
-                    size="28"
-                    color="primary"
-                    class="mr-3 ml-2"
-                    style="opacity: 0.8;"
-                  >
-                    mdi-file-find
+                  <v-icon size="28" color="primary" class="mr-3 ml-1 opacity-80">
+                    mdi-file-upload-outline
                   </v-icon>
                   <div class="d-flex flex-column justify-center">
-                    <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text); line-height: 1.2;">Selecionar Arquivo</span>
-                    <span class="text-caption" style="color: var(--sidebar-text-secondary); line-height: 1.2; margin-top: 2px;">Clique para buscar no computador</span>
+                    <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text); line-height: 1.2;">
+                      {{ t('select_file') }}
+                    </span>
+                    <span class="text-caption" style="color: var(--sidebar-text-secondary); line-height: 1.2; margin-top: 2px;">
+                      Clique para buscar o arquivo de playback (opcional)
+                    </span>
                   </div>
                 </div>
               </div>
-            </v-card-text>
+            </div>
 
-            <v-card-actions class="px-6 pb-6 pt-2">
-              <v-spacer />
-              <div class="d-flex" style="gap: 12px;">
-                <v-btn
-                  variant="tonal"
-                  :color="isDark ? 'white' : 'grey-darken-2'"
-                  class="rounded-lg text-none px-6 font-weight-bold"
-                  @click="closeAddSongDialog"
-                >
-                  {{ t('cancel') }}
-                </v-btn>
-                <v-btn
-                  color="primary"
-                  variant="flat"
-                  class="rounded-lg text-none px-6 font-weight-bold"
-                  :disabled="!externalAudioFilePath"
-                  @click="addSongToCollection"
-                >
-                  {{ t('add_song') }}
-                </v-btn>
-              </div>
-            </v-card-actions>
+            <!-- Rodapé Fixo da Aba Externa -->
+            <div
+              class="px-6 py-3 d-flex align-center justify-end flex-shrink-0"
+              style="background: rgba(0,0,0,0.02); border-top: 1px solid rgba(128,128,128,0.1); gap: 12px;"
+            >
+              <v-btn
+                variant="tonal"
+                :color="isDark ? 'white' : 'grey-darken-2'"
+                class="rounded-lg text-none px-5 font-weight-bold"
+                @click="closeAddSongDialog"
+              >
+                {{ t('cancel') }}
+              </v-btn>
+              <v-btn
+                color="primary"
+                variant="flat"
+                class="rounded-lg text-none px-6 font-weight-bold"
+                :disabled="!externalAudioFilePath"
+                @click="addSongToCollection"
+              >
+                <v-icon start size="18">
+                  mdi-plus
+                </v-icon>
+                {{ t('add_song') }}
+              </v-btn>
+            </div>
           </template>
         </v-card>
       </v-dialog>
@@ -1406,6 +1407,7 @@ import { defineComponent } from "vue";
 import manifest from "../manifest";
 import ModuleHeader from "@/components/ModuleHeader.vue";
 import LMusicMenuTable from "@/components/MusicMenuTable.vue";
+import PillSwitch, { PillSwitchItem } from "@/components/inputs/PillSwitch.vue";
 import { FAVORITES_COLLECTION_ID, ensureFavoritesCollection } from "@/helpers/services/Favorites";
 
 interface InternalSong {
@@ -1470,6 +1472,7 @@ export default defineComponent({
   components: {
     ModuleHeader,
     LMusicMenuTable,
+    PillSwitch,
   },
   data() {
     return {
@@ -1492,7 +1495,6 @@ export default defineComponent({
 
       addSongTab: "internal" as "internal" | "external",
       internalSearchQuery: "",
-      internalSongFilter: "all" as "all" | "hymnals" | "albums",
       selectedInternalSongIds: [] as any[],
 
       playQueueItems: [] as CollectionSong[],
@@ -1518,6 +1520,12 @@ export default defineComponent({
 
     detailCollection(): CustomCollection | null {
       return this.collections.find((c) => c.id === this.detailCollectionId) || null;
+    },
+    addSongTabItems(): PillSwitchItem[] {
+      return [
+        { value: "internal", label: this.t("internal_songs"), icon: "mdi-library-music" },
+        { value: "external", label: this.t("external_file"), icon: "mdi-folder-upload" },
+      ];
     },
     displayCollections(): CustomCollection[] {
       const fav = this.collections.find((c) => this.isFavorites(c));
@@ -1551,23 +1559,16 @@ export default defineComponent({
     filteredInternalSongs(): any[] {
       if (!this.allSongs || this.allSongs.length === 0) return [];
 
-      let list = this.allSongs;
-      if (this.internalSongFilter === "hymnals") {
-        list = list.filter((m: any) => m.albums?.some((a: any) => a.type === "hymnal"));
-      } else if (this.internalSongFilter === "albums") {
-        list = list.filter((m: any) => m.albums?.some((a: any) => a.type !== "hymnal"));
-      }
-
       const rawQuery = (this.internalSearchQuery || "").trim();
       if (!rawQuery) {
-        return list.slice(0, 50);
+        return [];
       }
 
       const stringHelper = (this as any).$string;
       const isNum = !isNaN(Number(rawQuery)) && rawQuery !== "";
       const numQuery = isNum ? Number(rawQuery) : null;
 
-      const results = list.filter((m: any) => {
+      const results = this.allSongs.filter((m: any) => {
         const matchesName = stringHelper.matchesSearch(m.name, rawQuery);
         const matchesAlbum = m.albums ? stringHelper.matchesSearch(m.albums.map((a: any) => a.name).join(" "), rawQuery) : false;
         if (isNum) {
@@ -1628,6 +1629,7 @@ export default defineComponent({
       if (val) {
         this.loadCollections();
         this.loadAllSongs();
+        this.checkPendingOpenCollection();
       }
     },
     searchFilters: {
@@ -1650,12 +1652,24 @@ export default defineComponent({
       },
       deep: true,
     },
+    "$store.state.modules.custom_collection.openCollectionId": {
+      handler(val: string) {
+        if (val) {
+          this.checkPendingOpenCollection();
+        }
+      },
+    },
   },
   mounted() {
+    window.addEventListener("open-favorites-collection", this.onOpenFavoritesEvent);
     if (this.module?.show) {
       this.loadCollections();
       this.loadAllSongs();
+      this.checkPendingOpenCollection();
     }
+  },
+  beforeUnmount() {
+    window.removeEventListener("open-favorites-collection", this.onOpenFavoritesEvent);
   },
   methods: {
     /* METHODS OBRIGATÓRIOS - INÍCIO */
@@ -1664,6 +1678,20 @@ export default defineComponent({
       return (this as any).$t(`modules.${this.module_id}.${text}`, params || []);
     },
     /* METHODS OBRIGATÓRIOS - FIM */
+
+    onOpenFavoritesEvent() {
+      this.loadCollections();
+      this.detailCollectionId = FAVORITES_COLLECTION_ID;
+    },
+
+    checkPendingOpenCollection() {
+      const pending = (this as any).$appdata?.get("modules.custom_collection.openCollectionId");
+      if (pending) {
+        (this as any).$appdata.set("modules.custom_collection.openCollectionId", null);
+        this.loadCollections();
+        this.detailCollectionId = pending;
+      }
+    },
 
     toggleSearchFilter(filter: string) {
       if (this.searchFilters.includes(filter)) {
@@ -2101,10 +2129,13 @@ export default defineComponent({
       this.resetExternalPick();
       this.addSongTab = "internal";
       this.internalSearchQuery = "";
-      this.internalSongFilter = "all";
       this.selectedInternalSongIds = [];
       this.loadAllSongs();
       this.showAddSongDialog = true;
+      this.$nextTick(() => {
+        const input = (this.$refs.internalSearchInput as any)?.$el?.querySelector("input");
+        if (input) input.focus();
+      });
     },
     closeAddSongDialog() {
       this.showAddSongDialog = false;
@@ -2113,12 +2144,12 @@ export default defineComponent({
     },
     getSongTrack(song: any): string | null {
       if (!song?.albums) return null;
-      const hymnalAlbum = song.albums.find((a: any) => a.type === "hymnal");
-      if (hymnalAlbum?.pivot?.track) {
-        return String(hymnalAlbum.pivot.track);
+      for (const al of song.albums) {
+        if (al.type === "hymnal" && al.pivot?.track) {
+          return String(al.pivot.track);
+        }
       }
-      const anyAlbum = song.albums.find((a: any) => a.pivot?.track);
-      return anyAlbum?.pivot?.track ? String(anyAlbum.pivot.track) : null;
+      return null;
     },
     getSongAlbumName(song: any): string {
       if (!song?.albums || song.albums.length === 0) return "";
@@ -2427,6 +2458,49 @@ export default defineComponent({
       padding-right: 16px;
       text-align: right;
     }
+  }
+}
+
+.add-song-modal {
+  :deep(.v-overlay__content) {
+    margin: 24px;
+  }
+}
+.search-input-hero {
+  .v-field {
+    background: var(--card-bg) !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) !important;
+    border: 1px solid rgba(128, 128, 128, 0.18) !important;
+    border-radius: 12px !important;
+    transition: all 0.2s ease !important;
+  }
+  .v-field--focused {
+    border-color: var(--accent-blue) !important;
+    box-shadow: 0 0 0 1px var(--accent-blue), 0 4px 14px rgba(0, 151, 215, 0.25) !important;
+  }
+}
+.add-song-list-scroll {
+  overflow-y: auto;
+  overflow-x: hidden;
+  max-height: 380px;
+  min-height: 240px;
+}
+.add-song-row {
+  border-bottom: 1px solid rgba(128, 128, 128, 0.08);
+  cursor: pointer;
+  transition: background 0.15s ease;
+  min-height: 52px;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    background: rgba(128, 128, 128, 0.08);
+  }
+
+  &.selected {
+    background: rgba(var(--v-theme-primary), 0.1);
   }
 }
 </style>

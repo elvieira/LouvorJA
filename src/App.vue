@@ -22,6 +22,7 @@ import FirstBootLoader from "@/layout/FirstBootLoader.vue";
 import AppTitlebar from "@/layout/Titlebar.vue";
 import AppAlert from "@/layout/Alert.vue";
 import AppSnackbar from "@/layout/Snackbar.vue";
+import { openFavorites } from "@/helpers/services/Favorites";
 
 
 export default {
@@ -401,6 +402,11 @@ export default {
 
       // 2. Navegação entre Módulos do Sistema e Controles Globais via Ctrl/Cmd
       if (isModifier) {
+        if (e.code === "KeyD" || e.key?.toLowerCase() === "d" || (e.shiftKey && (e.code === "KeyF" || e.key?.toLowerCase() === "f"))) {
+          e.preventDefault();
+          openFavorites();
+          return;
+        }
         if (e.code === "Digit1" || e.code === "Numpad1" || e.key === "1") {
           e.preventDefault();
           this.$modules.open("home");

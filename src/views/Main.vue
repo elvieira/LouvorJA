@@ -179,6 +179,7 @@ import LSlide from "@/components/Slide.vue";
 import QuickSearchModal from "@/components/QuickSearchModal.vue";
 import BibleQuickSearchModal from "@/components/BibleQuickSearchModal.vue";
 import $popup from "@/helpers/ui/Popup";
+import { openFavorites } from "@/helpers/services/Favorites";
 
 export default defineComponent({
   name: "MainPage",
@@ -579,12 +580,18 @@ export default defineComponent({
       );
       const isModifier = isMac ? (e.metaKey && !e.ctrlKey) : (e.ctrlKey && !e.metaKey);
 
-      if (isModifier && e.key.toLowerCase() === "f") {
+      if ((isModifier && e.shiftKey && e.key.toLowerCase() === "f") || (isModifier && e.key.toLowerCase() === "d")) {
+        e.preventDefault();
+        openFavorites();
+      } else if (isModifier && e.key.toLowerCase() === "f") {
         e.preventDefault();
         this.showQuickSearch = true;
       } else if (isModifier && e.key.toLowerCase() === "b") {
         e.preventDefault();
         this.showBibleSearch = true;
+      } else if (isModifier && (e.code === "Comma" || e.key === ",")) {
+        e.preventDefault();
+        this.$modules.open("config");
       } else if (e.key === "F1") {
         e.preventDefault();
         this.$modules.open("help");
