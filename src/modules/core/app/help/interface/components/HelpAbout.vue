@@ -43,11 +43,12 @@
           :title="$t('modules.help.manual_title')"
           :subtitle="$t('modules.help.manual_desc')"
           :button-text="$t('modules.help.manual_btn')"
-          class="mb-8"
           @action="$emit('open-manual')"
         />
-    
-        <v-divider class="mb-8" style="opacity: 0.1;" />
+
+        <!-- Suporte e Dúvidas temporariamente inacessível para o lançamento -->
+        <!--
+        <v-divider class="my-8" style="opacity: 0.1;" />
     
         <SettingsActionRow
           icon="mdi-chat-question"
@@ -56,6 +57,7 @@
           :button-text="$t('modules.help.support_btn')"
           @action="$emit('open-support')"
         />
+        -->
       </v-card-text>
     </v-card>
 

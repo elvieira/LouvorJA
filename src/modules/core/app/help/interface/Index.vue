@@ -101,7 +101,6 @@ export default defineComponent({
           this.openManual();
           this.$appdata.set("modules.help.action", null);
         } else if (newVal === "open-support") {
-          this.openSupport();
           this.$appdata.set("modules.help.action", null);
         } else if (newVal === "open-about" || newVal === "open-tabs") {
           this.closeManual();
@@ -114,7 +113,7 @@ export default defineComponent({
   },
   created() {
     const savedView = this.$appdata.get("modules.help.currentView");
-    if (savedView) {
+    if (savedView && savedView !== "support") {
       this.currentView = savedView;
     }
   },
@@ -132,8 +131,7 @@ export default defineComponent({
       this.$appdata.set("modules.help.activeSection", "intro");
     },
     openSupport() {
-      this.currentView = "support";
-      this.$appdata.set("modules.help.currentView", "support");
+      // Temporariamente inacessível para o lançamento
     },
     closeSupport() {
       this.currentView = "tabs";
