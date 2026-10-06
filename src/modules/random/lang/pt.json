@@ -28,5 +28,14 @@
   "invalid_range": "Intervalo inválido",
   "generate_numbers": "Gerar Números",
   "position": "Posicionamento",
-  "position_desc": "Alinhe o texto na tela ou arraste no preview"
+  "position_desc": "Alinhe o texto na tela ou arraste no preview",
+  "custom_text": "Título do Sorteio (Opcional)",
+  "custom_text_desc": "Exibir um título ou mensagem na projeção (ex: Prêmio, Livro)",
+  "custom_text_placeholder": "Ex: Sorteio do Livro, Prêmio Especial...",
+  "text_pos": "Posição do Título",
+  "pos_above": "Acima",
+  "pos_below": "Abaixo",
+  "pos_custom": "Livre na Tela",
+  "pos_target_draw": "Sorteado",
+  "pos_target_text": "Título"
 }

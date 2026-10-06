@@ -36,7 +36,7 @@
                   class="text-caption mb-0"
                   style="color: var(--sidebar-text-secondary);"
                 >
-                  Ajuste o visual e posicionamento do sorteio na tela
+                  Ajuste o visual, tamanho, posicionamento e título do sorteio
                 </p>
               </div>
             </div>
@@ -234,7 +234,7 @@
               </v-card-text>
             </v-card>
 
-            <!-- Texto Principal -->
+            <!-- Texto Principal (Nome / Número) -->
             <v-card
               class="settings-card rounded-xl pa-2 mb-5"
               flat
@@ -405,6 +405,152 @@
               </v-card-text>
             </v-card>
 
+            <!-- Título do Sorteio (Texto Personalizado) -->
+            <v-card
+              class="settings-card rounded-xl pa-2 mb-5"
+              flat
+              style="background: var(--card-bg, #ffffff); box-shadow: var(--shadow);"
+            >
+              <v-card-text class="pa-4">
+                <div class="d-flex align-center justify-space-between mb-4">
+                  <div class="d-flex align-center">
+                    <v-icon
+                      color="primary"
+                      class="mr-3"
+                      size="24"
+                    >
+                      mdi-format-title
+                    </v-icon>
+                    <div>
+                      <h3
+                        class="font-weight-bold"
+                        style="color: var(--sidebar-text); font-size: 1.05rem; line-height: 1.2;"
+                      >
+                        {{ t('custom_text') }}
+                      </h3>
+                      <div
+                        class="text-caption"
+                        style="color: var(--sidebar-text-secondary);"
+                      >
+                        {{ t('custom_text_desc') }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <v-text-field
+                  v-model="localConfig.customText"
+                  variant="outlined"
+                  density="comfortable"
+                  color="primary"
+                  :placeholder="t('custom_text_placeholder')"
+                  clearable
+                  hide-details
+                  class="mb-4"
+                />
+
+                <template v-if="localConfig.customText">
+                  <!-- Cor do Título -->
+                  <div class="text-caption font-weight-bold mb-2" style="color: var(--sidebar-text-secondary);">
+                    Cor do Título
+                  </div>
+                  <div class="d-flex flex-wrap align-center mb-4" style="gap: 10px;">
+                    <div
+                      v-for="color in ['#0097d7', '#FFFFFF', '#000000', '#f6c32a', '#FF6B6B', '#4ECDC4', '#96CEB4', '#FFEAA7']"
+                      :key="color"
+                      class="rounded-circle cursor-pointer elevation-1"
+                      :class="localConfig.customTextColor === color ? 'elevation-4' : ''"
+                      :style="{
+                        width: '32px', height: '32px',
+                        background: color,
+                        border: localConfig.customTextColor === color ? '3px solid var(--accent-blue)' : '2px solid rgba(0,0,0,0.1)',
+                        transition: 'all 0.2s',
+                        transform: localConfig.customTextColor === color ? 'scale(1.15)' : 'scale(1)',
+                      }"
+                      @click="localConfig.customTextColor = color"
+                    />
+                    <ModernColorPicker v-model="localConfig.customTextColor">
+                      <template #activator="{ props }">
+                        <div
+                          v-bind="props"
+                          class="rounded-circle cursor-pointer elevation-1 d-flex align-center justify-center"
+                          style="width: 32px; height: 32px; border: 2px dashed var(--border-color); background: var(--card-bg);"
+                        >
+                          <v-icon size="14" color="grey">
+                            mdi-eyedropper
+                          </v-icon>
+                        </div>
+                      </template>
+                    </ModernColorPicker>
+                  </div>
+
+                  <!-- Tamanho do Título -->
+                  <div class="d-flex align-center justify-space-between mb-2">
+                    <span class="text-caption font-weight-bold" style="color: var(--sidebar-text-secondary);">
+                      Tamanho do Título
+                    </span>
+                    <v-chip
+                      size="x-small"
+                      variant="tonal"
+                      color="primary"
+                      class="font-weight-bold"
+                    >
+                      {{ localConfig.customTextSizePc }}%
+                    </v-chip>
+                  </div>
+                  <div class="d-flex align-center mb-4" style="gap: 10px;">
+                    <v-btn
+                      icon
+                      size="x-small"
+                      variant="tonal"
+                      color="primary"
+                      @click="localConfig.customTextSizePc = Math.max(3, (localConfig.customTextSizePc || 6) - 1)"
+                    >
+                      <v-icon size="14">
+                        mdi-minus
+                      </v-icon>
+                    </v-btn>
+                    <v-slider
+                      v-model="localConfig.customTextSizePc"
+                      :min="3"
+                      :max="20"
+                      :step="1"
+                      hide-details
+                      color="primary"
+                      track-color="rgba(0,0,0,0.1)"
+                      class="flex-grow-1"
+                    />
+                    <v-btn
+                      icon
+                      size="x-small"
+                      variant="tonal"
+                      color="primary"
+                      @click="localConfig.customTextSizePc = Math.min(20, (localConfig.customTextSizePc || 6) + 1)"
+                    >
+                      <v-icon size="14">
+                        mdi-plus
+                      </v-icon>
+                    </v-btn>
+                  </div>
+
+                  <!-- Posição do Título -->
+                  <div class="text-caption font-weight-bold mb-2" style="color: var(--sidebar-text-secondary);">
+                    {{ t('text_pos') }}
+                  </div>
+                  <PillSwitch
+                    v-model="localConfig.customTextPosition"
+                    block
+                    class="mb-2"
+                    :items="[
+                      { value: 'above', label: t('pos_above'), icon: 'mdi-format-vertical-align-top' },
+                      { value: 'below', label: t('pos_below'), icon: 'mdi-format-vertical-align-bottom' },
+                      { value: 'custom', label: t('pos_custom'), icon: 'mdi-cursor-move' },
+                    ]"
+                  />
+                </template>
+              </v-card-text>
+            </v-card>
+
             <!-- Posicionamento na Tela -->
             <v-card
               class="settings-card rounded-xl pa-2 mb-5"
@@ -438,10 +584,41 @@
                   </div>
                 </div>
 
-                <PositionAlignmentPicker
-                  v-model:x="localConfig.posX"
-                  v-model:y="localConfig.posY"
-                />
+                <!-- Se título livre na tela: seletor de elemento para posicionar -->
+                <template v-if="localConfig.customText && localConfig.customTextPosition === 'custom'">
+                  <div class="text-caption font-weight-bold mb-2" style="color: var(--sidebar-text-secondary);">
+                    Elemento a Alinhar
+                  </div>
+                  <PillSwitch
+                    v-model="activePosTarget"
+                    block
+                    class="mb-4"
+                    :items="[
+                      { value: 'draw', label: t('pos_target_draw'), icon: 'mdi-ticket-outline' },
+                      { value: 'text', label: t('pos_target_text'), icon: 'mdi-format-title' },
+                    ]"
+                  />
+
+                  <div v-if="activePosTarget === 'draw'">
+                    <PositionAlignmentPicker
+                      v-model:x="localConfig.posX"
+                      v-model:y="localConfig.posY"
+                    />
+                  </div>
+                  <div v-else>
+                    <PositionAlignmentPicker
+                      v-model:x="localConfig.customTextX"
+                      v-model:y="localConfig.customTextY"
+                    />
+                  </div>
+                </template>
+
+                <template v-else>
+                  <PositionAlignmentPicker
+                    v-model:x="localConfig.posX"
+                    v-model:y="localConfig.posY"
+                  />
+                </template>
               </v-card-text>
             </v-card>
 
@@ -539,24 +716,78 @@
               }"
               @pointerdown="startDrag"
             >
+              <!-- Texto Personalizado Livre -->
               <div
-                class="position-absolute d-flex align-center justify-center text-center"
+                v-if="localConfig.customText && localConfig.customTextPosition === 'custom'"
+                class="position-absolute font-weight-bold text-center"
+                :style="{
+                  left: `${localConfig.customTextX ?? 50}%`,
+                  top: `${localConfig.customTextY ?? 20}%`,
+                  transform: 'translate(-50%, -50%)',
+                  fontSize: `${(localConfig.customTextSizePc || 6) * 1.8}px`,
+                  color: localConfig.customTextColor || localConfig.color,
+                  textShadow: localConfig.bgImage ? '0 4px 12px rgba(0,0,0,0.85)' : `0 4px 16px ${localConfig.customTextColor || localConfig.color}60`,
+                  padding: '2px 6px',
+                  border: activePosTarget === 'text' ? '1px dashed var(--accent-blue, #0097d7)' : '1px dashed transparent',
+                  borderRadius: '4px',
+                  whiteSpace: 'nowrap',
+                  zIndex: 10,
+                }"
+                @pointerdown.stop="selectAndDrag('text', $event)"
+              >
+                {{ localConfig.customText }}
+              </div>
+
+              <!-- Container do Sorteado -->
+              <div
+                class="position-absolute d-flex flex-column align-center justify-center text-center"
                 :style="{
                   left: `${localConfig.posX ?? 50}%`,
                   top: `${localConfig.posY ?? 50}%`,
                   transform: 'translate(-50%, -50%)',
                   whiteSpace: 'nowrap',
                 }"
+                @pointerdown.stop="selectAndDrag('draw', $event)"
               >
+                <!-- Título Acima -->
+                <div
+                  v-if="localConfig.customText && (localConfig.customTextPosition === 'above' || !localConfig.customTextPosition)"
+                  class="font-weight-bold text-center mb-1"
+                  :style="{
+                    fontSize: `${(localConfig.customTextSizePc || 6) * 1.6}px`,
+                    color: localConfig.customTextColor || localConfig.color,
+                    textShadow: localConfig.bgImage ? '0 4px 12px rgba(0,0,0,0.85)' : `0 4px 16px ${localConfig.customTextColor || localConfig.color}60`,
+                    lineHeight: '1.2',
+                  }"
+                >
+                  {{ localConfig.customText }}
+                </div>
+
+                <!-- Nome / Número Sorteado -->
                 <div
                   class="font-weight-black text-center"
                   :style="{
                     fontSize: `${localConfig.fontSizePc * 2.2}px`,
                     textTransform: localConfig.textTransform as any,
-                    textShadow: localConfig.bgImage ? '0 4px 12px rgba(0,0,0,0.8)' : `0 4px 16px ${localConfig.color}60`
+                    textShadow: localConfig.bgImage ? '0 4px 12px rgba(0,0,0,0.8)' : `0 4px 16px ${localConfig.color}60`,
+                    lineHeight: '1.1',
                   }"
                 >
                   João Silva
+                </div>
+
+                <!-- Título Abaixo -->
+                <div
+                  v-if="localConfig.customText && localConfig.customTextPosition === 'below'"
+                  class="font-weight-bold text-center mt-1"
+                  :style="{
+                    fontSize: `${(localConfig.customTextSizePc || 6) * 1.6}px`,
+                    color: localConfig.customTextColor || localConfig.color,
+                    textShadow: localConfig.bgImage ? '0 4px 12px rgba(0,0,0,0.85)' : `0 4px 16px ${localConfig.customTextColor || localConfig.color}60`,
+                    lineHeight: '1.2',
+                  }"
+                >
+                  {{ localConfig.customText }}
                 </div>
               </div>
             </div>
@@ -577,7 +808,7 @@
                 class="text-caption"
                 style="color: var(--sidebar-text-secondary); line-height: 1.4;"
               >
-                <strong style="color: var(--sidebar-text);">Arraste Livre:</strong> Clique e arraste diretamente no preview acima para mover o texto para qualquer lugar da tela.
+                <strong style="color: var(--sidebar-text);">Arraste Livre:</strong> Clique e arraste diretamente no preview acima para mover o nome sorteado ou o título para qualquer posição da tela.
               </div>
             </div>
           </div>
@@ -649,6 +880,7 @@ export default defineComponent({
   },
   emits: ["update:modelValue"],
   data: () => ({
+    activePosTarget: "draw" as "draw" | "text",
     localConfig: {
       background: "#ffffff",
       color: "#0097d7",
@@ -658,6 +890,12 @@ export default defineComponent({
       bgImage: null as string | null,
       posX: 50,
       posY: 50,
+      customText: "",
+      customTextColor: "#0097d7",
+      customTextSizePc: 6,
+      customTextPosition: "above",
+      customTextX: 50,
+      customTextY: 20,
     },
     defaultConfig: {
       background: "#ffffff",
@@ -668,6 +906,12 @@ export default defineComponent({
       bgImage: null as string | null,
       posX: 50,
       posY: 50,
+      customText: "",
+      customTextColor: "#0097d7",
+      customTextSizePc: 6,
+      customTextPosition: "above",
+      customTextX: 50,
+      customTextY: 20,
     },
     initialConfig: null as any,
   }),
@@ -696,7 +940,9 @@ export default defineComponent({
       return this.$t(`modules.${this.moduleId}.${text}`);
     },
     loadConfig() {
-      const savedConfig = this.$appdata.get(`modules.${this.moduleId}.config`) || this.$userdata.get("sorteio_config");
+      const savedConfig =
+        this.$appdata.get(`modules.${this.moduleId}.config`) ||
+        this.$userdata.get("sorteio_config");
       if (savedConfig) {
         this.localConfig = { ...this.defaultConfig, ...savedConfig };
       } else {
@@ -739,6 +985,10 @@ export default defineComponent({
       reader.readAsDataURL(file);
       input.value = "";
     },
+    selectAndDrag(target: "draw" | "text", e: PointerEvent) {
+      this.activePosTarget = target;
+      this.startDrag(e);
+    },
     startDrag(e: PointerEvent) {
       const el = this.$refs.previewRandomRef as HTMLElement;
       if (!el) return;
@@ -746,8 +996,19 @@ export default defineComponent({
         const rect = el.getBoundingClientRect();
         const rawX = Math.round(((evt.clientX - rect.left) / rect.width) * 100);
         const rawY = Math.round(((evt.clientY - rect.top) / rect.height) * 100);
-        this.localConfig.posX = Math.max(5, Math.min(95, rawX));
-        this.localConfig.posY = Math.max(5, Math.min(95, rawY));
+        const clampedX = Math.max(5, Math.min(95, rawX));
+        const clampedY = Math.max(5, Math.min(95, rawY));
+        if (
+          this.localConfig.customText &&
+          this.localConfig.customTextPosition === "custom" &&
+          this.activePosTarget === "text"
+        ) {
+          this.localConfig.customTextX = clampedX;
+          this.localConfig.customTextY = clampedY;
+        } else {
+          this.localConfig.posX = clampedX;
+          this.localConfig.posY = clampedY;
+        }
       };
       updatePos(e);
       const onMove = (evt: PointerEvent) => updatePos(evt);

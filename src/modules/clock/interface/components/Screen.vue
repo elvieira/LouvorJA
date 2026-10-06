@@ -12,8 +12,17 @@
       color: preview ? 'var(--sidebar-text)' : config.textColor,
     }"
   >
+    <!-- Texto Personalizado Livre (se customTextPosition === 'custom') -->
     <div
-      class="position-absolute d-flex align-center justify-center pointer-events-none"
+      v-if="config.customText && config.customTextPosition === 'custom'"
+      class="position-absolute font-weight-bold text-center pointer-events-none"
+      :style="customTextFreeStyle"
+    >
+      {{ config.customText }}
+    </div>
+
+    <div
+      class="position-absolute d-flex flex-column align-center justify-center pointer-events-none"
       :style="{
         left: `${config.posX ?? 50}%`,
         top: `${config.posY ?? 50}%`,
@@ -21,6 +30,15 @@
         whiteSpace: 'nowrap',
       }"
     >
+      <!-- Texto Personalizado Acima -->
+      <div
+        v-if="config.customText && (config.customTextPosition === 'above' || !config.customTextPosition)"
+        class="font-weight-bold text-center mb-2"
+        :style="customTextStyle"
+      >
+        {{ config.customText }}
+      </div>
+
       <!-- DIGITAL CLOCK -->
       <v-fade-transition>
         <div 
@@ -157,6 +175,15 @@
           </div>
         </div>
       </v-fade-transition>
+
+      <!-- Texto Personalizado Abaixo -->
+      <div
+        v-if="config.customText && config.customTextPosition === 'below'"
+        class="font-weight-bold text-center mt-2"
+        :style="customTextStyle"
+      >
+        {{ config.customText }}
+      </div>
     </div>
   </div>
 </template>
@@ -195,6 +222,12 @@ export default defineComponent({
       sizeScale: 100,
       posX: 50,
       posY: 50,
+      customText: "",
+      customTextColor: "#FFFFFF",
+      customTextSizePc: 8,
+      customTextPosition: "above",
+      customTextX: 50,
+      customTextY: 20,
     },
   }),
   computed: {
@@ -204,6 +237,41 @@ export default defineComponent({
       const appConfig = this.$appdata ? this.$appdata.get("clock_config") : null;
       const userConfig = this.$userdata ? this.$userdata.get("clock_config") : null;
       return appConfig || userConfig || this.defaultConfig;
+    },
+    customTextStyle(): any {
+      const sizePc = this.config.customTextSizePc ?? 8;
+      const v = Math.min(this.s_width, this.s_height);
+      const fontSize = Math.max((v * sizePc) / 100, 14);
+      return {
+        fontSize: `${fontSize}px`,
+        color: this.config.customTextColor || this.config.textColor,
+        textShadow: this.config.bgImage
+          ? "0 4px 12px rgba(0,0,0,0.85)"
+          : `0 2px 10px ${this.config.customTextColor || this.config.textColor}40`,
+        fontFamily: "system-ui, -apple-system, sans-serif",
+        lineHeight: 1.2,
+      };
+    },
+    customTextFreeStyle(): any {
+      const x = this.config.customTextX ?? 50;
+      const y = this.config.customTextY ?? 20;
+      const sizePc = this.config.customTextSizePc ?? 8;
+      const v = Math.min(this.s_width, this.s_height);
+      const fontSize = Math.max((v * sizePc) / 100, 14);
+      return {
+        left: `${x}%`,
+        top: `${y}%`,
+        transform: "translate(-50%, -50%)",
+        fontSize: `${fontSize}px`,
+        color: this.config.customTextColor || this.config.textColor,
+        textShadow: this.config.bgImage
+          ? "0 4px 12px rgba(0,0,0,0.85)"
+          : `0 2px 10px ${this.config.customTextColor || this.config.textColor}40`,
+        fontFamily: "system-ui, -apple-system, sans-serif",
+        lineHeight: 1.2,
+        whiteSpace: "nowrap",
+        zIndex: 5,
+      };
     },
     digitalFontSize(): number {
       const v = Math.min(this.s_width, this.s_height);

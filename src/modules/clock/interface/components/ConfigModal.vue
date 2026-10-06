@@ -36,7 +36,7 @@
                   class="text-caption mb-0"
                   style="color: var(--sidebar-text-secondary);"
                 >
-                  Ajuste o visual e posicionamento do relógio na tela
+                  Ajuste o visual, tamanho, posicionamento e título do relógio
                 </p>
               </div>
             </div>
@@ -433,7 +433,7 @@
               </v-card-text>
             </v-card>
 
-            <!-- Tamanho do Relógio -->
+            <!-- Tamanho do Relógio (Escala) -->
             <v-card
               class="settings-card rounded-xl pa-2 mb-5"
               flat
@@ -507,6 +507,152 @@
               </v-card-text>
             </v-card>
 
+            <!-- Texto Personalizado (Opcional) -->
+            <v-card
+              class="settings-card rounded-xl pa-2 mb-5"
+              flat
+              style="background: var(--card-bg, #ffffff); box-shadow: var(--shadow);"
+            >
+              <v-card-text class="pa-4">
+                <div class="d-flex align-center justify-space-between mb-4">
+                  <div class="d-flex align-center">
+                    <v-icon
+                      color="primary"
+                      class="mr-3"
+                      size="24"
+                    >
+                      mdi-format-title
+                    </v-icon>
+                    <div>
+                      <h3
+                        class="font-weight-bold"
+                        style="color: var(--sidebar-text); font-size: 1.05rem; line-height: 1.2;"
+                      >
+                        {{ t('custom_text') }}
+                      </h3>
+                      <div
+                        class="text-caption"
+                        style="color: var(--sidebar-text-secondary);"
+                      >
+                        {{ t('custom_text_desc') }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <v-text-field
+                  v-model="localConfig.customText"
+                  variant="outlined"
+                  density="comfortable"
+                  color="primary"
+                  :placeholder="t('custom_text_placeholder')"
+                  clearable
+                  hide-details
+                  class="mb-4"
+                />
+
+                <template v-if="localConfig.customText">
+                  <!-- Cor do Texto Personalizado -->
+                  <div class="text-caption font-weight-bold mb-2" style="color: var(--sidebar-text-secondary);">
+                    Cor do Texto Personalizado
+                  </div>
+                  <div class="d-flex flex-wrap align-center mb-4" style="gap: 10px;">
+                    <div
+                      v-for="color in ['#FFFFFF', '#000000', '#f6c32a', '#FF6B6B', '#4ECDC4', '#96CEB4', '#FFEAA7', '#0097d7']"
+                      :key="color"
+                      class="rounded-circle cursor-pointer elevation-1"
+                      :class="localConfig.customTextColor === color ? 'elevation-4' : ''"
+                      :style="{
+                        width: '32px', height: '32px',
+                        background: color,
+                        border: localConfig.customTextColor === color ? '3px solid var(--accent-blue)' : '2px solid rgba(0,0,0,0.1)',
+                        transition: 'all 0.2s',
+                        transform: localConfig.customTextColor === color ? 'scale(1.15)' : 'scale(1)',
+                      }"
+                      @click="localConfig.customTextColor = color"
+                    />
+                    <ModernColorPicker v-model="localConfig.customTextColor">
+                      <template #activator="{ props }">
+                        <div
+                          v-bind="props"
+                          class="rounded-circle cursor-pointer elevation-1 d-flex align-center justify-center"
+                          style="width: 32px; height: 32px; border: 2px dashed var(--border-color); background: var(--card-bg);"
+                        >
+                          <v-icon size="14" color="grey">
+                            mdi-eyedropper
+                          </v-icon>
+                        </div>
+                      </template>
+                    </ModernColorPicker>
+                  </div>
+
+                  <!-- Tamanho do Texto Personalizado -->
+                  <div class="d-flex align-center justify-space-between mb-2">
+                    <span class="text-caption font-weight-bold" style="color: var(--sidebar-text-secondary);">
+                      Tamanho do Texto
+                    </span>
+                    <v-chip
+                      size="x-small"
+                      variant="tonal"
+                      color="primary"
+                      class="font-weight-bold"
+                    >
+                      {{ localConfig.customTextSizePc }}%
+                    </v-chip>
+                  </div>
+                  <div class="d-flex align-center mb-4" style="gap: 10px;">
+                    <v-btn
+                      icon
+                      size="x-small"
+                      variant="tonal"
+                      color="primary"
+                      @click="localConfig.customTextSizePc = Math.max(3, (localConfig.customTextSizePc || 8) - 1)"
+                    >
+                      <v-icon size="14">
+                        mdi-minus
+                      </v-icon>
+                    </v-btn>
+                    <v-slider
+                      v-model="localConfig.customTextSizePc"
+                      :min="3"
+                      :max="25"
+                      :step="1"
+                      hide-details
+                      color="primary"
+                      track-color="rgba(0,0,0,0.1)"
+                      class="flex-grow-1"
+                    />
+                    <v-btn
+                      icon
+                      size="x-small"
+                      variant="tonal"
+                      color="primary"
+                      @click="localConfig.customTextSizePc = Math.min(25, (localConfig.customTextSizePc || 8) + 1)"
+                    >
+                      <v-icon size="14">
+                        mdi-plus
+                      </v-icon>
+                    </v-btn>
+                  </div>
+
+                  <!-- Posição do Texto -->
+                  <div class="text-caption font-weight-bold mb-2" style="color: var(--sidebar-text-secondary);">
+                    {{ t('text_pos') }}
+                  </div>
+                  <PillSwitch
+                    v-model="localConfig.customTextPosition"
+                    block
+                    class="mb-2"
+                    :items="[
+                      { value: 'above', label: t('pos_above'), icon: 'mdi-format-vertical-align-top' },
+                      { value: 'below', label: t('pos_below'), icon: 'mdi-format-vertical-align-bottom' },
+                      { value: 'custom', label: t('pos_custom'), icon: 'mdi-cursor-move' },
+                    ]"
+                  />
+                </template>
+              </v-card-text>
+            </v-card>
+
             <!-- Posicionamento na Tela -->
             <v-card
               class="settings-card rounded-xl pa-2"
@@ -540,10 +686,41 @@
                   </div>
                 </div>
 
-                <PositionAlignmentPicker
-                  v-model:x="localConfig.posX"
-                  v-model:y="localConfig.posY"
-                />
+                <!-- Se posição livre ativada: seletor de elemento para alinhar -->
+                <template v-if="localConfig.customText && localConfig.customTextPosition === 'custom'">
+                  <div class="text-caption font-weight-bold mb-2" style="color: var(--sidebar-text-secondary);">
+                    Elemento a Alinhar
+                  </div>
+                  <PillSwitch
+                    v-model="activePosTarget"
+                    block
+                    class="mb-4"
+                    :items="[
+                      { value: 'clock', label: t('pos_target_clock'), icon: 'mdi-clock-outline' },
+                      { value: 'text', label: t('pos_target_text'), icon: 'mdi-format-title' },
+                    ]"
+                  />
+
+                  <div v-if="activePosTarget === 'clock'">
+                    <PositionAlignmentPicker
+                      v-model:x="localConfig.posX"
+                      v-model:y="localConfig.posY"
+                    />
+                  </div>
+                  <div v-else>
+                    <PositionAlignmentPicker
+                      v-model:x="localConfig.customTextX"
+                      v-model:y="localConfig.customTextY"
+                    />
+                  </div>
+                </template>
+
+                <template v-else>
+                  <PositionAlignmentPicker
+                    v-model:x="localConfig.posX"
+                    v-model:y="localConfig.posY"
+                  />
+                </template>
               </v-card-text>
             </v-card>
           </div>
@@ -596,6 +773,24 @@
                 :preview="false"
                 :preview-config="localConfig"
               />
+
+              <!-- Overlay interativo para arraste individual de texto quando posição é livre -->
+              <template v-if="localConfig.customText && localConfig.customTextPosition === 'custom'">
+                <div
+                  class="position-absolute"
+                  :style="{
+                    left: `${localConfig.customTextX ?? 50}%`,
+                    top: `${localConfig.customTextY ?? 20}%`,
+                    transform: 'translate(-50%, -50%)',
+                    padding: '2px 8px',
+                    border: activePosTarget === 'text' ? '1px dashed var(--accent-blue, #0097d7)' : '1px dashed rgba(255,255,255,0.4)',
+                    borderRadius: '4px',
+                    cursor: 'move',
+                    zIndex: 10,
+                  }"
+                  @pointerdown.stop="selectAndDrag('text', $event)"
+                />
+              </template>
             </div>
 
             <!-- Dica de arrastar -->
@@ -614,7 +809,7 @@
                 class="text-caption"
                 style="color: var(--sidebar-text-secondary); line-height: 1.4;"
               >
-                <strong style="color: var(--sidebar-text);">Arraste Livre:</strong> Clique e arraste diretamente no preview acima para mover o relógio para qualquer lugar da tela.
+                <strong style="color: var(--sidebar-text);">Arraste Livre:</strong> Clique e arraste diretamente no preview acima para mover o relógio ou o título para qualquer posição da tela.
               </div>
             </div>
           </div>
@@ -665,6 +860,7 @@
 import { defineComponent } from "vue";
 import ModernColorPicker from "@/components/inputs/ModernColorPicker.vue";
 import PositionAlignmentPicker from "@/components/inputs/PositionAlignmentPicker.vue";
+import PillSwitch from "@/components/inputs/PillSwitch.vue";
 import ClockScreen from "./Screen.vue";
 
 export default defineComponent({
@@ -672,6 +868,7 @@ export default defineComponent({
   components: {
     ModernColorPicker,
     PositionAlignmentPicker,
+    PillSwitch,
     ClockScreen,
   },
   props: {
@@ -682,6 +879,7 @@ export default defineComponent({
   },
   emits: ["update:modelValue"],
   data: () => ({
+    activePosTarget: "clock" as "clock" | "text",
     localConfig: {
       style: "digital",
       showSeconds: true,
@@ -692,6 +890,12 @@ export default defineComponent({
       sizeScale: 100,
       posX: 50,
       posY: 50,
+      customText: "",
+      customTextColor: "#FFFFFF",
+      customTextSizePc: 8,
+      customTextPosition: "above",
+      customTextX: 50,
+      customTextY: 20,
     },
     defaultConfig: {
       style: "digital",
@@ -703,6 +907,12 @@ export default defineComponent({
       sizeScale: 100,
       posX: 50,
       posY: 50,
+      customText: "",
+      customTextColor: "#FFFFFF",
+      customTextSizePc: 8,
+      customTextPosition: "above",
+      customTextX: 50,
+      customTextY: 20,
     },
     initialConfig: null as any,
   }),
@@ -768,6 +978,10 @@ export default defineComponent({
       reader.readAsDataURL(file);
       input.value = "";
     },
+    selectAndDrag(target: "clock" | "text", e: PointerEvent) {
+      this.activePosTarget = target;
+      this.startDrag(e);
+    },
     startDrag(e: PointerEvent) {
       const el = this.$refs.previewClockRef as HTMLElement;
       if (!el) return;
@@ -775,8 +989,19 @@ export default defineComponent({
         const rect = el.getBoundingClientRect();
         const rawX = Math.round(((evt.clientX - rect.left) / rect.width) * 100);
         const rawY = Math.round(((evt.clientY - rect.top) / rect.height) * 100);
-        this.localConfig.posX = Math.max(5, Math.min(95, rawX));
-        this.localConfig.posY = Math.max(5, Math.min(95, rawY));
+        const clampedX = Math.max(5, Math.min(95, rawX));
+        const clampedY = Math.max(5, Math.min(95, rawY));
+        if (
+          this.localConfig.customText &&
+          this.localConfig.customTextPosition === "custom" &&
+          this.activePosTarget === "text"
+        ) {
+          this.localConfig.customTextX = clampedX;
+          this.localConfig.customTextY = clampedY;
+        } else {
+          this.localConfig.posX = clampedX;
+          this.localConfig.posY = clampedY;
+        }
       };
       updatePos(e);
       const onMove = (evt: PointerEvent) => updatePos(evt);

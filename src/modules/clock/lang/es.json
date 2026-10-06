@@ -15,5 +15,14 @@
   "size": "Tamaño del Reloj",
   "size_desc": "Ajuste el tamaño del reloj en la pantalla",
   "position": "Posicionamiento",
-  "position_desc": "Alinee el reloj en la pantalla o arrastre en la vista previa"
+  "position_desc": "Alinee el reloj en la pantalla o arrastre en la vista previa",
+  "custom_text": "Texto Personalizado (Opcional)",
+  "custom_text_desc": "Mostrar un mensaje o título junto al reloj",
+  "custom_text_placeholder": "Ej: Culto de Adoración, Hora Oficial...",
+  "text_pos": "Posición del Texto",
+  "pos_above": "Arriba",
+  "pos_below": "Abajo",
+  "pos_custom": "Libre en Pantalla",
+  "pos_target_clock": "Reloj",
+  "pos_target_text": "Texto"
 }
