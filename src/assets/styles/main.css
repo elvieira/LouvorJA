@@ -154,6 +154,8 @@ img, a {
     box-shadow: var(--shadow);
     display: inline-flex;
     align-items: center;
+    box-sizing: border-box;
+    max-width: 100%;
 }
 
 .custom-tab-btn {
@@ -170,6 +172,8 @@ img, a {
     transition: var(--transition, all 0.2s ease);
     user-select: none;
     white-space: nowrap;
+    min-width: 0;
+    box-sizing: border-box;
 }
 
 .custom-tab-btn .v-icon {

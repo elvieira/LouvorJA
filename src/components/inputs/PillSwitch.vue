@@ -22,17 +22,18 @@
         active: modelValue === item.value,
         'flex-grow-1 justify-center': block,
       }"
+      :title="item.label"
       :disabled="disabled || item.disabled"
       @click="selectItem(item.value)"
     >
       <v-icon
         v-if="item.icon"
         size="16"
-        class="mr-1"
+        class="mr-1 flex-shrink-0"
       >
         {{ item.icon }}
       </v-icon>
-      <span>{{ item.label }}</span>
+      <span class="pill-btn-label">{{ item.label }}</span>
     </button>
   </div>
 </template>
@@ -169,6 +170,10 @@ onBeforeUnmount(() => {
 <style scoped>
 .custom-tabs-pill {
   position: relative !important;
+  box-sizing: border-box !important;
+  max-width: 100% !important;
+  overflow: hidden;
+  border-radius: 20px;
 }
 
 .pill-slider-indicator {
@@ -189,6 +194,21 @@ onBeforeUnmount(() => {
   z-index: 2;
   background: transparent !important;
   box-shadow: none !important;
+  box-sizing: border-box !important;
+  min-width: 0 !important;
+  padding: 6px 10px;
+}
+
+.custom-tabs-pill.w-100 .custom-tab-btn {
+  flex: 1 1 0px !important;
+}
+
+.pill-btn-label {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .custom-tab-btn.active {

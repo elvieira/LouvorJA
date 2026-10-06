@@ -1,38 +1,122 @@
 <template>
   <div
-    class="screen-container w-100 h-100 d-flex flex-column align-center justify-center position-relative"
+    class="screen-container w-100 h-100 position-relative overflow-hidden"
     :style="backgroundStyle"
     :class="[{ 'blink-animation': isAlerting }, { 'is-preview': preview }]"
   >
     <!-- MODO PADRÃO (Regressivo / Progressivo) -->
     <template v-if="mode !== 'cult'">
       <div 
-        class="timer-text font-weight-black text-center" 
-        :style="textStyle"
+        class="timer-main-wrapper"
+        :style="timerWrapperStyle"
       >
-        {{ formattedTime }}
+        <!-- Texto Personalizado (Acima quando vinculado) -->
+        <div
+          v-if="config.customText && (config.customTextPosition === 'above' || !config.customTextPosition)"
+          class="custom-timer-title font-weight-bold"
+          :style="customTextStyle"
+        >
+          {{ config.customText }}
+        </div>
+
+        <div 
+          class="timer-text font-weight-black" 
+          :style="textStyle"
+        >
+          {{ formattedTime }}
+        </div>
+
+        <!-- Texto Personalizado (Abaixo quando vinculado) -->
+        <div
+          v-if="config.customText && config.customTextPosition === 'below'"
+          class="custom-timer-title font-weight-bold"
+          :style="customTextStyle"
+        >
+          {{ config.customText }}
+        </div>
+      </div>
+
+      <!-- Texto Personalizado Livre (Independente) -->
+      <div
+        v-if="config.customText && config.customTextPosition === 'custom'"
+        class="custom-timer-title font-weight-bold"
+        :style="customTextFreeStyle"
+      >
+        {{ config.customText }}
       </div>
     </template>
 
     <!-- MODO CRONÔMETRO DE CULTO -->
     <template v-else>
-      <div class="cult-container w-100 h-100 d-flex flex-column align-center justify-center position-relative">
-        <!-- Mostrador Superior: Hora Atual (Relógio) -->
-        <div
-          v-if="showCultClock"
-          class="cult-clock font-weight-bold text-center d-flex align-center justify-center"
-          :style="cultClockStyle"
-        >
-          {{ currentClockTime }}
-        </div>
+      <div class="cult-container w-100 h-100 position-relative overflow-hidden">
+        <!-- SE MODO INDIVIDUAL -->
+        <template v-if="config.cultPosMode === 'individual'">
+          <!-- Texto Personalizado se configurado -->
+          <div
+            v-if="config.customText"
+            class="custom-timer-title font-weight-bold"
+            :style="cultTextStyle"
+          >
+            {{ config.customText }}
+          </div>
 
-        <!-- Mostrador Inferior: Tempo Restante / Negativo -->
-        <div
-          class="cult-timer font-weight-black text-center d-flex align-center justify-center"
-          :style="cultTimerStyle"
-        >
-          {{ formattedCultTime }}
-        </div>
+          <!-- Relógio / Hora Atual -->
+          <div
+            v-if="showCultClock"
+            class="cult-clock font-weight-bold text-center d-flex align-center justify-center"
+            :style="cultClockStyle"
+          >
+            {{ currentClockTime }}
+          </div>
+
+          <!-- Cronômetro / Tempo Restante -->
+          <div
+            class="cult-timer font-weight-black text-center d-flex align-center justify-center"
+            :style="cultTimerStyle"
+          >
+            {{ formattedCultTime }}
+          </div>
+        </template>
+
+        <!-- SE MODO JUNTOS (TOGETHER) -->
+        <template v-else>
+          <div class="cult-main-wrapper" :style="cultWrapperStyle">
+            <!-- Texto Personalizado Vinculado -->
+            <div
+              v-if="config.customText && config.customTextPosition !== 'custom'"
+              class="custom-timer-title font-weight-bold mb-1"
+              :style="customTextStyle"
+            >
+              {{ config.customText }}
+            </div>
+
+            <!-- Mostrador Superior: Hora Atual (Relógio) -->
+            <div
+              v-if="showCultClock"
+              class="cult-clock font-weight-bold text-center d-flex align-center justify-center"
+              :style="cultClockStyle"
+            >
+              {{ currentClockTime }}
+            </div>
+
+            <!-- Mostrador Inferior: Tempo Restante / Negativo -->
+            <div
+              class="cult-timer font-weight-black text-center d-flex align-center justify-center"
+              :style="cultTimerStyle"
+            >
+              {{ formattedCultTime }}
+            </div>
+          </div>
+
+          <!-- Texto Personalizado Livre no Culto -->
+          <div
+            v-if="config.customText && config.customTextPosition === 'custom'"
+            class="custom-timer-title font-weight-bold"
+            :style="customTextFreeStyle"
+          >
+            {{ config.customText }}
+          </div>
+        </template>
 
         <!-- Barra de Progresso Inferior (Gauge) -->
         <div
@@ -105,6 +189,15 @@ export default defineComponent({
       return this.$appdata.get(`modules.${this.module_id}.config`) || this.$userdata.get(`modules.${this.module_id}.config`) || {
         fontColor: "#ffffff",
         bgColor: "#000000",
+        fontSizePc: 25,
+        posX: 50,
+        posY: 50,
+        customText: "",
+        customTextSizePc: 8,
+        customTextColor: "#ffffff",
+        customTextPosition: "above",
+        customTextX: 50,
+        customTextY: 20,
         visualAlert: true,
         audioAlert: true,
         cultBgColor: "#000000",
@@ -119,6 +212,17 @@ export default defineComponent({
         cultAudio1min: true,
         cultAudioEnd: true,
         bgImage: null,
+        cultClockSizePc: 12,
+        cultTimerSizePc: 22,
+        cultPosMode: "together",
+        cultPosX: 50,
+        cultPosY: 50,
+        cultClockX: 50,
+        cultClockY: 35,
+        cultTimerX: 50,
+        cultTimerY: 60,
+        cultTextX: 50,
+        cultTextY: 15,
       };
     },
     timerData(): any {
@@ -147,8 +251,7 @@ export default defineComponent({
       return Boolean(this.timerData?.isAlerting && this.config?.visualAlert !== false);
     },
     showCultClock(): boolean {
-      if (this.config.cultAlwaysShowClock !== false) return true;
-      return Boolean(this.timerData?.isRunning);
+      return this.config.cultAlwaysShowClock !== false;
     },
     isCultNegative(): boolean {
       return this.cultRemainingMs < 0;
@@ -264,32 +367,165 @@ export default defineComponent({
       }
       return rawColor;
     },
+    timerWrapperStyle(): any {
+      const x = this.config.posX ?? 50;
+      const y = this.config.posY ?? 50;
+      const align = x <= 30 ? "flex-start" : x >= 70 ? "flex-end" : "center";
+      const textAlign = x <= 30 ? "left" : x >= 70 ? "right" : "center";
+      return {
+        position: "absolute",
+        left: `${x}%`,
+        top: `${y}%`,
+        transform: `translate(-${x}%, -${y}%)`,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: align,
+        textAlign,
+        maxWidth: "94%",
+        userSelect: "none",
+        pointerEvents: "auto",
+        transition: this.preview ? "none" : "all 0.2s ease-out",
+      };
+    },
+    customTextStyle(): any {
+      const sizePc = this.config.customTextSizePc ?? 8;
+      return {
+        color: this.config.customTextColor || this.effectiveFontColor,
+        fontSize: this.preview ? `clamp(1rem, ${sizePc * 0.3}vw, 3rem)` : `${sizePc}vmin`,
+        lineHeight: 1.2,
+        marginBottom: this.config.customTextPosition === "below" ? "0" : "1.2vmin",
+        marginTop: this.config.customTextPosition === "below" ? "1.2vmin" : "0",
+        textShadow: this.textShadowValue,
+        letterSpacing: "0.02em",
+        wordBreak: "break-word",
+      };
+    },
+    customTextFreeStyle(): any {
+      const x = this.config.customTextX ?? 50;
+      const y = this.config.customTextY ?? 20;
+      const sizePc = this.config.customTextSizePc ?? 8;
+      const align = x <= 30 ? "left" : x >= 70 ? "right" : "center";
+      return {
+        position: "absolute",
+        left: `${x}%`,
+        top: `${y}%`,
+        transform: `translate(-${x}%, -${y}%)`,
+        color: this.config.customTextColor || this.effectiveFontColor,
+        fontSize: this.preview ? `clamp(1rem, ${sizePc * 0.3}vw, 3rem)` : `${sizePc}vmin`,
+        lineHeight: 1.2,
+        textAlign: align,
+        textShadow: this.textShadowValue,
+        letterSpacing: "0.02em",
+        maxWidth: "94%",
+        userSelect: "none",
+        wordBreak: "break-word",
+        transition: this.preview ? "none" : "all 0.2s ease-out",
+      };
+    },
     textStyle(): any {
+      const sizePc = this.config.fontSizePc ?? 25;
       return {
         color: this.isAlerting
           ? "#ffffff"
           : this.effectiveFontColor,
-        fontSize: this.preview ? "clamp(4rem, 8vw, 8rem)" : "25vmin",
+        fontSize: this.preview ? `clamp(2.5rem, ${sizePc * 0.35}vw, 8.5rem)` : `${sizePc}vmin`,
         lineHeight: 1,
         textShadow: this.textShadowValue,
+        fontVariantNumeric: "tabular-nums",
+      };
+    },
+    cultWrapperStyle(): any {
+      const x = this.config.cultPosX ?? this.config.posX ?? 50;
+      const y = this.config.cultPosY ?? this.config.posY ?? 50;
+      const align = x <= 30 ? "flex-start" : x >= 70 ? "flex-end" : "center";
+      const textAlign = x <= 30 ? "left" : x >= 70 ? "right" : "center";
+      return {
+        position: "absolute",
+        left: `${x}%`,
+        top: `${y}%`,
+        transform: `translate(-${x}%, -${y}%)`,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: align,
+        textAlign,
+        maxWidth: "94%",
+        userSelect: "none",
+        pointerEvents: "auto",
+        transition: this.preview ? "none" : "all 0.2s ease-out",
       };
     },
     cultClockStyle(): any {
-      return {
+      const sizePc = this.config.cultClockSizePc ?? 12;
+      const isIndividual = this.config.cultPosMode === "individual";
+      const x = isIndividual ? (this.config.cultClockX ?? 50) : 50;
+      const y = isIndividual ? (this.config.cultClockY ?? 35) : 0;
+      const align = x <= 30 ? "left" : x >= 70 ? "right" : "center";
+      const base: any = {
         color: this.effectiveCultClockColor,
-        fontSize: this.preview ? "clamp(2rem, 4vw, 3.6rem)" : "12vmin",
+        fontSize: this.preview ? `clamp(1.2rem, ${sizePc * 0.18}vw, 4.2rem)` : `${sizePc}vmin`,
         lineHeight: 1.1,
         textShadow: this.cultClockTextShadowValue,
         fontVariantNumeric: "tabular-nums",
+        textAlign: align,
       };
+      if (isIndividual) {
+        base.position = "absolute";
+        base.left = `${x}%`;
+        base.top = `${y}%`;
+        base.transform = `translate(-${x}%, -${y}%)`;
+        base.maxWidth = "94%";
+        base.userSelect = "none";
+        base.pointerEvents = "auto";
+        base.transition = this.preview ? "none" : "all 0.2s ease-out";
+      }
+      return base;
     },
     cultTimerStyle(): any {
-      return {
+      const sizePc = this.config.cultTimerSizePc ?? 22;
+      const isIndividual = this.config.cultPosMode === "individual";
+      const x = isIndividual ? (this.config.cultTimerX ?? 50) : 50;
+      const y = isIndividual ? (this.config.cultTimerY ?? 60) : 0;
+      const align = x <= 30 ? "left" : x >= 70 ? "right" : "center";
+      const base: any = {
         color: this.effectiveCultTimerColor,
-        fontSize: this.preview ? "clamp(3.5rem, 7.5vw, 6.8rem)" : "22vmin",
+        fontSize: this.preview ? `clamp(2rem, ${sizePc * 0.3}vw, 7.5rem)` : `${sizePc}vmin`,
         lineHeight: 1.1,
         textShadow: this.textShadowValue,
         fontVariantNumeric: "tabular-nums",
+        textAlign: align,
+      };
+      if (isIndividual) {
+        base.position = "absolute";
+        base.left = `${x}%`;
+        base.top = `${y}%`;
+        base.transform = `translate(-${x}%, -${y}%)`;
+        base.maxWidth = "94%";
+        base.userSelect = "none";
+        base.pointerEvents = "auto";
+        base.transition = this.preview ? "none" : "all 0.2s ease-out";
+      }
+      return base;
+    },
+    cultTextStyle(): any {
+      const x = this.config.cultTextX ?? this.config.customTextX ?? 50;
+      const y = this.config.cultTextY ?? this.config.customTextY ?? 15;
+      const sizePc = this.config.customTextSizePc ?? 8;
+      const align = x <= 30 ? "left" : x >= 70 ? "right" : "center";
+      return {
+        position: "absolute",
+        left: `${x}%`,
+        top: `${y}%`,
+        transform: `translate(-${x}%, -${y}%)`,
+        color: this.config.customTextColor || this.effectiveFontColor,
+        fontSize: this.preview ? `clamp(1rem, ${sizePc * 0.3}vw, 3rem)` : `${sizePc}vmin`,
+        lineHeight: 1.2,
+        textAlign: align,
+        textShadow: this.textShadowValue,
+        letterSpacing: "0.02em",
+        maxWidth: "94%",
+        userSelect: "none",
+        wordBreak: "break-word",
+        transition: this.preview ? "none" : "all 0.2s ease-out",
       };
     },
     backgroundStyle(): any {
