@@ -303,6 +303,14 @@
                 {{ t('shortcuts.nav_config') }}
               </td>
             </tr>
+            <tr>
+              <td class="keys-cell">
+                <kbd class="keycap">Alt</kbd> <span class="shortcut-operator">+</span> <kbd class="keycap">F4</kbd> <span class="shortcut-operator">{{ t('shortcuts.or') }}</span> <kbd class="keycap"><span class="cmd-symbol">⌘</span></kbd> <span class="shortcut-operator">+</span> <kbd class="keycap">Q</kbd>
+              </td>
+              <td class="desc-cell">
+                {{ t('shortcuts.nav_quit') }}
+              </td>
+            </tr>
           </tbody>
         </v-table>
       </v-card-text>
@@ -350,7 +358,7 @@
             </tr>
             <tr>
               <td class="keys-cell">
-                <kbd class="keycap">Ctrl/ <span class="cmd-symbol">⌘</span></kbd> <span class="shortcut-operator">+</span> <kbd class="keycap">Q</kbd>
+                <kbd class="keycap">Ctrl</kbd> <span class="shortcut-operator">+</span> <kbd class="keycap">Q</kbd>
               </td>
               <td class="desc-cell">
                 {{ t('shortcuts.toggle_queue') }}

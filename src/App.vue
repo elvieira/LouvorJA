@@ -322,15 +322,27 @@ export default {
         return;
       }
 
-      if (["INPUT", "TEXTAREA"].includes(document.activeElement.tagName) || document.activeElement.isContentEditable) {
-        return;
-      }
-
       const isMac = Boolean(window.electronAPI && window.electronAPI.isMac) || (
         typeof navigator !== "undefined" && (
           navigator.userAgent.includes("Mac") || (navigator.platform && navigator.platform.includes("Mac"))
         )
       );
+
+      // No Mac: Command+Q (⌘Q) encerra a aplicação com segurança (mesmo se estiver digitando em campo de texto)
+      if (isMac && e.metaKey && !e.ctrlKey && (e.code === "KeyQ" || e.key?.toLowerCase() === "q")) {
+        e.preventDefault();
+        if (window.electronAPI?.windowControl) {
+          window.electronAPI.windowControl("close");
+        } else {
+          window.close();
+        }
+        return;
+      }
+
+      if (["INPUT", "TEXTAREA"].includes(document.activeElement.tagName) || document.activeElement.isContentEditable) {
+        return;
+      }
+
       // No Mac: estritamente Command (metaKey) e NUNCA Ctrl
       // No Windows e Linux: estritamente Ctrl (ctrlKey) e NUNCA Command/Windows key
       const isModifier = isMac ? (e.metaKey && !e.ctrlKey) : (e.ctrlKey && !e.metaKey);
@@ -460,8 +472,11 @@ export default {
           return;
         }
 
-        // Fila de reprodução
+        // Fila de reprodução (Windows/Linux: Ctrl+Q | Mac: Control+Q ou Cmd+Shift+Q)
         if (e.code === "KeyQ" || e.key?.toLowerCase() === "q") {
+          if (isMac && !e.shiftKey) {
+            return;
+          }
           e.preventDefault();
           this.$appdata.set("modules.media.show_queue", !this.$appdata.get("modules.media.show_queue"));
           return;
@@ -528,6 +543,13 @@ export default {
           this.$media.fullscreen(!isFullscreen);
           return;
         }
+      }
+
+      // No Mac: se pressionar Control+Q (^Q), também alterna a fila de reprodução
+      if (isMac && e.ctrlKey && !e.metaKey && (e.code === "KeyQ" || e.key?.toLowerCase() === "q")) {
+        e.preventDefault();
+        this.$appdata.set("modules.media.show_queue", !this.$appdata.get("modules.media.show_queue"));
+        return;
       }
 
       // 3. F1 - Manual de Uso

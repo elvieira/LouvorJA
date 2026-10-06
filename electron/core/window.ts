@@ -94,7 +94,7 @@ export function createWindow(): void {
         { role: "hideOthers", label: "Ocultar Outros" },
         { role: "unhide", label: "Mostrar Tudo" },
         { type: "separator" },
-        { role: "quit", label: "Encerrar Louvor JA" },
+        { role: "quit", label: "Encerrar Louvor JA", accelerator: "CmdOrCtrl+Q" },
       ],
     }] as MenuItemConstructorOptions[] : []),
     {
