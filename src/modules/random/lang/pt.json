@@ -26,5 +26,7 @@
   "max_number": "Máx.",
   "apply_range": "Aplicar Intervalo",
   "invalid_range": "Intervalo inválido",
-  "generate_numbers": "Gerar Números"
+  "generate_numbers": "Gerar Números",
+  "position": "Posicionamento",
+  "position_desc": "Alinhe o texto na tela ou arraste no preview"
 }

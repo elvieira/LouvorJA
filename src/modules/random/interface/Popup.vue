@@ -1,26 +1,36 @@
 <template>
   <div
     ref="container"
-    class="d-flex align-center justify-center overflow-hidden"
+    class="position-relative w-100 h-100 overflow-hidden"
     :style="containerStyle"
   >
-    <v-slide-y-transition mode="out-in">
-      <div 
-        :key="data.isDrawing ? 'drawing' : data.currentDisplay" 
-        class="d-flex align-center justify-center w-100 h-100 px-10 text-center font-weight-black" 
-        :style="{
-          fontSize: data.isDrawing ? (config.fontSizePc * 0.8) + 'vw' : config.fontSizePc + 'vw',
-          transition: 'all 0.3s ease-out',
-          textTransform: config.textTransform,
-          textShadow: data.isDrawing
-            ? (config.bgImage ? '0 4px 12px rgba(0,0,0,0.8)' : 'none')
-            : (config.bgImage ? `0 10px 40px ${config.color}60, 0 2px 10px rgba(0,0,0,0.8)` : `0 10px 40px ${config.color}60`),
-          opacity: data.currentDisplay ? 1 : 0
-        }"
-      >
-        {{ data.currentDisplay }}
-      </div>
-    </v-slide-y-transition>
+    <div
+      class="position-absolute d-flex align-center justify-center text-center"
+      :style="{
+        left: `${config.posX ?? 50}%`,
+        top: `${config.posY ?? 50}%`,
+        transform: 'translate(-50%, -50%)',
+        whiteSpace: 'nowrap',
+      }"
+    >
+      <v-slide-y-transition mode="out-in">
+        <div 
+          :key="data.isDrawing ? 'drawing' : data.currentDisplay" 
+          class="font-weight-black text-center" 
+          :style="{
+            fontSize: data.isDrawing ? (config.fontSizePc * 0.8) + 'vw' : config.fontSizePc + 'vw',
+            transition: 'all 0.3s ease-out',
+            textTransform: config.textTransform,
+            textShadow: data.isDrawing
+              ? (config.bgImage ? '0 4px 12px rgba(0,0,0,0.8)' : 'none')
+              : (config.bgImage ? `0 10px 40px ${config.color}60, 0 2px 10px rgba(0,0,0,0.8)` : `0 10px 40px ${config.color}60`),
+            opacity: data.currentDisplay ? 1 : 0
+          }"
+        >
+          {{ data.currentDisplay }}
+        </div>
+      </v-slide-y-transition>
+    </div>
   </div>
 </template>
 

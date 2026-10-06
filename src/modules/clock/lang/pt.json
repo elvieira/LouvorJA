@@ -11,5 +11,9 @@
   "format_24h": "Formato 24h",
   "colors": "Cores e Fundo",
   "bg_color": "Cor de Fundo",
-  "text_color": "Cor do Texto / Ponteiros"
+  "text_color": "Cor do Texto / Ponteiros",
+  "size": "Tamanho do Relógio",
+  "size_desc": "Ajuste a proporção do mostrador na tela",
+  "position": "Posicionamento",
+  "position_desc": "Alinhe o relógio na tela ou arraste no preview"
 }

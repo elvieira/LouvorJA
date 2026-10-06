@@ -26,5 +26,7 @@
   "max_number": "Máx.",
   "apply_range": "Aplicar Rango",
   "invalid_range": "Rango inválido",
-  "generate_numbers": "Generar Números"
+  "generate_numbers": "Generar Números",
+  "position": "Posicionamiento",
+  "position_desc": "Alinee el texto en la pantalla o arrastre en la vista previa"
 }

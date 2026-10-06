@@ -1,7 +1,7 @@
 <template>
   <div
     ref="container"
-    class="d-flex align-center justify-center position-relative w-100 h-100 overflow-hidden"
+    class="position-relative w-100 h-100 overflow-hidden"
     :style="{
       backgroundColor: preview ? 'transparent' : config.bgColor,
       backgroundImage: (!preview && config.bgImage) ? `url('${config.bgImage}')` : 'none',
@@ -12,142 +12,152 @@
       color: preview ? 'var(--sidebar-text)' : config.textColor,
     }"
   >
-    <!-- DIGITAL CLOCK -->
-    <v-fade-transition>
-      <div 
-        v-if="config.style === 'digital'" 
-        class="digital-clock font-weight-black d-flex align-center justify-center text-center w-100"
-        :style="{
-          fontSize: `${digitalFontSize}px`,
-          textShadow: preview ? 'none' : (config.bgImage ? '0 4px 20px rgba(0,0,0,0.8), 0 2px 8px rgba(0,0,0,0.9)' : `0 4px 30px ${config.textColor}40`),
-          fontFamily: 'system-ui, -apple-system, sans-serif'
-        }"
-      >
-        <span>{{ formattedTime }}</span>
-        <span 
-          v-if="config.showSeconds" 
-          class="ml-2 opacity-70"
-          :style="{ fontSize: `${digitalFontSize * 0.5}px`, alignSelf: 'flex-end', marginBottom: `${digitalFontSize * 0.15}px` }"
-        >
-          {{ formattedSeconds }}
-        </span>
-        <span 
-          v-if="!config.format24h" 
-          class="ml-4 opacity-50 font-weight-bold"
-          :style="{ fontSize: `${digitalFontSize * 0.3}px`, alignSelf: 'flex-end', marginBottom: `${digitalFontSize * 0.2}px` }"
-        >
-          {{ ampm }}
-        </span>
-      </div>
-    </v-fade-transition>
-
-    <!-- ANALOG CLOCK -->
-    <v-fade-transition>
-      <div 
-        v-if="config.style === 'analog'" 
-        class="analog-clock rounded-circle position-relative"
-        :style="{
-          width: `${analogSize}px`,
-          height: `${analogSize}px`,
-          border: `min(8px, ${analogSize * 0.02}px) solid ${config.textColor}`,
-          boxShadow: config.bgImage 
-            ? `inset 0 0 40px rgba(0,0,0,0.6), 0 10px 40px rgba(0,0,0,0.6), 0 0 15px ${config.textColor}40`
-            : `inset 0 0 40px ${config.bgColor}40, 0 10px 40px ${config.textColor}20`
-        }"
-      >
-        <!-- Center Dot -->
+    <div
+      class="position-absolute d-flex align-center justify-center pointer-events-none"
+      :style="{
+        left: `${config.posX ?? 50}%`,
+        top: `${config.posY ?? 50}%`,
+        transform: 'translate(-50%, -50%)',
+        whiteSpace: 'nowrap',
+      }"
+    >
+      <!-- DIGITAL CLOCK -->
+      <v-fade-transition>
         <div 
-          class="position-absolute rounded-circle"
+          v-if="config.style === 'digital'" 
+          class="digital-clock font-weight-black d-flex align-center justify-center text-center"
           :style="{
-            width: `${analogSize * 0.06}px`,
-            height: `${analogSize * 0.06}px`,
-            background: config.textColor,
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            zIndex: 10
-          }"
-        />
-
-        <!-- Hour Hand -->
-        <div 
-          class="hand hour-hand position-absolute"
-          :style="{
-            width: `${analogSize * 0.025}px`,
-            height: `${analogSize * 0.3}px`,
-            background: config.textColor,
-            bottom: '50%',
-            left: `calc(50% - ${analogSize * 0.0125}px)`,
-            transformOrigin: 'bottom center',
-            transform: `rotate(${hourAngle}deg)`,
-            borderRadius: '4px',
-            zIndex: 7
-          }"
-        />
-
-        <!-- Minute Hand -->
-        <div 
-          class="hand minute-hand position-absolute"
-          :style="{
-            width: `${analogSize * 0.015}px`,
-            height: `${analogSize * 0.4}px`,
-            background: config.textColor,
-            opacity: 0.8,
-            bottom: '50%',
-            left: `calc(50% - ${analogSize * 0.0075}px)`,
-            transformOrigin: 'bottom center',
-            transform: `rotate(${minuteAngle}deg)`,
-            borderRadius: '4px',
-            zIndex: 8
-          }"
-        />
-
-        <!-- Second Hand -->
-        <div 
-          v-if="config.showSeconds"
-          class="hand second-hand position-absolute"
-          :style="{
-            width: `${analogSize * 0.005}px`,
-            height: `${analogSize * 0.45}px`,
-            background: '#ff3b30',
-            bottom: '50%',
-            left: `calc(50% - ${analogSize * 0.0025}px)`,
-            transformOrigin: 'bottom center',
-            transform: `rotate(${secondAngle}deg)`,
-            zIndex: 9
+            fontSize: `${digitalFontSize}px`,
+            textShadow: preview ? 'none' : (config.bgImage ? '0 4px 20px rgba(0,0,0,0.8), 0 2px 8px rgba(0,0,0,0.9)' : `0 4px 30px ${config.textColor}40`),
+            fontFamily: 'system-ui, -apple-system, sans-serif'
           }"
         >
-          <!-- Tail of second hand -->
-          <div :style="{ width: '100%', height: '20%', background: '#ff3b30', position: 'absolute', top: '100%' }" />
+          <span>{{ formattedTime }}</span>
+          <span 
+            v-if="config.showSeconds" 
+            class="ml-2 opacity-70"
+            :style="{ fontSize: `${digitalFontSize * 0.5}px`, alignSelf: 'flex-end', marginBottom: `${digitalFontSize * 0.15}px` }"
+          >
+            {{ formattedSeconds }}
+          </span>
+          <span 
+            v-if="!config.format24h" 
+            class="ml-4 opacity-50 font-weight-bold"
+            :style="{ fontSize: `${digitalFontSize * 0.3}px`, alignSelf: 'flex-end', marginBottom: `${digitalFontSize * 0.2}px` }"
+          >
+            {{ ampm }}
+          </span>
         </div>
+      </v-fade-transition>
 
-        <!-- Clock Markers -->
+      <!-- ANALOG CLOCK -->
+      <v-fade-transition>
         <div 
-          v-for="i in 12" 
-          :key="i"
-          class="position-absolute"
+          v-if="config.style === 'analog'" 
+          class="analog-clock rounded-circle position-relative"
           :style="{
-            width: '100%',
-            height: '100%',
-            top: 0,
-            left: 0,
-            transform: `rotate(${i * 30}deg)`
+            width: `${analogSize}px`,
+            height: `${analogSize}px`,
+            border: `min(8px, ${analogSize * 0.02}px) solid ${config.textColor}`,
+            boxShadow: config.bgImage 
+              ? `inset 0 0 40px rgba(0,0,0,0.6), 0 10px 40px rgba(0,0,0,0.6), 0 0 15px ${config.textColor}40`
+              : `inset 0 0 40px ${config.bgColor}40, 0 10px 40px ${config.textColor}20`
           }"
         >
+          <!-- Center Dot -->
           <div 
+            class="position-absolute rounded-circle"
             :style="{
-              width: `${i % 3 === 0 ? analogSize * 0.02 : analogSize * 0.01}px`,
-              height: `${i % 3 === 0 ? analogSize * 0.06 : analogSize * 0.03}px`,
+              width: `${analogSize * 0.06}px`,
+              height: `${analogSize * 0.06}px`,
               background: config.textColor,
-              margin: '0 auto',
-              marginTop: `${analogSize * 0.02}px`,
-              opacity: i % 3 === 0 ? 1 : 0.5,
-              borderRadius: '2px'
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              zIndex: 10
             }"
           />
+
+          <!-- Hour Hand -->
+          <div 
+            class="hand hour-hand position-absolute"
+            :style="{
+              width: `${analogSize * 0.025}px`,
+              height: `${analogSize * 0.3}px`,
+              background: config.textColor,
+              bottom: '50%',
+              left: `calc(50% - ${analogSize * 0.0125}px)`,
+              transformOrigin: 'bottom center',
+              transform: `rotate(${hourAngle}deg)`,
+              borderRadius: '4px',
+              zIndex: 7
+            }"
+          />
+
+          <!-- Minute Hand -->
+          <div 
+            class="hand minute-hand position-absolute"
+            :style="{
+              width: `${analogSize * 0.015}px`,
+              height: `${analogSize * 0.4}px`,
+              background: config.textColor,
+              opacity: 0.8,
+              bottom: '50%',
+              left: `calc(50% - ${analogSize * 0.0075}px)`,
+              transformOrigin: 'bottom center',
+              transform: `rotate(${minuteAngle}deg)`,
+              borderRadius: '4px',
+              zIndex: 8
+            }"
+          />
+
+          <!-- Second Hand -->
+          <div 
+            v-if="config.showSeconds" 
+            class="hand second-hand position-absolute"
+            :style="{
+              width: `${analogSize * 0.005}px`,
+              height: `${analogSize * 0.45}px`,
+              background: '#ff3b30',
+              bottom: '50%',
+              left: `calc(50% - ${analogSize * 0.0025}px)`,
+              transformOrigin: 'bottom center',
+              transform: `rotate(${secondAngle}deg)`,
+              zIndex: 9
+            }"
+          >
+            <!-- Tail of second hand -->
+            <div :style="{ width: '100%', height: '20%', background: '#ff3b30', position: 'absolute', top: '100%' }" />
+          </div>
+
+          <!-- Clock Markers -->
+          <div 
+            v-for="i in 12" 
+            :key="i"
+            class="position-absolute"
+            :style="{
+              width: '100%',
+              height: '100%',
+              top: 0,
+              left: 0,
+              transform: `rotate(${i * 30}deg)`
+            }"
+          >
+            <div 
+              :style="{
+                width: `${i % 3 === 0 ? analogSize * 0.02 : analogSize * 0.01}px`,
+                height: `${i % 3 === 0 ? analogSize * 0.06 : analogSize * 0.03}px`,
+                background: config.textColor,
+                margin: '0 auto',
+                marginTop: `${analogSize * 0.02}px`,
+                opacity: i % 3 === 0 ? 1 : 0.5,
+                borderRadius: '2px'
+              }"
+            />
+          </div>
         </div>
-      </div>
-    </v-fade-transition>
+      </v-fade-transition>
+    </div>
   </div>
 </template>
 
@@ -182,6 +192,9 @@ export default defineComponent({
       bgColor: "#000000",
       bgImage: null as string | null,
       textColor: "#FFFFFF",
+      sizeScale: 100,
+      posX: 50,
+      posY: 50,
     },
   }),
   computed: {
@@ -195,11 +208,13 @@ export default defineComponent({
     digitalFontSize(): number {
       const v = Math.min(this.s_width, this.s_height);
       const ratio = this.config.showSeconds ? 0.35 : 0.4;
-      return Math.max(v * ratio, 20); // Responsive font size
+      const scale = (this.config.sizeScale || 100) / 100;
+      return Math.max(v * ratio * scale, 12); // Responsive font size
     },
     analogSize(): number {
       const v = Math.min(this.s_width, this.s_height);
-      return Math.max(v * 0.8, 100); // 80% of smallest dimension
+      const scale = (this.config.sizeScale || 100) / 100;
+      return Math.max(v * 0.8 * scale, 50); // 80% of smallest dimension
     },
     formattedTime(): string {
       const opts = {

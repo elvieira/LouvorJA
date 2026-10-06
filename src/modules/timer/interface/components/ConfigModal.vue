@@ -2,10 +2,10 @@
   <v-slide-y-reverse-transition>
     <div v-if="internalValue" class="d-flex align-center justify-center bg-transparent" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 100; background: rgba(0,0,0,0.6) !important; backdrop-filter: blur(2px);">
       <v-card
-        class="timer-config-modal rounded-2xl"
+        class="timer-config-modal rounded-xl"
         width="95%"
         max-width="960"
-        style="background: var(--card-bg, #ffffff); box-shadow: 0 16px 50px rgba(0,0,0,0.5); overflow: hidden; display: flex; flex-direction: column; max-height: 90vh; height: 680px;"
+        style="background: var(--card-bg, #ffffff); box-shadow: 0 16px 50px rgba(0,0,0,0.5); overflow: hidden; display: flex; flex-direction: column; max-height: 90vh; height: 680px; border-radius: 24px !important;"
       >
         <!-- Header -->
         <div class="pa-5 pb-2 flex-shrink-0" style="background: rgba(0,0,0,0.02); border-bottom: 1px solid rgba(0,0,0,0.06);">

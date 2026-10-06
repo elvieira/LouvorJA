@@ -11,5 +11,9 @@
   "format_24h": "Formato 24h",
   "colors": "Colores y Fondo",
   "bg_color": "Color de Fondo",
-  "text_color": "Color del Texto / Agujas"
+  "text_color": "Color del Texto / Agujas",
+  "size": "Tamaño del Reloj",
+  "size_desc": "Ajuste el tamaño del reloj en la pantalla",
+  "position": "Posicionamiento",
+  "position_desc": "Alinee el reloj en la pantalla o arrastre en la vista previa"
 }
