@@ -49,51 +49,54 @@
     <!-- MODO CRONÔMETRO DE CULTO -->
     <template v-else>
       <div class="cult-container w-100 h-100 position-relative overflow-hidden">
-        <!-- SE MODO INDIVIDUAL -->
-        <template v-if="config.cultPosMode === 'individual'">
-          <!-- Texto Personalizado se configurado -->
-          <div
-            v-if="effectiveCultCustomText"
-            class="custom-timer-title font-weight-bold"
-            :style="cultTextStyle"
-          >
-            {{ effectiveCultCustomText }}
-          </div>
+        <!-- SE VISUALIZAÇÃO NA JANELA PRINCIPAL (PREVIEW) -->
+        <template v-if="preview">
+          <div class="cult-preview-main-layout w-100 h-100 position-relative d-flex flex-column align-center justify-center">
+            <!-- Bloco Central: Relógio e Cronômetro -->
+            <div class="d-flex flex-column align-center justify-center text-center">
+              <!-- Relógio (Hora Atual) -->
+              <div
+                v-if="showCultClock"
+                class="cult-clock font-weight-bold text-center d-flex align-center justify-center mb-1"
+                :style="previewCultClockStyle"
+              >
+                {{ currentClockTime }}
+              </div>
 
-          <!-- Relógio / Hora Atual -->
-          <div
-            v-if="showCultClock"
-            class="cult-clock font-weight-bold text-center d-flex align-center justify-center"
-            :style="cultClockStyle"
-          >
-            {{ currentClockTime }}
-          </div>
+              <!-- Cronômetro (Tempo Restante) -->
+              <div
+                class="cult-timer font-weight-black text-center d-flex align-center justify-center"
+                :style="previewCultTimerStyle"
+              >
+                {{ formattedCultTime }}
+              </div>
+            </div>
 
-          <!-- Cronômetro / Tempo Restante -->
-          <div
-            class="cult-timer font-weight-black text-center d-flex align-center justify-center"
-            :style="cultTimerStyle"
-          >
-            {{ formattedCultTime }}
+            <!-- Texto Personalizado: Abaixo, entre o cronômetro e a parte de baixo -->
+            <div
+              v-if="effectiveCultCustomText"
+              class="custom-timer-title font-weight-bold text-center position-absolute"
+              :style="previewCultCustomTextStyle"
+            >
+              {{ effectiveCultCustomText }}
+            </div>
           </div>
         </template>
 
-        <!-- SE MODO JUNTOS (TOGETHER) -->
+        <!-- SE TELA DE PROJEÇÃO (NÃO PREVIEW): Segue o posicionamento configurado -->
         <template v-else>
-          <div
-            class="cult-main-wrapper"
-            :style="cultWrapperStyle"
-          >
-            <!-- Texto Personalizado Vinculado Acima -->
+          <!-- SE MODO INDIVIDUAL -->
+          <template v-if="config.cultPosMode === 'individual'">
+            <!-- Texto Personalizado se configurado -->
             <div
-              v-if="effectiveCultCustomText && (config.cultCustomTextPosition === 'above' || (!config.cultCustomTextPosition && config.customTextPosition !== 'below' && config.customTextPosition !== 'custom'))"
-              class="custom-timer-title font-weight-bold mb-1"
-              :style="cultTogetherCustomTextStyle"
+              v-if="effectiveCultCustomText"
+              class="custom-timer-title font-weight-bold"
+              :style="cultTextStyle"
             >
               {{ effectiveCultCustomText }}
             </div>
 
-            <!-- Mostrador Superior: Hora Atual (Relógio) -->
+            <!-- Relógio / Hora Atual -->
             <div
               v-if="showCultClock"
               class="cult-clock font-weight-bold text-center d-flex align-center justify-center"
@@ -102,48 +105,67 @@
               {{ currentClockTime }}
             </div>
 
-            <!-- Mostrador Inferior: Tempo Restante / Negativo -->
+            <!-- Cronômetro / Tempo Restante -->
             <div
               class="cult-timer font-weight-black text-center d-flex align-center justify-center"
               :style="cultTimerStyle"
             >
               {{ formattedCultTime }}
             </div>
+          </template>
 
-            <!-- Texto Personalizado Vinculado Abaixo -->
+          <!-- SE MODO JUNTOS (TOGETHER) -->
+          <template v-else>
             <div
-              v-if="effectiveCultCustomText && (config.cultCustomTextPosition === 'below' || (!config.cultCustomTextPosition && config.customTextPosition === 'below'))"
-              class="custom-timer-title font-weight-bold mt-1"
-              :style="cultTogetherCustomTextStyle"
+              class="cult-main-wrapper"
+              :style="cultWrapperStyle"
+            >
+              <!-- Texto Personalizado Vinculado Acima -->
+              <div
+                v-if="effectiveCultCustomText && (config.cultCustomTextPosition === 'above' || (!config.cultCustomTextPosition && config.customTextPosition !== 'below' && config.customTextPosition !== 'custom'))"
+                class="custom-timer-title font-weight-bold mb-1"
+                :style="cultTogetherCustomTextStyle"
+              >
+                {{ effectiveCultCustomText }}
+              </div>
+
+              <!-- Mostrador Superior: Hora Atual (Relógio) -->
+              <div
+                v-if="showCultClock"
+                class="cult-clock font-weight-bold text-center d-flex align-center justify-center"
+                :style="cultClockStyle"
+              >
+                {{ currentClockTime }}
+              </div>
+
+              <!-- Mostrador Inferior: Tempo Restante / Negativo -->
+              <div
+                class="cult-timer font-weight-black text-center d-flex align-center justify-center"
+                :style="cultTimerStyle"
+              >
+                {{ formattedCultTime }}
+              </div>
+
+              <!-- Texto Personalizado Vinculado Abaixo -->
+              <div
+                v-if="effectiveCultCustomText && (config.cultCustomTextPosition === 'below' || (!config.cultCustomTextPosition && config.customTextPosition === 'below'))"
+                class="custom-timer-title font-weight-bold mt-1"
+                :style="cultTogetherCustomTextStyle"
+              >
+                {{ effectiveCultCustomText }}
+              </div>
+            </div>
+
+            <!-- Texto Personalizado Livre no Culto -->
+            <div
+              v-if="effectiveCultCustomText && (config.cultCustomTextPosition === 'custom' || (!config.cultCustomTextPosition && config.customTextPosition === 'custom'))"
+              class="custom-timer-title font-weight-bold"
+              :style="cultTextStyle"
             >
               {{ effectiveCultCustomText }}
             </div>
-          </div>
-
-          <!-- Texto Personalizado Livre no Culto -->
-          <div
-            v-if="effectiveCultCustomText && (config.cultCustomTextPosition === 'custom' || (!config.cultCustomTextPosition && config.customTextPosition === 'custom'))"
-            class="custom-timer-title font-weight-bold"
-            :style="cultTextStyle"
-          >
-            {{ effectiveCultCustomText }}
-          </div>
+          </template>
         </template>
-
-        <!-- Barra de Progresso Inferior (Gauge) -->
-        <div
-          class="cult-gauge-container position-absolute bottom-0 left-0 w-100"
-          :style="{ height: preview ? '5px' : '10px', background: preview ? 'rgba(128,128,128,0.2)' : (isLightBackground ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.1)') }"
-        >
-          <div
-            class="cult-gauge-fill h-100"
-            :style="{
-              width: `${gaugePercent}%`,
-              background: isCultNegative ? (config.cultWarningColor || '#ef4444') : (config.cultTimerColor || '#38bdf8'),
-              transition: 'width 0.25s linear'
-            }"
-          />
-        </div>
       </div>
     </template>
   </div>
@@ -272,12 +294,6 @@ export default defineComponent({
     isCultNegative(): boolean {
       return this.cultRemainingMs < 0;
     },
-    gaugePercent(): number {
-      const total = this.timerData?.cultTotalDurationMs || 0;
-      if (total <= 0) return 0;
-      if (this.cultRemainingMs <= 0) return 0;
-      return Math.min(100, Math.max(0, (this.cultRemainingMs / total) * 100));
-    },
     formattedTime(): string {
       const totalSeconds = Math.floor(this.currentTimeMs / 1000);
       const h = Math.floor(totalSeconds / 3600);
@@ -384,10 +400,10 @@ export default defineComponent({
       return rawColor;
     },
     timerWrapperStyle(): any {
-      const x = this.config.posX ?? 50;
-      const y = this.config.posY ?? 50;
-      const align = x <= 30 ? "flex-start" : x >= 70 ? "flex-end" : "center";
-      const textAlign = x <= 30 ? "left" : x >= 70 ? "right" : "center";
+      const x = this.preview ? 50 : (this.config.posX ?? 50);
+      const y = this.preview ? 50 : (this.config.posY ?? 50);
+      const align = this.preview ? "center" : (x <= 30 ? "flex-start" : x >= 70 ? "flex-end" : "center");
+      const textAlign = this.preview ? "center" : (x <= 30 ? "left" : x >= 70 ? "right" : "center");
       return {
         position: "absolute",
         left: `${x}%`,
@@ -417,10 +433,10 @@ export default defineComponent({
       };
     },
     customTextFreeStyle(): any {
-      const x = this.config.customTextX ?? 50;
-      const y = this.config.customTextY ?? 20;
+      const x = this.preview ? 50 : (this.config.customTextX ?? 50);
+      const y = this.preview ? 82 : (this.config.customTextY ?? 20);
       const sizePc = this.config.customTextSizePc ?? 8;
-      const align = x <= 30 ? "left" : x >= 70 ? "right" : "center";
+      const align = this.preview ? "center" : (x <= 30 ? "left" : x >= 70 ? "right" : "center");
       return {
         position: "absolute",
         left: `${x}%`,
@@ -564,6 +580,46 @@ export default defineComponent({
         textShadow: this.textShadowValue,
         letterSpacing: "0.02em",
         maxWidth: "94%",
+        userSelect: "none",
+        wordBreak: "break-word",
+      };
+    },
+    previewCultClockStyle(): any {
+      const sizePc = this.config.cultClockSizePc ?? 12;
+      return {
+        color: this.effectiveCultClockColor,
+        fontSize: `clamp(1.3rem, ${sizePc * 0.22}vw, 4.2rem)`,
+        lineHeight: 1.1,
+        textShadow: this.cultClockTextShadowValue,
+        fontVariantNumeric: "tabular-nums",
+        textAlign: "center",
+      };
+    },
+    previewCultTimerStyle(): any {
+      const sizePc = this.config.cultTimerSizePc ?? 22;
+      return {
+        color: this.effectiveCultTimerColor,
+        fontSize: `clamp(2.5rem, ${sizePc * 0.35}vw, 7.5rem)`,
+        lineHeight: 1,
+        textShadow: this.textShadowValue,
+        fontVariantNumeric: "tabular-nums",
+        textAlign: "center",
+      };
+    },
+    previewCultCustomTextStyle(): any {
+      const sizePc = this.config.cultCustomTextSizePc ?? this.config.customTextSizePc ?? 8;
+      return {
+        position: "absolute",
+        left: "50%",
+        bottom: "8%",
+        transform: "translateX(-50%)",
+        color: this.config.cultCustomTextColor || this.config.customTextColor || this.effectiveFontColor,
+        fontSize: `clamp(1.1rem, ${sizePc * 0.28}vw, 2.8rem)`,
+        lineHeight: 1.2,
+        textAlign: "center",
+        textShadow: this.textShadowValue,
+        letterSpacing: "0.02em",
+        maxWidth: "88%",
         userSelect: "none",
         wordBreak: "break-word",
       };

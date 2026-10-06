@@ -1679,21 +1679,6 @@
                   {{ effectivePreviewCultCustomText }}
                 </div>
               </template>
-
-              <!-- Mini Barra Inferior (Gauge) -->
-              <div
-                class="position-absolute bottom-0 left-0 w-100"
-                style="height: 4px; background: rgba(255,255,255,0.15);"
-              >
-                <div
-                  :style="{
-                    width: previewAlert ? '100%' : '65%',
-                    height: '100%',
-                    background: previewAlert ? (localConfig.cultWarningColor || '#ef4444') : (localConfig.cultTimerColor || '#38bdf8'),
-                    transition: 'background 0.3s ease'
-                  }"
-                />
-              </div>
             </div>
 
             <!-- Botão Simular no Modo Culto -->
