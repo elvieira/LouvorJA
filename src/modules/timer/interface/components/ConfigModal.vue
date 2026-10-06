@@ -703,20 +703,6 @@
                       </h3>
                     </div>
                   </div>
-                  <v-btn
-                    icon
-                    size="small"
-                    variant="tonal"
-                    color="primary"
-                    @click="testSound"
-                  >
-                    <v-icon size="20">
-                      mdi-play
-                    </v-icon>
-                    <v-tooltip activator="parent" location="top">
-                      Ouvir Som
-                    </v-tooltip>
-                  </v-btn>
                 </div>
 
                 <v-list class="bg-transparent pa-0">
@@ -725,13 +711,31 @@
                       {{ t('settings_cult_audio_start') }}
                     </v-list-item-title>
                     <template #append>
-                      <v-switch
-                        v-model="localConfig.cultAudioStart"
-                        color="primary"
-                        hide-details
-                        inset
-                        density="compact"
-                      />
+                      <div class="d-flex align-center" style="gap: 8px;">
+                        <v-btn
+                          v-if="localConfig.cultAudioStart"
+                          icon
+                          size="x-small"
+                          variant="tonal"
+                          color="primary"
+                          class="mr-1"
+                          @click="testCultSound('start')"
+                        >
+                          <v-icon size="18">
+                            mdi-volume-high
+                          </v-icon>
+                          <v-tooltip activator="parent" location="top">
+                            Testar Som
+                          </v-tooltip>
+                        </v-btn>
+                        <v-switch
+                          v-model="localConfig.cultAudioStart"
+                          color="primary"
+                          hide-details
+                          inset
+                          density="compact"
+                        />
+                      </div>
                     </template>
                   </v-list-item>
 
@@ -740,13 +744,31 @@
                       {{ t('settings_cult_audio_5min') }}
                     </v-list-item-title>
                     <template #append>
-                      <v-switch
-                        v-model="localConfig.cultAudio5min"
-                        color="primary"
-                        hide-details
-                        inset
-                        density="compact"
-                      />
+                      <div class="d-flex align-center" style="gap: 8px;">
+                        <v-btn
+                          v-if="localConfig.cultAudio5min"
+                          icon
+                          size="x-small"
+                          variant="tonal"
+                          color="primary"
+                          class="mr-1"
+                          @click="testCultSound('5min')"
+                        >
+                          <v-icon size="18">
+                            mdi-volume-high
+                          </v-icon>
+                          <v-tooltip activator="parent" location="top">
+                            Testar Som
+                          </v-tooltip>
+                        </v-btn>
+                        <v-switch
+                          v-model="localConfig.cultAudio5min"
+                          color="primary"
+                          hide-details
+                          inset
+                          density="compact"
+                        />
+                      </div>
                     </template>
                   </v-list-item>
 
@@ -755,13 +777,31 @@
                       {{ t('settings_cult_audio_1min') }}
                     </v-list-item-title>
                     <template #append>
-                      <v-switch
-                        v-model="localConfig.cultAudio1min"
-                        color="primary"
-                        hide-details
-                        inset
-                        density="compact"
-                      />
+                      <div class="d-flex align-center" style="gap: 8px;">
+                        <v-btn
+                          v-if="localConfig.cultAudio1min"
+                          icon
+                          size="x-small"
+                          variant="tonal"
+                          color="primary"
+                          class="mr-1"
+                          @click="testCultSound('1min')"
+                        >
+                          <v-icon size="18">
+                            mdi-volume-high
+                          </v-icon>
+                          <v-tooltip activator="parent" location="top">
+                            Testar Som
+                          </v-tooltip>
+                        </v-btn>
+                        <v-switch
+                          v-model="localConfig.cultAudio1min"
+                          color="primary"
+                          hide-details
+                          inset
+                          density="compact"
+                        />
+                      </div>
                     </template>
                   </v-list-item>
 
@@ -770,13 +810,31 @@
                       {{ t('settings_cult_audio_end') }}
                     </v-list-item-title>
                     <template #append>
-                      <v-switch
-                        v-model="localConfig.cultAudioEnd"
-                        color="primary"
-                        hide-details
-                        inset
-                        density="compact"
-                      />
+                      <div class="d-flex align-center" style="gap: 8px;">
+                        <v-btn
+                          v-if="localConfig.cultAudioEnd"
+                          icon
+                          size="x-small"
+                          variant="tonal"
+                          color="primary"
+                          class="mr-1"
+                          @click="testCultSound('end')"
+                        >
+                          <v-icon size="18">
+                            mdi-volume-high
+                          </v-icon>
+                          <v-tooltip activator="parent" location="top">
+                            Testar Som
+                          </v-tooltip>
+                        </v-btn>
+                        <v-switch
+                          v-model="localConfig.cultAudioEnd"
+                          color="primary"
+                          hide-details
+                          inset
+                          density="compact"
+                        />
+                      </div>
                     </template>
                   </v-list-item>
                 </v-list>
@@ -822,7 +880,7 @@
 <script lang="ts">
 import { defineComponent, PropType } from "vue";
 import ModernColorPicker from "@/components/inputs/ModernColorPicker.vue";
-import { playSchoolBellAlert, stopSchoolBellAlert } from "../../helpers/audioAlert";
+import { playSchoolBellAlert, stopSchoolBellAlert, playCultAlert } from "../../helpers/audioAlert";
 
 function getLuminance(colorStr?: string | null): number {
   if (!colorStr) return 0;
@@ -1103,6 +1161,9 @@ export default defineComponent({
     },
     testSound() {
       playSchoolBellAlert();
+    },
+    testCultSound(type: "start" | "5min" | "1min" | "end") {
+      playCultAlert(type);
     },
   },
 });
