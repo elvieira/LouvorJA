@@ -962,8 +962,185 @@
                 </v-card-text>
               </v-card>
 
+              <!-- Texto Personalizado na Escola Sabatina -->
+              <v-card
+                class="settings-card rounded-xl pa-2 mb-6"
+                flat
+                style="background: var(--card-bg, #ffffff); box-shadow: var(--shadow);"
+              >
+                <v-card-text class="pa-4">
+                  <div class="d-flex align-center justify-space-between mb-4">
+                    <div class="d-flex align-center">
+                      <v-icon
+                        color="primary"
+                        class="mr-3"
+                        size="24"
+                      >
+                        mdi-format-title
+                      </v-icon>
+                      <div>
+                        <h3
+                          class="font-weight-bold"
+                          style="color: var(--sidebar-text); font-size: 1.1rem; line-height: 1.2;"
+                        >
+                          {{ t('settings_custom_text') }}
+                        </h3>
+                        <div
+                          class="text-caption"
+                          style="color: var(--sidebar-text-secondary);"
+                        >
+                          {{ t('settings_custom_text_desc') }}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <v-text-field
+                    v-model="localConfig.cultCustomText"
+                    placeholder="Ex: Escola Sabatina, Momento de Oração, Boas-Vindas..."
+                    variant="outlined"
+                    density="comfortable"
+                    color="primary"
+                    clearable
+                    hide-details
+                    class="mb-4"
+                  />
+
+                  <template v-if="localConfig.cultCustomText">
+                    <!-- Cor do Texto -->
+                    <div
+                      class="text-caption font-weight-bold mb-2"
+                      style="color: var(--sidebar-text-secondary);"
+                    >
+                      {{ t('settings_custom_text_color') }}
+                    </div>
+                    <div
+                      class="d-flex flex-wrap align-center mb-4"
+                      style="gap: 10px;"
+                    >
+                      <div
+                        v-for="color in ['#FFFFFF', '#000000', '#f6c32a', '#FF6B6B', '#4ECDC4', '#96CEB4', '#FFEAA7', '#38bdf8']"
+                        :key="color"
+                        class="rounded-circle cursor-pointer elevation-1"
+                        :class="localConfig.cultCustomTextColor === color ? 'elevation-4' : ''"
+                        :style="{
+                          width: '32px', height: '32px',
+                          background: color,
+                          border: localConfig.cultCustomTextColor === color ? '3px solid var(--accent-blue)' : '2px solid rgba(0,0,0,0.1)',
+                          transition: 'all 0.2s',
+                          transform: localConfig.cultCustomTextColor === color ? 'scale(1.15)' : 'scale(1)',
+                        }"
+                        @click="localConfig.cultCustomTextColor = color"
+                      />
+                      <ModernColorPicker v-model="localConfig.cultCustomTextColor">
+                        <template #activator="{ props }">
+                          <div
+                            v-bind="props"
+                            class="rounded-circle cursor-pointer elevation-1 d-flex align-center justify-center"
+                            style="width: 32px; height: 32px; border: 2px dashed var(--border-color); background: var(--card-bg);"
+                          >
+                            <v-icon
+                              size="14"
+                              color="grey"
+                            >
+                              mdi-eyedropper
+                            </v-icon>
+                          </div>
+                        </template>
+                      </ModernColorPicker>
+                    </div>
+
+                    <!-- Tamanho do Texto -->
+                    <div class="d-flex align-center justify-space-between mb-2">
+                      <span
+                        class="text-body-2 font-weight-bold"
+                        style="color: var(--sidebar-text);"
+                      >
+                        {{ t('settings_custom_text_size') }}
+                      </span>
+                      <v-chip
+                        size="x-small"
+                        variant="tonal"
+                        color="primary"
+                        class="font-weight-bold"
+                      >
+                        {{ localConfig.cultCustomTextSizePc || 8 }}
+                      </v-chip>
+                    </div>
+                    <div
+                      class="d-flex align-center mb-4"
+                      style="gap: 10px;"
+                    >
+                      <v-btn
+                        icon
+                        size="x-small"
+                        variant="tonal"
+                        color="primary"
+                        @click="localConfig.cultCustomTextSizePc = Math.max(3, (localConfig.cultCustomTextSizePc || 8) - 1)"
+                      >
+                        <v-icon size="16">
+                          mdi-minus
+                        </v-icon>
+                      </v-btn>
+                      <v-slider
+                        v-model="localConfig.cultCustomTextSizePc"
+                        min="3"
+                        max="25"
+                        step="1"
+                        hide-details
+                        color="primary"
+                        track-color="grey-lighten-3"
+                        class="flex-grow-1"
+                      />
+                      <v-btn
+                        icon
+                        size="x-small"
+                        variant="tonal"
+                        color="primary"
+                        @click="localConfig.cultCustomTextSizePc = Math.min(25, (localConfig.cultCustomTextSizePc || 8) + 1)"
+                      >
+                        <v-icon size="16">
+                          mdi-plus
+                        </v-icon>
+                      </v-btn>
+                    </div>
+
+                    <!-- Modo de Posição do Texto (apenas no modo juntos) -->
+                    <template v-if="localConfig.cultPosMode !== 'individual'">
+                      <div
+                        class="text-caption font-weight-bold mb-2"
+                        style="color: var(--sidebar-text-secondary);"
+                      >
+                        {{ t('settings_custom_text_pos') }}
+                      </div>
+                      <PillSwitch
+                        v-model="localConfig.cultCustomTextPosition"
+                        block
+                        class="mb-4"
+                        :items="[
+                          { value: 'above', label: 'Acima do Cronômetro' },
+                          { value: 'below', label: 'Abaixo do Cronômetro' },
+                          { value: 'custom', label: 'Posição Livre' },
+                        ]"
+                      />
+
+                      <!-- Grade e Sliders se for Posição Livre -->
+                      <PositionAlignmentPicker
+                        v-if="localConfig.cultCustomTextPosition === 'custom'"
+                        v-model:x="localConfig.cultTextX"
+                        v-model:y="localConfig.cultTextY"
+                      />
+                    </template>
+                  </template>
+                </v-card-text>
+              </v-card>
+
               <!-- Posicionamento na Tela do Culto -->
-              <v-card class="settings-card rounded-xl pa-2 mb-6" flat style="background: var(--card-bg, #ffffff); box-shadow: var(--shadow);">
+              <v-card
+                class="settings-card rounded-xl pa-2 mb-6"
+                flat
+                style="background: var(--card-bg, #ffffff); box-shadow: var(--shadow);"
+              >
                 <v-card-text class="pa-4">
                   <div class="d-flex align-center mb-4">
                     <v-icon color="primary" class="mr-3" size="24">
@@ -1337,15 +1514,15 @@
               <template v-if="localConfig.cultPosMode === 'individual'">
                 <!-- Texto Personalizado Individual -->
                 <div
-                  v-if="localConfig.customText"
+                  v-if="effectivePreviewCultCustomText"
                   class="font-weight-bold"
                   :style="{
                     position: 'absolute',
                     left: `${localConfig.cultTextX ?? 50}%`,
                     top: `${localConfig.cultTextY ?? 15}%`,
                     transform: `translate(-${localConfig.cultTextX ?? 50}%, -${localConfig.cultTextY ?? 15}%)`,
-                    color: localConfig.customTextColor || localConfig.fontColor,
-                    fontSize: `${Math.max(9, (localConfig.customTextSizePc || 8) * 1.5)}px`,
+                    color: localConfig.cultCustomTextColor || localConfig.customTextColor || localConfig.fontColor,
+                    fontSize: `${Math.max(9, (localConfig.cultCustomTextSizePc || localConfig.customTextSizePc || 8) * 1.5)}px`,
                     lineHeight: '1.2',
                     textShadow: previewCultClockShadow,
                     padding: '2px 6px',
@@ -1356,7 +1533,7 @@
                   }"
                   @pointerdown.stop="selectAndDragCult('text', $event)"
                 >
-                  {{ localConfig.customText }}
+                  {{ effectivePreviewCultCustomText }}
                 </div>
 
                 <!-- Hora Atual Individual -->
@@ -1423,18 +1600,18 @@
                     pointerEvents: 'none',
                   }"
                 >
-                  <!-- Texto Personalizado Vinculado -->
+                  <!-- Texto Personalizado Vinculado Acima -->
                   <div
-                    v-if="localConfig.customText && localConfig.customTextPosition !== 'custom'"
+                    v-if="effectivePreviewCultCustomText && (localConfig.cultCustomTextPosition === 'above' || (!localConfig.cultCustomTextPosition && localConfig.customTextPosition !== 'below' && localConfig.customTextPosition !== 'custom'))"
                     class="font-weight-bold mb-1"
                     :style="{
-                      color: localConfig.customTextColor || localConfig.fontColor,
-                      fontSize: `${Math.max(9, (localConfig.customTextSizePc || 8) * 1.5)}px`,
+                      color: localConfig.cultCustomTextColor || localConfig.customTextColor || localConfig.fontColor,
+                      fontSize: `${Math.max(9, (localConfig.cultCustomTextSizePc || localConfig.customTextSizePc || 8) * 1.5)}px`,
                       lineHeight: '1.2',
                       textShadow: previewCultClockShadow,
                     }"
                   >
-                    {{ localConfig.customText }}
+                    {{ effectivePreviewCultCustomText }}
                   </div>
 
                   <!-- Hora Atual Superior -->
@@ -1463,25 +1640,43 @@
                   >
                     {{ previewAlert ? '-00:02:15' : '00:15:00' }}
                   </div>
+
+                  <!-- Texto Personalizado Vinculado Abaixo -->
+                  <div
+                    v-if="effectivePreviewCultCustomText && (localConfig.cultCustomTextPosition === 'below' || (!localConfig.cultCustomTextPosition && localConfig.customTextPosition === 'below'))"
+                    class="font-weight-bold mt-1"
+                    :style="{
+                      color: localConfig.cultCustomTextColor || localConfig.customTextColor || localConfig.fontColor,
+                      fontSize: `${Math.max(9, (localConfig.cultCustomTextSizePc || localConfig.customTextSizePc || 8) * 1.5)}px`,
+                      lineHeight: '1.2',
+                      textShadow: previewCultClockShadow,
+                    }"
+                  >
+                    {{ effectivePreviewCultCustomText }}
+                  </div>
                 </div>
 
                 <!-- Texto Livre se posição for 'custom' -->
                 <div
-                  v-if="localConfig.customText && localConfig.customTextPosition === 'custom'"
+                  v-if="effectivePreviewCultCustomText && (localConfig.cultCustomTextPosition === 'custom' || (!localConfig.cultCustomTextPosition && localConfig.customTextPosition === 'custom'))"
                   class="font-weight-bold"
                   :style="{
                     position: 'absolute',
                     left: `${localConfig.cultTextX ?? localConfig.customTextX ?? 50}%`,
                     top: `${localConfig.cultTextY ?? localConfig.customTextY ?? 20}%`,
                     transform: `translate(-${localConfig.cultTextX ?? localConfig.customTextX ?? 50}%, -${localConfig.cultTextY ?? localConfig.customTextY ?? 20}%)`,
-                    color: localConfig.customTextColor || localConfig.fontColor,
-                    fontSize: `${Math.max(9, (localConfig.customTextSizePc || 8) * 1.5)}px`,
+                    color: localConfig.cultCustomTextColor || localConfig.customTextColor || localConfig.fontColor,
+                    fontSize: `${Math.max(9, (localConfig.cultCustomTextSizePc || localConfig.customTextSizePc || 8) * 1.5)}px`,
                     lineHeight: '1.2',
                     textShadow: previewCultClockShadow,
-                    pointerEvents: 'none',
+                    cursor: 'pointer',
+                    zIndex: 2,
+                    padding: '2px 6px',
+                    borderRadius: '4px',
                   }"
+                  @pointerdown.stop="startDragCultText($event)"
                 >
-                  {{ localConfig.customText }}
+                  {{ effectivePreviewCultCustomText }}
                 </div>
               </template>
 
@@ -1662,6 +1857,10 @@ export default defineComponent({
       cultTimerY: 60,
       cultTextX: 50,
       cultTextY: 15,
+      cultCustomText: "",
+      cultCustomTextColor: "#ffffff",
+      cultCustomTextSizePc: 8,
+      cultCustomTextPosition: "above" as "above" | "below" | "custom",
     },
     defaultConfig: {
       fontColor: "#ffffff",
@@ -1701,6 +1900,10 @@ export default defineComponent({
       cultTimerY: 60,
       cultTextX: 50,
       cultTextY: 15,
+      cultCustomText: "",
+      cultCustomTextColor: "#ffffff",
+      cultCustomTextSizePc: 8,
+      cultCustomTextPosition: "above" as "above" | "below" | "custom",
     },
   }),
   computed: {
@@ -1739,12 +1942,22 @@ export default defineComponent({
       if (isLight) return "0 3px 12px rgba(0,0,0,0.12)";
       return "0 4px 20px rgba(0,0,0,0.5)";
     },
+    effectivePreviewCultCustomText(): string {
+      if (
+        this.localConfig.cultCustomText !== undefined &&
+        this.localConfig.cultCustomText !== null &&
+        this.localConfig.cultCustomText !== ""
+      ) {
+        return this.localConfig.cultCustomText;
+      }
+      return this.localConfig.customText || "";
+    },
     cultTargetItems(): any[] {
       const items = [
         { value: "timer", label: this.t("pos_target_timer"), icon: "mdi-timer-outline" },
         { value: "clock", label: this.t("pos_target_clock"), icon: "mdi-clock-outline" },
       ];
-      if (this.localConfig.customText) {
+      if (this.effectivePreviewCultCustomText) {
         items.push({ value: "text", label: this.t("pos_target_text"), icon: "mdi-format-title" });
       }
       return items;
@@ -1964,6 +2177,25 @@ export default defineComponent({
           this.localConfig.posX = clampedX;
           this.localConfig.posY = clampedY;
         }
+      };
+      updatePos(e);
+      const onMove = (evt: PointerEvent) => updatePos(evt);
+      const onUp = () => {
+        window.removeEventListener("pointermove", onMove);
+        window.removeEventListener("pointerup", onUp);
+      };
+      window.addEventListener("pointermove", onMove);
+      window.addEventListener("pointerup", onUp);
+    },
+    startDragCultText(e: PointerEvent) {
+      const el = this.$refs.previewCultRef as HTMLElement;
+      if (!el) return;
+      const updatePos = (evt: PointerEvent) => {
+        const rect = el.getBoundingClientRect();
+        const rawX = Math.round(((evt.clientX - rect.left) / rect.width) * 100);
+        const rawY = Math.round(((evt.clientY - rect.top) / rect.height) * 100);
+        this.localConfig.cultTextX = Math.max(5, Math.min(95, rawX));
+        this.localConfig.cultTextY = Math.max(5, Math.min(95, rawY));
       };
       updatePos(e);
       const onMove = (evt: PointerEvent) => updatePos(evt);

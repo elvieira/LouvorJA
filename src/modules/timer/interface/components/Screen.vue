@@ -53,11 +53,11 @@
         <template v-if="config.cultPosMode === 'individual'">
           <!-- Texto Personalizado se configurado -->
           <div
-            v-if="config.customText"
+            v-if="effectiveCultCustomText"
             class="custom-timer-title font-weight-bold"
             :style="cultTextStyle"
           >
-            {{ config.customText }}
+            {{ effectiveCultCustomText }}
           </div>
 
           <!-- Relógio / Hora Atual -->
@@ -80,14 +80,17 @@
 
         <!-- SE MODO JUNTOS (TOGETHER) -->
         <template v-else>
-          <div class="cult-main-wrapper" :style="cultWrapperStyle">
-            <!-- Texto Personalizado Vinculado -->
+          <div
+            class="cult-main-wrapper"
+            :style="cultWrapperStyle"
+          >
+            <!-- Texto Personalizado Vinculado Acima -->
             <div
-              v-if="config.customText && config.customTextPosition !== 'custom'"
+              v-if="effectiveCultCustomText && (config.cultCustomTextPosition === 'above' || (!config.cultCustomTextPosition && config.customTextPosition !== 'below' && config.customTextPosition !== 'custom'))"
               class="custom-timer-title font-weight-bold mb-1"
-              :style="customTextStyle"
+              :style="cultTogetherCustomTextStyle"
             >
-              {{ config.customText }}
+              {{ effectiveCultCustomText }}
             </div>
 
             <!-- Mostrador Superior: Hora Atual (Relógio) -->
@@ -106,15 +109,24 @@
             >
               {{ formattedCultTime }}
             </div>
+
+            <!-- Texto Personalizado Vinculado Abaixo -->
+            <div
+              v-if="effectiveCultCustomText && (config.cultCustomTextPosition === 'below' || (!config.cultCustomTextPosition && config.customTextPosition === 'below'))"
+              class="custom-timer-title font-weight-bold mt-1"
+              :style="cultTogetherCustomTextStyle"
+            >
+              {{ effectiveCultCustomText }}
+            </div>
           </div>
 
           <!-- Texto Personalizado Livre no Culto -->
           <div
-            v-if="config.customText && config.customTextPosition === 'custom'"
+            v-if="effectiveCultCustomText && (config.cultCustomTextPosition === 'custom' || (!config.cultCustomTextPosition && config.customTextPosition === 'custom'))"
             class="custom-timer-title font-weight-bold"
-            :style="customTextFreeStyle"
+            :style="cultTextStyle"
           >
-            {{ config.customText }}
+            {{ effectiveCultCustomText }}
           </div>
         </template>
 
@@ -223,6 +235,10 @@ export default defineComponent({
         cultTimerY: 60,
         cultTextX: 50,
         cultTextY: 15,
+        cultCustomText: "",
+        cultCustomTextColor: "#ffffff",
+        cultCustomTextSizePc: 8,
+        cultCustomTextPosition: "above",
       };
     },
     timerData(): any {
@@ -506,17 +522,27 @@ export default defineComponent({
       }
       return base;
     },
+    effectiveCultCustomText(): string {
+      if (
+        this.config.cultCustomText !== undefined &&
+        this.config.cultCustomText !== null &&
+        this.config.cultCustomText !== ""
+      ) {
+        return this.config.cultCustomText;
+      }
+      return this.config.customText || "";
+    },
     cultTextStyle(): any {
       const x = this.config.cultTextX ?? this.config.customTextX ?? 50;
       const y = this.config.cultTextY ?? this.config.customTextY ?? 15;
-      const sizePc = this.config.customTextSizePc ?? 8;
+      const sizePc = this.config.cultCustomTextSizePc ?? this.config.customTextSizePc ?? 8;
       const align = x <= 30 ? "left" : x >= 70 ? "right" : "center";
       return {
         position: "absolute",
         left: `${x}%`,
         top: `${y}%`,
         transform: `translate(-${x}%, -${y}%)`,
-        color: this.config.customTextColor || this.effectiveFontColor,
+        color: this.config.cultCustomTextColor || this.config.customTextColor || this.effectiveFontColor,
         fontSize: this.preview ? `clamp(1rem, ${sizePc * 0.3}vw, 3rem)` : `${sizePc}vmin`,
         lineHeight: 1.2,
         textAlign: align,
@@ -526,6 +552,20 @@ export default defineComponent({
         userSelect: "none",
         wordBreak: "break-word",
         transition: this.preview ? "none" : "all 0.2s ease-out",
+        zIndex: 5,
+      };
+    },
+    cultTogetherCustomTextStyle(): any {
+      const sizePc = this.config.cultCustomTextSizePc ?? this.config.customTextSizePc ?? 8;
+      return {
+        color: this.config.cultCustomTextColor || this.config.customTextColor || this.effectiveFontColor,
+        fontSize: this.preview ? `clamp(1rem, ${sizePc * 0.3}vw, 3rem)` : `${sizePc}vmin`,
+        lineHeight: 1.2,
+        textShadow: this.textShadowValue,
+        letterSpacing: "0.02em",
+        maxWidth: "94%",
+        userSelect: "none",
+        wordBreak: "break-word",
       };
     },
     backgroundStyle(): any {
