@@ -1,12 +1,28 @@
-import { BrowserWindow, Menu, screen, MenuItemConstructorOptions, BrowserWindowConstructorOptions, Display } from "electron";
+import { BrowserWindow, Menu, screen, MenuItemConstructorOptions, BrowserWindowConstructorOptions, Display, shell } from "electron";
 import * as path from "path";
 import { isDev } from "../config/constants";
 import { loadWindowState, isPositionVisible, setupWindowStateTracker, getDefaultWindowDimensions } from "../services/window-state";
 
 let mainWindowInstance: BrowserWindow | null = null;
+const activeProjectionWindows = new Set<BrowserWindow>();
 
 export function getMainWindow(): BrowserWindow | null {
   return mainWindowInstance;
+}
+
+export function closeProjections(targetMonitorId?: string | number): void {
+  activeProjectionWindows.forEach((win) => {
+    if (!win.isDestroyed()) {
+      if (targetMonitorId === undefined || targetMonitorId === null) {
+        win.close();
+      } else {
+        const monId = (win as unknown as { projectionMonitorId?: string | number }).projectionMonitorId;
+        if (monId !== undefined && String(monId) === String(targetMonitorId)) {
+          win.close();
+        }
+      }
+    }
+  });
 }
 
 export function createWindow(): void {
@@ -324,16 +340,68 @@ export function createWindow(): void {
     }
   });
 
-  mainWindow.webContents.setWindowOpenHandler(({ features }) => {
-    const isFullscreen = features.includes("fullscreen=yes");
+  interface ProjectionWindowConfig {
+    isProjection: boolean;
+    isFullscreen: boolean;
+    targetDisplay: Display;
+  }
+  const pendingProjectionWindows: ProjectionWindowConfig[] = [];
+
+  mainWindow.webContents.setWindowOpenHandler(({ url, frameName, features }) => {
+    const isProjection =
+      url.includes("popup") ||
+      url.includes("stage-monitor") ||
+      frameName.startsWith("PopupWindow") ||
+      frameName.startsWith("StageMonitor") ||
+      features.includes("fullscreen=yes") ||
+      features.includes("monitor=");
+
+    if (!isProjection) {
+      if (url.startsWith("http://") || url.startsWith("https://")) {
+        shell.openExternal(url);
+        return { action: "deny" };
+      }
+      return { action: "allow" };
+    }
+
     const displays = screen.getAllDisplays();
+    const primaryDisplay = screen.getPrimaryDisplay();
+
+    const monitorMatch = features.match(/monitor=(\d+)/) || url.match(/[?&]monitor=(\d+)/) || frameName.match(/_(\d+)_/);
+    const targetMonitorId = monitorMatch ? parseInt(monitorMatch[1]) : null;
+
+    const isExplicitNoFullscreen = features.includes("fullscreen=no") || url.includes("fullscreen=0");
+    const isFullscreen = !isExplicitNoFullscreen;
+
+    let targetDisplay: Display | null = null;
+    if (targetMonitorId) {
+      targetDisplay = displays.find((d: Display) => d.id === targetMonitorId) || null;
+    }
+    if (!targetDisplay && displays.length > 1) {
+      targetDisplay = displays.find((d: Display) => d.id !== primaryDisplay.id) || null;
+    }
+    if (!targetDisplay) {
+      targetDisplay = primaryDisplay;
+    }
 
     const windowConfig: BrowserWindowConstructorOptions = {
       title: "LouvorJA",
-      width: 800,
-      height: 600,
+      type: process.platform === "darwin" && isFullscreen ? "panel" : "window",
+      width: isFullscreen ? targetDisplay.bounds.width : 800,
+      height: isFullscreen ? targetDisplay.bounds.height : 600,
+      x: isFullscreen ? targetDisplay.bounds.x : targetDisplay.bounds.x + Math.round((targetDisplay.bounds.width - 800) / 2),
+      y: isFullscreen ? targetDisplay.bounds.y : targetDisplay.bounds.y + Math.round((targetDisplay.bounds.height - 600) / 2),
       backgroundColor: "#000000",
       show: false,
+      resizable: !isFullscreen,
+      frame: !isFullscreen,
+      thickFrame: false,
+      hasShadow: false,
+      autoHideMenuBar: true,
+      skipTaskbar: isFullscreen,
+      focusable: false,
+      enableLargerThanScreen: true,
+      roundedCorners: false,
       webPreferences: {
         preload: path.join(__dirname, "preload.js"),
         contextIsolation: true,
@@ -342,36 +410,11 @@ export function createWindow(): void {
       },
     };
 
-    const monitorMatch = features.match(/monitor=(\d+)/);
-    const targetMonitorId = monitorMatch ? parseInt(monitorMatch[1]) : null;
-
-    if (isFullscreen) {
-      let targetDisplay = null;
-      if (targetMonitorId) {
-        targetDisplay = displays.find((d: Display) => d.id === targetMonitorId);
-      }
-
-      if (!targetDisplay && displays.length > 1) {
-        const primary = screen.getPrimaryDisplay();
-        targetDisplay = displays.find((d: Display) => d.id !== primary.id);
-      }
-
-      if (!targetDisplay) {
-        targetDisplay = screen.getPrimaryDisplay();
-      }
-
-      windowConfig.x = targetDisplay.bounds.x;
-      windowConfig.y = targetDisplay.bounds.y;
-      windowConfig.width = targetDisplay.bounds.width;
-      windowConfig.height = targetDisplay.bounds.height;
-      windowConfig.resizable = false;
-      windowConfig.frame = false;
-      windowConfig.thickFrame = false;
-      windowConfig.hasShadow = false;
-      windowConfig.autoHideMenuBar = true;
-      windowConfig.skipTaskbar = true;
-      windowConfig.focusable = false;
-    }
+    pendingProjectionWindows.push({
+      isProjection: true,
+      isFullscreen,
+      targetDisplay,
+    });
 
     return {
       action: "allow",
@@ -380,20 +423,48 @@ export function createWindow(): void {
   });
 
   mainWindow.webContents.on("did-create-window", (childWindow) => {
-    if (!childWindow.isResizable()) {
-      childWindow.setOpacity(0);
-      
-      childWindow.once("ready-to-show", () => {
-        const bounds = childWindow.getBounds();
-        const display = screen.getDisplayMatching(bounds);
+    const config = pendingProjectionWindows.shift();
+    const isProjection = Boolean(config?.isProjection || !childWindow.isResizable());
 
-        childWindow.setFullScreen(false);
-        childWindow.setBounds(display.bounds);
-        
-        if (process.platform === "darwin" || process.platform === "win32") {
-          childWindow.setAlwaysOnTop(true, "screen-saver");
-        } else {
-          childWindow.setAlwaysOnTop(true, "normal");
+    if (isProjection) {
+      activeProjectionWindows.add(childWindow);
+      if (config?.targetDisplay) {
+        (childWindow as unknown as { projectionMonitorId?: string | number }).projectionMonitorId = config.targetDisplay.id;
+      }
+
+      childWindow.once("closed", () => {
+        activeProjectionWindows.delete(childWindow);
+      });
+
+      childWindow.setOpacity(0);
+
+      let fadeInInterval: NodeJS.Timeout | null = null;
+      let fadeOutInterval: NodeJS.Timeout | null = null;
+      let isClosingOrFadingOut = false;
+      let currentOpacity = 0;
+
+      const triggerFadeIn = () => {
+        if (childWindow.isDestroyed() || isClosingOrFadingOut) return;
+
+        const bounds = childWindow.getBounds();
+        const display = config?.targetDisplay || screen.getDisplayMatching(bounds);
+
+        if (config?.isFullscreen ?? !childWindow.isResizable()) {
+          childWindow.setFullScreen(false);
+          childWindow.setBounds(display.bounds);
+
+          if (process.platform === "darwin") {
+            try {
+              childWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true, skipTransformProcessType: true });
+            } catch {
+              // Fallback
+            }
+            childWindow.setAlwaysOnTop(true, "screen-saver", 1);
+          } else if (process.platform === "win32") {
+            childWindow.setAlwaysOnTop(true, "screen-saver");
+          } else {
+            childWindow.setAlwaysOnTop(true, "normal");
+          }
         }
 
         if (childWindow.showInactive) {
@@ -402,38 +473,82 @@ export function createWindow(): void {
           childWindow.show();
         }
 
-        let opacity = 0;
-        const fadeIn = setInterval(() => {
+        currentOpacity = 0;
+        childWindow.setOpacity(0);
+        if (fadeInInterval) clearInterval(fadeInInterval);
+
+        fadeInInterval = setInterval(() => {
           if (childWindow.isDestroyed()) {
-            clearInterval(fadeIn);
+            if (fadeInInterval) clearInterval(fadeInInterval);
             return;
           }
-          if (opacity >= 1) {
-            clearInterval(fadeIn);
+          if (isClosingOrFadingOut) {
+            if (fadeInInterval) clearInterval(fadeInInterval);
+            return;
+          }
+          currentOpacity += 0.05;
+          if (currentOpacity >= 1) {
+            if (fadeInInterval) clearInterval(fadeInInterval);
+            currentOpacity = 1;
             childWindow.setOpacity(1);
           } else {
-            opacity += 0.05;
-            childWindow.setOpacity(opacity);
+            childWindow.setOpacity(Math.min(1, currentOpacity));
           }
         }, 16);
-      });
+      };
+
+      if (childWindow.isVisible()) {
+        triggerFadeIn();
+      } else {
+        childWindow.once("ready-to-show", triggerFadeIn);
+      }
 
       childWindow.on("close", (e) => {
-        if (!childWindow.isDestroyed() && childWindow.getOpacity() > 0) {
+        if (isClosingOrFadingOut) {
           e.preventDefault();
-          let opacity = 1;
-          const fadeOut = setInterval(() => {
+          return;
+        }
+
+        if (!childWindow.isDestroyed()) {
+          e.preventDefault();
+          isClosingOrFadingOut = true;
+
+          if (fadeInInterval) {
+            clearInterval(fadeInInterval);
+            fadeInInterval = null;
+          }
+
+          let opacity = currentOpacity > 0 ? currentOpacity : 1;
+          try {
+            const elOpacity = childWindow.getOpacity();
+            if (typeof elOpacity === "number" && elOpacity > 0) {
+              opacity = elOpacity;
+            }
+          } catch {
+            // Mantém fallback de opacity
+          }
+
+          if (fadeOutInterval) clearInterval(fadeOutInterval);
+
+          fadeOutInterval = setInterval(() => {
             if (childWindow.isDestroyed()) {
-              clearInterval(fadeOut);
+              if (fadeOutInterval) clearInterval(fadeOutInterval);
               return;
             }
+            opacity -= 0.05;
             if (opacity <= 0) {
-              clearInterval(fadeOut);
+              if (fadeOutInterval) clearInterval(fadeOutInterval);
               childWindow.setOpacity(0);
+              try {
+                if (typeof (childWindow as unknown as { setSimpleFullScreen?: (flag: boolean) => void }).setSimpleFullScreen === "function") {
+                  (childWindow as unknown as { setSimpleFullScreen: (flag: boolean) => void }).setSimpleFullScreen(false);
+                }
+              } catch {
+                // Ignora
+              }
               childWindow.destroy();
             } else {
-              opacity -= 0.05;
-              childWindow.setOpacity(opacity);
+              childWindow.setOpacity(Math.max(0, opacity));
             }
           }, 16);
         }

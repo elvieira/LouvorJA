@@ -94,6 +94,7 @@ interface ElectronAPI {
   getRememberWindowBounds?: () => Promise<boolean>
   setRememberWindowBounds?: (enabled: boolean) => Promise<boolean>
   windowControl: (action: string) => Promise<void>
+  closeProjections?: (targetMonitorId?: string | number) => Promise<void>
   onWindowMaximizedState: (callback: (isMaximized: boolean) => void) => void
   onRequestCloseApp: (callback: () => void) => void
   forceQuitApp: () => Promise<void>

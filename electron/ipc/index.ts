@@ -13,6 +13,7 @@ import { registerYoutubeHandlers } from "../services/youtube";
 import { checkLegacyInstallation, selectLegacyFolder, importLegacyMedia } from "../services/legacy-importer";
 import { getRememberWindowBounds, setRememberWindowBounds } from "../services/window-state";
 import { getPendingFilePathToOpen } from "../core/lifecycle";
+import { closeProjections } from "../core/window";
 
 interface SljaSlideInput {
   tipo: string;
@@ -745,6 +746,10 @@ export function registerIpcHandlers() {
     } else if (action === "is-maximized") {
       return win.isMaximized();
     }
+  });
+
+  ipcMain.handle("close-projections", (_event, targetMonitorId?: string | number) => {
+    closeProjections(targetMonitorId);
   });
 
   ipcMain.handle("force-quit-app", () => {

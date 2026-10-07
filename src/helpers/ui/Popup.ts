@@ -33,7 +33,8 @@ export default {
       } else {
         let features = `width=800,height=600,monitor=${formattedParams.monitorId}`;
         if (formattedParams.fullscreen) features += ",fullscreen=yes";
-        const newPopup = $window.open("#/popup", `PopupWindow_${formattedParams.monitorId}_${Date.now()}`, features) as CustomWindow | null;
+        const url = `#/popup?monitor=${formattedParams.monitorId}&fullscreen=${formattedParams.fullscreen !== false ? 1 : 0}`;
+        const newPopup = $window.open(url, `PopupWindow_${formattedParams.monitorId}_${Date.now()}`, features) as CustomWindow | null;
         if (newPopup) {
           newPopup.monitorId = formattedParams.monitorId;
           popups.push(markRaw(newPopup) as unknown as CustomWindow);
@@ -45,7 +46,8 @@ export default {
       } else {
         let features = "width=800,height=600";
         if (formattedParams.fullscreen) features += ",fullscreen=yes";
-        const newPopup = $window.open("#/popup", `PopupWindow_${Date.now()}`, features) as CustomWindow | null;
+        const url = `#/popup?fullscreen=${formattedParams.fullscreen !== false ? 1 : 0}`;
+        const newPopup = $window.open(url, `PopupWindow_${Date.now()}`, features) as CustomWindow | null;
         if (newPopup) {
           popups = [markRaw(newPopup) as unknown as CustomWindow];
         }
@@ -60,22 +62,27 @@ export default {
   },
   
   async exit() {
-    const popups: CustomWindow[] = $appdata.get("popups") || [];
-    popups.forEach((popup) => {
-      if (popup && !popup.closed) {
-        popup.isClosing = true;
-        popup.postMessage("close", "*");
-        try {
-          popup.close();
-        } catch {
-          // Ignora erro se a janela já estiver fechada
+    if (window.electronAPI?.closeProjections) {
+      await window.electronAPI.closeProjections();
+      $appdata.set("stage_monitor_window", null);
+    } else {
+      const popups: CustomWindow[] = $appdata.get("popups") || [];
+      popups.forEach((popup) => {
+        if (popup && !popup.closed) {
+          popup.isClosing = true;
+          popup.postMessage("close", "*");
+          try {
+            popup.close();
+          } catch {
+            // Ignora erro se a janela já estiver fechada
+          }
         }
-      }
-    });
+      });
+      await this.closeStageMonitor();
+    }
     $appdata.set("popup_module", "");
     $appdata.set("popups", []);
     $appdata.set("popup", null);
-    this.closeStageMonitor();
   },
   
   async syncMonitors(monitors: Array<string | number>, moduleName: string = "media", forceOpen: boolean = false) {
@@ -83,18 +90,23 @@ export default {
     popups = popups.filter((p) => !p.closed && !p.isClosing);
 
     const closingPopups: CustomWindow[] = [];
-    popups.forEach((popup) => {
+    const closeProjections = window.electronAPI?.closeProjections;
+    for (const popup of popups) {
       if (popup.monitorId && !monitors.includes(popup.monitorId)) {
         popup.isClosing = true;
-        popup.postMessage("close", "*");
-        try {
-          popup.close();
-        } catch {
-          // Ignora erro se a janela já estiver fechada
+        if (closeProjections) {
+          await closeProjections(popup.monitorId);
+        } else {
+          popup.postMessage("close", "*");
+          try {
+            popup.close();
+          } catch {
+            // Ignora erro se a janela já estiver fechada
+          }
         }
         closingPopups.push(popup);
       }
-    });
+    }
 
     popups = popups.filter((p) => !p.closed && !closingPopups.includes(p) && !p.isClosing);
 
@@ -103,7 +115,8 @@ export default {
         const existing = popups.find((p) => p.monitorId === monitorId);
         if (!existing || existing.closed || existing.isClosing) {
           const features = `width=800,height=600,monitor=${monitorId},fullscreen=yes`;
-          const newPopup = $window.open("#/popup", `PopupWindow_${monitorId}_${Date.now()}`, features) as CustomWindow | null;
+          const url = `#/popup?monitor=${monitorId}&fullscreen=1`;
+          const newPopup = $window.open(url, `PopupWindow_${monitorId}_${Date.now()}`, features) as CustomWindow | null;
           if (newPopup) {
             newPopup.monitorId = monitorId;
             popups.push(markRaw(newPopup) as unknown as CustomWindow);
@@ -132,26 +145,36 @@ export default {
         stageWindow.focus();
         return;
       }
-      this.closeStageMonitor();
+      await this.closeStageMonitor();
     }
 
     const features = `width=800,height=600,monitor=${monitorId},fullscreen=yes`;
-    const newWindow = $window.open("#/stage-monitor", `StageMonitor_${monitorId}_${Date.now()}`, features) as CustomWindow | null;
+    const url = `#/stage-monitor?monitor=${monitorId}&fullscreen=1`;
+    const newWindow = $window.open(url, `StageMonitor_${monitorId}_${Date.now()}`, features) as CustomWindow | null;
     if (newWindow) {
       newWindow.monitorId = monitorId;
       $appdata.set("stage_monitor_window", markRaw(newWindow));
     }
   },
 
-  closeStageMonitor() {
+  async closeStageMonitor() {
     const stageWindow: CustomWindow | null = $appdata.get("stage_monitor_window") || null;
-    if (stageWindow && !stageWindow.closed) {
-      stageWindow.isClosing = true;
-      stageWindow.postMessage("close", "*");
-      try {
-        stageWindow.close();
-      } catch {
-        // Ignora erro se a janela já estiver fechada
+    if (!stageWindow) return;
+
+    const closeProjections = window.electronAPI?.closeProjections;
+    if (closeProjections) {
+      if (stageWindow.monitorId) {
+        await closeProjections(stageWindow.monitorId);
+      }
+    } else {
+      if (!stageWindow.closed) {
+        stageWindow.isClosing = true;
+        stageWindow.postMessage("close", "*");
+        try {
+          stageWindow.close();
+        } catch {
+          // Ignora erro se a janela já estiver fechada
+        }
       }
     }
     $appdata.set("stage_monitor_window", null);

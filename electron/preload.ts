@@ -53,6 +53,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
   setRememberWindowBounds: (enabled: boolean) => ipcRenderer.invoke("set-remember-window-bounds", enabled),
   
   windowControl: (action: string) => ipcRenderer.invoke("window-control", action),
+  closeProjections: (targetMonitorId?: string | number) => ipcRenderer.invoke("close-projections", targetMonitorId),
   onWindowMaximizedState: (callback: (isMaximized: boolean) => void) => {
     ipcRenderer.on("window-maximized-state", (_event, isMaximized: boolean) => callback(isMaximized));
   },
