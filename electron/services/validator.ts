@@ -11,9 +11,35 @@ export function registerValidatorHandlers() {
     try {
       const dbPath = path.join(app.getPath("userData"), `database_${lang}.db`);
       if (!fs.existsSync(dbPath)) {
+        const coverFiles = new Set<string>();
+        const sysDbPath = getSysDbPath(lang);
+        let categories: Array<{ albums?: Array<{ url_image?: string }> }> = [];
+        const catBin = path.join(sysDbPath, `${lang}_categories.bin`);
+        const catJson = path.join(sysDbPath, `${lang}_categories.json`);
+        if (fs.existsSync(catBin)) {
+          const dec = decryptData(fs.readFileSync(catBin, "utf8"));
+          if (dec) categories = JSON.parse(dec);
+        } else if (fs.existsSync(catJson)) {
+          try {
+            categories = JSON.parse(fs.readFileSync(catJson, "utf8"));
+          } catch {
+            // ignore
+          }
+        }
+        for (const cat of categories) {
+          if (cat.albums) {
+            for (const alb of cat.albums) {
+              if (alb.url_image && alb.url_image.startsWith("/covers/")) {
+                coverFiles.add(alb.url_image.replace("/covers/", ""));
+              }
+            }
+          }
+        }
+        const actualCovers = new Set<string>(fs.existsSync(coversPath) ? fs.readdirSync(coversPath) : []);
+        const missingCovers = [...coverFiles].filter(x => x && !actualCovers.has(x));
         const actualAvatars = new Set<string>(fs.existsSync(avatarsPath) ? fs.readdirSync(avatarsPath) : []);
         const missingAvatars = (devAvatarFilenames || []).filter(x => x && !actualAvatars.has(x));
-        return { missingCovers: [], missingMusic: [], missingImages: [], missingBins: [], missingAvatars, totalMissing: missingAvatars.length };
+        return { missingCovers, missingMusic: [], missingImages: [], missingBins: [], missingAvatars, totalMissing: missingCovers.length + missingAvatars.length };
       }
 
       const db = new SQLiteHelper(dbPath);

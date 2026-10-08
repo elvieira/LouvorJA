@@ -49,13 +49,14 @@ function unregisterDownloadedMedia(filename: string) {
   }
 }
 
-function buildApiUrl(destFolderType: string, filename: string): string {
+function buildApiUrl(destFolderType: string, filename: string, useFallback: boolean = false): string {
   let urlFolder = "covers";
   if (destFolderType === "music") urlFolder = "musics";
   else if (destFolderType === "slides") urlFolder = "images";
 
   const cleanFilename = filename.replace(/\\/g, "/");
-  return `https://api.louvorja.com.br/file/${urlFolder}/${encodeURIComponent(cleanFilename).replace(/%2F/g, "/")}`;
+  const host = useFallback ? "https://api.louvorja.workers.dev" : "https://api.louvorja.com.br";
+  return `${host}/file/${urlFolder}/${encodeURIComponent(cleanFilename).replace(/%2F/g, "/")}`;
 }
 
 async function downloadMediaViaFtp(destFolderType: string, filename: string, filePath: string, retries = 2) {
@@ -145,10 +146,15 @@ export function registerMediaHandlers() {
         }
       }
 
-      const apiUrl = buildApiUrl(destFolderType, decodedFilename);
-      const response = await net.fetch(apiUrl);
+      let response;
+      try {
+        const apiUrl = buildApiUrl(destFolderType, decodedFilename, false);
+        response = await net.fetch(apiUrl);
+      } catch {
+        // Falha na primária
+      }
 
-      if (response.status === 429) {
+      if (response && response.status === 429) {
         console.warn("[HTTP] Rate limit 429 atingido. Trocando para FTP para todos os downloads...");
         setUseFtpFallback(true);
         resetFtpFallbackTimer();
@@ -159,6 +165,19 @@ export function registerMediaHandlers() {
         } catch (_ftpError: unknown) {
           console.error("[FTP] Erro no fallback FTP após 429:", (_ftpError as Error).message);
           return false;
+        }
+      }
+
+      // Se a primária falhou ou não deu ok, tenta a réplica Cloudflare Workers/R2
+      if (!response || !response.ok) {
+        try {
+          const fallbackUrl = buildApiUrl(destFolderType, decodedFilename, true);
+          const fallbackResponse = await net.fetch(fallbackUrl);
+          if (fallbackResponse && fallbackResponse.ok) {
+            response = fallbackResponse;
+          }
+        } catch {
+          // Fallback também falhou
         }
       }
 

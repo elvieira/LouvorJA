@@ -3,7 +3,8 @@
 // o mesmo backend usado pelo aplicativo Delphi legado (endpoint retorna comandos
 // SQL crus, separados por "|", que aqui só são interpretados para extrair os campos).
 
-const API_URL = "https://api.louvorja.com.br/onlinevideos";
+import { fetchWithFallback } from "./Api";
+
 const API_TOKEN = "02@v2nFB2Dc";
 
 export interface OnlineChannel {
@@ -88,8 +89,8 @@ function parseInsertRows(text: string): Record<string, string>[] {
 }
 
 async function fetchRows(tipo: "canais" | "playlists" | "videos", id: string, lang: string): Promise<Record<string, string>[]> {
-  const url = `${API_URL}?tipo=${tipo}&id=${encodeURIComponent(id)}&atualiza_playlist=1&lang=${lang}`;
-  const response = await fetch(url, { headers: { "Api-Token": API_TOKEN } });
+  const endpoint = `/onlinevideos?tipo=${tipo}&id=${encodeURIComponent(id)}&atualiza_playlist=1&lang=${lang}`;
+  const response = await fetchWithFallback(endpoint, { headers: { "Api-Token": API_TOKEN } });
   if (!response.ok) {
     throw new Error(`Falha ao consultar coletâneas online (HTTP ${response.status})`);
   }
@@ -106,31 +107,127 @@ const memoryVideoCache: Record<string, { time: number; videos: SearchableOnlineV
 
 export default {
   async getChannels(lang = "pt"): Promise<OnlineChannel[]> {
-    const rows = await fetchRows("canais", "", lang);
-    return rows
-      .filter((r) => r.CANAL_ID)
-      .map((r) => ({ id: r.CANAL_ID, name: r.NOME, image: r.IMAGEM }));
+    const cacheKey = `online_channels_cache_${lang}`;
+    try {
+      const rows = await fetchRows("canais", "", lang);
+      const channels = rows
+        .filter((r) => r.CANAL_ID)
+        .map((r) => ({ id: r.CANAL_ID, name: r.NOME, image: r.IMAGEM }));
+      if (channels.length > 0) {
+        try {
+          localStorage.setItem(cacheKey, JSON.stringify({ time: Date.now(), data: channels }));
+        } catch { /* ignore */ }
+        return channels;
+      }
+    } catch (err) {
+      console.warn("[OnlineCollections] Erro ao buscar canais da rede, tentando cache local:", err);
+      try {
+        const cached = localStorage.getItem(cacheKey);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (Array.isArray(parsed.data) && parsed.data.length > 0) {
+            return parsed.data;
+          }
+        }
+      } catch { /* ignore */ }
+      throw err;
+    }
+
+    try {
+      const cached = localStorage.getItem(cacheKey);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed.data) && parsed.data.length > 0) {
+          return parsed.data;
+        }
+      }
+    } catch { /* ignore */ }
+    return [];
   },
 
   async getPlaylists(channelId: string, lang = "pt"): Promise<OnlinePlaylist[]> {
-    const rows = await fetchRows("playlists", channelId, lang);
-    return rows
-      .filter((r) => r.PLAYLIST_ID)
-      .map((r) => ({ id: r.PLAYLIST_ID, channelId: r.CANAL_ID, name: r.NOME, image: r.IMAGEM }));
+    const cacheKey = `online_playlists_cache_${lang}_${channelId}`;
+    try {
+      const rows = await fetchRows("playlists", channelId, lang);
+      const playlists = rows
+        .filter((r) => r.PLAYLIST_ID)
+        .map((r) => ({ id: r.PLAYLIST_ID, channelId: r.CANAL_ID, name: r.NOME, image: r.IMAGEM }));
+      if (playlists.length > 0) {
+        try {
+          localStorage.setItem(cacheKey, JSON.stringify({ time: Date.now(), data: playlists }));
+        } catch { /* ignore */ }
+        return playlists;
+      }
+    } catch (err) {
+      console.warn(`[OnlineCollections] Erro ao buscar playlists do canal ${channelId}, tentando cache:`, err);
+      try {
+        const cached = localStorage.getItem(cacheKey);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (Array.isArray(parsed.data) && parsed.data.length > 0) {
+            return parsed.data;
+          }
+        }
+      } catch { /* ignore */ }
+      throw err;
+    }
+
+    try {
+      const cached = localStorage.getItem(cacheKey);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed.data) && parsed.data.length > 0) {
+          return parsed.data;
+        }
+      }
+    } catch { /* ignore */ }
+    return [];
   },
 
   async getVideos(playlistId: string, lang = "pt"): Promise<OnlineVideo[]> {
-    const rows = await fetchRows("videos", playlistId, lang);
-    return rows
-      .filter((r) => r.VIDEO_ID)
-      .map((r) => ({
-        id: r.VIDEO_ID,
-        playlistId: r.PLAYLIST_ID,
-        name: r.NOME,
-        position: parseInt(r.POSICAO, 10) || 0,
-        image: r.IMAGEM,
-      }))
-      .sort((a, b) => a.position - b.position);
+    const cacheKey = `online_videos_cache_playlist_${lang}_${playlistId}`;
+    try {
+      const rows = await fetchRows("videos", playlistId, lang);
+      const videos = rows
+        .filter((r) => r.VIDEO_ID)
+        .map((r) => ({
+          id: r.VIDEO_ID,
+          playlistId: r.PLAYLIST_ID,
+          name: r.NOME,
+          position: parseInt(r.POSICAO, 10) || 0,
+          image: r.IMAGEM,
+        }))
+        .sort((a, b) => a.position - b.position);
+      if (videos.length > 0) {
+        try {
+          localStorage.setItem(cacheKey, JSON.stringify({ time: Date.now(), data: videos }));
+        } catch { /* ignore */ }
+        return videos;
+      }
+    } catch (err) {
+      console.warn(`[OnlineCollections] Erro ao buscar vídeos da playlist ${playlistId}, tentando cache:`, err);
+      try {
+        const cached = localStorage.getItem(cacheKey);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (Array.isArray(parsed.data) && parsed.data.length > 0) {
+            return parsed.data;
+          }
+        }
+      } catch { /* ignore */ }
+      throw err;
+    }
+
+    try {
+      const cached = localStorage.getItem(cacheKey);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed.data) && parsed.data.length > 0) {
+          return parsed.data;
+        }
+      }
+    } catch { /* ignore */ }
+    return [];
   },
 
   async getAllVideos(lang = "pt"): Promise<SearchableOnlineVideo[]> {

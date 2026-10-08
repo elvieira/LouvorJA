@@ -23,6 +23,7 @@ import AppTitlebar from "@/layout/Titlebar.vue";
 import AppAlert from "@/layout/Alert.vue";
 import AppSnackbar from "@/layout/Snackbar.vue";
 import { openFavorites } from "@/helpers/services/Favorites";
+import { fetchWithFallback } from "@/helpers/services/Api";
 
 
 export default {
@@ -194,7 +195,7 @@ export default {
         // Verificação de atualização do Banco de Dados
         if (window.electronAPI) {
           try {
-            const response = await fetch("https://api.louvorja.com.br/params?type=env");
+            const response = await fetchWithFallback("/params?type=env");
             const text = await response.text();
             const dbVersionMatch = text.match(/db_version=(\d+)/);
             if (dbVersionMatch && dbVersionMatch[1]) {

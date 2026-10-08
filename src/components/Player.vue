@@ -34,7 +34,9 @@
         class="ml-1"
         @click="toggleFavoritePlayer"
       >
-        <v-icon size="20">{{ isPlayerFavorite ? 'mdi-heart' : 'mdi-heart-outline' }}</v-icon>
+        <v-icon size="20">
+          {{ isPlayerFavorite ? 'mdi-heart' : 'mdi-heart-outline' }}
+        </v-icon>
         <v-tooltip
           activator="parent"
           location="top"

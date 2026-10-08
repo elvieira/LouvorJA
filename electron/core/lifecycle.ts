@@ -1,4 +1,4 @@
-import { app, protocol, net, BrowserWindow, screen } from "electron";
+import { app, protocol, net, BrowserWindow, screen, session } from "electron";
 import * as path from "path";
 import * as fs from "fs";
 import { isDev } from "../config/constants";
@@ -72,6 +72,23 @@ export function setupLifecycle(): void {
   ]);
 
   app.whenReady().then(() => {
+    // Ajusta User-Agent removendo marcas do Electron/LouvorJA que o YouTube bloqueia
+    const defaultUA = session.defaultSession.getUserAgent();
+    const cleanUA = defaultUA
+      .replace(/Electron\/\S+\s?/, "")
+      .replace(/LouvorJA\/\S+\s?/, "");
+    session.defaultSession.setUserAgent(cleanUA);
+
+    // Intercepta cabeçalhos do frame de embed do YouTube para definir origem válida (evita Erro 152 / 153)
+    session.defaultSession.webRequest.onBeforeSendHeaders(
+      { urls: ["*://*.youtube.com/embed/*", "*://*.youtube-nocookie.com/embed/*"] },
+      (details, callback) => {
+        details.requestHeaders["Referer"] = "https://louvorja.com.br/";
+        details.requestHeaders["Origin"] = "https://louvorja.com.br";
+        callback({ requestHeaders: details.requestHeaders });
+      },
+    );
+
     if (!pendingFilePathToOpen) {
       const startupFile = extractSongFileFromArgv(process.argv);
       if (startupFile) {
@@ -152,13 +169,26 @@ export function setupLifecycle(): void {
         if (fallbackPath.startsWith("/avatars/")) {
           return callback({ error: -6 });
         }
-        const apiUrl = `https://api.louvorja.com.br/file${fallbackPath.replace(/\\/g, "/")}`;
-        net.fetch(apiUrl).then(res => {
-          if (res.ok) {
-            return res.arrayBuffer();
+        const cleanPath = fallbackPath.replace(/\\/g, "/");
+        const apiUrlPrimary = `https://api.louvorja.com.br/file${cleanPath}`;
+        const apiUrlFallback = `https://api.louvorja.workers.dev/file${cleanPath}`;
+
+        const fetchFromApi = async () => {
+          try {
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(), 3500);
+            const res = await net.fetch(apiUrlPrimary, { signal: controller.signal });
+            clearTimeout(timer);
+            if (res.ok) return await res.arrayBuffer();
+          } catch {
+            // falha na primária
           }
-          throw new Error("API request failed");
-        }).then(buffer => {
+          const resFallback = await net.fetch(apiUrlFallback);
+          if (resFallback.ok) return await resFallback.arrayBuffer();
+          throw new Error("Ambas APIs de arquivo falharam");
+        };
+
+        fetchFromApi().then(buffer => {
           fs.mkdirSync(path.dirname(filePath), { recursive: true });
           fs.writeFileSync(filePath, Buffer.from(buffer));
           callback({ path: filePath });

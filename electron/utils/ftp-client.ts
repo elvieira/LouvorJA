@@ -1,5 +1,6 @@
 import * as ftp from "basic-ftp";
 import { net } from "electron";
+import { netFetchWithFallback } from "./api-fallback";
 
 export const globalFtpParams: Record<string, Record<string, string>> = {};
 let ftpClient: ftp.Client | null = null;
@@ -36,7 +37,7 @@ export async function getFtpParams(lang: string = "pt"): Promise<Record<string, 
   const langKey = lang.toLowerCase();
   if (globalFtpParams[langKey]) return globalFtpParams[langKey];
 
-  const response = await net.fetch("https://api.louvorja.com.br/params?type=env");
+  const response = await netFetchWithFallback("/params?type=env");
   if (!response.ok) throw new Error("Falha ao buscar parâmetros");
   const text = await response.text();
   

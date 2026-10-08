@@ -2,6 +2,7 @@ import $alert from "@/helpers/ui/Alert";
 import $path from "@/helpers/utils/Path";
 import $dev from "@/helpers/config/Dev";
 import $appdata from "@/helpers/config/AppData";
+import { fetchWithFallback } from "@/helpers/services/Api";
 
 const isDesktop = !!(window.electronAPI && window.electronAPI.isElectron);
 
@@ -30,7 +31,7 @@ export default {
       
       while (retries > 0) {
         try {
-          const response = await fetch(url, {
+          const response = await fetchWithFallback(url, {
             headers: {
               "Api-Token": import.meta.env.VITE_API_TOKEN as string,
             },

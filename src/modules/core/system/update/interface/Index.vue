@@ -35,6 +35,7 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
+import { fetchWithFallback } from "@/helpers/services/Api";
 import UpdHeader from "./components/UpdHeader.vue";
 import UpdDetails from "./components/UpdDetails.vue";
 import UpdActions from "./components/UpdActions.vue";
@@ -157,7 +158,7 @@ export default defineComponent({
     async checkDbUpdate() {
       if (window.electronAPI) {
         try {
-          const response = await fetch("https://api.louvorja.com.br/params?type=env");
+          const response = await fetchWithFallback("/params?type=env");
           const text = await response.text();
           const dbVersionMatch = text.match(/db_version=(\d+)/);
           if (dbVersionMatch && dbVersionMatch[1]) {

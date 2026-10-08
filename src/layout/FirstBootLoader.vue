@@ -106,6 +106,7 @@
 import { defineComponent } from "vue";
 import $path from "@/helpers/utils/Path";
 import $alert from "@/helpers/ui/Alert";
+import { fetchWithFallback } from "@/helpers/services/Api";
 
 export default defineComponent({
   name: "FirstBootLoader",
@@ -218,7 +219,7 @@ export default defineComponent({
     async fetchFromApi(file: string, retries = 5, delayMs = 1000): Promise<any> {
       try {
         const date = new Date().toISOString().slice(0, 10).replace(/-/g, "");
-        const response = await fetch(`${$path.db(`/${file}`)}?${date}`, {
+        const response = await fetchWithFallback(`${$path.db(`/${file}`)}?${date}`, {
           headers: { "Api-Token": import.meta.env.VITE_API_TOKEN as string },
         });
         
