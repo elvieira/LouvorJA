@@ -12,9 +12,16 @@ import "./assets/styles/main.css";
 import "./assets/styles/fonts.css";
 import "./assets/styles/layout.scss";
 
+import Logger from "./helpers/services/Logger";
+
 loadFonts();
 
 const app = createApp(App);
+
+app.config.errorHandler = (err, instance, info) => {
+  Logger.error(`[Vue Error] ${info}`, err instanceof Error ? err.stack || err.message : err);
+  console.error(err);
+};
 
 import ModuleManager from "@/helpers/core/ModuleManager";
 

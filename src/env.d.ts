@@ -127,6 +127,16 @@ interface ElectronAPI {
   streamingPushSlide?: (data: Record<string, unknown>) => Promise<boolean>
   streamingClearSlide?: () => Promise<boolean>
   onStreamingRemoteAction?: (callback: (data: { action: string; params: Record<string, string> }) => void) => void
+
+  // Logger & Diagnósticos
+  getLogs?: (filter?: Record<string, unknown>) => Promise<unknown[]>
+  clearLogs?: () => Promise<boolean>
+  addLogEntry?: (payload: { level: string; message: string; details?: string }) => Promise<unknown>
+  getSystemDiagnostics?: () => Promise<unknown>
+  openLogsFolder?: () => Promise<boolean>
+  exportLogs?: () => Promise<{ success: boolean; filePath?: string; canceled?: boolean; error?: string }>
+  onLogEntryAdded?: (callback: (entry: unknown) => void) => void
+  removeLogEntryListener?: () => void
 }
 
 declare global {

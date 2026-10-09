@@ -24,6 +24,7 @@
                     @open-update="openUpdate"
                     @open-manual="openManual"
                     @open-support="openSupport"
+                    @open-diagnostics="openDiagnostics"
                   />
                 </div>
               </v-tabs-window-item>
@@ -54,6 +55,15 @@
             </div>
           </div>
         </div>
+
+        <!-- Diagnostics View -->
+        <div v-else-if="currentView === 'diagnostics'" class="d-flex flex-column h-100 w-100" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: var(--main-bg);">
+          <div class="content-main flex-grow-1 w-100 h-100" style="padding-top: 24px;">
+            <div class="h-100 overflow-auto px-6 pb-6">
+              <HelpDiagnostics :app-version="appVersion" @back="closeDiagnostics" />
+            </div>
+          </div>
+        </div>
       </v-slide-x-reverse-transition>
     </div>
   </v-slide-y-reverse-transition>
@@ -68,6 +78,7 @@ import HelpAbout from "./components/HelpAbout.vue";
 import HelpDevelopers from "./components/HelpDevelopers.vue";
 import HelpManual from "./components/HelpManual.vue";
 import HelpSupport from "./components/HelpSupport.vue";
+import HelpDiagnostics from "./components/HelpDiagnostics.vue";
 
 export default defineComponent({
   name: "HelpModule",
@@ -77,6 +88,7 @@ export default defineComponent({
     HelpAbout,
     HelpDevelopers,
     HelpSupport,
+    HelpDiagnostics,
   },
   data: () => ({
     tab: 1,
@@ -103,9 +115,13 @@ export default defineComponent({
         } else if (newVal === "open-support") {
           this.openSupport();
           this.$appdata.set("modules.help.action", null);
+        } else if (newVal === "open-diagnostics") {
+          this.openDiagnostics();
+          this.$appdata.set("modules.help.action", null);
         } else if (newVal === "open-about" || newVal === "open-tabs") {
           this.closeManual();
           this.closeSupport();
+          this.closeDiagnostics();
           this.$appdata.set("modules.help.action", null);
         }
       },
@@ -136,6 +152,14 @@ export default defineComponent({
       this.$appdata.set("modules.help.currentView", "support");
     },
     closeSupport() {
+      this.currentView = "tabs";
+      this.$appdata.set("modules.help.currentView", "tabs");
+    },
+    openDiagnostics() {
+      this.currentView = "diagnostics";
+      this.$appdata.set("modules.help.currentView", "diagnostics");
+    },
+    closeDiagnostics() {
       this.currentView = "tabs";
       this.$appdata.set("modules.help.currentView", "tabs");
     },

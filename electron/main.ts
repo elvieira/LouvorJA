@@ -4,10 +4,14 @@ import { app } from "electron";
 app.name = "Louvor JA";
 import * as fs from "fs-extra";
 import * as path from "path";
+import { initLogger } from "./services/logger";
 import { setupLifecycle } from "./core/lifecycle";
 import { registerIpcHandlers } from "./ipc";
 import { getSysDbPath, mediaPath, coversPath, musicPath, slidesPath, oldDbPath } from "./config/constants";
 import { setupUpdater } from "./services/updater";
+
+// Inicializa o serviço de logging central
+initLogger();
 
 // Otimizações de GPU (Hardware Acceleration) para evitar travamentos em vídeos pesados e projetor
 app.commandLine.appendSwitch("ignore-gpu-blocklist");

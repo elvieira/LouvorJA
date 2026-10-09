@@ -129,4 +129,18 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.removeAllListeners("streaming-remote-action");
     ipcRenderer.on("streaming-remote-action", (_event, data) => callback(data));
   },
+
+  // Logger & Diagnósticos
+  getLogs: (filter?: Record<string, unknown>) => ipcRenderer.invoke("get-logs", filter),
+  clearLogs: () => ipcRenderer.invoke("clear-logs"),
+  addLogEntry: (payload: { level: string; message: string; details?: string }) => ipcRenderer.invoke("add-log-entry", payload),
+  getSystemDiagnostics: () => ipcRenderer.invoke("get-system-diagnostics"),
+  openLogsFolder: () => ipcRenderer.invoke("open-logs-folder"),
+  exportLogs: () => ipcRenderer.invoke("export-logs"),
+  onLogEntryAdded: (callback: (entry: unknown) => void) => {
+    ipcRenderer.on("log-entry-added", (_event, entry) => callback(entry));
+  },
+  removeLogEntryListener: () => {
+    ipcRenderer.removeAllListeners("log-entry-added");
+  },
 });

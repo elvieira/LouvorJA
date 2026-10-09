@@ -10,6 +10,7 @@ import { registerUpdaterHandlers } from "../services/updater";
 import { registerValidatorHandlers } from "../services/validator";
 import { registerStreamingIpcHandlers } from "./streaming";
 import { registerYoutubeHandlers } from "../services/youtube";
+import { registerLoggerHandlers } from "../services/logger";
 import { checkLegacyInstallation, selectLegacyFolder, importLegacyMedia } from "../services/legacy-importer";
 import { getRememberWindowBounds, setRememberWindowBounds } from "../services/window-state";
 import { getPendingFilePathToOpen } from "../core/lifecycle";
@@ -246,6 +247,7 @@ function parseSlideTime(s: Record<string, string>, slideIndex: number, audioPath
 }
 
 export function registerIpcHandlers() {
+  registerLoggerHandlers();
   registerDatabaseHandlers();
   registerMediaHandlers();
   registerUpdaterHandlers();

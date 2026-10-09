@@ -77,11 +77,12 @@
     
         <SettingsActionRow
           icon="mdi-text-box-search-outline"
-          icon-color="grey"
+          icon-color="primary"
           :title="$t('modules.help.diagnostics_title')"
           :subtitle="$t('modules.help.diagnostics_desc')"
           :button-text="$t('modules.help.diagnostics_btn')"
-          button-color="grey"
+          button-color="primary"
+          @action="$emit('open-diagnostics')"
         />
       </v-card-text>
     </v-card>
@@ -103,6 +104,6 @@ export default defineComponent({
       required: true,
     },
   },
-  emits: ["open-update", "open-manual", "open-support"],
+  emits: ["open-update", "open-manual", "open-support", "open-diagnostics"],
 });
 </script>
