@@ -2,6 +2,18 @@ let activeAudioElement: HTMLAudioElement | null = null;
 let activeAudioContext: AudioContext | null = null;
 let activeSources: { stop: () => void }[] = [];
 let activeFadeInterval: ReturnType<typeof setInterval> | null = null;
+let isAlertPaused = false;
+let alertSessionId = 0;
+
+function isPopupWindow(): boolean {
+  if (typeof window === "undefined") return false;
+  return (
+    window.location.href.includes("popup") ||
+    window.location.hash.includes("popup") ||
+    window.location.pathname.includes("popup") ||
+    Boolean(window.opener)
+  );
+}
 
 function clearFadeInterval() {
   if (activeFadeInterval) {
@@ -52,7 +64,54 @@ function stopSynthesizedAlert() {
   }
 }
 
+export function pauseSchoolBellAlert() {
+  if (isPopupWindow()) return;
+  clearFadeInterval();
+  if (activeAudioElement) {
+    try {
+      activeAudioElement.pause();
+    } catch {
+      // ignore
+    }
+    isAlertPaused = true;
+  }
+  if (activeAudioContext && activeAudioContext.state === "running") {
+    try {
+      activeAudioContext.suspend();
+    } catch {
+      // ignore
+    }
+    isAlertPaused = true;
+  }
+}
+
+export function resumeSchoolBellAlert() {
+  if (isPopupWindow()) return;
+  if (!isAlertPaused) return;
+  isAlertPaused = false;
+  if (activeAudioElement && activeAudioElement.paused) {
+    try {
+      if (activeAudioElement.volume < 1) {
+        startFadeIn(activeAudioElement, 800);
+      }
+      activeAudioElement.play().catch(() => {});
+    } catch {
+      // ignore
+    }
+  }
+  if (activeAudioContext && activeAudioContext.state === "suspended") {
+    try {
+      activeAudioContext.resume().catch(() => {});
+    } catch {
+      // ignore
+    }
+  }
+}
+
 export function stopSchoolBellAlert() {
+  if (isPopupWindow()) return;
+  alertSessionId++;
+  isAlertPaused = false;
   clearFadeInterval();
   if (activeAudioElement) {
     try {
@@ -144,7 +203,9 @@ function playSynthesizedAlert() {
 }
 
 export function playSchoolBellAlert() {
+  if (isPopupWindow()) return;
   stopSchoolBellAlert();
+  const currentSession = alertSessionId;
 
   // Lista de caminhos suportados para o arquivo MP3 do usuário
   const candidateUrls = [
@@ -167,8 +228,9 @@ export function playSchoolBellAlert() {
   let played = false;
 
   const tryNext = () => {
+    if (currentSession !== alertSessionId) return;
     if (played || currentIdx >= candidateUrls.length) {
-      if (!played) {
+      if (!played && currentSession === alertSessionId) {
         // Se nenhum arquivo MP3 respondeu, toca o sintetizador como fallback
         playSynthesizedAlert();
       }
@@ -182,10 +244,18 @@ export function playSchoolBellAlert() {
     let hasError = false;
 
     const handleCanPlay = () => {
-      if (hasError || played) return;
+      if (currentSession !== alertSessionId || hasError || played) return;
       played = true;
       audio.volume = 0;
       audio.play().then(() => {
+        if (currentSession !== alertSessionId) {
+          audio.pause();
+          return;
+        }
+        if (isAlertPaused) {
+          audio.pause();
+          return;
+        }
         startFadeIn(audio, 1500);
       }).catch(() => {
         played = false;
@@ -195,20 +265,26 @@ export function playSchoolBellAlert() {
 
     const handleError = () => {
       hasError = true;
-      if (!played) {
+      if (!played && currentSession === alertSessionId) {
         tryNext();
       }
     };
 
     audio.addEventListener("canplaythrough", handleCanPlay, { once: true });
     audio.addEventListener("error", handleError, { once: true });
+    audio.addEventListener("ended", () => {
+      if (activeAudioElement === audio) {
+        activeAudioElement = null;
+        isAlertPaused = false;
+      }
+    }, { once: true });
 
     // Inicia carregamento
     audio.load();
 
     // Timeout de segurança se o arquivo não responder em 300ms
     setTimeout(() => {
-      if (!played && !hasError && audio.readyState < 2) {
+      if (!played && !hasError && audio.readyState < 2 && currentSession === alertSessionId) {
         handleError();
       }
     }, 300);
@@ -218,12 +294,15 @@ export function playSchoolBellAlert() {
 }
 
 export function playCultAlert(type: "start" | "5min" | "1min" | "end") {
+  if (isPopupWindow()) return;
+
   if (type === "end") {
     playSchoolBellAlert();
     return;
   }
 
   stopSchoolBellAlert();
+  const currentSession = alertSessionId;
 
   let fileNames: string[] = [];
   if (type === "start") {
@@ -243,8 +322,9 @@ export function playCultAlert(type: "start" | "5min" | "1min" | "end") {
   let played = false;
 
   const tryNext = () => {
+    if (currentSession !== alertSessionId) return;
     if (played || currentIdx >= candidateUrls.length) {
-      if (!played) {
+      if (!played && currentSession === alertSessionId) {
         // Fallback sintetizado caso os arquivos MP3 não existam
         playSynthesizedAlert();
       }
@@ -258,10 +338,18 @@ export function playCultAlert(type: "start" | "5min" | "1min" | "end") {
     let hasError = false;
 
     const handleCanPlay = () => {
-      if (hasError || played) return;
+      if (currentSession !== alertSessionId || hasError || played) return;
       played = true;
       audio.volume = 0;
       audio.play().then(() => {
+        if (currentSession !== alertSessionId) {
+          audio.pause();
+          return;
+        }
+        if (isAlertPaused) {
+          audio.pause();
+          return;
+        }
         startFadeIn(audio, 1200);
       }).catch(() => {
         played = false;
@@ -271,18 +359,24 @@ export function playCultAlert(type: "start" | "5min" | "1min" | "end") {
 
     const handleError = () => {
       hasError = true;
-      if (!played) {
+      if (!played && currentSession === alertSessionId) {
         tryNext();
       }
     };
 
     audio.addEventListener("canplaythrough", handleCanPlay, { once: true });
     audio.addEventListener("error", handleError, { once: true });
+    audio.addEventListener("ended", () => {
+      if (activeAudioElement === audio) {
+        activeAudioElement = null;
+        isAlertPaused = false;
+      }
+    }, { once: true });
 
     audio.load();
 
     setTimeout(() => {
-      if (!played && !hasError && audio.readyState < 2) {
+      if (!played && !hasError && audio.readyState < 2 && currentSession === alertSessionId) {
         handleError();
       }
     }, 300);

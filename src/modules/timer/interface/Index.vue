@@ -224,7 +224,7 @@
           <!-- CONTROLES DO MODO CRONÔMETRO DE CULTO -->
           <v-expand-transition>
             <div
-              v-if="currentMode === 'cult' && !isRunning && !isPaused"
+              v-if="currentMode === 'cult' && !isRunning"
               class="cult-controls d-flex flex-column align-center mb-6"
             >
               <!-- Seletor de Tipo de Término -->
@@ -396,7 +396,7 @@ import LScreenBtn from "@/components/buttons/Screen.vue";
 import ConfigModal from "./components/ConfigModal.vue";
 import ModuleHeader from "@/components/ModuleHeader.vue";
 import manifest from "../manifest";
-import { stopSchoolBellAlert, playCultAlert } from "../helpers/audioAlert";
+import { playSchoolBellAlert, stopSchoolBellAlert, pauseSchoolBellAlert, resumeSchoolBellAlert, playCultAlert } from "../helpers/audioAlert";
 import PillSwitch from "@/components/inputs/PillSwitch.vue";
 
 export default defineComponent({
@@ -418,6 +418,7 @@ export default defineComponent({
     cultEndMinute: 30,
     clockTicker: 0,
     clockTickerId: null as any,
+    timerTickerId: null as any,
   }),
   computed: {
     config(): any {
@@ -519,9 +520,9 @@ export default defineComponent({
         const hrs = Math.max(0, typeof val === "string" ? (parseInt(val) || 0) : (val || 0));
         const ms = (hrs * 3600000) + (this.editMinutes * 60000) + (this.editSeconds * 1000);
         if (this.isStopwatch) {
-          this.updateData({ accumulatedTime: ms, configuredDuration: ms, isFinished: false });
+          this.updateData({ accumulatedTime: ms, configuredDuration: ms, isFinished: false, isPaused: false });
         } else {
-          this.updateData({ targetDuration: ms, configuredDuration: ms, isFinished: false });
+          this.updateData({ targetDuration: ms, configuredDuration: ms, accumulatedTime: 0, isFinished: false, isPaused: false });
         }
       },
     },
@@ -536,9 +537,9 @@ export default defineComponent({
         const mins = Math.max(0, Math.min(59, typeof val === "string" ? (parseInt(val) || 0) : (val || 0)));
         const ms = (this.editHours * 3600000) + (mins * 60000) + (this.editSeconds * 1000);
         if (this.isStopwatch) {
-          this.updateData({ accumulatedTime: ms, configuredDuration: ms, isFinished: false });
+          this.updateData({ accumulatedTime: ms, configuredDuration: ms, isFinished: false, isPaused: false });
         } else {
-          this.updateData({ targetDuration: ms, configuredDuration: ms, isFinished: false });
+          this.updateData({ targetDuration: ms, configuredDuration: ms, accumulatedTime: 0, isFinished: false, isPaused: false });
         }
       },
     },
@@ -553,11 +554,23 @@ export default defineComponent({
         const secs = Math.max(0, Math.min(59, typeof val === "string" ? (parseInt(val) || 0) : (val || 0)));
         const ms = (this.editHours * 3600000) + (this.editMinutes * 60000) + (secs * 1000);
         if (this.isStopwatch) {
-          this.updateData({ accumulatedTime: ms, configuredDuration: ms, isFinished: false });
+          this.updateData({ accumulatedTime: ms, configuredDuration: ms, isFinished: false, isPaused: false });
         } else {
-          this.updateData({ targetDuration: ms, configuredDuration: ms, isFinished: false });
+          this.updateData({ targetDuration: ms, configuredDuration: ms, accumulatedTime: 0, isFinished: false, isPaused: false });
         }
       },
+    },
+  },
+  watch: {
+    isRunning(newVal: boolean, oldVal: boolean) {
+      if (!newVal && oldVal && !this.timerData?.isAlerting) {
+        stopSchoolBellAlert();
+      }
+    },
+    isAlerting(newVal: boolean, oldVal: boolean) {
+      if (!newVal && oldVal) {
+        stopSchoolBellAlert();
+      }
     },
   },
   mounted() {
@@ -565,6 +578,10 @@ export default defineComponent({
     this.clockTickerId = setInterval(() => {
       this.clockTicker++;
     }, 1000);
+
+    this.timerTickerId = setInterval(() => {
+      this.checkTimerTick();
+    }, 100);
 
     // Inicializa campos padrão de culto próximos da hora atual
     const now = new Date();
@@ -587,6 +604,10 @@ export default defineComponent({
     if (this.clockTickerId) {
       clearInterval(this.clockTickerId);
     }
+    if (this.timerTickerId) {
+      clearInterval(this.timerTickerId);
+    }
+    stopSchoolBellAlert();
   },
   methods: {
     t(text: string): string {
@@ -634,6 +655,7 @@ export default defineComponent({
     },
     onCultDurationChange() {
       if (this.isRunning) return;
+      stopSchoolBellAlert();
       const mins = Math.max(1, Number(this.cultDurationMinutes) || 1);
       const totalMs = mins * 60000;
       this.updateData({
@@ -642,10 +664,14 @@ export default defineComponent({
         cultRemainingMs: totalMs,
         targetDuration: totalMs,
         configuredDuration: totalMs,
+        cultAudioEndPlayed: false,
+        cultAudio5minPlayed: totalMs <= 300000,
+        cultAudio1minPlayed: totalMs <= 60000,
       });
     },
     onCultTimeChange() {
       if (this.isRunning) return;
+      stopSchoolBellAlert();
       const now = new Date();
       const target = new Date();
       target.setHours(Number(this.cultEndHour) || 0, Number(this.cultEndMinute) || 0, 0, 0);
@@ -659,6 +685,9 @@ export default defineComponent({
         cultRemainingMs: totalMs,
         targetDuration: totalMs,
         configuredDuration: totalMs,
+        cultAudioEndPlayed: totalMs <= 0,
+        cultAudio5minPlayed: totalMs <= 300000,
+        cultAudio1minPlayed: totalMs <= 60000,
       });
     },
     setCultType(val: "duration" | "time") {
@@ -689,24 +718,36 @@ export default defineComponent({
       if (this.isPaused) {
         const remaining = (this.timerData.cultRemainingMs || 0) + addedMs;
         const total = Math.max(30000, (this.timerData.cultTotalDurationMs || 0) + addedMs);
+        if (remaining > 0) {
+          stopSchoolBellAlert();
+        }
         this.updateData({
           cultRemainingMs: remaining,
           cultTotalDurationMs: total,
           cultTargetEndTime: 0,
           cultAudioEndPlayed: remaining <= 0,
+          cultAudio5minPlayed: remaining <= 300000,
+          cultAudio1minPlayed: remaining <= 60000,
         });
         return;
       }
       const currentTarget = this.timerData.cultTargetEndTime || (Date.now() + (this.timerData.cultRemainingMs || 0));
-      const newTarget = currentTarget + addedMs;
+      const alignedTarget = Math.round(currentTarget / 1000) * 1000;
+      const newTarget = alignedTarget + addedMs;
       const newTotal = Math.max(30000, (this.timerData.cultTotalDurationMs || 0) + addedMs);
 
       // Se somar minutos e voltar para positivo, limpa o alerta de fim
       const willBePositive = newTarget > Date.now();
+      const remainingDiff = newTarget - Date.now();
+      if (willBePositive) {
+        stopSchoolBellAlert();
+      }
       this.updateData({
         cultTargetEndTime: newTarget,
         cultTotalDurationMs: newTotal,
         cultAudioEndPlayed: !willBePositive,
+        cultAudio5minPlayed: remainingDiff <= 300000,
+        cultAudio1minPlayed: remainingDiff <= 60000,
       });
     },
     addCultMinutes(mins: number) {
@@ -721,13 +762,16 @@ export default defineComponent({
     toggleTimer() {
       if (this.isRunning) {
         // Pausar
+        pauseSchoolBellAlert();
         if (this.currentMode === "cult") {
           const currentTarget = this.timerData.cultTargetEndTime || Date.now();
           const remaining = currentTarget - Date.now();
+          // Alinha para segundos inteiros garantindo sincronia perfeita com o relógio
+          const alignedRemaining = Math.round(remaining / 1000) * 1000;
           this.updateData({
             isRunning: false,
             cultTargetEndTime: 0,
-            cultRemainingMs: remaining,
+            cultRemainingMs: alignedRemaining,
             isPaused: true,
           });
         } else {
@@ -738,15 +782,13 @@ export default defineComponent({
           }
           this.updateData({
             isRunning: false,
-            accumulatedTime: this.timerData.accumulatedTime + elapsed,
+            accumulatedTime: (this.timerData.accumulatedTime || 0) + elapsed,
             baseTime: 0,
             isPaused: true,
           });
         }
       } else {
         // Iniciar ou Continuar
-        stopSchoolBellAlert();
-
         if (this.isAlerting) {
           this.stopAlert();
           return;
@@ -759,14 +801,18 @@ export default defineComponent({
 
           if (this.timerData.isPaused && this.timerData.cultRemainingMs !== undefined && !this.timerData.isFinished) {
             // Retomando após pausa
+            resumeSchoolBellAlert();
             totalDuration = this.timerData.cultTotalDurationMs || ((Number(this.cultDurationMinutes) || 40) * 60000);
-            targetEndTime = Date.now() + this.timerData.cultRemainingMs;
+            const alignedNow = Math.round(Date.now() / 1000) * 1000;
+            targetEndTime = alignedNow + this.timerData.cultRemainingMs;
           } else {
             // Novo início
+            stopSchoolBellAlert();
             if (this.cultType === "duration") {
               const mins = Math.max(1, Number(this.cultDurationMinutes) || 40);
               totalDuration = mins * 60000;
-              targetEndTime = Date.now() + totalDuration;
+              const alignedNow = Math.round(Date.now() / 1000) * 1000;
+              targetEndTime = alignedNow + totalDuration;
             } else {
               const now = new Date();
               const target = new Date();
@@ -783,6 +829,8 @@ export default defineComponent({
             }
           }
 
+          const remainingMs = targetEndTime - Date.now();
+
           this.updateData({
             mode: "cult",
             isRunning: true,
@@ -791,11 +839,11 @@ export default defineComponent({
             cultModeType: this.cultType,
             cultTargetEndTime: targetEndTime,
             cultTotalDurationMs: totalDuration,
-            cultRemainingMs: targetEndTime - Date.now(),
+            cultRemainingMs: remainingMs,
             cultAudioStartPlayed: true,
-            cultAudio5minPlayed: false,
-            cultAudio1minPlayed: false,
-            cultAudioEndPlayed: false,
+            cultAudio5minPlayed: remainingMs <= 300000,
+            cultAudio1minPlayed: remainingMs <= 60000,
+            cultAudioEndPlayed: remainingMs <= 0,
           });
           return;
         }
@@ -807,7 +855,8 @@ export default defineComponent({
             return;
           }
 
-          if (this.timerData.isFinished || this.timerData.accumulatedTime >= duration) {
+          if (this.timerData.isFinished || (this.timerData.accumulatedTime || 0) >= duration) {
+            stopSchoolBellAlert();
             this.updateData({
               mode: "timer",
               isRunning: true,
@@ -821,8 +870,20 @@ export default defineComponent({
             });
             return;
           }
+
+          resumeSchoolBellAlert();
+          this.updateData({
+            mode: "timer",
+            isRunning: true,
+            isFinished: false,
+            isPaused: false,
+            isAlerting: false,
+            baseTime: Date.now(),
+          });
+          return;
         }
 
+        resumeSchoolBellAlert();
         this.updateData({
           mode: this.currentMode,
           isRunning: true,
@@ -831,6 +892,63 @@ export default defineComponent({
           isAlerting: false,
           baseTime: Date.now(),
         });
+      }
+    },
+    checkTimerTick() {
+      const data = this.timerData;
+      if (!data || !data.isRunning) return;
+
+      const now = Date.now();
+
+      if (data.mode === "cult") {
+        const targetEnd = data.cultTargetEndTime || 0;
+        const remaining = targetEnd - now;
+
+        // Alerta sonoro de 5 minutos
+        if (this.config.cultAudio5min !== false && !data.cultAudio5minPlayed) {
+          if (remaining <= 300000 && remaining > 280000) {
+            this.updateData({ cultAudio5minPlayed: true });
+            playCultAlert("5min");
+          }
+        }
+
+        // Alerta sonoro de 1 minuto
+        if (this.config.cultAudio1min !== false && !data.cultAudio1minPlayed) {
+          if (remaining <= 60000 && remaining > 40000) {
+            this.updateData({ cultAudio1minPlayed: true });
+            playCultAlert("1min");
+          }
+        }
+
+        // Alerta sonoro de término (0 segundos)
+        if (remaining <= 0 && !data.cultAudioEndPlayed) {
+          this.updateData({
+            cultAudioEndPlayed: true,
+            ...(this.config.cultAllowNegative === false
+              ? { isRunning: false, isFinished: true, cultRemainingMs: 0 }
+              : {}),
+          });
+          if (this.config.cultAudioEnd !== false) {
+            playCultAlert("end");
+          }
+        }
+      } else if (!data.isStopwatch) {
+        // Modo Padrão Timer (regressivo)
+        const elapsed = (data.accumulatedTime || 0) + (data.baseTime ? (now - data.baseTime) : 0);
+        const remaining = (data.targetDuration || 0) - elapsed;
+
+        if (remaining <= 0) {
+          const visualAlert = this.config.visualAlert !== false;
+          this.updateData({
+            isRunning: false,
+            isFinished: true,
+            isAlerting: visualAlert,
+            accumulatedTime: data.targetDuration || 0,
+          });
+          if (this.config.audioAlert !== false) {
+            playSchoolBellAlert();
+          }
+        }
       }
     },
     resetTimer() {

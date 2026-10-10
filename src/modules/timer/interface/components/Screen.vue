@@ -173,7 +173,7 @@
 
 <script lang="ts">
 import { defineComponent, PropType } from "vue";
-import { playSchoolBellAlert, stopSchoolBellAlert, playCultAlert } from "../../helpers/audioAlert";
+import { stopSchoolBellAlert } from "../../helpers/audioAlert";
 
 function getLuminance(colorStr?: string | null): number {
   if (!colorStr) return 0;
@@ -295,7 +295,9 @@ export default defineComponent({
       return this.cultRemainingMs < 0;
     },
     formattedTime(): string {
-      const totalSeconds = Math.floor(this.currentTimeMs / 1000);
+      const totalSeconds = this.mode === "stopwatch"
+        ? Math.floor(this.currentTimeMs / 1000)
+        : Math.ceil(this.currentTimeMs / 1000);
       const h = Math.floor(totalSeconds / 3600);
       const m = Math.floor((totalSeconds % 3600) / 60);
       const s = totalSeconds % 60;
@@ -311,7 +313,12 @@ export default defineComponent({
     },
     formattedCultTime(): string {
       const isNeg = this.cultRemainingMs < 0;
-      const absSeconds = Math.floor(Math.abs(this.cultRemainingMs) / 1000);
+      let absSeconds = 0;
+      if (isNeg) {
+        absSeconds = Math.floor(Math.abs(this.cultRemainingMs) / 1000);
+      } else {
+        absSeconds = Math.ceil(this.cultRemainingMs / 1000);
+      }
       const h = Math.floor(absSeconds / 3600);
       const m = Math.floor((absSeconds % 3600) / 60);
       const s = absSeconds % 60;
@@ -327,7 +334,7 @@ export default defineComponent({
         text = `${mStr}:${sStr}`;
       }
 
-      return isNeg ? `-${text}` : text;
+      return isNeg && absSeconds > 0 ? `-${text}` : text;
     },
     effectiveBgColor(): string {
       if (this.mode === "cult") {
@@ -656,6 +663,11 @@ export default defineComponent({
     },
   },
   watch: {
+    "timerData.isFinished"(newVal: boolean) {
+      if (!newVal) {
+        stopSchoolBellAlert();
+      }
+    },
     isAlerting(newVal: boolean, oldVal: boolean) {
       if (!newVal && oldVal) {
         stopSchoolBellAlert();
@@ -664,23 +676,17 @@ export default defineComponent({
   },
   mounted() {
     this.updateClock();
-    this.clockIntervalId = setInterval(() => {
-      this.updateClock();
-    }, 500);
     this.startLoop();
   },
   beforeUnmount() {
     if (this.animationFrameId) {
       cancelAnimationFrame(this.animationFrameId);
     }
-    if (this.clockIntervalId) {
-      clearInterval(this.clockIntervalId);
-    }
     stopSchoolBellAlert();
   },
   methods: {
-    updateClock() {
-      const now = new Date();
+    updateClock(nowDate?: Date) {
+      const now = nowDate || new Date();
       const h = now.getHours().toString().padStart(2, "0");
       const m = now.getMinutes().toString().padStart(2, "0");
       const s = now.getSeconds().toString().padStart(2, "0");
@@ -690,6 +696,7 @@ export default defineComponent({
       const updateTime = () => {
         const data = this.timerData;
         const now = Date.now();
+        this.updateClock(new Date(now));
 
         if (data.mode === "cult") {
           // MODO CULTO
@@ -697,39 +704,6 @@ export default defineComponent({
             const targetEnd = data.cultTargetEndTime || 0;
             const remaining = targetEnd - now;
             this.cultRemainingMs = remaining;
-
-            // Alertas sonoros intermediários do Culto
-            if (this.config.cultAudio5min !== false && !data.cultAudio5minPlayed) {
-              if (remaining <= 300000 && remaining > 280000) {
-                this.$appdata.set(`modules.${this.module_id}.data.cultAudio5minPlayed`, true);
-                playCultAlert("5min");
-              }
-            }
-
-            if (this.config.cultAudio1min !== false && !data.cultAudio1minPlayed) {
-              if (remaining <= 60000 && remaining > 40000) {
-                this.$appdata.set(`modules.${this.module_id}.data.cultAudio1minPlayed`, true);
-                playCultAlert("1min");
-              }
-            }
-
-            // Ao atingir 0
-            if (remaining <= 0 && !data.cultAudioEndPlayed) {
-              this.$appdata.set(`modules.${this.module_id}.data.cultAudioEndPlayed`, true);
-              if (this.config.cultAudioEnd !== false) {
-                playCultAlert("end");
-              }
-
-              // Se não permite contagem negativa, encerra automaticamente
-              if (this.config.cultAllowNegative === false) {
-                this.$appdata.set(`modules.${this.module_id}.data`, {
-                  ...data,
-                  isRunning: false,
-                  isFinished: true,
-                  cultRemainingMs: 0,
-                });
-              }
-            }
           } else {
             // Culto parado / pausado / não iniciado
             if (data.isFinished) {
@@ -743,26 +717,12 @@ export default defineComponent({
         } else {
           // MODO PADRÃO (timer / stopwatch)
           if (data.isRunning) {
-            const elapsed = data.accumulatedTime + (now - data.baseTime);
+            const elapsed = (data.accumulatedTime || 0) + (data.baseTime ? (now - data.baseTime) : 0);
             
             if (data.isStopwatch) {
               this.currentTimeMs = elapsed;
             } else {
-              let remaining = data.targetDuration - elapsed;
-              if (remaining <= 0) {
-                remaining = 0;
-                if (data.isRunning) {
-                  const visualAlert = this.config.visualAlert !== false;
-                  this.$appdata.set(`modules.${this.module_id}.data`, {
-                    ...data,
-                    isRunning: false,
-                    isFinished: true,
-                    isAlerting: visualAlert,
-                    accumulatedTime: data.targetDuration,
-                  });
-                  this.checkAndPlaySound();
-                }
-              }
+              const remaining = Math.max(0, (data.targetDuration || 0) - elapsed);
               this.currentTimeMs = remaining;
             }
           } else {
@@ -780,8 +740,8 @@ export default defineComponent({
                   this.currentTimeMs = 0;
                 }
               } else {
-                if (data.accumulatedTime > 0) {
-                  this.currentTimeMs = Math.max(0, data.targetDuration - data.accumulatedTime);
+                if ((data.accumulatedTime || 0) > 0) {
+                  this.currentTimeMs = Math.max(0, (data.targetDuration || 0) - data.accumulatedTime);
                 } else {
                   this.currentTimeMs = data.configuredDuration || data.targetDuration || 0;
                 }
@@ -794,13 +754,6 @@ export default defineComponent({
       };
       
       this.animationFrameId = requestAnimationFrame(updateTime);
-    },
-    checkAndPlaySound() {
-      if (this.config.audioAlert === false) return;
-      const lastPlayed = this.timerData.lastAudioAlertTime || 0;
-      if (Date.now() - lastPlayed < 4000) return;
-      this.$appdata.set(`modules.${this.module_id}.data.lastAudioAlertTime`, Date.now());
-      playSchoolBellAlert();
     },
   },
 });
