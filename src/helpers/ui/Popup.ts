@@ -1,6 +1,7 @@
 import $appdata from "@/helpers/config/AppData";
 import $window from "@/helpers/utils/Window";
 import { markRaw } from "vue";
+import Telemetry from "@/helpers/services/Telemetry";
 
 export interface PopupParams {
   module?: string;
@@ -20,6 +21,16 @@ export default {
       formattedParams = { module: params as string };
     } else {
       formattedParams = params as PopupParams;
+    }
+
+    try {
+      Telemetry.track("projection_opened", {
+        module: formattedParams.module || "generic",
+        monitorId: formattedParams.monitorId ?? null,
+        fullscreen: formattedParams.fullscreen ?? false,
+      });
+    } catch {
+      // ignore
     }
 
     let popups: CustomWindow[] = $appdata.get("popups") || [];

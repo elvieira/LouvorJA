@@ -1,90 +1,92 @@
 <template>
-  <div class="d-flex align-center justify-space-between">
-    <div class="d-flex align-center">
-      <v-icon :color="iconColor" class="mr-3" size="24">
+  <div class="d-flex align-center justify-space-between" style="gap: 24px;">
+    <div class="d-flex align-center flex-grow-1" style="min-width: 0; padding-right: 8px;">
+      <v-icon :color="iconColor" class="mr-3 flex-shrink-0" size="24">
         {{ icon }}
       </v-icon>
-      <div>
+      <div style="min-width: 0;">
         <h3 class="font-weight-bold" style="color: var(--sidebar-text); font-size: 1.1rem; line-height: 1.2;">
           {{ title }}
         </h3>
-        <div class="text-caption" style="color: var(--sidebar-text-secondary);">
+        <div class="text-caption" style="color: var(--sidebar-text-secondary); line-height: 1.4;">
           {{ subtitle }}
         </div>
       </div>
     </div>
     
-    <slot name="action">
-      <template v-if="type === 'button'">
-        <v-btn
-          v-if="buttonText"
-          :variant="buttonVariant"
-          :color="buttonColor"
-          :elevation="buttonElevation"
-          :loading="buttonLoading"
-          :disabled="buttonDisabled"
-          class="rounded-lg text-none font-weight-bold px-4"
-          height="40"
-          @click="$emit('action')"
-        >
-          {{ buttonText }}
-        </v-btn>
-      </template>
+    <div class="flex-shrink-0 d-flex align-center justify-end" style="min-width: max-content;">
+      <slot name="action">
+        <template v-if="type === 'button'">
+          <v-btn
+            v-if="buttonText"
+            :variant="buttonVariant"
+            :color="buttonColor"
+            :elevation="buttonElevation"
+            :loading="buttonLoading"
+            :disabled="buttonDisabled"
+            class="rounded-lg text-none font-weight-bold px-4"
+            height="40"
+            @click="$emit('action')"
+          >
+            {{ buttonText }}
+          </v-btn>
+        </template>
 
-      <template v-else-if="type === 'switch'">
-        <div class="d-flex justify-end" style="flex: 0 0 auto;">
-          <v-switch
-            :model-value="modelValue"
-            :color="switchColor"
-            inset
-            hide-details
-            class="font-weight-medium mt-0 pt-0"
-            style="flex: none;"
-            @update:model-value="$emit('update:modelValue', $event)"
-          />
-        </div>
-      </template>
+        <template v-else-if="type === 'switch'">
+          <div class="d-flex justify-end" style="flex: 0 0 auto;">
+            <v-switch
+              :model-value="modelValue"
+              :color="switchColor"
+              inset
+              hide-details
+              class="font-weight-medium mt-0 pt-0"
+              style="flex: none;"
+              @update:model-value="$emit('update:modelValue', $event)"
+            />
+          </div>
+        </template>
 
-      <template v-else-if="type === 'select'">
-        <v-menu :close-on-content-click="true" location="bottom end">
-          <template #activator="{ props: activatorProps }">
-            <v-btn
-              v-bind="activatorProps"
-              :disabled="buttonDisabled"
-              variant="tonal"
-              color="primary"
-              rounded="lg"
-              class="text-none px-4"
-              style="height: 44px; min-width: 140px; max-width: 320px;"
-            >
-              <div class="d-flex align-center justify-space-between w-100" style="min-width: 0;">
-                <span class="text-truncate font-weight-bold text-body-2 mr-2">
-                  {{ selectedItemLabel }}
-                </span>
-                <v-icon size="small" class="flex-shrink-0">
-                  mdi-menu-down
-                </v-icon>
-              </div>
-            </v-btn>
-          </template>
-          <v-card class="mt-1" rounded="lg" style="background: var(--card-bg); box-shadow: var(--shadow); border: 1px solid var(--border-color); min-width: 140px;">
-            <v-list class="py-1" bg-color="transparent">
-              <v-list-item
-                v-for="(item, i) in normalizedItems"
-                :key="i"
-                :active="item.value === modelValue"
+        <template v-else-if="type === 'select'">
+          <v-menu :close-on-content-click="true" location="bottom end">
+            <template #activator="{ props: activatorProps }">
+              <v-btn
+                v-bind="activatorProps"
+                :disabled="buttonDisabled"
+                variant="tonal"
                 color="primary"
-                class="mx-1 rounded-lg mb-1"
-                style="min-height: 36px;"
-                @click="$emit('update:modelValue', item.value)"
+                rounded="lg"
+                class="text-none px-4"
+                style="height: 44px; min-width: 140px; max-width: 320px;"
               >
-                <span class="text-body-2 font-weight-bold">{{ item.title }}</span>
-              </v-list-item>
-            </v-list>
-          </v-card>
-        </v-menu>
-      </template>
-    </slot>
+                <div class="d-flex align-center justify-space-between w-100" style="min-width: 0;">
+                  <span class="text-truncate font-weight-bold text-body-2 mr-2">
+                    {{ selectedItemLabel }}
+                  </span>
+                  <v-icon size="small" class="flex-shrink-0">
+                    mdi-menu-down
+                  </v-icon>
+                </div>
+              </v-btn>
+            </template>
+            <v-card class="mt-1" rounded="lg" style="background: var(--card-bg); box-shadow: var(--shadow); border: 1px solid var(--border-color); min-width: 140px;">
+              <v-list class="py-1" bg-color="transparent">
+                <v-list-item
+                  v-for="(item, i) in normalizedItems"
+                  :key="i"
+                  :active="item.value === modelValue"
+                  color="primary"
+                  class="mx-1 rounded-lg mb-1"
+                  style="min-height: 36px;"
+                  @click="$emit('update:modelValue', item.value)"
+                >
+                  <span class="text-body-2 font-weight-bold">{{ item.title }}</span>
+                </v-list-item>
+              </v-list>
+            </v-card>
+          </v-menu>
+        </template>
+      </slot>
+    </div>
   </div>
 </template>
 

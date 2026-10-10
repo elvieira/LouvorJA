@@ -10,6 +10,7 @@ import $modules from "@/helpers/core/Modules";
 import $database from "@/helpers/services/Database";
 import $history from "@/helpers/services/History";
 import $popup from "@/helpers/ui/Popup";
+import Telemetry from "@/helpers/services/Telemetry";
 
 export default {
   _sessionId: 0,
@@ -352,6 +353,36 @@ export default {
       duration: data.duration || "0:00",
     });
 
+    try {
+      const subtitle = this.getSubtitleFromData(data, id_album);
+      const displayName = subtitle ? `${data.name} (${subtitle})` : data.name;
+
+      const isExternalSong = Boolean(data.is_external || isExternal);
+
+      Telemetry.track("song_played", {
+        id_music,
+        name: displayName,
+        song_title: data.name,
+        subtitle: subtitle || "",
+        album_name: albumInfo ? albumInfo.name : "",
+        duration: data.duration || "0:00",
+        mode,
+        is_external: isExternalSong,
+      });
+
+      Telemetry.startSongPlay({
+        id_music,
+        song_title: data.name,
+        subtitle: subtitle || "",
+        album_name: albumInfo ? albumInfo.name : "",
+        audio_mode: mode,
+        is_external: isExternalSong,
+        total_slides: this.slides().length,
+      });
+    } catch {
+      // ignore
+    }
+
     if (albumInfo) {
       let collectionId = albumInfo.id_album;
       let collectionType = "album";
@@ -587,6 +618,11 @@ export default {
     }
 
     this.stopAudio();
+    try {
+      Telemetry.endSongPlay("closed");
+    } catch {
+      // ignore
+    }
     this.clearVariables();
     $appdata.set("modules.media.show", false);
     $appdata.set("modules.media.minimized", false);
@@ -917,6 +953,12 @@ export default {
       $appdata.set("modules.media.config.slide_index", index);
     }
     this.syncStreaming();
+
+    try {
+      Telemetry.recordSlide(index);
+    } catch {
+      // ignore
+    }
   },
   goToTime(time: number) {
     const audio = this.getElement();
@@ -1268,6 +1310,11 @@ export default {
     $appdata.set("modules.media.config.slide_index", nextIndex);
     if (prevIndex !== nextIndex) {
       this.syncStreaming();
+      try {
+        Telemetry.recordSlide(nextIndex);
+      } catch {
+        // ignore
+      }
     }
 
     const start_time = times && times?.length ? times[slide_index] : 0;
@@ -1290,6 +1337,11 @@ export default {
         this.goToTime(0);
         this.play();
       } else {
+        try {
+          Telemetry.endSongPlay("completed");
+        } catch {
+          // ignore
+        }
         this.playNext();
       }
     }
@@ -1363,6 +1415,23 @@ export default {
         if ($appdata.get("modules.media.loading")) return;
         const currentActive = $appdata.get("modules.media.config.active_audio") || "a";
         if (el.id === `__audio_${currentActive}`) {
+          try {
+            const currentData = $appdata.get("modules.media.data");
+            const currentAlbumId = $appdata.get("modules.media.id_album");
+            const subtitle = this.getSubtitleFromData(currentData, currentAlbumId);
+            const displayName = subtitle ? `${currentData?.name} (${subtitle})` : (currentData?.name || "");
+
+            Telemetry.track("song_completed", {
+              id_music: $appdata.get("modules.media.id_music"),
+              name: displayName,
+              song_title: currentData?.name || "",
+              subtitle: subtitle || "",
+            });
+            Telemetry.endSongPlay("completed");
+          } catch {
+            // ignore
+          }
+
           const loopMode = $appdata.get("modules.media.config.loop") || "none";
           
           if (loopMode === "track" || loopMode === true) { // keep true for legacy compatibility
@@ -1687,6 +1756,11 @@ export default {
   // de um fechamento manual do player. Outros módulos usam isso pra saber a hora
   // certa de avançar pro próximo item de uma fila de reprodução própria.
   markNaturalEnd() {
+    try {
+      Telemetry.endSongPlay("completed");
+    } catch {
+      // ignore
+    }
     $appdata.set("modules.media.config.natural_end_seq", ($appdata.get("modules.media.config.natural_end_seq") || 0) + 1);
   },
   playFromQueue(index: number) {

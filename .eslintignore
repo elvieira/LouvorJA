@@ -6,6 +6,7 @@ package-lock.json
 dist/
 dist-mobile/
 dev-dist/
+admin/
 
 # Environment files
 .env

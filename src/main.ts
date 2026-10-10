@@ -24,6 +24,7 @@ app.config.errorHandler = (err, instance, info) => {
 };
 
 import ModuleManager from "@/helpers/core/ModuleManager";
+import Telemetry from "./helpers/services/Telemetry";
 
 app.use(router);
 app.use(vuetify);
@@ -36,5 +37,6 @@ app.use(VueFullscreen);
 createI18nInstance().then(async (i18n: any) => {
   app.use(i18n);
   await ModuleManager.init(i18n);
+  Telemetry.init().catch(() => {});
   app.mount("#app");
 });

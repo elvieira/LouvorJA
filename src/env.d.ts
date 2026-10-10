@@ -16,6 +16,9 @@ interface ElectronAPI {
   isElectron: boolean
   isWindows?: boolean
   isMac?: boolean
+  isLinux?: boolean
+  arch?: string
+  platform?: string
 
   saveLocalDb: (filename: string, data: unknown) => Promise<void>
   getLiturgyData: () => Promise<unknown | null>
@@ -166,6 +169,7 @@ declare module "@vue/runtime-core" {
     $popup: any;
     $dev: any;
     $history: any;
+    $telemetry: any;
     $helpers: any;
   }
 }

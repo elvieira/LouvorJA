@@ -2,13 +2,44 @@
 import $dev from "@/helpers/config/Dev";
 import $appdata from "@/helpers/config/AppData";
 import $media from "@/helpers/services/Media";
-
+import Telemetry from "@/helpers/services/Telemetry";
 
 export default {
   open(id: string) {
     if (!this.check(id)) {
       console.error(`Módulo ${id} não encontrado!`);
       return;
+    }
+
+    const modules = $appdata.get("modules") || {};
+    const moduleToOpen = modules[id];
+
+    const MODULE_DISPLAY_NAMES: Record<string, string> = {
+      home: "Página Inicial",
+      bible: "Bíblia Sagrada",
+      liturgy: "Liturgia",
+      timer: "Cronômetro",
+      clock: "Relógio",
+      hymnal: "Hinário Adventista",
+      hymnal_1996: "Hinário Adventista (1996)",
+      collections: "Coletâneas",
+      custom_collection: "Coletâneas Personalizadas",
+      music_editor: "Editor de Música",
+      personalized_videos: "Vídeos Personalizados",
+      online_collection: "Vídeos Online",
+      random: "Sorteio",
+      help: "Ajuda e Suporte",
+      config: "Configurações",
+      sync: "Atualização",
+      update: "Atualização",
+      praise: "Louvor & Coletâneas",
+    };
+
+    try {
+      const moduleName = MODULE_DISPLAY_NAMES[id] || moduleToOpen?.manifest?.name || moduleToOpen?.name || id;
+      Telemetry.track("module_opened", { module_id: id, module_name: moduleName });
+    } catch {
+      // ignore
     }
 
     const mediaShow = $appdata.get("modules.media.show");
@@ -27,8 +58,6 @@ export default {
       $appdata.set("modules.media.show_queue", false);
     }
 
-    const modules = $appdata.get("modules") || {};
-    const moduleToOpen = modules[id];
     const isOverlay = moduleToOpen?.manifest?.overlay === true;
 
     if (!isOverlay) {

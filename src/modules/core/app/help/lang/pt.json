@@ -677,8 +677,9 @@
     "diagnostics_preview": "Dados que serão anexados:",
     "send_btn": "Enviar Mensagem",
     "sending": "Enviando...",
-    "notice_desc": "O canal direto de envio está em fase de configuração. Sua mensagem foi validada e estruturada com sucesso!",
-    "success_title": "Mensagem Estruturada!",
+    "notice_desc": "Sua mensagem foi enviada com sucesso para a nossa equipe. Responderemos o mais breve possível no seu e-mail!",
+    "success_title": "Mensagem Enviada!",
+    "send_error": "Não foi possível enviar sua mensagem. Verifique sua conexão à internet e tente novamente.",
     "validation": {
       "required": "Campo obrigatório",
       "email_invalid": "Informe um e-mail válido",

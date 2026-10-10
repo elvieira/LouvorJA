@@ -47,7 +47,6 @@ export interface AppState {
         };
       };
       media: {
-        lazy_load: boolean;
         fade_audio: boolean;
       };
       [key: string]: any;
@@ -129,7 +128,6 @@ const state: AppState = {
         },
       },
       media: {
-        lazy_load: true,
         fade_audio: true,
       },
     },

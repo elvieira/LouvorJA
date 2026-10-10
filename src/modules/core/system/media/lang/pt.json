@@ -23,12 +23,6 @@
         "track": "Faixa",
         "play_all": "Reproduzir Todas"
     },
-    "inputs": {
-        "lazy_load": "Carregamento Dinâmico",
-        "lazy_load_tooltip": "Se desmarcado, o áudio só será executado depois de totalmente carregado na memória.",
-        "fade_audio": "Efeito de Fade no áudio",
-        "fade_audio_tooltip": "Se marcado, o áudio irá reduzir ou aumentar o volume suavemente ao pausar ou dar play."
-    },
     "queue": {
         "title": "Fila de Reprodução",
         "empty": "A fila está vazia",

@@ -39,6 +39,18 @@
           :title="t('remember_window_bounds')"
           :subtitle="t('remember_window_bounds_desc')"
           type="switch"
+          class="mb-6"
+        />
+
+        <v-divider class="mb-6" style="opacity: 0.1;" />
+
+        <SettingsActionRow
+          v-model="telemetry_enabled"
+          icon="mdi-chart-timeline-variant-shimmer"
+          icon-color="primary"
+          :title="t('telemetry_title')"
+          :subtitle="t('telemetry_desc')"
+          type="switch"
         />
       </v-card-text>
     </v-card>
@@ -65,6 +77,15 @@ export default defineComponent({
   computed: {
     language(): string {
       return (this as any).$userdata.get("language") || (this as any).$i18n.locale || "pt";
+    },
+    telemetry_enabled: {
+      get(): boolean {
+        return (this as any).$userdata.get("telemetry_enabled") !== false;
+      },
+      set(val: boolean) {
+        (this as any).$userdata.set("telemetry_enabled", val);
+        (this as any).$userdata.set("modules.config.telemetry_enabled", val);
+      },
     },
     start_on_login: {
       get(): boolean {

@@ -13,6 +13,7 @@ import Alert from "@/helpers/ui/Alert";
 import Popup from "@/helpers/ui/Popup";
 import Database from "@/helpers/services/Database";
 import History from "@/helpers/services/History";
+import Telemetry from "@/helpers/services/Telemetry";
 
 export const HelpersSymbol = Symbol("helpers");
 
@@ -32,6 +33,7 @@ export default {
       popup: Popup,
       database: Database,
       history: History,
+      telemetry: Telemetry,
     };
 
     app.provide(HelpersSymbol, helpers);
@@ -50,5 +52,6 @@ export default {
     app.config.globalProperties.$popup = Popup;
     app.config.globalProperties.$database = Database;
     app.config.globalProperties.$history = History;
+    app.config.globalProperties.$telemetry = Telemetry;
   },
 };

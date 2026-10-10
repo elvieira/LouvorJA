@@ -15,51 +15,6 @@
   >
     <template #toolbar>
       <div class="modern-media-toolbar d-flex align-center">
-        <v-menu v-if="is_online">
-          <template #activator="{ props }">
-            <v-btn
-              v-bind="props"
-              class="custom-system-btn"
-              icon="mdi-dots-vertical"
-              variant="flat"
-              size="small"
-              color="white"
-            />
-          </template>
-          <v-card
-            class="modern-menu-card"
-            color="rgba(20, 20, 20, 0.9)"
-            theme="dark"
-            rounded="lg"
-          >
-            <v-card-text>
-              <v-tooltip :text="t('inputs.lazy_load_tooltip')">
-                <template #activator="{ props }">
-                  <v-switch
-                    v-bind="props"
-                    v-model="lazy_load"
-                    color="var(--accent-blue)"
-                    :label="t('inputs.lazy_load')"
-                    hide-details
-                    class="mb-2"
-                  />
-                </template>
-              </v-tooltip>
-              <v-tooltip :text="t('inputs.fade_audio_tooltip')">
-                <template #activator="{ props }">
-                  <v-switch
-                    v-bind="props"
-                    v-model="fade_audio"
-                    color="var(--accent-blue)"
-                    :label="t('inputs.fade_audio')"
-                    hide-details
-                  />
-                </template>
-              </v-tooltip>
-            </v-card-text>
-          </v-card>
-        </v-menu>
-
         <v-btn
           class="custom-system-btn"
           icon
@@ -218,9 +173,6 @@ export default defineComponent({
     module(): any {
       return this.$modules.get(this.module_id);
     },
-    is_online(): boolean {
-      return this.$appdata.get("is_online");
-    },
     loading(): boolean {
       return this.module.loading;
     },
@@ -242,22 +194,6 @@ export default defineComponent({
       },
       set(value: boolean) {
         this.$media.fullscreen(value);
-      },
-    },
-    lazy_load: {
-      get(): boolean {
-        return this.$userdata.get("modules.media.lazy_load");
-      },
-      set(value: boolean) {
-        this.$userdata.set("modules.media.lazy_load", value);
-      },
-    },
-    fade_audio: {
-      get(): boolean {
-        return this.$userdata.get("modules.media.fade_audio");
-      },
-      set(value: boolean) {
-        this.$userdata.set("modules.media.fade_audio", value);
       },
     },
     isPlaylistOpen(): boolean {

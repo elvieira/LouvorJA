@@ -261,6 +261,8 @@
 <script lang="ts">
 import { defineComponent, ref, reactive, computed, onMounted } from "vue";
 import { useI18n } from "vue-i18n";
+import Telemetry, { CLOUD_ENDPOINT, CLOUD_TOKEN, APP_SIGNATURE } from "@/helpers/services/Telemetry";
+import $snackbar from "@/helpers/ui/Snackbar";
 
 export default defineComponent({
   name: "HelpSupport",
@@ -337,13 +339,16 @@ export default defineComponent({
 
       isSubmitting.value = true;
 
-      // Monta o payload estruturado pronto para envio
+      // Monta o payload estruturado pronto para envio aos serviços em nuvem
       const payload = {
+        installation_id: Telemetry.getInstallationId(),
         name: form.name.trim(),
         email: form.email.trim(),
         category: form.category,
         subject: form.subject.trim(),
         message: form.message.trim(),
+        app_version: props.appVersion,
+        platform: diagnosticInfo.platform,
         diagnostics: form.includeDiagnostics
           ? {
             appVersion: props.appVersion,
@@ -354,30 +359,26 @@ export default defineComponent({
             userAgent: navigator.userAgent,
             timestamp: new Date().toISOString(),
           }
-          : null,
+          : {},
       };
 
       try {
-        /*
-         * =========================================================================
-         * ESTRUTURA PRE-MODELADA PARA O ENVIO
-         * =========================================================================
-         * Quando a rota/método de recebimento for definida pela equipe, basta
-         * descomentar e configurar o bloco abaixo:
-         *
-         * Exemplo com API do Louvor JA:
-         * const res = await fetch("https://api.louvorja.com.br/support", {
-         *   method: "POST",
-         *   headers: { "Content-Type": "application/json" },
-         *   body: JSON.stringify(payload),
-         * });
-         * if (!res.ok) throw new Error("Erro na comunicação com o servidor");
-         * =========================================================================
-         */
-        console.log("[LouvorJA Support] Mensagem estruturada:", payload);
+        const response = await fetch(`${CLOUD_ENDPOINT}/rest/v1/support_tickets`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            apikey: CLOUD_TOKEN,
+            Authorization: `Bearer ${CLOUD_TOKEN}`,
+            Prefer: "return=minimal",
+            "x-app-signature": APP_SIGNATURE,
+          },
+          body: JSON.stringify(payload),
+        });
 
-        // Simulação com pequeno delay para feedback visual
-        await new Promise((resolve) => setTimeout(resolve, 600));
+        if (!response.ok) {
+          const errorMsg = await response.text();
+          throw new Error(`Falha no envio (${response.status}): ${errorMsg}`);
+        }
 
         showSuccessDialog.value = true;
 
@@ -389,7 +390,12 @@ export default defineComponent({
         form.category = "doubt";
         formRef.value.resetValidation();
       } catch (err) {
-        console.error("Erro ao processar envio do suporte:", err);
+        console.error("Erro ao enviar chamado de suporte:", err);
+        $snackbar.show({
+          text: t("modules.help.support.send_error"),
+          color: "error",
+          timeout: 5000,
+        });
       } finally {
         isSubmitting.value = false;
       }

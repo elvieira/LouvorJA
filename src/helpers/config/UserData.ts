@@ -74,6 +74,9 @@ export default {
       "modules.media.miniplayer_corner": "bottom-left",
       "modules.media.volume": 100,
       "modules.external_media.volume": 100,
+
+      telemetry_enabled: true,
+      "modules.config.telemetry_enabled": true,
     };
 
     return staticDefaults[param];

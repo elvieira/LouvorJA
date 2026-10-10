@@ -41,6 +41,8 @@
     "start_on_login_desc": "Abrir Louvor JA automáticamente al encender el equipo",
     "remember_window_bounds": "Guardar Tamaño y Posición de la Ventana",
     "remember_window_bounds_desc": "Reabrir la aplicación en el mismo tamaño y posición en que se cerró",
+    "telemetry_title": "Telemetría y Diagnóstico Anónimo",
+    "telemetry_desc": "Ayuda a mejorar Louvor JA enviando diagnósticos de errores y métricas anónimas de uso (como canciones reproducidas y tiempo de ejecución). No se recopilan datos personales, archivos ni información confidencial.",
     "reset_history": "Restablecer Historial",
     "reset_history_desc": "Borra las colecciones recientes y las canciones más tocadas.",
     "reset_btn": "Borrar",

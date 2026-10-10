@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // Serviço central de logs e diagnóstico do frontend
 
+import Telemetry from "./Telemetry";
+
 export interface FrontendLogEntry {
   id: string;
   timestamp: string;
@@ -40,6 +42,11 @@ class LoggerService {
 
     if (level === "error") {
       console.error(`[${level.toUpperCase()}]`, message, details || "");
+      try {
+        Telemetry.trackError(message, formattedDetails);
+      } catch {
+        // ignora
+      }
     } else if (level === "warn") {
       console.warn(`[${level.toUpperCase()}]`, message, details || "");
     } else {
