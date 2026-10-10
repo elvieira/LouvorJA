@@ -14,19 +14,26 @@
     </div>
 
     <div
-      class="position-absolute d-flex flex-column align-center justify-center text-center pointer-events-none"
+      class="position-absolute d-flex flex-column pointer-events-none"
       :style="{
         left: `${config.posX ?? 50}%`,
         top: `${config.posY ?? 50}%`,
-        transform: 'translate(-50%, -50%)',
+        transform: `translate(-${config.posX ?? 50}%, -${config.posY ?? 50}%)`,
+        alignItems: (config.posX ?? 50) <= 30 ? 'flex-start' : (config.posX ?? 50) >= 70 ? 'flex-end' : 'center',
+        textAlign: (config.posX ?? 50) <= 30 ? 'left' : (config.posX ?? 50) >= 70 ? 'right' : 'center',
+        maxWidth: '94%',
+        width: 'max-content',
         whiteSpace: 'nowrap',
       }"
     >
       <!-- Texto Personalizado Acima -->
       <div
         v-if="config.customText && (config.customTextPosition === 'above' || !config.customTextPosition)"
-        class="font-weight-bold text-center mb-4"
-        :style="customTextStyle"
+        class="font-weight-bold mb-4"
+        :style="{
+          ...customTextStyle,
+          textAlign: (config.posX ?? 50) <= 30 ? 'left' : (config.posX ?? 50) >= 70 ? 'right' : 'center',
+        }"
       >
         {{ config.customText }}
       </div>
@@ -34,10 +41,11 @@
       <v-slide-y-transition mode="out-in">
         <div 
           :key="data.isDrawing ? 'drawing' : data.currentDisplay" 
-          class="font-weight-black text-center" 
+          class="font-weight-black" 
           :style="{
             fontSize: data.isDrawing ? (config.fontSizePc * 0.8) + 'vw' : config.fontSizePc + 'vw',
             transition: 'all 0.3s ease-out',
+            textAlign: (config.posX ?? 50) <= 30 ? 'left' : (config.posX ?? 50) >= 70 ? 'right' : 'center',
             textTransform: config.textTransform,
             textShadow: data.isDrawing
               ? (config.bgImage ? '0 4px 12px rgba(0,0,0,0.8)' : 'none')
@@ -52,8 +60,11 @@
       <!-- Texto Personalizado Abaixo -->
       <div
         v-if="config.customText && config.customTextPosition === 'below'"
-        class="font-weight-bold text-center mt-4"
-        :style="customTextStyle"
+        class="font-weight-bold mt-4"
+        :style="{
+          ...customTextStyle,
+          textAlign: (config.posX ?? 50) <= 30 ? 'left' : (config.posX ?? 50) >= 70 ? 'right' : 'center',
+        }"
       >
         {{ config.customText }}
       </div>
@@ -111,7 +122,8 @@ export default defineComponent({
       return {
         left: `${x}%`,
         top: `${y}%`,
-        transform: "translate(-50%, -50%)",
+        transform: `translate(-${x}%, -${y}%)`,
+        textAlign: x <= 30 ? "left" : x >= 70 ? "right" : "center",
         fontSize: `${sizePc}vw`,
         color: this.config.customTextColor || this.config.color,
         textShadow: this.config.bgImage
@@ -119,6 +131,8 @@ export default defineComponent({
           : `0 4px 16px ${this.config.customTextColor || this.config.color}60`,
         fontFamily: "system-ui, -apple-system, sans-serif",
         lineHeight: 1.2,
+        maxWidth: "94%",
+        width: "max-content",
         whiteSpace: "nowrap",
         zIndex: 5,
       };

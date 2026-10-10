@@ -781,7 +781,7 @@
                   :style="{
                     left: `${localConfig.customTextX ?? 50}%`,
                     top: `${localConfig.customTextY ?? 20}%`,
-                    transform: 'translate(-50%, -50%)',
+                    transform: `translate(-${localConfig.customTextX ?? 50}%, -${localConfig.customTextY ?? 20}%)`,
                     padding: '2px 8px',
                     border: activePosTarget === 'text' ? '1px dashed var(--accent-blue, #0097d7)' : '1px dashed rgba(255,255,255,0.4)',
                     borderRadius: '4px',

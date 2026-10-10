@@ -1384,301 +1384,422 @@
                 </v-icon>
                 <span class="text-subtitle-2 font-weight-bold" style="color: var(--sidebar-text);">Pré-visualização</span>
               </div>
-              <v-chip
-                size="x-small"
-                variant="tonal"
-                color="primary"
-                class="font-weight-bold"
-              >
-                16:9 Tela
-              </v-chip>
+              <!-- Seletor / Switch de Proporção de Tela -->
+              <v-menu location="bottom end" transition="slide-y-transition">
+                <template #activator="{ props }">
+                  <v-btn
+                    v-bind="props"
+                    size="small"
+                    variant="tonal"
+                    color="primary"
+                    rounded="lg"
+                    class="text-none font-weight-bold px-2 py-0"
+                    style="height: 26px; font-size: 0.78rem;"
+                  >
+                    <v-icon size="16" start class="mr-1">mdi-aspect-ratio</v-icon>
+                    {{ previewAspectLabel || '16:9 Tela' }}
+                    <v-icon size="14" end class="ml-1">mdi-chevron-down</v-icon>
+                  </v-btn>
+                </template>
+                <v-card
+                  class="rounded-xl pa-2"
+                  elevation="12"
+                  style="background: var(--card-bg, #1e293b); border: 1px solid var(--border-color, rgba(255,255,255,0.1)); min-width: 230px; backdrop-filter: blur(16px);"
+                >
+                  <div class="px-2 pt-1 pb-1 text-caption font-weight-bold" style="color: var(--sidebar-text-secondary); text-transform: uppercase; letter-spacing: 0.5px; font-size: 0.68rem;">
+                    Proporção da Tela
+                  </div>
+                  <v-list density="compact" class="pa-0 bg-transparent">
+                    <!-- Displays detectados no sistema do usuário -->
+                    <template v-if="detectedDisplays && detectedDisplays.length > 0">
+                      <div class="px-2 pt-1 pb-1 text-caption font-weight-bold text-medium-emphasis" style="font-size: 0.65rem; text-transform: uppercase;">
+                        Telas Conectadas
+                      </div>
+                      <v-list-item
+                        v-for="d in detectedDisplays"
+                        :key="d.id"
+                        rounded="lg"
+                        class="mb-1"
+                        :active="previewAspectRatio === d.cssRatio"
+                        @click="setAspectRatio(d.cssRatio, d.shortLabel)"
+                      >
+                        <template #prepend>
+                          <v-icon size="18" :color="previewAspectRatio === d.cssRatio ? 'primary' : 'medium-emphasis'">
+                            {{ d.isPrimary ? 'mdi-monitor' : 'mdi-projector-screen' }}
+                          </v-icon>
+                        </template>
+                        <v-list-item-title class="font-weight-medium text-caption">
+                          {{ d.displayName }}
+                        </v-list-item-title>
+                        <template #append>
+                          <v-chip size="x-small" variant="flat" color="primary" class="font-weight-bold" v-if="previewAspectRatio === d.cssRatio">
+                            Ativo
+                          </v-chip>
+                        </template>
+                      </v-list-item>
+                      <v-divider class="my-2" />
+                    </template>
+
+                    <div class="px-2 pt-1 pb-1 text-caption font-weight-bold text-medium-emphasis" style="font-size: 0.65rem; text-transform: uppercase;">
+                      Proporções Padrão
+                    </div>
+
+                    <!-- Padrões: 16:9, 4:3, 16:10 -->
+                    <v-list-item
+                      rounded="lg"
+                      class="mb-1"
+                      :active="previewAspectRatio === '16/9'"
+                      @click="setAspectRatio('16/9', '16:9 Tela')"
+                    >
+                      <template #prepend>
+                        <v-icon size="18" :color="previewAspectRatio === '16/9' ? 'primary' : 'medium-emphasis'">mdi-television</v-icon>
+                      </template>
+                      <v-list-item-title class="font-weight-medium text-caption">
+                        16:9 Widescreen (TV / LED)
+                      </v-list-item-title>
+                    </v-list-item>
+
+                    <v-list-item
+                      rounded="lg"
+                      class="mb-1"
+                      :active="previewAspectRatio === '4/3'"
+                      @click="setAspectRatio('4/3', '4:3 Tela')"
+                    >
+                      <template #prepend>
+                        <v-icon size="18" :color="previewAspectRatio === '4/3' ? 'primary' : 'medium-emphasis'">mdi-projector</v-icon>
+                      </template>
+                      <v-list-item-title class="font-weight-medium text-caption">
+                        4:3 Tradicional (Projetor)
+                      </v-list-item-title>
+                    </v-list-item>
+
+                    <v-list-item
+                      rounded="lg"
+                      class="mb-1"
+                      :active="previewAspectRatio === '16/10'"
+                      @click="setAspectRatio('16/10', '16:10 Tela')"
+                    >
+                      <template #prepend>
+                        <v-icon size="18" :color="previewAspectRatio === '16/10' ? 'primary' : 'medium-emphasis'">mdi-laptop</v-icon>
+                      </template>
+                      <v-list-item-title class="font-weight-medium text-caption">
+                        16:10 Monitor / MacBook
+                      </v-list-item-title>
+                    </v-list-item>
+                  </v-list>
+                </v-card>
+              </v-menu>
             </div>
 
-            <!-- Preview Padrão -->
+            <!-- Moldura do Preview (mantém aspect ratio e centraliza se 4:3) -->
             <div
-              v-if="activeTab === 'general'"
-              ref="previewStandardRef"
-              class="overflow-hidden rounded-lg mx-auto position-relative cursor-crosshair select-none w-100"
-              :style="{
-                backgroundColor: localConfig.bgColor,
-                backgroundImage: localConfig.bgImage ? `url('${localConfig.bgImage}')` : 'none',
-                backgroundSize: 'cover',
-                backgroundPosition: 'center center',
-                backgroundRepeat: 'no-repeat',
-                aspectRatio: '16/9',
-                maxHeight: '210px',
-                width: '100%',
-                boxShadow: '0 4px 16px rgba(0,0,0,0.25)'
-              }"
-              @pointerdown="startDragStandard"
+              class="preview-stage-frame d-flex align-center justify-center w-100 rounded-lg overflow-hidden position-relative"
+              style="background: rgba(0,0,0,0.25); min-height: 215px; max-height: 235px; border: 1px solid rgba(255,255,255,0.06);"
             >
-              <!-- Wrapper posicionado do cronômetro padrão -->
+              <!-- Preview Padrão -->
               <div
+                v-if="activeTab === 'general'"
+                ref="previewStandardRef"
+                class="overflow-hidden rounded-lg position-relative cursor-crosshair select-none"
                 :style="{
-                  position: 'absolute',
-                  left: `${localConfig.posX ?? 50}%`,
-                  top: `${localConfig.posY ?? 50}%`,
-                  transform: `translate(-${localConfig.posX ?? 50}%, -${localConfig.posY ?? 50}%)`,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: (localConfig.posX ?? 50) <= 30 ? 'flex-start' : (localConfig.posX ?? 50) >= 70 ? 'flex-end' : 'center',
-                  textAlign: (localConfig.posX ?? 50) <= 30 ? 'left' : (localConfig.posX ?? 50) >= 70 ? 'right' : 'center',
-                  maxWidth: '92%',
-                  pointerEvents: 'none',
+                  backgroundColor: localConfig.bgColor,
+                  backgroundImage: localConfig.bgImage ? `url('${localConfig.bgImage}')` : 'none',
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center center',
+                  backgroundRepeat: 'no-repeat',
+                  aspectRatio: previewAspectRatio || '16/9',
+                  height: '100%',
+                  maxHeight: '220px',
+                  maxWidth: '100%',
+                  boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
                 }"
+                @pointerdown="startDragStandard"
               >
-                <!-- Texto Personalizado Acima -->
-                <div
-                  v-if="localConfig.customText && (localConfig.customTextPosition === 'above' || !localConfig.customTextPosition)"
-                  class="font-weight-bold"
-                  :style="{
-                    color: localConfig.customTextColor || localConfig.fontColor,
-                    fontSize: `${Math.max(10, (localConfig.customTextSizePc || 8) * 1.6)}px`,
-                    lineHeight: '1.2',
-                    marginBottom: '2px',
-                    textShadow: previewStandardTextShadow,
-                  }"
-                >
-                  {{ localConfig.customText }}
-                </div>
-
-                <!-- Números do Cronômetro -->
-                <div
-                  :style="{
-                    fontSize: `${(localConfig.fontSizePc || 25) * 2.2}px`,
-                    fontWeight: '900',
-                    lineHeight: '1',
-                    textShadow: previewStandardTextShadow,
-                    color: localConfig.fontColor,
-                  }"
-                >
-                  05:00
-                </div>
-
-                <!-- Texto Personalizado Abaixo -->
-                <div
-                  v-if="localConfig.customText && localConfig.customTextPosition === 'below'"
-                  class="font-weight-bold"
-                  :style="{
-                    color: localConfig.customTextColor || localConfig.fontColor,
-                    fontSize: `${Math.max(10, (localConfig.customTextSizePc || 8) * 1.6)}px`,
-                    lineHeight: '1.2',
-                    marginTop: '2px',
-                    textShadow: previewStandardTextShadow,
-                  }"
-                >
-                  {{ localConfig.customText }}
-                </div>
-              </div>
-
-              <!-- Texto Livre Independente no Preview -->
-              <div
-                v-if="localConfig.customText && localConfig.customTextPosition === 'custom'"
-                class="font-weight-bold"
-                :style="{
-                  position: 'absolute',
-                  left: `${localConfig.customTextX ?? 50}%`,
-                  top: `${localConfig.customTextY ?? 20}%`,
-                  transform: `translate(-${localConfig.customTextX ?? 50}%, -${localConfig.customTextY ?? 20}%)`,
-                  color: localConfig.customTextColor || localConfig.fontColor,
-                  fontSize: `${Math.max(10, (localConfig.customTextSizePc || 8) * 1.6)}px`,
-                  lineHeight: '1.2',
-                  textShadow: previewStandardTextShadow,
-                  pointerEvents: 'none',
-                }"
-              >
-                {{ localConfig.customText }}
-              </div>
-            </div>
-
-            <!-- Preview Modo Culto -->
-            <div
-              v-else
-              ref="previewCultRef"
-              class="overflow-hidden rounded-lg mx-auto position-relative cursor-crosshair select-none w-100"
-              :style="{
-                backgroundColor: localConfig.cultBgColor || localConfig.bgColor,
-                backgroundImage: (localConfig.cultBgImage || localConfig.bgImage) ? `url('${localConfig.cultBgImage || localConfig.bgImage}')` : 'none',
-                backgroundSize: 'cover',
-                backgroundPosition: 'center center',
-                backgroundRepeat: 'no-repeat',
-                aspectRatio: '16/9',
-                maxHeight: '210px',
-                width: '100%',
-                boxShadow: '0 4px 16px rgba(0,0,0,0.25)',
-                padding: '12px'
-              }"
-              @pointerdown="startDragCult"
-            >
-              <!-- MODO INDIVIDUAL NO PREVIEW -->
-              <template v-if="localConfig.cultPosMode === 'individual'">
-                <!-- Texto Personalizado Individual -->
-                <div
-                  v-if="effectivePreviewCultCustomText"
-                  class="font-weight-bold"
-                  :style="{
-                    position: 'absolute',
-                    left: `${localConfig.cultTextX ?? 50}%`,
-                    top: `${localConfig.cultTextY ?? 15}%`,
-                    transform: `translate(-${localConfig.cultTextX ?? 50}%, -${localConfig.cultTextY ?? 15}%)`,
-                    color: localConfig.cultCustomTextColor || localConfig.customTextColor || localConfig.fontColor,
-                    fontSize: `${Math.max(9, (localConfig.cultCustomTextSizePc || localConfig.customTextSizePc || 8) * 1.5)}px`,
-                    lineHeight: '1.2',
-                    textShadow: previewCultClockShadow,
-                    padding: '2px 6px',
-                    borderRadius: '4px',
-                    border: cultActivePosTarget === 'text' ? '1px dashed var(--accent-blue, #0097d7)' : '1px dashed transparent',
-                    cursor: 'pointer',
-                    zIndex: 2,
-                  }"
-                  @pointerdown.stop="selectAndDragCult('text', $event)"
-                >
-                  {{ effectivePreviewCultCustomText }}
-                </div>
-
-                <!-- Hora Atual Individual -->
-                <div
-                  v-if="localConfig.cultAlwaysShowClock !== false"
-                  class="font-weight-bold"
-                  :style="{
-                    position: 'absolute',
-                    left: `${localConfig.cultClockX ?? 50}%`,
-                    top: `${localConfig.cultClockY ?? 35}%`,
-                    transform: `translate(-${localConfig.cultClockX ?? 50}%, -${localConfig.cultClockY ?? 35}%)`,
-                    color: previewCultClockColor,
-                    fontSize: `${(localConfig.cultClockSizePc || 12) * 1.5}px`,
-                    lineHeight: '1',
-                    textShadow: previewCultClockShadow,
-                    padding: '2px 6px',
-                    borderRadius: '4px',
-                    border: cultActivePosTarget === 'clock' ? '1px dashed var(--accent-blue, #0097d7)' : '1px dashed transparent',
-                    cursor: 'pointer',
-                    zIndex: 2,
-                  }"
-                  @pointerdown.stop="selectAndDragCult('clock', $event)"
-                >
-                  10:45:00
-                </div>
-
-                <!-- Cronômetro Individual -->
-                <div
-                  class="font-weight-black"
-                  :style="{
-                    position: 'absolute',
-                    left: `${localConfig.cultTimerX ?? 50}%`,
-                    top: `${localConfig.cultTimerY ?? 60}%`,
-                    transform: `translate(-${localConfig.cultTimerX ?? 50}%, -${localConfig.cultTimerY ?? 60}%)`,
-                    color: previewAlert ? (localConfig.cultWarningColor || '#ef4444') : (localConfig.cultTimerColor || '#38bdf8'),
-                    fontSize: `${(localConfig.cultTimerSizePc || 22) * 1.7}px`,
-                    lineHeight: '1',
-                    textShadow: previewCultTimerShadow,
-                    padding: '2px 6px',
-                    borderRadius: '4px',
-                    border: cultActivePosTarget === 'timer' ? '1px dashed var(--accent-blue, #0097d7)' : '1px dashed transparent',
-                    cursor: 'pointer',
-                    zIndex: 2,
-                  }"
-                  @pointerdown.stop="selectAndDragCult('timer', $event)"
-                >
-                  {{ previewAlert ? '-00:02:15' : '00:15:00' }}
-                </div>
-              </template>
-
-              <!-- MODO JUNTOS NO PREVIEW -->
-              <template v-else>
+                <!-- Wrapper posicionado do cronômetro padrão -->
                 <div
                   :style="{
                     position: 'absolute',
-                    left: `${localConfig.cultPosX ?? localConfig.posX ?? 50}%`,
-                    top: `${localConfig.cultPosY ?? localConfig.posY ?? 50}%`,
-                    transform: `translate(-${localConfig.cultPosX ?? localConfig.posX ?? 50}%, -${localConfig.cultPosY ?? localConfig.posY ?? 50}%)`,
+                    left: `${localConfig.posX ?? 50}%`,
+                    top: `${localConfig.posY ?? 50}%`,
+                    transform: `translate(-${localConfig.posX ?? 50}%, -${localConfig.posY ?? 50}%)`,
                     display: 'flex',
                     flexDirection: 'column',
-                    alignItems: (localConfig.cultPosX ?? localConfig.posX ?? 50) <= 30 ? 'flex-start' : (localConfig.cultPosX ?? localConfig.posX ?? 50) >= 70 ? 'flex-end' : 'center',
-                    textAlign: (localConfig.cultPosX ?? localConfig.posX ?? 50) <= 30 ? 'left' : (localConfig.cultPosX ?? localConfig.posX ?? 50) >= 70 ? 'right' : 'center',
-                    maxWidth: '92%',
+                    alignItems: (localConfig.posX ?? 50) <= 30 ? 'flex-start' : (localConfig.posX ?? 50) >= 70 ? 'flex-end' : 'center',
+                    textAlign: (localConfig.posX ?? 50) <= 30 ? 'left' : (localConfig.posX ?? 50) >= 70 ? 'right' : 'center',
+                    maxWidth: '94%',
+                    width: 'max-content',
                     pointerEvents: 'none',
                   }"
                 >
-                  <!-- Texto Personalizado Vinculado Acima -->
+                  <!-- Texto Personalizado Acima -->
                   <div
-                    v-if="effectivePreviewCultCustomText && (localConfig.cultCustomTextPosition === 'above' || (!localConfig.cultCustomTextPosition && localConfig.customTextPosition !== 'below' && localConfig.customTextPosition !== 'custom'))"
-                    class="font-weight-bold mb-1"
+                    v-if="localConfig.customText && (localConfig.customTextPosition === 'above' || !localConfig.customTextPosition)"
+                    class="font-weight-bold"
                     :style="{
-                      color: localConfig.cultCustomTextColor || localConfig.customTextColor || localConfig.fontColor,
-                      fontSize: `${Math.max(9, (localConfig.cultCustomTextSizePc || localConfig.customTextSizePc || 8) * 1.5)}px`,
+                      color: localConfig.customTextColor || localConfig.fontColor,
+                      fontSize: `${Math.max(8, (localConfig.customTextSizePc || 8) * previewVmin)}px`,
                       lineHeight: '1.2',
-                      textShadow: previewCultClockShadow,
+                      marginBottom: '2px',
+                      whiteSpace: 'nowrap',
+                      textShadow: previewStandardTextShadow,
                     }"
+                  >
+                    {{ localConfig.customText }}
+                  </div>
+
+                  <!-- Números do Cronômetro -->
+                  <div
+                    :style="{
+                      fontSize: `${(localConfig.fontSizePc || 25) * previewVmin}px`,
+                      fontWeight: '900',
+                      lineHeight: '1',
+                      whiteSpace: 'nowrap',
+                      fontVariantNumeric: 'tabular-nums',
+                      textShadow: previewStandardTextShadow,
+                      color: localConfig.fontColor,
+                    }"
+                  >
+                    05:00
+                  </div>
+
+                  <!-- Texto Personalizado Abaixo -->
+                  <div
+                    v-if="localConfig.customText && localConfig.customTextPosition === 'below'"
+                    class="font-weight-bold"
+                    :style="{
+                      color: localConfig.customTextColor || localConfig.fontColor,
+                      fontSize: `${Math.max(8, (localConfig.customTextSizePc || 8) * previewVmin)}px`,
+                      lineHeight: '1.2',
+                      marginTop: '2px',
+                      whiteSpace: 'nowrap',
+                      textShadow: previewStandardTextShadow,
+                    }"
+                  >
+                    {{ localConfig.customText }}
+                  </div>
+                </div>
+
+                <!-- Texto Livre Independente no Preview -->
+                <div
+                  v-if="localConfig.customText && localConfig.customTextPosition === 'custom'"
+                  class="font-weight-bold"
+                  :style="{
+                    position: 'absolute',
+                    left: `${localConfig.customTextX ?? 50}%`,
+                    top: `${localConfig.customTextY ?? 20}%`,
+                    transform: `translate(-${localConfig.customTextX ?? 50}%, -${localConfig.customTextY ?? 20}%)`,
+                    color: localConfig.customTextColor || localConfig.fontColor,
+                    fontSize: `${Math.max(8, (localConfig.customTextSizePc || 8) * previewVmin)}px`,
+                    lineHeight: '1.2',
+                    whiteSpace: 'nowrap',
+                    textShadow: previewStandardTextShadow,
+                    pointerEvents: 'none',
+                  }"
+                >
+                  {{ localConfig.customText }}
+                </div>
+              </div>
+
+              <!-- Preview Modo Culto -->
+              <div
+                v-else
+                ref="previewCultRef"
+                class="overflow-hidden rounded-lg position-relative cursor-crosshair select-none"
+                :style="{
+                  backgroundColor: localConfig.cultBgColor || localConfig.bgColor,
+                  backgroundImage: (localConfig.cultBgImage || localConfig.bgImage) ? `url('${localConfig.cultBgImage || localConfig.bgImage}')` : 'none',
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center center',
+                  backgroundRepeat: 'no-repeat',
+                  aspectRatio: previewAspectRatio || '16/9',
+                  height: '100%',
+                  maxHeight: '220px',
+                  maxWidth: '100%',
+                  boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
+                }"
+                @pointerdown="startDragCult"
+              >
+                <!-- MODO INDIVIDUAL NO PREVIEW -->
+                <template v-if="localConfig.cultPosMode === 'individual'">
+                  <!-- Texto Personalizado Individual -->
+                  <div
+                    v-if="effectivePreviewCultCustomText"
+                    class="font-weight-bold"
+                    :style="{
+                      position: 'absolute',
+                      left: `${localConfig.cultTextX ?? 50}%`,
+                      top: `${localConfig.cultTextY ?? 15}%`,
+                      transform: `translate(-${localConfig.cultTextX ?? 50}%, -${localConfig.cultTextY ?? 15}%)`,
+                      color: localConfig.cultCustomTextColor || localConfig.customTextColor || localConfig.fontColor,
+                      fontSize: `${Math.max(8, (localConfig.cultCustomTextSizePc || localConfig.customTextSizePc || 8) * previewVmin)}px`,
+                      lineHeight: '1.2',
+                      whiteSpace: 'nowrap',
+                      textShadow: previewCultClockShadow,
+                      padding: '2px 4px',
+                      borderRadius: '4px',
+                      border: cultActivePosTarget === 'text' ? '1px dashed var(--accent-blue, #0097d7)' : '1px dashed transparent',
+                      cursor: 'pointer',
+                      zIndex: 2,
+                    }"
+                    @pointerdown.stop="selectAndDragCult('text', $event)"
                   >
                     {{ effectivePreviewCultCustomText }}
                   </div>
 
-                  <!-- Hora Atual Superior -->
+                  <!-- Hora Atual Individual -->
                   <div
                     v-if="localConfig.cultAlwaysShowClock !== false"
-                    class="font-weight-bold mb-1"
+                    class="font-weight-bold"
                     :style="{
+                      position: 'absolute',
+                      left: `${localConfig.cultClockX ?? 50}%`,
+                      top: `${localConfig.cultClockY ?? 35}%`,
+                      transform: `translate(-${localConfig.cultClockX ?? 50}%, -${localConfig.cultClockY ?? 35}%)`,
                       color: previewCultClockColor,
-                      fontSize: `${(localConfig.cultClockSizePc || 12) * 1.5}px`,
+                      fontSize: `${(localConfig.cultClockSizePc || 12) * previewVmin}px`,
                       lineHeight: '1',
-                      textShadow: previewCultClockShadow
+                      whiteSpace: 'nowrap',
+                      textShadow: previewCultClockShadow,
+                      padding: '2px 4px',
+                      borderRadius: '4px',
+                      border: cultActivePosTarget === 'clock' ? '1px dashed var(--accent-blue, #0097d7)' : '1px dashed transparent',
+                      cursor: 'pointer',
+                      zIndex: 2,
                     }"
+                    @pointerdown.stop="selectAndDragCult('clock', $event)"
                   >
                     10:45:00
                   </div>
 
-                  <!-- Tempo Restante Inferior -->
+                  <!-- Cronômetro Individual -->
                   <div
                     class="font-weight-black"
                     :style="{
+                      position: 'absolute',
+                      left: `${localConfig.cultTimerX ?? 50}%`,
+                      top: `${localConfig.cultTimerY ?? 60}%`,
+                      transform: `translate(-${localConfig.cultTimerX ?? 50}%, -${localConfig.cultTimerY ?? 60}%)`,
                       color: previewAlert ? (localConfig.cultWarningColor || '#ef4444') : (localConfig.cultTimerColor || '#38bdf8'),
-                      fontSize: `${(localConfig.cultTimerSizePc || 22) * 1.7}px`,
+                      fontSize: `${(localConfig.cultTimerSizePc || 22) * previewVmin}px`,
                       lineHeight: '1',
-                      textShadow: previewCultTimerShadow
+                      whiteSpace: 'nowrap',
+                      textShadow: previewCultTimerShadow,
+                      padding: '2px 4px',
+                      borderRadius: '4px',
+                      border: cultActivePosTarget === 'timer' ? '1px dashed var(--accent-blue, #0097d7)' : '1px dashed transparent',
+                      cursor: 'pointer',
+                      zIndex: 2,
                     }"
+                    @pointerdown.stop="selectAndDragCult('timer', $event)"
                   >
                     {{ previewAlert ? '-00:02:15' : '00:15:00' }}
                   </div>
+                </template>
 
-                  <!-- Texto Personalizado Vinculado Abaixo -->
+                <!-- MODO JUNTOS NO PREVIEW -->
+                <template v-else>
                   <div
-                    v-if="effectivePreviewCultCustomText && (localConfig.cultCustomTextPosition === 'below' || (!localConfig.cultCustomTextPosition && localConfig.customTextPosition === 'below'))"
-                    class="font-weight-bold mt-1"
                     :style="{
-                      color: localConfig.cultCustomTextColor || localConfig.customTextColor || localConfig.fontColor,
-                      fontSize: `${Math.max(9, (localConfig.cultCustomTextSizePc || localConfig.customTextSizePc || 8) * 1.5)}px`,
-                      lineHeight: '1.2',
-                      textShadow: previewCultClockShadow,
+                      position: 'absolute',
+                      left: `${localConfig.cultPosX ?? localConfig.posX ?? 50}%`,
+                      top: `${localConfig.cultPosY ?? localConfig.posY ?? 50}%`,
+                      transform: `translate(-${localConfig.cultPosX ?? localConfig.posX ?? 50}%, -${localConfig.cultPosY ?? localConfig.posY ?? 50}%)`,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: (localConfig.cultPosX ?? localConfig.posX ?? 50) <= 30 ? 'flex-start' : (localConfig.cultPosX ?? localConfig.posX ?? 50) >= 70 ? 'flex-end' : 'center',
+                      textAlign: (localConfig.cultPosX ?? localConfig.posX ?? 50) <= 30 ? 'left' : (localConfig.cultPosX ?? localConfig.posX ?? 50) >= 70 ? 'right' : 'center',
+                      maxWidth: '94%',
+                      width: 'max-content',
+                      pointerEvents: 'none',
                     }"
+                  >
+                    <!-- Texto Personalizado Vinculado Acima -->
+                    <div
+                      v-if="effectivePreviewCultCustomText && (localConfig.cultCustomTextPosition === 'above' || (!localConfig.cultCustomTextPosition && localConfig.customTextPosition !== 'below' && localConfig.customTextPosition !== 'custom'))"
+                      class="font-weight-bold mb-1"
+                      :style="{
+                        color: localConfig.cultCustomTextColor || localConfig.customTextColor || localConfig.fontColor,
+                        fontSize: `${Math.max(8, (localConfig.cultCustomTextSizePc || localConfig.customTextSizePc || 8) * previewVmin)}px`,
+                        lineHeight: '1.2',
+                        whiteSpace: 'nowrap',
+                        width: 'max-content',
+                        textShadow: previewCultClockShadow,
+                      }"
+                    >
+                      {{ effectivePreviewCultCustomText }}
+                    </div>
+
+                    <!-- Hora Atual Superior -->
+                    <div
+                      v-if="localConfig.cultAlwaysShowClock !== false"
+                      class="font-weight-bold mb-1"
+                      :style="{
+                        color: previewCultClockColor,
+                        fontSize: `${(localConfig.cultClockSizePc || 12) * previewVmin}px`,
+                        lineHeight: '1',
+                        whiteSpace: 'nowrap',
+                        textShadow: previewCultClockShadow,
+                      }"
+                    >
+                      10:45:00
+                    </div>
+
+                    <!-- Tempo Restante Inferior -->
+                    <div
+                      class="font-weight-black"
+                      :style="{
+                        color: previewAlert ? (localConfig.cultWarningColor || '#ef4444') : (localConfig.cultTimerColor || '#38bdf8'),
+                        fontSize: `${(localConfig.cultTimerSizePc || 22) * previewVmin}px`,
+                        lineHeight: '1',
+                        whiteSpace: 'nowrap',
+                        textShadow: previewCultTimerShadow,
+                      }"
+                    >
+                      {{ previewAlert ? '-00:02:15' : '00:15:00' }}
+                    </div>
+
+                    <!-- Texto Personalizado Vinculado Abaixo -->
+                    <div
+                      v-if="effectivePreviewCultCustomText && (localConfig.cultCustomTextPosition === 'below' || (!localConfig.cultCustomTextPosition && localConfig.customTextPosition === 'below'))"
+                      class="font-weight-bold mt-1"
+                      :style="{
+                        color: localConfig.cultCustomTextColor || localConfig.customTextColor || localConfig.fontColor,
+                        fontSize: `${Math.max(8, (localConfig.cultCustomTextSizePc || localConfig.customTextSizePc || 8) * previewVmin)}px`,
+                        lineHeight: '1.2',
+                        whiteSpace: 'nowrap',
+                        width: 'max-content',
+                        textShadow: previewCultClockShadow,
+                      }"
+                    >
+                      {{ effectivePreviewCultCustomText }}
+                    </div>
+                  </div>
+
+                  <!-- Texto Livre se posição for 'custom' -->
+                  <div
+                    v-if="effectivePreviewCultCustomText && (localConfig.cultCustomTextPosition === 'custom' || (!localConfig.cultCustomTextPosition && localConfig.customTextPosition === 'custom'))"
+                    class="font-weight-bold"
+                    :style="{
+                      position: 'absolute',
+                      left: `${localConfig.cultTextX ?? localConfig.customTextX ?? 50}%`,
+                      top: `${localConfig.cultTextY ?? localConfig.customTextY ?? 20}%`,
+                      transform: `translate(-${localConfig.cultTextX ?? localConfig.customTextX ?? 50}%, -${localConfig.cultTextY ?? localConfig.customTextY ?? 20}%)`,
+                      color: localConfig.cultCustomTextColor || localConfig.customTextColor || localConfig.fontColor,
+                      fontSize: `${Math.max(8, (localConfig.cultCustomTextSizePc || localConfig.customTextSizePc || 8) * previewVmin)}px`,
+                      lineHeight: '1.2',
+                      whiteSpace: 'nowrap',
+                      textShadow: previewCultClockShadow,
+                      cursor: 'pointer',
+                      zIndex: 2,
+                      padding: '2px 4px',
+                      borderRadius: '4px',
+                    }"
+                    @pointerdown.stop="startDragCultText($event)"
                   >
                     {{ effectivePreviewCultCustomText }}
                   </div>
-                </div>
-
-                <!-- Texto Livre se posição for 'custom' -->
-                <div
-                  v-if="effectivePreviewCultCustomText && (localConfig.cultCustomTextPosition === 'custom' || (!localConfig.cultCustomTextPosition && localConfig.customTextPosition === 'custom'))"
-                  class="font-weight-bold"
-                  :style="{
-                    position: 'absolute',
-                    left: `${localConfig.cultTextX ?? localConfig.customTextX ?? 50}%`,
-                    top: `${localConfig.cultTextY ?? localConfig.customTextY ?? 20}%`,
-                    transform: `translate(-${localConfig.cultTextX ?? localConfig.customTextX ?? 50}%, -${localConfig.cultTextY ?? localConfig.customTextY ?? 20}%)`,
-                    color: localConfig.cultCustomTextColor || localConfig.customTextColor || localConfig.fontColor,
-                    fontSize: `${Math.max(9, (localConfig.cultCustomTextSizePc || localConfig.customTextSizePc || 8) * 1.5)}px`,
-                    lineHeight: '1.2',
-                    textShadow: previewCultClockShadow,
-                    cursor: 'pointer',
-                    zIndex: 2,
-                    padding: '2px 6px',
-                    borderRadius: '4px',
-                  }"
-                  @pointerdown.stop="startDragCultText($event)"
-                >
-                  {{ effectivePreviewCultCustomText }}
-                </div>
-              </template>
+                </template>
+              </div>
             </div>
 
             <!-- Botão Simular no Modo Culto -->
@@ -1804,6 +1925,13 @@ export default defineComponent({
     activeTab: "general",
     previewAlert: false,
     cultActivePosTarget: "timer" as "timer" | "clock" | "text",
+    previewAspectRatio: "16/9" as string,
+    previewAspectLabel: "16:9 Tela" as string,
+    previewContainerWidth: 370,
+    previewContainerHeight: 208,
+    detectedDisplays: [] as any[],
+    userSelectedAspect: false,
+    previewResizeObserver: null as any,
     localConfig: {
       fontColor: "#ffffff",
       bgColor: "#000000",
@@ -1900,6 +2028,11 @@ export default defineComponent({
         this.$emit("update:modelValue", val);
       },
     },
+    previewVmin(): number {
+      const w = this.previewContainerWidth || 370;
+      const h = this.previewContainerHeight || 208;
+      return Math.min(w, h) / 100;
+    },
     previewStandardTextShadow(): string {
       if (this.localConfig.bgImage) return "0 4px 20px rgba(0,0,0,0.7), 0 2px 6px rgba(0,0,0,0.8)";
       if (isLightColor(this.localConfig.bgColor)) return "0 2px 8px rgba(0,0,0,0.12)";
@@ -1955,7 +2088,18 @@ export default defineComponent({
         if (this.initialTab) {
           this.activeTab = this.initialTab;
         }
+        this.detectDisplays();
+        this.$nextTick(() => {
+          this.updatePreviewDims();
+          this.setupPreviewObserver();
+        });
       }
+    },
+    activeTab() {
+      this.$nextTick(() => {
+        this.updatePreviewDims();
+        this.setupPreviewObserver();
+      });
     },
     "localConfig.cultBgColor"(newColor: string) {
       if (isLightColor(newColor)) {
@@ -1977,11 +2121,109 @@ export default defineComponent({
     if (this.initialTab) {
       this.activeTab = this.initialTab;
     }
+    this.detectDisplays();
+    this.$nextTick(() => {
+      this.updatePreviewDims();
+      this.setupPreviewObserver();
+    });
   },
   beforeUnmount() {
     stopSchoolBellAlert();
+    if (this.previewResizeObserver) {
+      this.previewResizeObserver.disconnect();
+      this.previewResizeObserver = null;
+    }
   },
   methods: {
+    async detectDisplays() {
+      if (typeof window !== "undefined" && (window as any).electronAPI?.getDisplays) {
+        try {
+          const displays: any[] = await (window as any).electronAPI.getDisplays();
+          if (displays && displays.length) {
+            this.detectedDisplays = displays.map((d, index) => {
+              const w = d.bounds?.width || 1920;
+              const h = d.bounds?.height || 1080;
+              let ratioStr = `${w}/${h}`;
+              let chipLabel = `${w}:${h}`;
+              if (Math.abs(w / h - 16 / 9) < 0.02) {
+                ratioStr = "16/9";
+                chipLabel = "16:9 Tela";
+              } else if (Math.abs(w / h - 4 / 3) < 0.02) {
+                ratioStr = "4/3";
+                chipLabel = "4:3 Tela";
+              } else if (Math.abs(w / h - 16 / 10) < 0.02) {
+                ratioStr = "16/10";
+                chipLabel = "16:10 Tela";
+              } else if (Math.abs(w / h - 21 / 9) < 0.05) {
+                ratioStr = "21/9";
+                chipLabel = "21:9 Tela";
+              }
+              const displayName = d.isPrimary ? "Monitor Principal" : `Monitor Secundário ${displays.length > 2 ? index : ''}`.trim();
+              const formattedName = `${displayName} (${w}x${h})`;
+              return {
+                id: d.id,
+                isPrimary: d.isPrimary,
+                width: w,
+                height: h,
+                cssRatio: ratioStr,
+                aspectRatio: ratioStr,
+                displayName: formattedName,
+                name: displayName,
+                label: formattedName,
+                shortLabel: chipLabel,
+                chipLabel,
+              };
+            });
+
+            if (!this.userSelectedAspect) {
+              const targetDisp = this.detectedDisplays.find((d: any) => !d.isPrimary) || this.detectedDisplays[0];
+              if (targetDisp && targetDisp.cssRatio) {
+                this.previewAspectRatio = targetDisp.cssRatio;
+                this.previewAspectLabel = targetDisp.shortLabel;
+              }
+            }
+          }
+        } catch (e) {
+          console.warn("Erro ao detectar displays no modal de timer:", e);
+        }
+      }
+    },
+    setAspectRatio(ratio?: string, label?: string) {
+      this.userSelectedAspect = true;
+      this.previewAspectRatio = ratio || "16/9";
+      this.previewAspectLabel = label || "16:9 Tela";
+      this.$nextTick(() => {
+        this.updatePreviewDims();
+      });
+    },
+    updatePreviewDims() {
+      const el = (this.activeTab === 'general' ? this.$refs.previewStandardRef : this.$refs.previewCultRef) as HTMLElement;
+      if (el) {
+        const rect = el.getBoundingClientRect();
+        if (rect.width > 0 && rect.height > 0) {
+          this.previewContainerWidth = Math.round(rect.width);
+          this.previewContainerHeight = Math.round(rect.height);
+        }
+      }
+    },
+    setupPreviewObserver() {
+      if (typeof ResizeObserver === "undefined") return;
+      if (this.previewResizeObserver) {
+        this.previewResizeObserver.disconnect();
+      }
+      this.previewResizeObserver = new ResizeObserver((entries) => {
+        for (const entry of entries) {
+          if (entry.contentRect && entry.contentRect.width > 0 && entry.contentRect.height > 0) {
+            this.previewContainerWidth = Math.round(entry.contentRect.width);
+            this.previewContainerHeight = Math.round(entry.contentRect.height);
+          }
+        }
+      });
+      const el = (this.activeTab === 'general' ? this.$refs.previewStandardRef : this.$refs.previewCultRef) as HTMLElement;
+      if (el) {
+        this.previewResizeObserver.observe(el);
+      }
+    },
     setCultBgColor(color: string) {
       this.localConfig.cultBgColor = color;
       if (isLightColor(color)) {

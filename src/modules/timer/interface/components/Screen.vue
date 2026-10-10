@@ -45,11 +45,10 @@
         {{ config.customText }}
       </div>
     </template>
-
     <!-- MODO CRONÔMETRO DE CULTO -->
     <template v-else>
       <div class="cult-container w-100 h-100 position-relative overflow-hidden">
-        <!-- SE VISUALIZAÇÃO NA JANELA PRINCIPAL (PREVIEW) -->
+        <!-- SE VISUALIZAÇÃO NA JANELA PRINCIPAL (PREVIEW): Sempre centralizado e padronizado -->
         <template v-if="preview">
           <div class="cult-preview-main-layout w-100 h-100 position-relative d-flex flex-column align-center justify-center">
             <!-- Bloco Central: Relógio e Cronômetro -->
@@ -72,7 +71,7 @@
               </div>
             </div>
 
-            <!-- Texto Personalizado: Abaixo, entre o cronômetro e a parte de baixo -->
+            <!-- Texto Personalizado: Abaixo, padronizado e centralizado -->
             <div
               v-if="effectiveCultCustomText"
               class="custom-timer-title font-weight-bold text-center position-absolute"
@@ -99,7 +98,7 @@
             <!-- Relógio / Hora Atual -->
             <div
               v-if="showCultClock"
-              class="cult-clock font-weight-bold text-center d-flex align-center justify-center"
+              class="cult-clock font-weight-bold"
               :style="cultClockStyle"
             >
               {{ currentClockTime }}
@@ -107,7 +106,7 @@
 
             <!-- Cronômetro / Tempo Restante -->
             <div
-              class="cult-timer font-weight-black text-center d-flex align-center justify-center"
+              class="cult-timer font-weight-black"
               :style="cultTimerStyle"
             >
               {{ formattedCultTime }}
@@ -132,7 +131,7 @@
               <!-- Mostrador Superior: Hora Atual (Relógio) -->
               <div
                 v-if="showCultClock"
-                class="cult-clock font-weight-bold text-center d-flex align-center justify-center"
+                class="cult-clock font-weight-bold mb-1"
                 :style="cultClockStyle"
               >
                 {{ currentClockTime }}
@@ -140,7 +139,7 @@
 
               <!-- Mostrador Inferior: Tempo Restante / Negativo -->
               <div
-                class="cult-timer font-weight-black text-center d-flex align-center justify-center"
+                class="cult-timer font-weight-black"
                 :style="cultTimerStyle"
               >
                 {{ formattedCultTime }}
@@ -488,6 +487,7 @@ export default defineComponent({
         alignItems: align,
         textAlign,
         maxWidth: "94%",
+        width: "max-content",
         userSelect: "none",
         pointerEvents: "auto",
         transition: this.preview ? "none" : "all 0.2s ease-out",
@@ -496,13 +496,13 @@ export default defineComponent({
     cultClockStyle(): any {
       const sizePc = this.config.cultClockSizePc ?? 12;
       const isIndividual = this.config.cultPosMode === "individual";
-      const x = isIndividual ? (this.config.cultClockX ?? 50) : 50;
+      const x = isIndividual ? (this.config.cultClockX ?? 50) : (this.config.cultPosX ?? this.config.posX ?? 50);
       const y = isIndividual ? (this.config.cultClockY ?? 35) : 0;
       const align = x <= 30 ? "left" : x >= 70 ? "right" : "center";
       const base: any = {
         color: this.effectiveCultClockColor,
-        fontSize: this.preview ? `clamp(1.2rem, ${sizePc * 0.18}vw, 4.2rem)` : `${sizePc}vmin`,
-        lineHeight: 1.1,
+        fontSize: this.preview ? `clamp(1.1rem, ${sizePc * 0.2}vw, 3.8rem)` : `${sizePc}vmin`,
+        lineHeight: 1.05,
         textShadow: this.cultClockTextShadowValue,
         fontVariantNumeric: "tabular-nums",
         textAlign: align,
@@ -522,13 +522,13 @@ export default defineComponent({
     cultTimerStyle(): any {
       const sizePc = this.config.cultTimerSizePc ?? 22;
       const isIndividual = this.config.cultPosMode === "individual";
-      const x = isIndividual ? (this.config.cultTimerX ?? 50) : 50;
+      const x = isIndividual ? (this.config.cultTimerX ?? 50) : (this.config.cultPosX ?? this.config.posX ?? 50);
       const y = isIndividual ? (this.config.cultTimerY ?? 60) : 0;
       const align = x <= 30 ? "left" : x >= 70 ? "right" : "center";
       const base: any = {
         color: this.effectiveCultTimerColor,
-        fontSize: this.preview ? `clamp(2rem, ${sizePc * 0.3}vw, 7.5rem)` : `${sizePc}vmin`,
-        lineHeight: 1.1,
+        fontSize: this.preview ? `clamp(1.8rem, ${sizePc * 0.3}vw, 6.5rem)` : `${sizePc}vmin`,
+        lineHeight: 1.0,
         textShadow: this.textShadowValue,
         fontVariantNumeric: "tabular-nums",
         textAlign: align,
@@ -566,29 +566,32 @@ export default defineComponent({
         top: `${y}%`,
         transform: `translate(-${x}%, -${y}%)`,
         color: this.config.cultCustomTextColor || this.config.customTextColor || this.effectiveFontColor,
-        fontSize: this.preview ? `clamp(1rem, ${sizePc * 0.3}vw, 3rem)` : `${sizePc}vmin`,
-        lineHeight: 1.2,
+        fontSize: this.preview ? `clamp(0.9rem, ${sizePc * 0.22}vw, 2.5rem)` : `${sizePc}vmin`,
+        lineHeight: 1.15,
         textAlign: align,
         textShadow: this.textShadowValue,
         letterSpacing: "0.02em",
         maxWidth: "94%",
+        whiteSpace: "nowrap",
         userSelect: "none",
-        wordBreak: "break-word",
         transition: this.preview ? "none" : "all 0.2s ease-out",
         zIndex: 5,
       };
     },
     cultTogetherCustomTextStyle(): any {
       const sizePc = this.config.cultCustomTextSizePc ?? this.config.customTextSizePc ?? 8;
+      const x = this.config.cultPosX ?? this.config.posX ?? 50;
+      const textAlign = x <= 30 ? "left" : x >= 70 ? "right" : "center";
       return {
         color: this.config.cultCustomTextColor || this.config.customTextColor || this.effectiveFontColor,
-        fontSize: this.preview ? `clamp(1rem, ${sizePc * 0.3}vw, 3rem)` : `${sizePc}vmin`,
-        lineHeight: 1.2,
+        fontSize: this.preview ? `clamp(0.9rem, ${sizePc * 0.22}vw, 2.5rem)` : `${sizePc}vmin`,
+        lineHeight: 1.15,
         textShadow: this.textShadowValue,
         letterSpacing: "0.02em",
         maxWidth: "94%",
+        whiteSpace: "nowrap",
+        textAlign,
         userSelect: "none",
-        wordBreak: "break-word",
       };
     },
     previewCultClockStyle(): any {
@@ -778,14 +781,5 @@ export default defineComponent({
 
 .blink-animation {
   animation: alert-pulse 1s infinite ease-in-out !important;
-}
-
-@media (max-height: 800px) {
-  .screen-container.is-preview .cult-clock {
-    font-size: clamp(1.2rem, 2.5vw, 2rem) !important;
-  }
-  .screen-container.is-preview .cult-timer {
-    font-size: clamp(2.2rem, 4.5vw, 3.4rem) !important;
-  }
 }
 </style>

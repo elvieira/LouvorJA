@@ -719,11 +719,12 @@
               <!-- Texto Personalizado Livre -->
               <div
                 v-if="localConfig.customText && localConfig.customTextPosition === 'custom'"
-                class="position-absolute font-weight-bold text-center"
+                class="position-absolute font-weight-bold"
                 :style="{
                   left: `${localConfig.customTextX ?? 50}%`,
                   top: `${localConfig.customTextY ?? 20}%`,
-                  transform: 'translate(-50%, -50%)',
+                  transform: `translate(-${localConfig.customTextX ?? 50}%, -${localConfig.customTextY ?? 20}%)`,
+                  textAlign: (localConfig.customTextX ?? 50) <= 30 ? 'left' : (localConfig.customTextX ?? 50) >= 70 ? 'right' : 'center',
                   fontSize: `${(localConfig.customTextSizePc || 6) * 1.8}px`,
                   color: localConfig.customTextColor || localConfig.color,
                   textShadow: localConfig.bgImage ? '0 4px 12px rgba(0,0,0,0.85)' : `0 4px 16px ${localConfig.customTextColor || localConfig.color}60`,
@@ -731,6 +732,8 @@
                   border: activePosTarget === 'text' ? '1px dashed var(--accent-blue, #0097d7)' : '1px dashed transparent',
                   borderRadius: '4px',
                   whiteSpace: 'nowrap',
+                  maxWidth: '94%',
+                  width: 'max-content',
                   zIndex: 10,
                 }"
                 @pointerdown.stop="selectAndDrag('text', $event)"
@@ -740,11 +743,15 @@
 
               <!-- Container do Sorteado -->
               <div
-                class="position-absolute d-flex flex-column align-center justify-center text-center"
+                class="position-absolute d-flex flex-column"
                 :style="{
                   left: `${localConfig.posX ?? 50}%`,
                   top: `${localConfig.posY ?? 50}%`,
-                  transform: 'translate(-50%, -50%)',
+                  transform: `translate(-${localConfig.posX ?? 50}%, -${localConfig.posY ?? 50}%)`,
+                  alignItems: (localConfig.posX ?? 50) <= 30 ? 'flex-start' : (localConfig.posX ?? 50) >= 70 ? 'flex-end' : 'center',
+                  textAlign: (localConfig.posX ?? 50) <= 30 ? 'left' : (localConfig.posX ?? 50) >= 70 ? 'right' : 'center',
+                  maxWidth: '94%',
+                  width: 'max-content',
                   whiteSpace: 'nowrap',
                 }"
                 @pointerdown.stop="selectAndDrag('draw', $event)"
@@ -752,12 +759,13 @@
                 <!-- Título Acima -->
                 <div
                   v-if="localConfig.customText && (localConfig.customTextPosition === 'above' || !localConfig.customTextPosition)"
-                  class="font-weight-bold text-center mb-1"
+                  class="font-weight-bold mb-1"
                   :style="{
                     fontSize: `${(localConfig.customTextSizePc || 6) * 1.6}px`,
                     color: localConfig.customTextColor || localConfig.color,
                     textShadow: localConfig.bgImage ? '0 4px 12px rgba(0,0,0,0.85)' : `0 4px 16px ${localConfig.customTextColor || localConfig.color}60`,
                     lineHeight: '1.2',
+                    textAlign: (localConfig.posX ?? 50) <= 30 ? 'left' : (localConfig.posX ?? 50) >= 70 ? 'right' : 'center',
                   }"
                 >
                   {{ localConfig.customText }}
@@ -765,12 +773,13 @@
 
                 <!-- Nome / Número Sorteado -->
                 <div
-                  class="font-weight-black text-center"
+                  class="font-weight-black"
                   :style="{
                     fontSize: `${localConfig.fontSizePc * 2.2}px`,
                     textTransform: localConfig.textTransform as any,
                     textShadow: localConfig.bgImage ? '0 4px 12px rgba(0,0,0,0.8)' : `0 4px 16px ${localConfig.color}60`,
                     lineHeight: '1.1',
+                    textAlign: (localConfig.posX ?? 50) <= 30 ? 'left' : (localConfig.posX ?? 50) >= 70 ? 'right' : 'center',
                   }"
                 >
                   João Silva
@@ -779,12 +788,13 @@
                 <!-- Título Abaixo -->
                 <div
                   v-if="localConfig.customText && localConfig.customTextPosition === 'below'"
-                  class="font-weight-bold text-center mt-1"
+                  class="font-weight-bold mt-1"
                   :style="{
                     fontSize: `${(localConfig.customTextSizePc || 6) * 1.6}px`,
                     color: localConfig.customTextColor || localConfig.color,
                     textShadow: localConfig.bgImage ? '0 4px 12px rgba(0,0,0,0.85)' : `0 4px 16px ${localConfig.customTextColor || localConfig.color}60`,
                     lineHeight: '1.2',
+                    textAlign: (localConfig.posX ?? 50) <= 30 ? 'left' : (localConfig.posX ?? 50) >= 70 ? 'right' : 'center',
                   }"
                 >
                   {{ localConfig.customText }}

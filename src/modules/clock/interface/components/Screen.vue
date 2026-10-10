@@ -22,19 +22,26 @@
     </div>
 
     <div
-      class="position-absolute d-flex flex-column align-center justify-center pointer-events-none"
+      class="position-absolute d-flex flex-column pointer-events-none"
       :style="{
-        left: `${config.posX ?? 50}%`,
-        top: `${config.posY ?? 50}%`,
-        transform: 'translate(-50%, -50%)',
+        left: preview ? '50%' : `${config.posX ?? 50}%`,
+        top: preview ? '50%' : `${config.posY ?? 50}%`,
+        transform: preview ? 'translate(-50%, -50%)' : `translate(-${config.posX ?? 50}%, -${config.posY ?? 50}%)`,
+        alignItems: preview ? 'center' : ((config.posX ?? 50) <= 30 ? 'flex-start' : (config.posX ?? 50) >= 70 ? 'flex-end' : 'center'),
+        textAlign: preview ? 'center' : ((config.posX ?? 50) <= 30 ? 'left' : (config.posX ?? 50) >= 70 ? 'right' : 'center'),
+        maxWidth: '94%',
+        width: 'max-content',
         whiteSpace: 'nowrap',
       }"
     >
       <!-- Texto Personalizado Acima -->
       <div
         v-if="config.customText && (config.customTextPosition === 'above' || !config.customTextPosition)"
-        class="font-weight-bold text-center mb-2"
-        :style="customTextStyle"
+        class="font-weight-bold mb-2"
+        :style="{
+          ...customTextStyle,
+          textAlign: preview ? 'center' : ((config.posX ?? 50) <= 30 ? 'left' : (config.posX ?? 50) >= 70 ? 'right' : 'center'),
+        }"
       >
         {{ config.customText }}
       </div>
@@ -179,8 +186,11 @@
       <!-- Texto Personalizado Abaixo -->
       <div
         v-if="config.customText && config.customTextPosition === 'below'"
-        class="font-weight-bold text-center mt-2"
-        :style="customTextStyle"
+        class="font-weight-bold mt-2"
+        :style="{
+          ...customTextStyle,
+          textAlign: preview ? 'center' : ((config.posX ?? 50) <= 30 ? 'left' : (config.posX ?? 50) >= 70 ? 'right' : 'center'),
+        }"
       >
         {{ config.customText }}
       </div>
@@ -253,15 +263,16 @@ export default defineComponent({
       };
     },
     customTextFreeStyle(): any {
-      const x = this.config.customTextX ?? 50;
-      const y = this.config.customTextY ?? 20;
+      const x = this.preview ? 50 : (this.config.customTextX ?? 50);
+      const y = this.preview ? 82 : (this.config.customTextY ?? 20);
       const sizePc = this.config.customTextSizePc ?? 8;
       const v = Math.min(this.s_width, this.s_height);
       const fontSize = Math.max((v * sizePc) / 100, 14);
       return {
         left: `${x}%`,
         top: `${y}%`,
-        transform: "translate(-50%, -50%)",
+        transform: this.preview ? "translate(-50%, -50%)" : `translate(-${x}%, -${y}%)`,
+        textAlign: this.preview ? "center" : (x <= 30 ? "left" : x >= 70 ? "right" : "center"),
         fontSize: `${fontSize}px`,
         color: this.config.customTextColor || this.config.textColor,
         textShadow: this.config.bgImage
@@ -269,6 +280,8 @@ export default defineComponent({
           : `0 2px 10px ${this.config.customTextColor || this.config.textColor}40`,
         fontFamily: "system-ui, -apple-system, sans-serif",
         lineHeight: 1.2,
+        maxWidth: "94%",
+        width: "max-content",
         whiteSpace: "nowrap",
         zIndex: 5,
       };
