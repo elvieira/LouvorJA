@@ -8,6 +8,7 @@
       <AppTrayArea />
       <QuickSearchModal v-model="showQuickSearch" />
       <BibleQuickSearchModal v-model="showBibleSearch" />
+      <NotificationsModal />
 
 
 
@@ -178,6 +179,7 @@ import AppTrayArea from "@/layout/TrayArea.vue";
 import LSlide from "@/components/Slide.vue";
 import QuickSearchModal from "@/components/QuickSearchModal.vue";
 import BibleQuickSearchModal from "@/components/BibleQuickSearchModal.vue";
+import NotificationsModal from "@/components/NotificationsModal.vue";
 import $popup from "@/helpers/ui/Popup";
 import { openFavorites } from "@/helpers/services/Favorites";
 
@@ -191,6 +193,7 @@ export default defineComponent({
     LSlide,
     QuickSearchModal,
     BibleQuickSearchModal,
+    NotificationsModal,
   },
   data() {
     return {

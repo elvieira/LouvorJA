@@ -5,6 +5,34 @@
         <div :style="(searchQuery || shouldShowHistory) ? 'flex: 1; display: flex; align-items: center;' : 'position: absolute; top: 24px; left: 32px;'">
           <MenuToggleButton style="margin: 0;" @toggle-sidebar="toggleSidebar" />
         </div>
+
+        <div v-if="!searchQuery && !shouldShowHistory" style="position: absolute; top: 24px; right: 32px; z-index: 5;">
+          <button
+            type="button"
+            class="notification-bell-btn"
+            :class="{ 'pulse-animation': hasUnreadNotifications }"
+            title="Notificações & Novidades"
+            @click="openNotifications"
+          >
+            <v-icon size="22" :color="hasUnreadNotifications ? 'primary' : 'var(--sidebar-text)'">
+              {{ hasUnreadNotifications ? 'mdi-bell' : 'mdi-bell-outline' }}
+            </v-icon>
+            <span 
+              v-if="hasUnreadNotifications" 
+              class="home-unread-badge"
+            >
+              {{ unreadNotificationsCount }}
+            </span>
+            <v-tooltip
+              activator="parent"
+              location="bottom"
+              open-delay="300"
+              content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+            >
+              {{ hasUnreadNotifications ? `${unreadNotificationsCount} ${unreadNotificationsCount === 1 ? 'nova notificação' : 'novas notificações'}` : 'Notificações' }}
+            </v-tooltip>
+          </button>
+        </div>
         
         <div v-if="!searchQuery && !shouldShowHistory" class="hero-content d-flex flex-column align-center w-100" style="animation: fadeIn 0.5s ease;">
           <img src="/ico/favicon.svg" alt="LouvorJA" style="width: 80px; height: 80px; margin-bottom: 24px;" />
@@ -125,7 +153,33 @@
           </v-text-field>
         </div>
 
-        <div v-if="(searchQuery || shouldShowHistory)" style="flex: 1;" />
+        <div v-if="(searchQuery || shouldShowHistory)" style="flex: 1; display: flex; justify-content: flex-end; align-items: center; padding-right: 16px;">
+          <button
+            type="button"
+            class="notification-bell-btn"
+            :class="{ 'pulse-animation': hasUnreadNotifications }"
+            title="Notificações & Novidades"
+            @click="openNotifications"
+          >
+            <v-icon size="22" :color="hasUnreadNotifications ? 'primary' : 'var(--sidebar-text)'">
+              {{ hasUnreadNotifications ? 'mdi-bell' : 'mdi-bell-outline' }}
+            </v-icon>
+            <span 
+              v-if="hasUnreadNotifications" 
+              class="home-unread-badge"
+            >
+              {{ unreadNotificationsCount }}
+            </span>
+            <v-tooltip
+              activator="parent"
+              location="bottom"
+              open-delay="300"
+              content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+            >
+              {{ hasUnreadNotifications ? `${unreadNotificationsCount} ${unreadNotificationsCount === 1 ? 'nova notificação' : 'novas notificações'}` : 'Notificações' }}
+            </v-tooltip>
+          </button>
+        </div>
       </div>
 
       <div v-if="searchQuery || shouldShowHistory" class="content-main">
@@ -284,6 +338,11 @@ import MenuToggleButton from "@/components/MenuToggleButton.vue";
 import LTable from "@/components/DataTable.vue";
 import LMusicMenuTable from "@/components/MusicMenuTable.vue";
 import { useTheme } from "vuetify";
+import {
+  unreadCount,
+  hasUnread,
+  toggleNotificationsPanel,
+} from "@/helpers/services/Notifications";
 
 import hymnalImg from "@/assets/images/hymnal.jpeg";
 import hymnal1996Img from "@/assets/images/hymnal_1996.jpeg";
@@ -298,7 +357,18 @@ export default defineComponent({
   setup() {
     const theme = useTheme();
     const isDark = computed(() => theme.name.value === "dark");
-    return { isDark };
+    const hasUnreadNotifications = hasUnread;
+    const unreadNotificationsCount = unreadCount;
+    const openNotifications = () => {
+      toggleNotificationsPanel(true);
+    };
+
+    return {
+      isDark,
+      hasUnreadNotifications,
+      unreadNotificationsCount,
+      openNotifications,
+    };
   },
   data: () => ({
     searchQuery: "",
@@ -1132,5 +1202,69 @@ export default defineComponent({
       font-size: 12px;
     }
   }
+}
+
+.notification-bell-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--card-bg) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--sidebar-text);
+  box-shadow: var(--shadow) !important;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  outline: none;
+  overflow: visible;
+
+  &:hover {
+    background: var(--sidebar-hover) !important;
+    border-color: var(--accent-blue) !important;
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: scale(0.96);
+  }
+
+  &.pulse-animation {
+    animation: pulse-border-home 2s infinite !important;
+  }
+}
+
+@keyframes pulse-border-home {
+  0% {
+    box-shadow: 0 0 0 0 rgba(0, 151, 215, 0.5) !important;
+  }
+  70% {
+    box-shadow: 0 0 0 8px rgba(0, 151, 215, 0) !important;
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 151, 215, 0) !important;
+  }
+}
+
+.home-unread-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background-color: var(--accent-blue, #0097d7);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 10px;
+  padding: 0 5px;
+  min-width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
+  border: 2px solid var(--card-bg, #ffffff);
+  pointer-events: none;
 }
 </style>

@@ -65,6 +65,7 @@ const STORAGE_QUEUE = "louvorja_telemetry_queue";
 const STORAGE_SONG_PLAYS_QUEUE = "louvorja_telemetry_song_plays_queue";
 const STORAGE_TOTAL_SESSIONS = "louvorja_telemetry_total_sessions";
 const STORAGE_DISPLAYS_COUNT = "louvorja_telemetry_displays_count";
+const STORAGE_LAST_APP_STARTED_DATE = "louvorja_telemetry_last_app_started_date";
 const MAX_QUEUE_SIZE = 1000;
 
 class TelemetryService {
@@ -230,12 +231,27 @@ class TelemetryService {
       }
     }
 
-    // Registra o evento de inicialização do app (enviado imediatamente na hora)
-    this.track("app_started", {
-      start_time: new Date().toISOString(),
-      app_version: this.getAppVersion(),
-      platform: this.getPlatform(),
-    });
+    // Registra o evento de inicialização do app apenas UMA vez por dia por instalação
+    try {
+      const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+      const lastStartedDate = localStorage.getItem(STORAGE_LAST_APP_STARTED_DATE);
+
+      if (lastStartedDate !== today) {
+        localStorage.setItem(STORAGE_LAST_APP_STARTED_DATE, today);
+        this.track("app_started", {
+          start_time: new Date().toISOString(),
+          app_version: this.getAppVersion(),
+          platform: this.getPlatform(),
+        });
+      }
+    } catch {
+      // Fallback em caso de falha no localStorage
+      this.track("app_started", {
+        start_time: new Date().toISOString(),
+        app_version: this.getAppVersion(),
+        platform: this.getPlatform(),
+      });
+    }
 
     if (typeof window !== "undefined") {
       window.addEventListener("beforeunload", () => {

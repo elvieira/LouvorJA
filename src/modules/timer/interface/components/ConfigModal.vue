@@ -1396,9 +1396,13 @@
                     class="text-none font-weight-bold px-2 py-0"
                     style="height: 26px; font-size: 0.78rem;"
                   >
-                    <v-icon size="16" start class="mr-1">mdi-aspect-ratio</v-icon>
+                    <v-icon size="16" start class="mr-1">
+                      mdi-aspect-ratio
+                    </v-icon>
                     {{ previewAspectLabel || '16:9 Tela' }}
-                    <v-icon size="14" end class="ml-1">mdi-chevron-down</v-icon>
+                    <v-icon size="14" end class="ml-1">
+                      mdi-chevron-down
+                    </v-icon>
                   </v-btn>
                 </template>
                 <v-card
@@ -1432,7 +1436,13 @@
                           {{ d.displayName }}
                         </v-list-item-title>
                         <template #append>
-                          <v-chip size="x-small" variant="flat" color="primary" class="font-weight-bold" v-if="previewAspectRatio === d.cssRatio">
+                          <v-chip
+                            v-if="previewAspectRatio === d.cssRatio"
+                            size="x-small"
+                            variant="flat"
+                            color="primary"
+                            class="font-weight-bold"
+                          >
                             Ativo
                           </v-chip>
                         </template>
@@ -1452,7 +1462,9 @@
                       @click="setAspectRatio('16/9', '16:9 Tela')"
                     >
                       <template #prepend>
-                        <v-icon size="18" :color="previewAspectRatio === '16/9' ? 'primary' : 'medium-emphasis'">mdi-television</v-icon>
+                        <v-icon size="18" :color="previewAspectRatio === '16/9' ? 'primary' : 'medium-emphasis'">
+                          mdi-television
+                        </v-icon>
                       </template>
                       <v-list-item-title class="font-weight-medium text-caption">
                         16:9 Widescreen (TV / LED)
@@ -1466,7 +1478,9 @@
                       @click="setAspectRatio('4/3', '4:3 Tela')"
                     >
                       <template #prepend>
-                        <v-icon size="18" :color="previewAspectRatio === '4/3' ? 'primary' : 'medium-emphasis'">mdi-projector</v-icon>
+                        <v-icon size="18" :color="previewAspectRatio === '4/3' ? 'primary' : 'medium-emphasis'">
+                          mdi-projector
+                        </v-icon>
                       </template>
                       <v-list-item-title class="font-weight-medium text-caption">
                         4:3 Tradicional (Projetor)
@@ -1480,7 +1494,9 @@
                       @click="setAspectRatio('16/10', '16:10 Tela')"
                     >
                       <template #prepend>
-                        <v-icon size="18" :color="previewAspectRatio === '16/10' ? 'primary' : 'medium-emphasis'">mdi-laptop</v-icon>
+                        <v-icon size="18" :color="previewAspectRatio === '16/10' ? 'primary' : 'medium-emphasis'">
+                          mdi-laptop
+                        </v-icon>
                       </template>
                       <v-list-item-title class="font-weight-medium text-caption">
                         16:10 Monitor / MacBook
@@ -2158,7 +2174,7 @@ export default defineComponent({
                 ratioStr = "21/9";
                 chipLabel = "21:9 Tela";
               }
-              const displayName = d.isPrimary ? "Monitor Principal" : `Monitor Secundário ${displays.length > 2 ? index : ''}`.trim();
+              const displayName = d.isPrimary ? "Monitor Principal" : `Monitor Secundário ${displays.length > 2 ? index : ""}`.trim();
               const formattedName = `${displayName} (${w}x${h})`;
               return {
                 id: d.id,
@@ -2197,7 +2213,7 @@ export default defineComponent({
       });
     },
     updatePreviewDims() {
-      const el = (this.activeTab === 'general' ? this.$refs.previewStandardRef : this.$refs.previewCultRef) as HTMLElement;
+      const el = (this.activeTab === "general" ? this.$refs.previewStandardRef : this.$refs.previewCultRef) as HTMLElement;
       if (el) {
         const rect = el.getBoundingClientRect();
         if (rect.width > 0 && rect.height > 0) {
@@ -2219,7 +2235,7 @@ export default defineComponent({
           }
         }
       });
-      const el = (this.activeTab === 'general' ? this.$refs.previewStandardRef : this.$refs.previewCultRef) as HTMLElement;
+      const el = (this.activeTab === "general" ? this.$refs.previewStandardRef : this.$refs.previewCultRef) as HTMLElement;
       if (el) {
         this.previewResizeObserver.observe(el);
       }

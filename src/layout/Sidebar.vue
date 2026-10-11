@@ -191,6 +191,30 @@
         </a>
       </div>
       
+      <div 
+        v-if="currentModule !== 'home'" 
+        class="nav-item notifications-item" 
+        :class="{ 'pulse-animation': hasUnreadNotifications }"
+      >
+        <a href="#" class="nav-link" @click.prevent="openNotifications">
+          <div class="nav-icon-wrapper position-relative d-inline-flex align-center justify-center">
+            <v-icon 
+              class="nav-icon" 
+              :color="hasUnreadNotifications ? 'primary' : ''"
+            >
+              {{ hasUnreadNotifications ? 'mdi-bell' : 'mdi-bell-outline' }}
+            </v-icon>
+            <span 
+              v-if="hasUnreadNotifications" 
+              class="sidebar-unread-badge"
+            >
+              {{ unreadNotificationsCount }}
+            </span>
+          </div>
+          <span class="nav-text">Notificações</span>
+        </a>
+      </div>
+
       <div class="nav-item" :class="{ active: currentModule === 'help' }">
         <a href="#" class="nav-link" @click.prevent="openModule('help')">
           <v-icon class="nav-icon">
@@ -213,6 +237,11 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
+import {
+  unreadCount,
+  hasUnread,
+  toggleNotificationsPanel,
+} from "@/helpers/services/Notifications";
 
 export default defineComponent({
   name: "DashboardSidebar",
@@ -353,6 +382,12 @@ export default defineComponent({
     isDownloading(): boolean {
       return (this as any).$appdata.get("sync_is_downloading") === true;
     },
+    hasUnreadNotifications(): boolean {
+      return hasUnread.value;
+    },
+    unreadNotificationsCount(): number {
+      return unreadCount.value;
+    },
   },
   watch: {
     currentModule: {
@@ -480,11 +515,36 @@ export default defineComponent({
       (this as any).$modules.open("update");
       this.sidebarSelectedModule = "update";
     },
+    openNotifications() {
+      toggleNotificationsPanel(true);
+      if (this.isMobile) {
+        this.closeSidebar();
+      }
+    },
   },
 });
 </script>
 
 <style lang="scss">
+.sidebar-unread-badge {
+  position: absolute;
+  top: -5px;
+  right: -7px;
+  background-color: var(--accent-blue, #0097d7);
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 10px;
+  padding: 0 4px;
+  min-width: 17px;
+  height: 17px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
+  border: 2px solid var(--sidebar-bg, #10141d);
+}
+
 .dashboard-sidebar {
   width: var(--sidebar-width);
   background: var(--sidebar-bg);
