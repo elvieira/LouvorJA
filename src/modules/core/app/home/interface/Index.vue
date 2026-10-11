@@ -69,10 +69,10 @@
           </button>
         </div>
         
-        <div v-if="!searchQuery && !shouldShowHistory" class="hero-content d-flex flex-column align-center w-100" style="animation: fadeIn 0.5s ease;">
-          <img src="/ico/favicon.svg" alt="LouvorJA" style="width: 80px; height: 80px; margin-bottom: 24px;" />
-          <h1 class="hero-title mb-8" style="font-size: 2.5rem; font-weight: 700; color: var(--sidebar-text);">
-            O que vamos cantar?
+        <div v-if="!searchQuery && !shouldShowHistory" class="hero-content d-flex flex-column align-center w-100">
+          <img src="/ico/favicon.svg" alt="LouvorJA" class="hero-logo" />
+          <h1 class="hero-title mb-6">
+            {{ t("what_shall_we_sing") }}
           </h1>
         </div>
         
@@ -85,105 +85,104 @@
             variant="solo"
             density="comfortable"
             hide-details
-            clearable
             rounded="xl"
             :style="(searchQuery || shouldShowHistory) ? 'width: 100%; max-width: 600px;' : 'width: 100%;'"
             class="search-input-hero"
             @keydown.enter="playFirstResult"
           >
             <template #append-inner>
-              <v-menu :close-on-content-click="false" location="bottom end">
-                <template #activator="{ props }">
-                  <v-btn
-                    icon="mdi-filter-variant"
-                    size="small"
-                    variant="text"
-                    v-bind="props"
-                    color="var(--sidebar-text-secondary)"
-                  />
-                </template>
-                <v-card
-                  class="elevation-3"
-                  :color="isDark ? 'var(--card-bg)' : '#ffffff'"
-                  :theme="isDark ? 'dark' : 'light'"
-                  rounded="lg"
-                  min-width="220"
-                  style="overflow: hidden; border: 1px solid rgba(150, 150, 150, 0.1);"
-                >
-                  <v-list
-                    class="py-2"
-                    bg-color="transparent"
+              <div class="d-flex align-center">
+                <!-- Botão Limpar (X) -->
+                <v-btn
+                  v-if="searchQuery"
+                  icon="mdi-close"
+                  size="x-small"
+                  variant="text"
+                  class="clear-search-btn mr-1"
+                  title="Limpar pesquisa"
+                  @click="clearSearch"
+                />
+
+                <!-- Botão e Popover de Filtros -->
+                <v-menu :close-on-content-click="false" location="bottom end" :offset="10">
+                  <template #activator="{ props }">
+                    <v-btn
+                      icon="mdi-filter-variant"
+                      size="small"
+                      variant="text"
+                      v-bind="props"
+                      class="filter-search-btn"
+                      :class="{ 'filter-active': hasCustomFilter }"
+                      title="Filtrar pesquisa"
+                    />
+                  </template>
+                  <v-card
+                    :theme="isDark ? 'dark' : 'light'"
+                    class="search-filter-popover elevation-6"
+                    style="min-width: 250px;"
                   >
-                    <div
-                      class="text-caption font-weight-bold mb-2 mx-4 mt-1"
-                      style="color: var(--sidebar-text-secondary);"
-                    >
-                      Filtrar pesquisa por:
+                    <div class="filter-header">
+                      {{ t("filter_search_by") }}
                     </div>
-                    <v-list-item
-                      :active="searchFilters.includes('name')"
-                      active-color="var(--accent-blue)"
-                      class="mx-2 rounded-lg mb-1"
-                      style="min-height: 40px;"
+                    <div
+                      class="filter-item"
+                      :class="{ active: searchFilters.includes('name') }"
                       @click="toggleSearchFilter('name')"
                     >
-                      <div class="d-flex align-center">
-                        <v-icon :icon="searchFilters.includes('name') ? 'mdi-check-circle' : 'mdi-circle-outline'" size="small" class="mr-3" />
-                        <span class="text-body-2 font-weight-medium">Nome da música</span>
-                      </div>
-                    </v-list-item>
-                    <v-list-item
-                      :active="searchFilters.includes('albums')"
-                      active-color="var(--accent-blue)"
-                      class="mx-2 rounded-lg mb-1"
-                      style="min-height: 40px;"
+                      <v-icon
+                        :icon="searchFilters.includes('name') ? 'mdi-check-circle' : 'mdi-circle-outline'"
+                        class="filter-radio-icon"
+                      />
+                      <span class="filter-label">{{ t("filter_name") }}</span>
+                    </div>
+                    <div
+                      class="filter-item"
+                      :class="{ active: searchFilters.includes('albums') }"
                       @click="toggleSearchFilter('albums')"
                     >
-                      <div class="d-flex align-center">
-                        <v-icon :icon="searchFilters.includes('albums') ? 'mdi-check-circle' : 'mdi-circle-outline'" size="small" class="mr-3" />
-                        <span class="text-body-2 font-weight-medium">Álbum/Coletânea</span>
-                      </div>
-                    </v-list-item>
-                    <v-list-item
-                      :active="searchFilters.includes('lyric')"
-                      active-color="var(--accent-blue)"
-                      class="mx-2 rounded-lg mb-1"
-                      style="min-height: 40px;"
+                      <v-icon
+                        :icon="searchFilters.includes('albums') ? 'mdi-check-circle' : 'mdi-circle-outline'"
+                        class="filter-radio-icon"
+                      />
+                      <span class="filter-label">{{ t("filter_albums") }}</span>
+                    </div>
+                    <div
+                      class="filter-item"
+                      :class="{ active: searchFilters.includes('lyric') }"
                       @click="toggleSearchFilter('lyric')"
                     >
-                      <div class="d-flex align-center">
-                        <v-icon :icon="searchFilters.includes('lyric') ? 'mdi-check-circle' : 'mdi-circle-outline'" size="small" class="mr-3" />
-                        <span class="text-body-2 font-weight-medium">Letra da música</span>
-                      </div>
-                    </v-list-item>
-                    <v-divider class="my-1 border-opacity-25" />
-                    <v-list-item
-                      :active="searchFilters.includes('online_collection')"
-                      active-color="var(--accent-blue)"
-                      class="mx-2 rounded-lg mb-1"
-                      style="min-height: 40px;"
+                      <v-icon
+                        :icon="searchFilters.includes('lyric') ? 'mdi-check-circle' : 'mdi-circle-outline'"
+                        class="filter-radio-icon"
+                      />
+                      <span class="filter-label">{{ t("filter_lyric") }}</span>
+                    </div>
+                    <div class="filter-divider" />
+                    <div
+                      class="filter-item"
+                      :class="{ active: searchFilters.includes('online_collection') }"
                       @click="toggleSearchFilter('online_collection')"
                     >
-                      <div class="d-flex align-center">
-                        <v-icon :icon="searchFilters.includes('online_collection') ? 'mdi-check-circle' : 'mdi-circle-outline'" size="small" class="mr-3" />
-                        <span class="text-body-2 font-weight-medium">Coletâneas Online</span>
-                      </div>
-                    </v-list-item>
-                    <v-list-item
-                      :active="searchFilters.includes('custom_collection')"
-                      active-color="var(--accent-blue)"
-                      class="mx-2 rounded-lg mb-1"
-                      style="min-height: 40px;"
+                      <v-icon
+                        :icon="searchFilters.includes('online_collection') ? 'mdi-check-circle' : 'mdi-circle-outline'"
+                        class="filter-radio-icon"
+                      />
+                      <span class="filter-label">{{ t("filter_online") }}</span>
+                    </div>
+                    <div
+                      class="filter-item"
+                      :class="{ active: searchFilters.includes('custom_collection') }"
                       @click="toggleSearchFilter('custom_collection')"
                     >
-                      <div class="d-flex align-center">
-                        <v-icon :icon="searchFilters.includes('custom_collection') ? 'mdi-check-circle' : 'mdi-circle-outline'" size="small" class="mr-3" />
-                        <span class="text-body-2 font-weight-medium">Coletâneas Personalizadas</span>
-                      </div>
-                    </v-list-item>
-                  </v-list>
-                </v-card>
-              </v-menu>
+                      <v-icon
+                        :icon="searchFilters.includes('custom_collection') ? 'mdi-check-circle' : 'mdi-circle-outline'"
+                        class="filter-radio-icon"
+                      />
+                      <span class="filter-label">{{ t("filter_custom") }}</span>
+                    </div>
+                  </v-card>
+                </v-menu>
+              </div>
             </template>
           </v-text-field>
         </div>
@@ -254,10 +253,15 @@
 
       <div v-if="searchQuery || shouldShowHistory" class="content-main">
         <div v-if="searchQuery" class="dashboard-section music-section h-100 d-flex flex-column" style="min-height: 0;">
-          <h2 class="section-title mb-4">
-            Resultados da Pesquisa
-          </h2>
-          <div class="music-list flex-grow-1 d-flex flex-column" style="min-height: 0; background: transparent; box-shadow: none;">
+          <div class="section-header">
+            <h2 class="section-title">
+              {{ t("search_results") }}
+            </h2>
+            <span v-if="searchData && searchData.data && !searchData.loading" class="text-caption font-weight-medium" style="color: var(--ds-text-secondary);">
+              {{ searchData.data.length }} {{ t("songs") }}
+            </span>
+          </div>
+          <div class="music-list flex-grow-1 d-flex flex-column" style="min-height: 0;">
             <LTable
               v-model="searchData"
               :search="searchQuery"
@@ -268,42 +272,60 @@
               style="background: transparent; min-height: 0;"
               hide-loading
             >
-              <div v-if="searchData.loading === false && searchData.data && searchData.data.length === 0" class="d-flex flex-column align-center justify-center w-100" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none;">
-                <v-icon size="48" color="var(--sidebar-text-secondary)" class="mb-3">
+              <div v-if="searchData.loading === false && searchData.data && searchData.data.length === 0" class="empty-state d-flex flex-column align-center justify-center w-100" style="padding: 64px 24px;">
+                <v-icon size="52" color="var(--ds-text-secondary)" class="mb-3">
                   mdi-magnify
                 </v-icon>
-                <p style="color: var(--sidebar-text-secondary); font-weight: 500;">
-                  Nenhuma música encontrada
+                <p style="color: var(--ds-text-primary); font-size: 15px; font-weight: 600; margin-bottom: 4px;">
+                  {{ t("no_musics_found") }}
                 </p>
               </div>
               <tbody v-else class="music-list-container">
                 <tr 
                   v-for="item in searchData.data" 
                   :key="item.id || item.id_music"
-                  class="music-item w-100"
+                  class="music-item search-result-item w-100"
+                  :class="{ 'is-playing': isSongPlaying(item) }"
                   style="cursor: pointer;"
                   @click="playSong(item)"
                 >
-                  <td class="music-info flex-grow-1" style="border-bottom: none; padding-left: 24px !important;">
+                  <td class="music-number-cell">
+                    <span v-if="getHymnalTrack(item)" class="hymnal-track-number">
+                      {{ getHymnalTrack(item) }}
+                    </span>
+                  </td>
+                  <td class="music-play-cell">
+                    <button 
+                      type="button" 
+                      class="music-play-btn"
+                      :title="isSongPlaying(item) ? 'Em reprodução' : 'Reproduzir música'"
+                      @click.stop="playSong(item)"
+                    >
+                      <v-icon size="18">
+                        {{ isSongPlaying(item) ? 'mdi-volume-high' : 'mdi-play' }}
+                      </v-icon>
+                    </button>
+                  </td>
+                  <td class="music-info flex-grow-1">
                     <h4 class="music-title">
-                      <span v-if="getHymnalTrack(item)" style="color: var(--accent-blue); margin-right: 8px;">{{ getHymnalTrack(item) }}</span>
                       {{ item.name }}
                     </h4>
-                    <p class="music-artist" style="margin-top: 4px;">
+                    <p class="music-artist">
                       {{ item.subtitle || (item.albums ? item.albums.map((a: any) => a.name).join(', ') : '') }}
                     </p>
                   </td>
-                  <td class="music-duration pr-4" style="border-bottom: none;">
+                  <td class="music-duration pr-4">
                     {{ item.duration ? $datetime.shortTime(item.duration) : '' }}
                   </td>
-                  <td style="border-bottom: none;">
-                    <div class="d-flex justify-end pr-4">
+                  <td>
+                    <div class="music-actions d-flex justify-end pr-4" @click.stop>
                       <LMusicMenuTable
                         :id-music="item.id_music"
                         :has-instrumental-music="item.has_instrumental_music"
                         :item="item"
                         :pulse-lyric="searchFilters.includes('lyric')"
                         :search-query="searchQuery"
+                        :compact="true"
                       />
                     </div>
                   </td>
@@ -314,10 +336,23 @@
         </div>
 
         <template v-else-if="shouldShowHistory && !searchQuery">
+          <!-- Seção: Coletâneas Recentes -->
           <div class="dashboard-section collections-section">
-            <h2 class="section-title">
-              {{ t("recent_collections") }}
-            </h2>
+            <div class="section-header">
+              <h2 class="section-title">
+                {{ t("recent_collections") }}
+              </h2>
+              <button
+                type="button"
+                class="section-see-all-btn"
+                @click="openAllCollections"
+              >
+                <span>{{ t("see_all") }}</span>
+                <v-icon size="16">
+                  mdi-arrow-right
+                </v-icon>
+              </button>
+            </div>
             <div 
               v-if="displayCollections.length > 0" 
               ref="collectionsGrid"
@@ -330,19 +365,23 @@
                 class="collection-card"
                 @click="openCollection(collection)"
               >
-                <div class="card-image" style="position: relative;">
+                <div class="card-image">
                   <v-img 
                     v-if="getCollectionImage(collection)" 
                     :src="getCollectionImage(collection)" 
                     cover 
-                    style="width: 100%; height: 100%; position: absolute; inset: 0;"
+                    class="card-cover-img"
                   />
-                  <v-icon v-else size="48" style="position: relative; z-index: 1;">
-                    {{ collection.icon }}
+                  <v-icon
+                    v-else
+                    size="48"
+                    color="var(--ds-accent)"
+                  >
+                    {{ collection.icon || 'mdi-music-box-multiple' }}
                   </v-icon>
                 </div>
                 <div class="card-content">
-                  <h3 class="card-title">
+                  <h3 class="card-title" :title="getCollectionName(collection)">
                     {{ getCollectionName(collection) }}
                   </h3>
                   <p v-if="collection.songCount" class="card-stats">
@@ -352,28 +391,52 @@
               </div>
             </div>
             <div v-else class="empty-state collections-empty">
-              <v-icon size="48" color="grey-lighten-1">
+              <v-icon size="48" color="var(--ds-text-secondary)">
                 mdi-music-box-multiple-outline
               </v-icon>
               <p>{{ t("no_collections_played") }}</p>
             </div>
           </div>
 
+          <!-- Seção: Músicas Mais Tocadas -->
           <div class="dashboard-section music-section">
-            <h2 class="section-title">
-              {{ t("top_songs") }}
-            </h2>
+            <div class="section-header">
+              <h2 class="section-title">
+                {{ t("top_songs") }}
+              </h2>
+              <button
+                type="button"
+                class="section-see-all-btn"
+                @click="openAllSongs"
+              >
+                <span>{{ t("see_all") }}</span>
+                <v-icon size="16">
+                  mdi-arrow-right
+                </v-icon>
+              </button>
+            </div>
             <div class="music-list">
               <div class="music-list-container">
                 <div 
                   v-for="(song, index) in topSongs" 
                   :key="song.id_music || index"
                   class="music-item"
+                  :class="{ 'is-playing': isSongPlaying(song) }"
                   @click="playSong(song)"
                 >
                   <div class="music-number">
                     {{ index + 1 }}
                   </div>
+                  <button 
+                    type="button" 
+                    class="music-play-btn"
+                    :title="isSongPlaying(song) ? 'Em reprodução' : 'Reproduzir música'"
+                    @click.stop="playSong(song)"
+                  >
+                    <v-icon size="18">
+                      {{ isSongPlaying(song) ? 'mdi-volume-high' : 'mdi-play' }}
+                    </v-icon>
+                  </button>
                   <div class="music-info">
                     <h4 class="music-title">
                       {{ song.name }}
@@ -385,9 +448,17 @@
                   <div class="music-duration">
                     {{ $datetime.shortTime(song.duration) }}
                   </div>
+                  <div class="music-actions" @click.stop>
+                    <LMusicMenuTable
+                      :id-music="song.id_music"
+                      :has-instrumental-music="Boolean(song.has_instrumental_music)"
+                      :item="song"
+                      :compact="true"
+                    />
+                  </div>
                 </div>
                 <div v-if="topSongs.length === 0" class="empty-state">
-                  <v-icon size="48" color="grey-lighten-1">
+                  <v-icon size="48" color="var(--ds-text-secondary)">
                     mdi-music-note-off
                   </v-icon>
                   <p>{{ t("no_songs_played") }}</p>
@@ -509,12 +580,18 @@ export default defineComponent({
     compact(): boolean {
       return this.$vuetify.display.width <= 800;
     },
+    currentMediaId(): any {
+      return this.$appdata.get("modules.media.id_music");
+    },
     searchFilters(): string[] {
       const sf = (this as any).$store?.state?.user_data?.search_filters;
       if (Array.isArray(sf) && sf.length > 0) {
         return sf;
       }
       return ["name"];
+    },
+    hasCustomFilter(): boolean {
+      return this.searchFilters.length > 1 || !this.searchFilters.includes("name");
     },
     searchableFields(): any {
       const fields: any = {};
@@ -758,10 +835,12 @@ export default defineComponent({
       }
     },
     
-    getHymnalTrack(item: any) {
-      if (item && item.albums) {
+    getHymnalTrack(item: any): string | number | null {
+      if (!item) return null;
+      if (item.hymnal_track) return item.hymnal_track;
+      if (item.albums && Array.isArray(item.albums)) {
         const hymnalAlbum = item.albums.find((a: any) => a.type === "hymnal");
-        if (hymnalAlbum && hymnalAlbum.pivot && hymnalAlbum.pivot.track) {
+        if (hymnalAlbum?.pivot?.track) {
           return hymnalAlbum.pivot.track;
         }
       }
@@ -784,6 +863,28 @@ export default defineComponent({
       }
       this.$userdata.set("search_filters", updated);
     },
+
+    clearSearch() {
+      this.searchQuery = "";
+      this.$nextTick(() => {
+        if (this.$refs.searchInput) {
+          (this.$refs.searchInput as any).focus();
+        }
+      });
+    },
+
+    isSongPlaying(song: any): boolean {
+      if (!song || !this.currentMediaId) return false;
+      return Number(this.currentMediaId) === Number(song.id_music) || this.currentMediaId === song.id_music;
+    },
+
+    openAllCollections() {
+      this.$modules.open("collections");
+    },
+
+    openAllSongs() {
+      this.$modules.open("musics");
+    },
   },
 });
 </script>
@@ -803,39 +904,153 @@ export default defineComponent({
 
 .hero-search-header {
   background: transparent;
+
+  .hero-content {
+    animation: fadeIn 0.4s ease;
+  }
+
+  .hero-logo {
+    width: 88px;
+    height: 88px;
+    margin-bottom: 20px;
+    filter: drop-shadow(0 4px 16px rgba(0, 0, 0, 0.15));
+  }
+
+  .hero-title {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: var(--ds-text-primary);
+    letter-spacing: -0.5px;
+  }
 }
 
 .dashboard-home .search-bar {
   .v-field {
-    background: var(--card-bg) !important;
-    box-shadow: var(--shadow) !important;
-    border: 1px solid transparent;
-    transition: all 0.2s ease;
-    border-radius: 25px !important;
+    background: var(--ds-surface, var(--card-bg)) !important;
+    box-shadow: none !important;
+    border: 1px solid var(--ds-border, #43495b) !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 26px !important;
     
     .v-field__input {
-      padding: 12px 20px !important;
+      padding: 10px 16px !important;
       font-size: 14px !important;
+      color: var(--ds-text-primary, var(--sidebar-text)) !important;
+
+      &::placeholder {
+        color: var(--ds-text-secondary, var(--sidebar-text-secondary)) !important;
+        opacity: 0.8;
+      }
     }
     
     .v-field__prepend-inner {
       padding-left: 16px !important;
       
       .v-icon {
-        color: var(--accent-blue) !important;
-        opacity: 0.7;
+        color: var(--ds-text-secondary, #a0a6b5) !important;
+        opacity: 0.9;
+        transition: color 0.2s ease;
       }
     }
     
     &:hover {
-      box-shadow: var(--shadow-hover) !important;
+      border-color: rgba(0, 155, 226, 0.45) !important;
     }
     
     &.v-field--focused {
-      border-color: var(--accent-blue);
-      background: rgba(0, 151, 215, 0.05) !important;
-      box-shadow: 0 4px 20px rgba(0, 151, 215, 0.15) !important;
+      border-color: var(--ds-accent, #009be2) !important;
+      background: var(--ds-surface, var(--card-bg)) !important;
+      box-shadow: 0 0 0 3px rgba(0, 155, 226, 0.15) !important;
+
+      .v-field__prepend-inner .v-icon {
+        color: var(--ds-accent, #009be2) !important;
+        opacity: 1;
+      }
     }
+  }
+
+  .clear-search-btn {
+    color: var(--ds-text-secondary, #a0a6b5) !important;
+    border-radius: 50% !important;
+    transition: all 0.15s ease;
+
+    &:hover {
+      color: var(--ds-text-primary, #f7f8fc) !important;
+      background: var(--ds-accent-hover, rgba(0, 155, 226, 0.1)) !important;
+    }
+  }
+
+  .filter-search-btn {
+    color: var(--ds-text-secondary, #a0a6b5) !important;
+    border-radius: 50% !important;
+    transition: all 0.15s ease;
+
+    &:hover, &.filter-active {
+      color: var(--ds-accent, #009be2) !important;
+      background: var(--ds-accent-hover, rgba(0, 155, 226, 0.1)) !important;
+    }
+  }
+}
+
+.search-filter-popover {
+  background: var(--ds-surface, #30364a) !important;
+  border: 1px solid var(--ds-border, #43495b) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.28) !important;
+  padding: 8px !important;
+  user-select: none;
+
+  .filter-header {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--ds-text-secondary, #a0a6b5);
+    padding: 6px 12px 6px 12px;
+  }
+
+  .filter-item {
+    display: flex;
+    align-items: center;
+    padding: 9px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    margin-bottom: 2px;
+    color: var(--ds-text-primary, #f7f8fc);
+
+    &:hover {
+      background: var(--ds-accent-hover, rgba(0, 155, 226, 0.08));
+    }
+
+    &.active {
+      background: rgba(0, 155, 226, 0.14) !important;
+      color: var(--ds-accent, #009be2) !important;
+      font-weight: 600;
+
+      .filter-radio-icon {
+        color: var(--ds-accent, #009be2) !important;
+      }
+    }
+
+    .filter-radio-icon {
+      font-size: 18px;
+      margin-right: 12px;
+      color: var(--ds-text-secondary, #a0a6b5);
+      transition: color 0.15s ease;
+    }
+
+    .filter-label {
+      font-size: 13px;
+      font-weight: 500;
+    }
+  }
+
+  .filter-divider {
+    height: 1px;
+    background: var(--ds-border, #43495b);
+    opacity: 0.6;
+    margin: 6px 8px;
   }
 }
 
@@ -853,7 +1068,7 @@ export default defineComponent({
 }
 
 .dashboard-section {
-  margin-bottom: 40px;
+  margin-bottom: 32px;
   display: flex;
   flex-direction: column;
   
@@ -870,10 +1085,49 @@ export default defineComponent({
     flex-direction: column;
   }
   
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    width: 100%;
+    flex-shrink: 0;
+
+    .section-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--ds-text-primary, var(--sidebar-text));
+      margin: 0 !important;
+      padding: 0;
+      letter-spacing: -0.2px;
+    }
+
+    .section-see-all-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--ds-accent, #009be2);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background: var(--ds-accent-hover, rgba(0, 155, 226, 0.08));
+        transform: translateX(2px);
+      }
+    }
+  }
+
   .section-title {
-    font-size: 24px;
-    font-weight: 600;
-    color: var(--sidebar-text);
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--ds-text-primary, var(--sidebar-text));
     margin: 0 !important;
     padding-bottom: 10px;
     align-self: flex-start;
@@ -885,80 +1139,119 @@ export default defineComponent({
 
 .collections-grid {
   display: flex;
-  padding: 5px;
-  gap: 24px;
+  gap: 16px;
   overflow-x: auto;
   overflow-y: hidden;
-  padding-bottom: 16px;
+  padding: 10px 4px 14px 4px;
+  margin-top: -6px;
   scroll-behavior: smooth;
   cursor: grab;
+
+  &::-webkit-scrollbar {
+    height: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    border-radius: 8px;
+    background-color: rgba(128, 128, 128, 0.15);
+  }
+
+  &::-webkit-scrollbar-thumb {
+    border-radius: 5px;
+    background-color: var(--accent-blue, #009be2);
+  }
+
+  &::-webkit-scrollbar-thumb:hover,
+  &::-webkit-scrollbar-thumb:active {
+    background-color: var(--accent-yellow, #ffc107);
+  }
   
   &:active {
     cursor: grabbing;
   }
-  
 }
 
 .collection-card {
-  background: var(--card-bg);
-  border-radius: var(--border-radius);
+  width: 176px;
+  min-width: 176px;
+  background: var(--ds-surface, var(--card-bg));
+  border: 1px solid var(--ds-border, #43495b);
+  border-radius: 14px;
   box-shadow: var(--shadow);
-  transition: var(--transition);
+  padding: 12px;
+  transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
-  overflow: hidden;
-  width: clamp(150px, 20vh, 250px);
   flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
   
   &:hover {
+    border-color: rgba(0, 155, 226, 0.5);
     box-shadow: var(--shadow-hover);
-    transform: translateY(-2px);
+    transform: translateY(-4px);
+
+    .card-image img, .card-image .v-img {
+      transform: scale(1.04);
+    }
+  }
+
+  &:active {
+    transform: scale(0.98);
   }
   
   .card-image {
     width: 100%;
     aspect-ratio: 1 / 1;
-    height: auto;
-    background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-blue-dark) 100%);
+    background: var(--ds-surface-elevated, #353c52);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
-    font-size: 48px;
     position: relative;
+    overflow: hidden;
+    border-radius: 10px;
+
+    img, .v-img {
+      width: 100%;
+      height: 100%;
+      transition: transform 0.25s ease;
+    }
   }
   
   .card-content {
-    padding: 20px;
+    padding: 10px 2px 2px 2px;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    min-height: 80px;
+    justify-content: flex-start;
+    background: transparent;
     
     .card-title {
-      font-size: 16px;
+      font-size: 14px;
       font-weight: 600;
-      color: var(--sidebar-text);
-      margin-bottom: auto;
       line-height: 1.3;
+      color: var(--ds-text-primary, var(--sidebar-text));
       display: -webkit-box;
       -webkit-line-clamp: 2;
       line-clamp: 2;
       -webkit-box-orient: vertical;
       overflow: hidden;
+      margin: 0;
     }
     
     .card-stats {
       font-size: 12px;
-      color: var(--sidebar-text-secondary);
-      margin-top: 8px;
-      flex-shrink: 0;
+      color: var(--ds-text-secondary, var(--sidebar-text-secondary));
+      margin-top: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
   }
 }
 
 .music-list {
-  background: var(--card-bg);
-  border-radius: var(--border-radius);
+  background: var(--ds-surface, var(--card-bg));
+  border: 1px solid var(--ds-border, #43495b);
+  border-radius: 12px;
   box-shadow: var(--shadow);
   overflow: hidden;
   flex: 1;
@@ -972,8 +1265,6 @@ export default defineComponent({
     overflow-x: hidden !important;
     flex: 1 1 auto;
     height: 100%;
-    
-
   }
   
   table {
@@ -990,63 +1281,176 @@ export default defineComponent({
     flex-direction: column;
     overflow-y: auto;
     flex: 1;
-    
-
+    min-height: 0;
   }
 }
 
 .music-item {
   display: flex;
   align-items: center;
-  padding: 16px 24px;
-  border-bottom: 1px solid var(--border-color);
-  transition: var(--transition);
+  height: 64px;
+  min-height: 64px;
+  max-height: 64px;
+  padding: 0 20px;
+  border-bottom: 1px solid var(--ds-border, #43495b);
+  transition: background 0.15s ease, color 0.15s ease;
   cursor: pointer;
-  
-  &:hover {
-    background: var(--sidebar-hover);
-  }
+  user-select: none;
   
   &:last-child {
     border-bottom: none;
   }
+
+  &:hover {
+    background: var(--ds-accent-hover, rgba(0, 155, 226, 0.08));
+
+    .music-play-btn {
+      background: var(--ds-accent, #009be2);
+      color: #ffffff;
+      transform: scale(1.05);
+    }
+  }
+
+  &.is-playing {
+    background: rgba(0, 155, 226, 0.12) !important;
+
+    .music-title {
+      color: var(--ds-accent, #009be2) !important;
+      font-weight: 700 !important;
+    }
+
+    .music-play-btn {
+      background: var(--ds-accent, #009be2);
+      color: #ffffff;
+    }
+  }
   
   .music-number {
     font-size: 15px;
-    font-weight: 600;
+    font-weight: 700;
     line-height: 1;
-    color: var(--accent-blue);
-    min-width: 40px;
-    margin-right: 16px;
+    color: var(--ds-accent, #009be2);
+    width: 36px;
+    min-width: 36px;
+    max-width: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    margin-right: 12px;
+    flex-shrink: 0;
+  }
+
+  .music-play-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(0, 155, 226, 0.12);
+    color: var(--ds-accent, #009be2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 14px;
+    flex-shrink: 0;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  &.search-result-item {
+    padding: 0 16px 0 0 !important;
+
+    td {
+      border-bottom: none !important;
+    }
+
+    .music-number-cell {
+      width: 54px !important;
+      min-width: 54px !important;
+      max-width: 54px !important;
+      height: 100% !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      flex-shrink: 0;
+
+      .hymnal-track-number {
+        font-size: 14px;
+        font-weight: 700;
+        line-height: 1;
+        color: var(--ds-accent, #009be2);
+        text-align: center;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+    }
+
+    .music-play-cell {
+      width: 44px !important;
+      min-width: 44px !important;
+      max-width: 44px !important;
+      height: 100% !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+
+      .music-play-btn {
+        margin-right: 0 !important;
+      }
+    }
+
+    .music-info {
+      padding-left: 8px !important;
+    }
   }
   
   .music-info {
     flex: 1;
+    min-width: 0;
+    padding-right: 16px;
     
     .music-title {
-      font-size: 15px;
-      font-weight: 500;
-      color: var(--sidebar-text);
-      margin-bottom: 4px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--ds-text-primary, var(--sidebar-text));
+      margin-bottom: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      transition: color 0.15s ease;
     }
     
     .music-artist {
-      font-size: 13px;
-      color: var(--sidebar-text-secondary);
+      font-size: 12px;
+      color: var(--ds-text-secondary, var(--sidebar-text-secondary));
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin: 0;
     }
   }
   
   .music-duration {
     font-size: 13px;
-    color: var(--sidebar-text-secondary);
+    color: var(--ds-text-secondary, var(--sidebar-text-secondary));
+    margin-right: 14px;
+    font-variant-numeric: tabular-nums;
+    flex-shrink: 0;
   }
 
-  .music-plays {
-    font-size: 12px;
-    color: var(--accent-blue);
-    font-weight: 500;
-    margin-right: 16px;
-    white-space: nowrap;
+  .music-actions {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
   }
 }
 
@@ -1074,7 +1478,7 @@ export default defineComponent({
       max-width: 100%;
       
       .v-field__input {
-        padding: 10px 16px !important;
+        padding: 10px 14px !important;
         font-size: 13px !important;
       }
       
@@ -1087,25 +1491,6 @@ export default defineComponent({
   .content-main {
     padding: 16px 20px 20px 20px;
   }
-  
-  .collections-grid {
-    gap: 16px;
-    
-    .collection-card {
-      .card-content {
-        padding: 16px;
-        min-height: 70px;
-        
-        .card-title {
-          font-size: 15px;
-        }
-        
-        .card-stats {
-          font-size: 11px;
-        }
-      }
-    }
-  }
 }
 
 @media (max-width: 768px) {  
@@ -1116,23 +1501,12 @@ export default defineComponent({
       border-radius: 20px !important;
       
       .v-field__input {
-        padding: 8px 14px !important;
+        padding: 8px 12px !important;
         font-size: 12px !important;
       }
       
       .v-field__prepend-inner {
         padding-left: 10px !important;
-      }
-    }
-  }
-  
-  .collections-grid {
-    gap: 12px;
-    
-    .collection-card {
-      .card-content {
-        padding: 14px;
-        min-height: 65px;
       }
     }
   }
@@ -1152,7 +1526,7 @@ export default defineComponent({
   }
 
   .dashboard-section {
-    margin-bottom: 20px;
+    margin-bottom: 24px;
 
     &.collections-section {
       min-height: auto;
@@ -1160,48 +1534,6 @@ export default defineComponent({
 
     &.music-section {
       min-height: 180px;
-    }
-
-    .section-title {
-      font-size: 20px;
-      padding-bottom: 8px;
-    }
-  }
-
-  .collections-grid {
-    gap: 16px;
-    padding-bottom: 10px;
-
-    .collection-card {
-      width: clamp(120px, 16vh, 200px);
-
-      .card-content {
-        padding: 12px 14px;
-        min-height: 60px;
-
-        .card-title {
-          font-size: 14px;
-        }
-
-        .card-stats {
-          font-size: 11px;
-          margin-top: 4px;
-        }
-      }
-    }
-  }
-
-  .music-item {
-    padding: 10px 18px;
-
-    .music-number {
-      font-size: 14px;
-      min-width: 32px;
-      margin-right: 12px;
-    }
-
-    .music-info .music-title {
-      font-size: 14px;
     }
   }
 }
@@ -1216,7 +1548,7 @@ export default defineComponent({
   }
 
   .dashboard-section {
-    margin-bottom: 14px;
+    margin-bottom: 16px;
 
     &.collections-section {
       min-height: auto;
@@ -1224,58 +1556,6 @@ export default defineComponent({
 
     &.music-section {
       min-height: 150px;
-    }
-
-    .section-title {
-      font-size: 17px;
-      padding-bottom: 4px;
-    }
-  }
-
-  .collections-grid {
-    gap: 12px;
-    padding-bottom: 6px;
-
-    .collection-card {
-      width: clamp(105px, 14vh, 160px);
-
-      .card-content {
-        padding: 8px 10px;
-        min-height: 48px;
-
-        .card-title {
-          font-size: 13px;
-        }
-
-        .card-stats {
-          font-size: 10px;
-          margin-top: 2px;
-        }
-      }
-    }
-  }
-
-  .music-item {
-    padding: 8px 14px;
-
-    .music-number {
-      font-size: 13px;
-      min-width: 28px;
-      margin-right: 10px;
-    }
-
-    .music-info {
-      .music-title {
-        font-size: 13px;
-        margin-bottom: 2px;
-      }
-      .music-artist {
-        font-size: 12px;
-      }
-    }
-
-    .music-duration {
-      font-size: 12px;
     }
   }
 }
@@ -1288,9 +1568,9 @@ export default defineComponent({
   width: 44px;
   height: 44px;
   border-radius: 12px;
-  background: var(--card-bg) !important;
-  border: 1px solid var(--border-color) !important;
-  color: var(--sidebar-text);
+  background: var(--ds-surface, var(--card-bg)) !important;
+  border: 1px solid var(--ds-border, var(--border-color)) !important;
+  color: var(--ds-text-primary, var(--sidebar-text));
   box-shadow: var(--shadow) !important;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
@@ -1298,8 +1578,8 @@ export default defineComponent({
   overflow: visible;
 
   &:hover {
-    background: var(--sidebar-hover) !important;
-    border-color: var(--accent-blue) !important;
+    background: var(--ds-surface-elevated, var(--sidebar-hover)) !important;
+    border-color: var(--ds-accent, var(--accent-blue)) !important;
     transform: translateY(-1px);
   }
 
@@ -1360,7 +1640,7 @@ export default defineComponent({
   position: absolute;
   top: -5px;
   right: -5px;
-  background-color: var(--accent-blue, #0097d7);
+  background-color: var(--ds-accent, #009be2);
   color: #ffffff;
   font-size: 11px;
   font-weight: 700;
@@ -1372,7 +1652,7 @@ export default defineComponent({
   align-items: center;
   justify-content: center;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
-  border: 2px solid var(--card-bg, #ffffff);
+  border: 2px solid var(--ds-surface, #ffffff);
   pointer-events: none;
 
   &.badge-high {
