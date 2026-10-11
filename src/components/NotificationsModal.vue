@@ -1,264 +1,203 @@
 <template>
   <v-dialog
     v-model="isOpen"
-    max-width="620"
+    max-width="680"
     :theme="isDark ? 'dark' : 'light'"
-    content-class="modern-alert-dialog-wrapper"
+    content-class="notifications-dialog-wrapper"
     transition="fade-transition"
     @keydown.esc="isOpen = false"
   >
     <v-card
-      class="rounded-xl overflow-hidden elevation-24"
+      class="notifications-modal-card overflow-hidden"
       width="100%"
-      style="background: var(--card-bg); max-height: 85vh; display: flex; flex-direction: column;"
     >
       <v-card-text class="pa-0 d-flex flex-column" style="height: 100%; min-height: 0; overflow: hidden;">
-        <!-- Cabeçalho (Padrão Módulo Sync, sem subtítulo) -->
-        <div class="pa-5 px-6 flex-shrink-0" style="background: rgba(0, 0, 0, 0.02);">
-          <div class="d-flex align-center justify-space-between">
-            <div class="d-flex align-center">
-              <v-icon color="primary" size="30" class="mr-3">
-                {{ hasUnread ? 'mdi-bell' : 'mdi-bell-outline' }}
-              </v-icon>
-              <h2 class="text-h5 font-weight-bold mb-0" style="color: var(--sidebar-text);">
-                Notificações
-              </h2>
-              <span
-                v-if="unreadCount > 0"
-                class="ml-3 px-2 py-0.5 text-caption font-weight-bold rounded-pill"
-                style="background: rgba(var(--v-theme-primary), 0.15); color: var(--accent-blue);"
-              >
-                {{ unreadCount }} {{ unreadCount === 1 ? 'nova' : 'novas' }}
-              </span>
-            </div>
+        <!-- Cabeçalho Fixo -->
+        <div class="notifications-modal-header">
+          <div class="d-flex align-center">
+            <v-icon size="26" class="bell-icon mr-3">
+              {{ hasUnread ? 'mdi-bell-ring-outline' : 'mdi-bell-outline' }}
+            </v-icon>
+            <h2 class="notifications-title">
+              Notificações
+            </h2>
+          </div>
 
-            <div class="d-flex align-center" style="gap: 8px;">
-              <v-btn 
-                v-if="hasUnread"
-                color="primary" 
-                variant="flat" 
-                height="34"
-                class="text-none font-weight-bold rounded-lg px-4"
-                @click="markAllAsRead"
-              >
-                <v-icon start size="18">
-                  mdi-check-all
-                </v-icon>
-                Marcar lidas
-              </v-btn>
+          <div class="header-actions d-flex align-center">
+            <v-btn
+              icon="mdi-refresh"
+              variant="text"
+              size="small"
+              class="header-btn mr-1"
+              :loading="notificationsState.loading"
+              title="Atualizar"
+              @click="refresh"
+            />
 
-              <v-btn
-                icon
-                variant="text"
-                size="small"
-                :loading="notificationsState.loading"
-                title="Atualizar"
-                @click="refresh"
-              >
-                <v-icon>mdi-refresh</v-icon>
-              </v-btn>
-
-              <v-btn
-                icon
-                variant="text"
-                size="small"
-                title="Fechar"
-                @click="isOpen = false"
-              >
-                <v-icon>mdi-close</v-icon>
-              </v-btn>
-            </div>
+            <v-btn
+              icon="mdi-close"
+              variant="text"
+              size="small"
+              class="header-btn"
+              title="Fechar"
+              @click="isOpen = false"
+            />
           </div>
         </div>
 
-        <v-divider style="opacity: 0.1;" class="mx-6" />
-
         <!-- Conteúdo / Lista de Notificações -->
-        <div class="pa-6 pt-3 flex-grow-1" style="overflow-y: auto;">
+        <div class="notifications-scroll-area flex-grow-1">
           <!-- Estado Carregando -->
-          <div v-if="notificationsState.loading && sortedItems.length === 0" class="text-center py-12">
+          <div v-if="notificationsState.loading && sortedItems.length === 0" class="notifications-loading-state">
             <v-progress-circular
               indeterminate
-              color="primary"
-              size="36"
+              color="var(--ds-accent)"
+              size="40"
+              width="3"
               class="mb-3"
             />
-            <p class="text-caption" style="color: var(--sidebar-text-secondary);">
+            <p class="loading-text text-body-2 font-weight-medium">
               Carregando notificações...
             </p>
           </div>
 
-          <!-- Estado Vazio (Estilo "Tudo em dia" do Módulo Sync) -->
-          <div v-else-if="sortedItems.length === 0" style="padding: 48px 24px; text-align: center;">
-            <v-icon color="primary" size="64" class="mb-4">
-              mdi-bell-sleep-outline
-            </v-icon>
-            <div class="text-h6 font-weight-bold mb-1" style="color: var(--sidebar-text);">
+          <!-- Estado Vazio -->
+          <div v-else-if="sortedItems.length === 0" class="notifications-empty-state">
+            <div class="empty-icon-circle mb-4">
+              <v-icon size="36">
+                mdi-bell-sleep-outline
+              </v-icon>
+            </div>
+            <h3 class="empty-title mb-1">
               Tudo em dia!
-            </div>
-            <div class="text-body-2" style="color: var(--sidebar-text-secondary); max-width: 340px; margin: 0 auto;">
+            </h3>
+            <p class="empty-subtitle">
               Nenhuma notificação no momento. Quando houver novidades ou avisos, eles aparecerão aqui.
-            </div>
+            </p>
           </div>
 
           <!-- Lista de Notificações Estilizada -->
-          <div v-else>
-            <v-list class="bg-transparent pa-0" lines="two">
-              <v-list-item 
-                v-for="item in sortedItems"
-                :key="item.id"
-                class="notification-item mb-3 rounded-xl pa-3 pa-sm-4"
-                :class="[
-                  `type-${item.type}`,
-                  `priority-${item.priority || 'normal'}`,
-                  { 'is-unread': isUnread(item.id) }
-                ]"
-              >
-                <!-- Avatar do Tipo com Ícone Temático -->
-                <template #prepend>
-                  <v-avatar
-                    rounded="lg"
-                    size="44"
-                    :color="getTypeVuetifyColor(item.type)"
-                    variant="tonal"
-                    class="mr-3 flex-shrink-0"
-                  >
-                    <v-icon size="24">
-                      {{ getTypeIcon(item.type) }}
-                    </v-icon>
-                  </v-avatar>
-                </template>
-
-                <!-- Linha do Título e Data -->
-                <div class="d-flex align-start justify-space-between gap-2 mb-1.5">
-                  <span class="font-weight-bold text-body-2" style="color: var(--sidebar-text); font-size: 0.95rem !important; line-height: 1.35;">
-                    {{ item.title }}
-                  </span>
-                  <span class="text-caption flex-shrink-0" style="color: var(--sidebar-text-secondary); font-size: 11px; white-space: nowrap;">
-                    {{ formatTime(item.created_at) }}
-                  </span>
+          <div v-else class="notifications-list">
+            <div 
+              v-for="item in sortedItems"
+              :key="item.id"
+              class="notification-card"
+              :class="[
+                `type-${item.type}`,
+                `priority-${item.priority || 'normal'}`,
+                { 'is-unread': isUnread(item.id) }
+              ]"
+            >
+              <div class="card-inner-layout">
+                <!-- Caixa do Ícone Contextual -->
+                <div 
+                  class="icon-box"
+                  :class="`icon-box-${item.type}`"
+                >
+                  <v-icon size="24" :icon="getTypeIcon(item.type)" />
                 </div>
 
-                <!-- Mensagem -->
-                <div class="text-caption" style="color: var(--sidebar-text-secondary); white-space: pre-line; line-height: 1.55;">
-                  {{ item.message }}
-                </div>
-
-                <!-- Rodapé: Tags na esquerda e Ações/Status na direita -->
-                <div class="d-flex align-center justify-space-between flex-wrap mt-3 pt-2" style="gap: 8px; border-top: 1px dashed rgba(128, 128, 128, 0.18);">
-                  <!-- Tags (Prioridade e Tipo) -->
-                  <div class="d-flex align-center flex-wrap" style="gap: 6px;">
-                    <!-- Chip de Prioridade Urgente -->
-                    <v-chip
-                      v-if="item.priority === 'urgent'"
-                      size="x-small"
-                      color="error"
-                      variant="flat"
-                      class="font-weight-bold text-uppercase"
-                      style="height: 20px; font-size: 10px; letter-spacing: 0.5px;"
-                    >
-                      <v-icon start size="12">
-                        mdi-alert-octagon
-                      </v-icon>
-                      URGENTE
-                    </v-chip>
-
-                    <!-- Chip de Prioridade Alta -->
-                    <v-chip
-                      v-else-if="item.priority === 'high'"
-                      size="x-small"
-                      color="warning"
-                      variant="tonal"
-                      class="font-weight-bold text-uppercase"
-                      style="height: 20px; font-size: 10px; letter-spacing: 0.4px;"
-                    >
-                      <v-icon start size="12">
-                        mdi-priority-high
-                      </v-icon>
-                      ALTA
-                    </v-chip>
-
-                    <!-- Chip do Tipo -->
-                    <v-chip
-                      size="x-small"
-                      :color="getTypeVuetifyColor(item.type)"
-                      variant="tonal"
-                      class="font-weight-bold text-uppercase"
-                      style="height: 20px; font-size: 10px; letter-spacing: 0.4px;"
-                    >
-                      {{ getTypeLabel(item.type) }}
-                    </v-chip>
-
-                    <!-- Indicador de Não Lida -->
-                    <span
-                      v-if="isUnread(item.id)"
-                      class="text-caption font-weight-bold"
-                      style="color: var(--accent-blue); font-size: 10px; letter-spacing: 0.3px;"
-                    >
-                      • NÃO LIDA
+                <!-- Conteúdo Principal do Card -->
+                <div class="card-body">
+                  <!-- Linha do Título e Horário -->
+                  <div class="card-header-row">
+                    <h3 class="card-title">
+                      {{ item.title }}
+                    </h3>
+                    <span class="card-time">
+                      {{ formatTime(item.created_at) }}
                     </span>
                   </div>
 
-                  <!-- Ações e Status -->
-                  <div class="d-flex align-center flex-wrap ml-auto" style="gap: 8px;">
-                    <!-- Botão de Ação do Módulo / Programa -->
-                    <v-btn
-                      v-if="hasModuleAction(item)"
-                      color="primary"
-                      variant="flat"
-                      size="small"
-                      class="text-none font-weight-bold rounded-lg px-3"
-                      height="28"
-                      @click="openModuleAction(item)"
-                    >
-                      <v-icon start size="15">
-                        {{ getModuleActionIcon(item.action_module || item.link_url) }}
-                      </v-icon>
-                      <span>{{ getModuleActionLabel(item) }}</span>
-                    </v-btn>
+                  <!-- Mensagem -->
+                  <p class="card-message">
+                    {{ item.message }}
+                  </p>
 
-                    <!-- Botão de Link Externo (Web) -->
-                    <v-btn
-                      v-if="hasExternalLink(item)"
-                      :color="hasModuleAction(item) ? 'secondary' : getTypeVuetifyColor(item.type)"
-                      :variant="hasModuleAction(item) ? 'tonal' : 'flat'"
-                      size="small"
-                      class="text-none font-weight-bold rounded-lg px-3"
-                      height="28"
-                      @click="openLink(item)"
-                    >
-                      <span>{{ item.link_label || 'Acessar Link' }}</span>
-                      <v-icon end size="14">
-                        mdi-open-in-new
-                      </v-icon>
-                    </v-btn>
+                  <!-- Rodapé: Tags na esquerda e Ações/Status na direita -->
+                  <div class="card-footer">
+                    <!-- Tags (Prioridade e Tipo) -->
+                    <div class="card-tags">
+                      <!-- Chip de Prioridade Urgente -->
+                      <span
+                        v-if="item.priority === 'urgent'"
+                        class="badge-pill badge-urgent"
+                      >
+                        <v-icon size="13" class="badge-icon">mdi-alert-circle</v-icon>
+                        URGENTE
+                      </span>
 
-                    <!-- Botão Marcar como Lida -->
-                    <v-btn
-                      v-if="isUnread(item.id)"
-                      color="primary"
-                      variant="tonal"
-                      size="small"
-                      class="text-none font-weight-bold rounded-lg px-3"
-                      height="28"
-                      @click="markSingleAsRead(item)"
-                    >
-                      <v-icon start size="14">
-                        mdi-check
-                      </v-icon>
-                      Marcar lida
-                    </v-btn>
+                      <!-- Chip de Prioridade Alta -->
+                      <span
+                        v-else-if="item.priority === 'high'"
+                        class="badge-pill badge-high"
+                      >
+                        <v-icon size="13" class="badge-icon">mdi-equal</v-icon>
+                        ALTA
+                      </span>
 
-                    <div v-else class="text-caption font-weight-medium d-flex align-center" style="color: var(--sidebar-text-secondary); opacity: 0.7; font-size: 11px;">
-                      <v-icon start size="14" color="success">
-                        mdi-check-circle
-                      </v-icon>
-                      Lida
+                      <!-- Chip do Tipo/Categoria -->
+                      <span
+                        class="badge-pill"
+                        :class="`badge-category-${item.type}`"
+                      >
+                        {{ getTypeLabel(item.type) }}
+                      </span>
+                    </div>
+
+                    <!-- Ações e Status -->
+                    <div class="card-actions">
+                      <!-- Botão de Ação do Módulo / Programa -->
+                      <button
+                        v-if="hasModuleAction(item)"
+                        type="button"
+                        class="action-btn"
+                        @click="openModuleAction(item)"
+                      >
+                        <v-icon size="15" class="mr-1">
+                          {{ getModuleActionIcon(item.action_module || item.link_url) }}
+                        </v-icon>
+                        <span>{{ getModuleActionLabel(item) }}</span>
+                      </button>
+
+                      <!-- Botão de Link Externo (Web) -->
+                      <button
+                        v-if="hasExternalLink(item)"
+                        type="button"
+                        class="action-btn"
+                        @click="openLink(item)"
+                      >
+                        <span>{{ item.link_label || 'Ver Novidades' }}</span>
+                        <v-icon size="14" class="ml-1">
+                          mdi-open-in-new
+                        </v-icon>
+                      </button>
+
+                      <!-- Botão Marcar como Lida (Interativo se não lida) -->
+                      <button
+                        v-if="isUnread(item.id)"
+                        type="button"
+                        class="mark-read-btn"
+                        @click="markSingleAsRead(item)"
+                      >
+                        <v-icon size="14" class="mr-1">
+                          mdi-check
+                        </v-icon>
+                        <span>Marcar lida</span>
+                      </button>
+
+                      <!-- Status Lida (Se já foi lida) -->
+                      <div v-else class="status-read">
+                        <v-icon size="16" class="mr-1">
+                          mdi-check-circle
+                        </v-icon>
+                        <span>Lida</span>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </v-list-item>
-            </v-list>
+              </div>
+            </div>
           </div>
         </div>
       </v-card-text>
@@ -349,7 +288,7 @@ export default defineComponent({
     };
 
     const TYPE_ICONS: Record<NotificationType, string> = {
-      feature: "mdi-creation",
+      feature: "mdi-sparkles",
       update: "mdi-cloud-download-outline",
       alert: "mdi-alert-circle-outline",
       info: "mdi-bullhorn-outline",
@@ -534,82 +473,441 @@ export default defineComponent({
 });
 </script>
 
-<style scoped>
-.notification-item {
+<style lang="scss" scoped>
+.notifications-modal-card {
+  background: var(--ds-surface, #2B3043) !important;
+  border: 1px solid var(--ds-border, #43495B) !important;
+  border-radius: 22px !important;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45) !important;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.notifications-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 28px 16px 28px;
+  flex-shrink: 0;
+
+  .bell-icon {
+    color: var(--ds-accent, #009FE3);
+  }
+
+  .notifications-title {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--ds-text-primary, #F7F8FC);
+    margin: 0;
+    line-height: 1.2;
+    letter-spacing: -0.3px;
+  }
+
+  .header-actions {
+    gap: 4px;
+
+    .header-btn {
+      color: var(--ds-text-secondary, #A0A6B5);
+      border-radius: 10px;
+      transition: all 0.2s ease;
+
+      &:hover {
+        color: var(--ds-text-primary, #F7F8FC);
+        background: var(--ds-surface-elevated, rgba(255, 255, 255, 0.08));
+      }
+    }
+  }
+}
+
+.notifications-scroll-area {
+  padding: 8px 24px 24px 24px;
+  overflow-y: auto;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: var(--accent-blue, #009be2);
+    border-radius: 8px;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-yellow, #f5a400);
+  }
+}
+
+.notifications-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.notification-card {
   position: relative;
-  transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  background: var(--ds-surface-elevated, #30364B);
+  border: 1px solid var(--ds-border, #454C62);
+  border-radius: 16px;
+  margin-bottom: 12px;
   overflow: hidden;
-  box-shadow: inset 0 0 0 1px var(--border-color);
-  background: transparent;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    border-color: rgba(255, 255, 255, 0.15);
+  }
+
+  // Indicador lateral de prioridade (4px)
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 4.5px;
+    background: transparent;
+    border-radius: 16px 0 0 16px;
+    transition: background 0.2s ease;
+  }
+
+  &.priority-urgent::before {
+    background: #FF5265;
+  }
+
+  &.priority-high::before {
+    background: #F5A400;
+  }
+
+  &.priority-normal::before {
+    background: #10B981;
+  }
+
+  &:not(.priority-urgent):not(.priority-high):not(.priority-normal) {
+    &.type-alert::before {
+      background: #F5A400;
+    }
+    &.type-feature::before {
+      background: #A855F7;
+    }
+    &.type-update::before {
+      background: #009FE3;
+    }
+    &.type-info::before {
+      background: #10B981;
+    }
+  }
+
+  &.is-unread {
+    border-color: rgba(0, 159, 227, 0.35);
+    box-shadow: 0 4px 16px rgba(0, 159, 227, 0.08);
+  }
 }
 
-.notification-item:hover {
-  transform: translateY(-1px);
+.card-inner-layout {
+  display: flex;
+  padding: 18px 20px;
+  gap: 16px;
+  align-items: flex-start;
 }
 
-/* Tipos de notificação estilizados com borda lateral colorida e brilho suave */
-.notification-item.type-feature {
-  box-shadow: inset 4px 0 0 #a855f7, inset 0 0 0 1px var(--border-color);
-}
-.notification-item.type-feature.is-unread {
-  background: linear-gradient(90deg, rgba(168, 85, 247, 0.08) 0%, transparent 55%);
-  box-shadow: inset 4px 0 0 #a855f7, inset 0 0 0 1px rgba(168, 85, 247, 0.35), 0 4px 16px rgba(168, 85, 247, 0.12);
-}
-.notification-item.type-feature:hover {
-  box-shadow: inset 4px 0 0 #a855f7, inset 0 0 0 1px rgba(168, 85, 247, 0.45), 0 4px 14px rgba(0, 0, 0, 0.08);
+.icon-box {
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+
+  &.icon-box-alert {
+    background: rgba(245, 158, 11, 0.14);
+    color: #F59E0B;
+  }
+
+  &.icon-box-feature {
+    background: rgba(168, 85, 247, 0.14);
+    color: #A855F7;
+  }
+
+  &.icon-box-update {
+    background: rgba(0, 159, 227, 0.14);
+    color: #009FE3;
+  }
+
+  &.icon-box-info {
+    background: rgba(20, 184, 166, 0.14);
+    color: #14B8A6;
+  }
 }
 
-.notification-item.type-update {
-  box-shadow: inset 4px 0 0 #0097d7, inset 0 0 0 1px var(--border-color);
-}
-.notification-item.type-update.is-unread {
-  background: linear-gradient(90deg, rgba(0, 151, 215, 0.08) 0%, transparent 55%);
-  box-shadow: inset 4px 0 0 #0097d7, inset 0 0 0 1px rgba(0, 151, 215, 0.35), 0 4px 16px rgba(0, 151, 215, 0.12);
-}
-.notification-item.type-update:hover {
-  box-shadow: inset 4px 0 0 #0097d7, inset 0 0 0 1px rgba(0, 151, 215, 0.45), 0 4px 14px rgba(0, 0, 0, 0.08);
+.card-body {
+  flex: 1;
+  min-width: 0;
 }
 
-.notification-item.type-alert {
-  box-shadow: inset 4px 0 0 #f59e0b, inset 0 0 0 1px var(--border-color);
-}
-.notification-item.type-alert.is-unread {
-  background: linear-gradient(90deg, rgba(245, 158, 11, 0.08) 0%, transparent 55%);
-  box-shadow: inset 4px 0 0 #f59e0b, inset 0 0 0 1px rgba(245, 158, 11, 0.35), 0 4px 16px rgba(245, 158, 11, 0.12);
-}
-.notification-item.type-alert:hover {
-  box-shadow: inset 4px 0 0 #f59e0b, inset 0 0 0 1px rgba(245, 158, 11, 0.45), 0 4px 14px rgba(0, 0, 0, 0.08);
+.card-header-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
 }
 
-.notification-item.type-info {
-  box-shadow: inset 4px 0 0 #10b981, inset 0 0 0 1px var(--border-color);
-}
-.notification-item.type-info.is-unread {
-  background: linear-gradient(90deg, rgba(16, 185, 129, 0.08) 0%, transparent 55%);
-  box-shadow: inset 4px 0 0 #10b981, inset 0 0 0 1px rgba(16, 185, 129, 0.35), 0 4px 16px rgba(16, 185, 129, 0.12);
-}
-.notification-item.type-info:hover {
-  box-shadow: inset 4px 0 0 #10b981, inset 0 0 0 1px rgba(16, 185, 129, 0.45), 0 4px 14px rgba(0, 0, 0, 0.08);
+.card-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ds-text-primary, #F7F8FC);
+  margin: 0;
+  line-height: 1.35;
+  letter-spacing: -0.2px;
 }
 
-/* Destaque especial de Prioridade Urgente */
-.notification-item.priority-urgent {
-  box-shadow: inset 4.5px 0 0 #ef4444, inset 0 0 0 1px rgba(239, 68, 68, 0.3) !important;
-}
-.notification-item.priority-urgent.is-unread {
-  background: linear-gradient(90deg, rgba(239, 68, 68, 0.12) 0%, transparent 60%) !important;
-  box-shadow: inset 4.5px 0 0 #ef4444, inset 0 0 0 1px rgba(239, 68, 68, 0.45), 0 4px 18px rgba(239, 68, 68, 0.16) !important;
-}
-.notification-item.priority-urgent:hover {
-  box-shadow: inset 4.5px 0 0 #ef4444, inset 0 0 0 1px rgba(239, 68, 68, 0.6), 0 4px 18px rgba(239, 68, 68, 0.2) !important;
+.card-time {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ds-text-secondary, #A0A6B5);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
-/* Destaque especial de Prioridade Alta */
-.notification-item.priority-high:not(.priority-urgent) {
-  box-shadow: inset 4px 0 0 #f59e0b, inset 0 0 0 1px rgba(245, 158, 11, 0.25) !important;
+.card-message {
+  margin: 6px 0 14px 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--ds-text-secondary, #A0A6B5);
+  white-space: pre-line;
+  word-break: break-word;
 }
-.notification-item.priority-high.is-unread:not(.priority-urgent) {
-  background: linear-gradient(90deg, rgba(245, 158, 11, 0.1) 0%, transparent 60%) !important;
-  box-shadow: inset 4px 0 0 #f59e0b, inset 0 0 0 1px rgba(245, 158, 11, 0.4), 0 4px 16px rgba(245, 158, 11, 0.14) !important;
+
+.card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+
+  .card-tags {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+
+    .badge-pill {
+      height: 24px;
+      padding: 0 10px;
+      border-radius: 9999px;
+      font-size: 10.5px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      line-height: 1;
+      user-select: none;
+
+      .badge-icon {
+        line-height: 1;
+      }
+
+      &.badge-urgent {
+        background: #E03E52;
+        color: #FFFFFF;
+      }
+
+      &.badge-high {
+        background: #543916;
+        color: #F5A400;
+      }
+
+      &.badge-category-alert {
+        background: #4A3319;
+        color: #F59E0B;
+      }
+
+      &.badge-category-feature {
+        background: #381F4B;
+        color: #C084FC;
+      }
+
+      &.badge-category-update {
+        background: #17344D;
+        color: #38BDF8;
+      }
+
+      &.badge-category-info {
+        background: #134440;
+        color: #2DD4BF;
+      }
+    }
+  }
+
+  .card-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-left: auto;
+
+    .action-btn {
+      height: 30px;
+      padding: 0 12px;
+      border-radius: 8px;
+      background: var(--ds-accent, #009FE3);
+      color: #FFFFFF;
+      font-size: 12px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      outline: none;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 2px 6px rgba(0, 159, 227, 0.25);
+
+      &:hover {
+        background: #008FD0;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 159, 227, 0.35);
+      }
+    }
+
+    .mark-read-btn {
+      height: 30px;
+      padding: 0 10px;
+      border-radius: 8px;
+      background: rgba(0, 159, 227, 0.1);
+      border: 1px solid rgba(0, 159, 227, 0.25);
+      color: var(--ds-accent, #009FE3);
+      font-size: 11.5px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      outline: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background: rgba(0, 159, 227, 0.2);
+        border-color: rgba(0, 159, 227, 0.4);
+        transform: translateY(-1px);
+      }
+    }
+
+    .status-read {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #40C56C;
+      user-select: none;
+
+      .v-icon {
+        color: #40C56C !important;
+      }
+    }
+  }
+}
+
+.notifications-loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 24px;
+
+  .loading-text {
+    color: var(--ds-text-secondary, #A0A6B5);
+    margin: 0;
+  }
+}
+
+.notifications-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 56px 24px;
+  text-align: center;
+
+  .empty-icon-circle {
+    width: 68px;
+    height: 68px;
+    border-radius: 50%;
+    background: rgba(0, 159, 227, 0.1);
+    color: var(--ds-accent, #009FE3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .empty-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--ds-text-primary, #F7F8FC);
+    margin: 0;
+  }
+
+  .empty-subtitle {
+    font-size: 13.5px;
+    line-height: 1.5;
+    color: var(--ds-text-secondary, #A0A6B5);
+    max-width: 360px;
+    margin: 8px auto 0 auto;
+  }
+}
+
+// Adaptação para Tema Claro
+.v-theme--light {
+  &.notifications-modal-card,
+  .notifications-modal-card {
+    background: var(--ds-surface, #FFFFFF) !important;
+    border-color: var(--ds-border, #E1E5EA) !important;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1) !important;
+  }
+
+  .notification-card {
+    background: #FFFFFF !important;
+    border-color: var(--ds-border, #E1E5EA) !important;
+
+    &:hover {
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08) !important;
+      border-color: rgba(0, 0, 0, 0.15) !important;
+    }
+
+    &.is-unread {
+      background: #F8FAFD !important;
+      border-color: rgba(0, 159, 227, 0.4) !important;
+    }
+  }
+
+  .badge-pill {
+    &.badge-high {
+      background: #FEF3C7 !important;
+      color: #B45309 !important;
+    }
+    &.badge-category-alert {
+      background: #FFEDD5 !important;
+      color: #C2410C !important;
+    }
+    &.badge-category-feature {
+      background: #F3E8FF !important;
+      color: #7E22CE !important;
+    }
+    &.badge-category-update {
+      background: #E0F2FE !important;
+      color: #0369A1 !important;
+    }
+    &.badge-category-info {
+      background: #CCFBF1 !important;
+      color: #0F766E !important;
+    }
+  }
 }
 </style>
