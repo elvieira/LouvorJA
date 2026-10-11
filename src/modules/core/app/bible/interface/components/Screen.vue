@@ -20,7 +20,7 @@
         :class="[config.refAlign || 'text-right']"
         :style="{
           fontSize: `${fontSizePc(config.refFontSizePc)}px`,
-          color: forceStandardColors ? '#fb8c00' : config.refColor,
+          color: forceStandardColors ? (isDarkMode ? '#fb8c00' : '#d97706') : config.refColor,
           textShadow: (!forceStandardColors && config.bgImage) ? '0 2px 8px rgba(0,0,0,0.85)' : 'none'
         }"
       >
@@ -75,15 +75,19 @@ export default defineComponent({
       };
     },
     isDarkMode(): boolean {
-      return this.$vuetify?.theme?.global?.name !== "light";
+      if (this.$appdata?.get("is_dark") !== undefined) {
+        return Boolean(this.$appdata.get("is_dark"));
+      }
+      return Boolean((this as any).$vuetify?.theme?.global?.current?.dark) ||
+        (this as any).$vuetify?.theme?.global?.name !== "light";
     },
     containerStyle(): any {
       if (this.forceStandardColors) {
         return {
           background: "transparent",
           width: "100%",
-          height: this.height ? `${this.height  }px` : "100%",
-          color: "#ffffff",
+          height: this.height ? `${this.height}px` : "100%",
+          color: "var(--sidebar-text, #303238)",
         };
       }
       const style: any = {

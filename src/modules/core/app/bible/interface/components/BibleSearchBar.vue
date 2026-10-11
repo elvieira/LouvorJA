@@ -1,6 +1,6 @@
 <template>
   <!-- Search Bar & Toggle -->
-  <div class="d-flex align-center ml-2 mr-4" style="max-width: 650px; flex: 2; position: relative; transition: all 0.3s ease;">
+  <div class="search-bar bible-search-bar-wrap d-flex align-center ml-2 mr-3" style="max-width: 650px; flex: 2; position: relative; transition: all 0.3s ease;">
     <v-text-field
       ref="searchInput"
       v-model="searchQuery"
@@ -10,13 +10,13 @@
       density="comfortable"
       hide-details
       rounded="xl"
-      class="search-input-hero w-100"
+      class="w-100"
       @keydown="onSearchKeyDown"
       @input="updateAutocompleteHint"
       @focus="onSearchFocus"
     >
       <template #append-inner>
-        <div class="d-flex align-center ml-2" style="margin-right: -4px;">
+        <div class="d-flex align-center ml-1" style="gap: 4px;">
           <v-btn
             v-if="searchQuery"
             icon="mdi-close"
@@ -26,23 +26,25 @@
             title="Limpar pesquisa"
             @click="clearSearch"
           />
-          <div class="custom-segmented-control d-flex align-center pa-1" style="background: rgba(150, 150, 150, 0.15); border-radius: 20px; height: 32px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);">
-            <div 
-              class="d-flex align-center justify-center cursor-pointer"
-              style="width: 44px; height: 100%; border-radius: 16px; transition: all 0.3s ease;"
-              :style="searchMode === 'reference' ? 'background: var(--card-bg); color: var(--sidebar-text); box-shadow: 0 2px 4px rgba(0,0,0,0.1);' : 'color: var(--sidebar-text-secondary);'"
+          <div class="bible-segmented-mode d-flex align-center">
+            <button
+              type="button"
+              class="mode-pill-btn"
+              :class="{ active: searchMode === 'reference' }"
+              title="Modo Referência"
               @click="setMode('reference')"
             >
-              <span class="font-weight-bold" style="font-size: 0.65rem !important; letter-spacing: 0.5px;">REF</span>
-            </div>
-            <div 
-              class="d-flex align-center justify-center cursor-pointer"
-              style="width: 44px; height: 100%; border-radius: 16px; transition: all 0.3s ease;"
-              :style="searchMode === 'text' ? 'background: var(--card-bg); color: var(--sidebar-text); box-shadow: 0 2px 4px rgba(0,0,0,0.1);' : 'color: var(--sidebar-text-secondary);'"
+              <span>REF</span>
+            </button>
+            <button
+              type="button"
+              class="mode-pill-btn"
+              :class="{ active: searchMode === 'text' }"
+              title="Modo Texto"
               @click="setMode('text')"
             >
-              <span class="font-weight-bold" style="font-size: 0.65rem !important; letter-spacing: 0.5px;">TEX</span>
-            </div>
+              <span>TEX</span>
+            </button>
           </div>
         </div>
       </template>
@@ -52,7 +54,7 @@
     <div 
       v-if="searchMode === 'reference' && autocompleteHint && searchQuery" 
       class="autocomplete-hint d-flex align-center justify-end"
-      style="position: absolute; right: 150px; top: 0; bottom: 0; pointer-events: none; z-index: 2;"
+      style="position: absolute; right: 150px; top: 0; bottom: 0; pointer-events: none; z-index: 2; white-space: nowrap;"
     >
       <span :style="matchedBook ? 'color: var(--accent-blue); opacity: 0.9; font-weight: 600;' : 'color: var(--sidebar-text-secondary); opacity: 0.6; font-weight: 500;'" style="font-size: 0.85rem;">
         {{ autocompleteHint }} <v-icon v-if="matchedBook" size="small" class="ml-1 opacity-50">{{ (autocompleteHint === 'Versículo' || autocompleteHint === $t('modules.bible.verse_hint')) ? 'mdi-keyboard-return' : 'mdi-keyboard-space' }}</v-icon>
@@ -428,3 +430,63 @@ export default defineComponent({
   },
 });
 </script>
+
+<style lang="scss" scoped>
+.bible-segmented-mode {
+  background: rgba(0, 0, 0, 0.22);
+  border-radius: 20px;
+  padding: 2px;
+  gap: 2px;
+  height: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+
+  .mode-pill-btn {
+    height: 24px;
+    padding: 0 10px;
+    border-radius: 14px;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    background: transparent;
+    color: var(--ds-text-secondary, #a0a6b5);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover {
+      color: var(--ds-text-primary, #f7f8fc);
+    }
+
+    &.active {
+      background: var(--ds-accent, #009be2);
+      color: #ffffff !important;
+      box-shadow: 0 2px 6px rgba(0, 155, 226, 0.35);
+    }
+  }
+}
+
+:root[data-theme="light"],
+.v-theme--light {
+  .bible-segmented-mode {
+    background: rgba(0, 0, 0, 0.06);
+    border-color: rgba(0, 0, 0, 0.08);
+
+    .mode-pill-btn {
+      color: #64748b;
+
+      &:hover {
+        color: #1e293b;
+      }
+
+      &.active {
+        background: var(--ds-accent, #009be2);
+        color: #ffffff !important;
+      }
+    }
+  }
+}
+</style>

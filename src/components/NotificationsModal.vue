@@ -25,23 +25,45 @@
 
           <div class="header-actions d-flex align-center">
             <v-btn
-              icon="mdi-refresh"
               variant="text"
               size="small"
+              icon
               class="header-btn mr-1"
               :loading="notificationsState.loading"
-              title="Atualizar"
               @click="refresh"
-            />
+            >
+              <v-icon size="20">
+                mdi-refresh
+              </v-icon>
+              <v-tooltip
+                activator="parent"
+                location="bottom"
+                open-delay="200"
+                content-class="modern-glass-menu elevation-0 font-weight-medium"
+              >
+                Atualizar
+              </v-tooltip>
+            </v-btn>
 
             <v-btn
-              icon="mdi-close"
               variant="text"
               size="small"
+              icon
               class="header-btn"
-              title="Fechar"
               @click="isOpen = false"
-            />
+            >
+              <v-icon size="20">
+                mdi-close
+              </v-icon>
+              <v-tooltip
+                activator="parent"
+                location="bottom"
+                open-delay="200"
+                content-class="modern-glass-menu elevation-0 font-weight-medium"
+              >
+                Fechar
+              </v-tooltip>
+            </v-btn>
           </div>
         </div>
 
@@ -288,7 +310,7 @@ export default defineComponent({
     };
 
     const TYPE_ICONS: Record<NotificationType, string> = {
-      feature: "mdi-sparkles",
+      feature: "mdi-creation",
       update: "mdi-cloud-download-outline",
       alert: "mdi-alert-circle-outline",
       info: "mdi-bullhorn-outline",
@@ -509,7 +531,7 @@ export default defineComponent({
 
     .header-btn {
       color: var(--ds-text-secondary, #A0A6B5);
-      border-radius: 10px;
+      border-radius: 10px !important;
       transition: all 0.2s ease;
 
       &:hover {

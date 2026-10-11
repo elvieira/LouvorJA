@@ -1,6 +1,7 @@
 {
     "app": {
-        "name": "Louvor JA"
+        "name": "Louvor JA",
+        "close": "Fechar"
     },
     "sidebar": {
         "home": "Página Inicial",

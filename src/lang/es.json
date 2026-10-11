@@ -1,6 +1,7 @@
 {
     "app": {
-        "name": "Loor JA"
+        "name": "Loor JA",
+        "close": "Cerrar"
     },
     "sidebar": {
         "home": "Página de Inicio",

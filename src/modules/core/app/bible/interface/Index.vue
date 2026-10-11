@@ -33,51 +33,55 @@
             @execute-fallback="executeSearchFallback"
           />
 
-          <v-menu :close-on-content-click="true" location="bottom end">
-            <template #activator="{ props }">
-              <v-btn
-                v-bind="props"
-                variant="flat"
-                rounded="xl"
-                class="text-none px-4"
-                style="height: 44px; min-width: 90px; background: var(--card-bg); box-shadow: var(--shadow);"
+          <!-- Seletor de Versão Bíblica (Dropdown estilo Design System) -->
+          <v-menu
+            :close-on-content-click="true"
+            location="bottom end"
+            :offset="8"
+            transition="slide-y-transition"
+          >
+            <template #activator="{ props: versionMenuProps }">
+              <button
+                v-bind="versionMenuProps"
+                type="button"
+                class="bible-version-select-btn"
+                :title="currentVersionName"
               >
-                <div class="d-flex align-center justify-center w-100" style="color: var(--sidebar-text);">
-                  <v-icon size="small" class="mr-2 opacity-70">
-                    mdi-book-open-page-variant
-                  </v-icon>
-                  <span class="font-weight-medium text-body-2">
-                    {{ versions_list.find(v => v.value === bible.id_bible_version)?.abbreviation || t('select_version') }}
-                  </span>
-                  <v-icon size="small" class="ml-2 opacity-50">
-                    mdi-menu-down
-                  </v-icon>
-                </div>
-              </v-btn>
+                <v-icon size="18" class="version-btn-icon mr-2">
+                  mdi-book-open-page-variant-outline
+                </v-icon>
+                <span class="version-btn-abbr">
+                  {{ currentVersionAbbr }}
+                </span>
+                <v-icon size="18" class="version-btn-arrow ml-2">
+                  mdi-chevron-down
+                </v-icon>
+              </button>
             </template>
-            <v-card
-              class="mt-2"
-              rounded="lg"
-              style="overflow: hidden; max-width: 350px; background: var(--card-bg); box-shadow: var(--shadow);"
-            >
-              <v-list class="py-2" bg-color="transparent">
-                <v-list-item
+            <div class="search-filter-popover bible-version-popover">
+              <div class="filter-header">
+                {{ t('select_version') || 'Versões Bíblicas' }}
+              </div>
+              <div class="bible-version-list custom-scroll">
+                <button
                   v-for="v in versions_list"
                   :key="v.value"
-                  :active="v.value === bible.id_bible_version"
-                  color="primary"
-                  class="mx-2 rounded-lg mb-1"
-                  style="min-height: 40px;"
+                  type="button"
+                  class="filter-item version-item"
+                  :class="{ active: v.value === bible.id_bible_version }"
                   @click="bible.id_bible_version = v.value"
                 >
-                  <div class="d-flex align-center">
-                    <span class="text-body-2 font-weight-medium" :class="v.value === bible.id_bible_version ? '' : 'opacity-70'">
-                      {{ v.title }}
-                    </span>
-                  </div>
-                </v-list-item>
-              </v-list>
-            </v-card>
+                  <span class="version-item-title text-truncate">{{ v.title }}</span>
+                  <v-icon
+                    v-if="v.value === bible.id_bible_version"
+                    size="18"
+                    class="active-check ml-2"
+                  >
+                    mdi-check
+                  </v-icon>
+                </button>
+              </div>
+            </div>
           </v-menu>
         </div>
       </ModuleHeader>
@@ -106,16 +110,21 @@
           @clear-selection="clean"
         >
           <template #footer>
-            <div style="flex-shrink: 0; border-radius: 16px; position: relative; overflow: hidden; transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s ease; border: 1px solid rgba(255, 255, 255, 0.05);" :style="{ maxHeight: showPreview ? '280px' : '60px', backgroundColor: showPreview ? ($vuetify.theme.global.name !== 'light' ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.75)') : 'rgba(0, 0, 0, 0.2)' }">
-              <div style="position: absolute; top: 0; right: 12px; height: 60px; z-index: 10; display: flex; align-items: center; gap: 8px;">
+            <div
+              class="bible-projection-preview-bar"
+              :class="{ 'expanded': showPreview }"
+            >
+              <div class="projection-preview-actions d-flex align-center">
                 <v-btn
-                  variant="tonal"
-                  :color="showPreview ? 'white' : ($vuetify.theme.global.name === 'light' ? 'grey-darken-2' : 'white')"
+                  variant="text"
                   size="small"
                   icon
+                  class="preview-action-btn"
                   @click="showPreview = !showPreview"
                 >
-                  <v-icon>{{ showPreview ? 'mdi-eye-outline' : 'mdi-eye-off-outline' }}</v-icon>
+                  <v-icon size="18">
+                    {{ showPreview ? 'mdi-eye-outline' : 'mdi-eye-off-outline' }}
+                  </v-icon>
                   <v-tooltip
                     activator="parent"
                     location="top"
@@ -126,14 +135,15 @@
                   </v-tooltip>
                 </v-btn>
                 <v-btn
-                  variant="tonal"
-                  :color="showPreview ? 'white' : ($vuetify.theme.global.name === 'light' ? 'grey-darken-2' : 'white')"
+                  variant="text"
                   size="small"
                   icon
-                  class="config-palette-btn"
+                  class="preview-action-btn config-palette-btn"
                   @click="showConfigModal = true"
                 >
-                  <v-icon>mdi-palette</v-icon>
+                  <v-icon size="18">
+                    mdi-palette-outline
+                  </v-icon>
                   <v-tooltip
                     activator="parent"
                     location="top"
@@ -145,12 +155,12 @@
                 </v-btn>
                 <LScreenBtn
                   module="bible"
-                  variant="tonal"
-                  :color="showPreview ? 'white' : ($vuetify.theme.global.name === 'light' ? 'grey-darken-2' : 'white')"
+                  variant="text"
+                  size="small"
+                  class="preview-action-btn"
                 />
               </div>
-              <div style="height: 60px; width: 100%;" />
-              <div style="height: 220px; position: relative; width: 100%; transition: opacity 0.2s;" :style="{ opacity: showPreview ? 1 : 0 }">
+              <div v-show="showPreview" class="preview-screen-wrapper">
                 <Screen :force-standard-colors="true" />
               </div>
             </div>
@@ -165,7 +175,9 @@
         :is-searching="isSearching"
         :search-results="searchResults"
         :search-query="lastSearchQuery"
+        :version-abbr="currentVersionAbbr"
         @open-result="openSearchResult"
+        @search-text="executeSearchText"
       />
     </div>
   </v-slide-y-reverse-transition>
@@ -289,6 +301,12 @@ export default defineComponent({
         title: `${version.abbreviation} - ${version.name}`,
         value: version.id_bible_version,
       }));
+    },
+    currentVersionAbbr(): string {
+      return this.versions_list.find((v: any) => v.value === this.bible.id_bible_version)?.abbreviation || this.t("select_version");
+    },
+    currentVersionName(): string {
+      return this.versions_list.find((v: any) => v.value === this.bible.id_bible_version)?.title || this.t("select_version");
     },
     compact() {
       // @ts-ignore
@@ -870,5 +888,248 @@ export default defineComponent({
   },
 });
 </script>
+
+<style lang="scss">
+.bible-version-select-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 40px;
+  min-width: 96px;
+  padding: 0 16px;
+  border-radius: 20px;
+  background: var(--ds-surface, #30364a);
+  border: 1px solid var(--ds-border, #43495b);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  color: var(--ds-text-primary, #f7f8fc);
+  cursor: pointer;
+  outline: none;
+  user-select: none;
+  flex-shrink: 0;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+  .version-btn-icon {
+    color: var(--ds-text-secondary, #a0a6b5);
+    transition: color 0.2s ease;
+  }
+
+  .version-btn-abbr {
+    font-size: 13.5px;
+    font-weight: 600;
+    line-height: 1;
+    color: var(--ds-text-primary, #f7f8fc);
+  }
+
+  .version-btn-arrow {
+    color: var(--ds-text-secondary, #a0a6b5);
+    transition: transform 0.2s ease, color 0.2s ease;
+  }
+
+  &:hover {
+    background: var(--ds-surface-elevated, #373e55);
+    border-color: rgba(0, 155, 226, 0.45);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22);
+
+    .version-btn-icon,
+    .version-btn-arrow {
+      color: var(--ds-accent, #009be2);
+    }
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.bible-version-popover {
+  min-width: 280px;
+  max-width: 380px;
+  background: var(--ds-surface, #30364a) !important;
+  border: 1px solid var(--ds-border, #43495b) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.28) !important;
+  padding: 8px !important;
+
+  .bible-version-list {
+    max-height: 380px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .version-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    margin-bottom: 2px;
+    background: transparent;
+    border: none;
+    color: var(--ds-text-primary, #f7f8fc);
+    text-align: left;
+    outline: none;
+
+    .version-item-title {
+      font-size: 13.5px;
+      font-weight: 500;
+      line-height: 1.2;
+    }
+
+    .active-check {
+      color: var(--ds-accent, #009be2);
+      flex-shrink: 0;
+    }
+
+    &:hover {
+      background: var(--ds-accent-hover, rgba(0, 155, 226, 0.08));
+      color: var(--ds-accent, #009be2);
+    }
+
+    &.active {
+      background: rgba(0, 155, 226, 0.14) !important;
+      color: var(--ds-accent, #009be2) !important;
+      font-weight: 600;
+    }
+  }
+}
+
+.bible-projection-preview-bar {
+  flex-shrink: 0;
+  border-radius: 16px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: rgba(24, 24, 36, 0.95);
+  border: 1px solid var(--ds-border, #43495b);
+  min-height: 48px;
+
+  &.expanded {
+    height: 240px;
+    max-height: 280px;
+  }
+
+  .projection-preview-actions {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    z-index: 10;
+    gap: 8px;
+  }
+
+  .preview-action-btn {
+    border-radius: 8px !important;
+    min-width: 32px !important;
+    width: 32px !important;
+    height: 32px !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25) !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+
+    :deep(.v-btn__overlay) {
+      display: none !important;
+    }
+
+    &:hover {
+      background: rgba(0, 155, 226, 0.35) !important;
+      border-color: rgba(0, 155, 226, 0.65) !important;
+      color: #ffffff !important;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 155, 226, 0.35) !important;
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
+
+  .preview-screen-wrapper {
+    height: 100%;
+    width: 100%;
+    padding-top: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--sidebar-text);
+  }
+}
+
+:root[data-theme="light"],
+.v-theme--light {
+  .bible-version-select-btn {
+    background: #ffffff;
+    border-color: var(--ds-border, #dee4ec);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+    color: var(--ds-text-primary, #30333a);
+
+    .version-btn-icon,
+    .version-btn-arrow {
+      color: #94a3b8;
+    }
+
+    .version-btn-abbr {
+      color: var(--ds-text-primary, #30333a);
+    }
+
+    &:hover {
+      background: #f8fafc;
+      border-color: var(--ds-accent, #009be2);
+
+      .version-btn-icon,
+      .version-btn-arrow {
+        color: var(--ds-accent, #009be2);
+      }
+    }
+  }
+
+  .bible-version-popover {
+    background: #ffffff !important;
+    border-color: var(--ds-border, #dee4ec) !important;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12) !important;
+
+    .version-item {
+      color: var(--ds-text-primary, #30333a);
+
+      &:hover {
+        background: rgba(0, 155, 226, 0.08);
+      }
+    }
+  }
+
+  .bible-projection-preview-bar {
+    background: #f8fafc;
+    border-color: var(--ds-border, #dee4ec);
+
+    .preview-action-btn {
+      background: rgba(0, 0, 0, 0.05) !important;
+      backdrop-filter: blur(8px) !important;
+      -webkit-backdrop-filter: blur(8px) !important;
+      border: 1px solid rgba(0, 0, 0, 0.08) !important;
+      color: #475569 !important;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04) !important;
+
+      :deep(.v-btn__overlay) {
+        display: none !important;
+      }
+
+      &:hover {
+        background: rgba(0, 155, 226, 0.15) !important;
+        border-color: rgba(0, 155, 226, 0.4) !important;
+        color: var(--ds-accent, #009be2) !important;
+        box-shadow: 0 4px 10px rgba(0, 155, 226, 0.2) !important;
+      }
+    }
+  }
+}
+</style>
 
 
