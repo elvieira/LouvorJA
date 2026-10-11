@@ -1,6 +1,6 @@
 <template>
   <v-slide-y-reverse-transition>
-    <div v-if="module?.show" class="module-full-page dashboard-home d-flex flex-column">
+    <div v-if="module?.show" class="module-full-page collections-module d-flex flex-column">
       <ModuleHeader :title="t('title')" :icon="module.icon">
         <div class="search-bar ml-4 d-flex align-center" style="max-width: 800px; flex: 1; gap: 16px;">
           <v-text-field
@@ -10,73 +10,84 @@
             variant="solo"
             density="comfortable"
             hide-details
-            clearable
             rounded="xl"
             @keydown.enter="playFirstResult"
           >
             <template #append-inner>
-              <v-menu
-                :close-on-content-click="false"
-                location="bottom end"
-                :offset="8"
-                transition="slide-y-transition"
-              >
-                <template #activator="{ props: filterProps }">
-                  <v-btn
-                    icon="mdi-filter-variant"
-                    size="small"
-                    variant="text"
-                    v-bind="filterProps"
-                    class="filter-search-btn"
-                    :class="{ 'filter-active': hasCustomFilter }"
-                    :title="t('filter_by')"
-                  />
-                </template>
-                <div class="search-filter-popover">
-                  <div class="filter-header">
-                    {{ t('filter_by') }}
+              <div class="d-flex align-center">
+                <v-btn
+                  v-if="search"
+                  icon="mdi-close"
+                  size="x-small"
+                  variant="text"
+                  class="clear-search-btn mr-1"
+                  title="Limpar pesquisa"
+                  @click="search = ''"
+                />
+
+                <v-menu
+                  :close-on-content-click="false"
+                  location="bottom end"
+                  :offset="8"
+                  transition="slide-y-transition"
+                >
+                  <template #activator="{ props: filterProps }">
+                    <v-btn
+                      icon="mdi-filter-variant"
+                      size="small"
+                      variant="text"
+                      v-bind="filterProps"
+                      class="filter-search-btn"
+                      :class="{ 'filter-active': hasCustomFilter }"
+                      :title="t('filter_by')"
+                    />
+                  </template>
+                  <div class="search-filter-popover">
+                    <div class="filter-header">
+                      {{ t('filter_by') }}
+                    </div>
+                    <button
+                      type="button"
+                      class="filter-item"
+                      :class="{ active: searchFilters.includes('name') }"
+                      @click="toggleSearchFilter('name')"
+                    >
+                      <v-icon
+                        :icon="searchFilters.includes('name') ? 'mdi-check-circle' : 'mdi-circle-outline'"
+                        size="18"
+                        class="filter-radio-icon mr-2.5"
+                      />
+                      <span class="filter-label">{{ t('filter_song_name') }}</span>
+                    </button>
+                    <button
+                      type="button"
+                      class="filter-item"
+                      :class="{ active: searchFilters.includes('albums') }"
+                      @click="toggleSearchFilter('albums')"
+                    >
+                      <v-icon
+                        :icon="searchFilters.includes('albums') ? 'mdi-check-circle' : 'mdi-circle-outline'"
+                        size="18"
+                        class="filter-radio-icon mr-2.5"
+                      />
+                      <span class="filter-label">{{ t('filter_album') }}</span>
+                    </button>
+                    <button
+                      type="button"
+                      class="filter-item"
+                      :class="{ active: searchFilters.includes('lyric') }"
+                      @click="toggleSearchFilter('lyric')"
+                    >
+                      <v-icon
+                        :icon="searchFilters.includes('lyric') ? 'mdi-check-circle' : 'mdi-circle-outline'"
+                        size="18"
+                        class="filter-radio-icon mr-2.5"
+                      />
+                      <span class="filter-label">{{ t('filter_lyrics') }}</span>
+                    </button>
                   </div>
-                  <button
-                    type="button"
-                    class="filter-item"
-                    :class="{ active: searchFilters.includes('name') }"
-                    @click="toggleSearchFilter('name')"
-                  >
-                    <v-icon
-                      :icon="searchFilters.includes('name') ? 'mdi-check-circle' : 'mdi-circle-outline'"
-                      size="18"
-                      class="filter-radio-icon mr-2.5"
-                    />
-                    <span class="filter-label">{{ t('filter_song_name') }}</span>
-                  </button>
-                  <button
-                    type="button"
-                    class="filter-item"
-                    :class="{ active: searchFilters.includes('albums') }"
-                    @click="toggleSearchFilter('albums')"
-                  >
-                    <v-icon
-                      :icon="searchFilters.includes('albums') ? 'mdi-check-circle' : 'mdi-circle-outline'"
-                      size="18"
-                      class="filter-radio-icon mr-2.5"
-                    />
-                    <span class="filter-label">{{ t('filter_album') }}</span>
-                  </button>
-                  <button
-                    type="button"
-                    class="filter-item"
-                    :class="{ active: searchFilters.includes('lyric') }"
-                    @click="toggleSearchFilter('lyric')"
-                  >
-                    <v-icon
-                      :icon="searchFilters.includes('lyric') ? 'mdi-check-circle' : 'mdi-circle-outline'"
-                      size="18"
-                      class="filter-radio-icon mr-2.5"
-                    />
-                    <span class="filter-label">{{ t('filter_lyrics') }}</span>
-                  </button>
-                </div>
-              </v-menu>
+                </v-menu>
+              </div>
             </template>
           </v-text-field>
 
@@ -540,278 +551,348 @@ export default defineComponent({
   box-shadow: 0 4px 10px rgba(0, 151, 215, 0.3);
 }
 
-.collections-page-scroll {
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding: 14px 16px 36px 16px;
+.collections-module {
+  .collections-page-scroll {
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 14px 16px 36px 16px;
 
-  /* Scrollbar oficial do Louvor JA */
-  &::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-  }
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  &::-webkit-scrollbar-thumb {
-    background: var(--accent-blue, #009FE3);
-    border-radius: 4px;
-    transition: background 0.2s ease;
-  }
-  &::-webkit-scrollbar-thumb:hover {
-    background: var(--accent-yellow, #FFC107);
-  }
-}
-
-.collections-grid-wrap {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(185px, 1fr));
-  gap: 22px;
-  padding: 8px 8px 36px 8px;
-}
-
-@media (max-width: 768px) {
-  .collections-grid-wrap {
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 16px;
-    padding: 6px 4px 24px 4px;
-  }
-}
-
-@media (max-width: 480px) {
-  .collections-grid-wrap {
-    grid-template-columns: repeat(auto-fill, minmax(135px, 1fr));
-    gap: 12px;
-  }
-}
-
-.collection-card {
-  width: 100%;
-  min-width: 0;
-  background: var(--ds-surface, #30364a);
-  border: 1px solid var(--ds-border, #43495b);
-  border-radius: 14px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-  padding: 12px;
-  transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  
-  &:hover {
-    border-color: rgba(0, 155, 226, 0.5);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.24);
-    transform: translateY(-4px);
-
-    .card-image img,
-    .card-image .v-img {
-      transform: scale(1.04);
+    /* Scrollbar oficial do Louvor JA */
+    &::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: var(--accent-blue, #009FE3);
+      border-radius: 4px;
+      transition: background 0.2s ease;
+    }
+    &::-webkit-scrollbar-thumb:hover {
+      background: var(--accent-yellow, #FFC107);
     }
   }
 
-  &:active {
-    transform: scale(0.98);
+  .collections-grid-wrap {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(185px, 1fr));
+    gap: 22px;
+    padding: 8px 8px 36px 8px;
   }
-  
-  .card-image {
+
+  @media (max-width: 768px) {
+    .collections-grid-wrap {
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 16px;
+      padding: 6px 4px 24px 4px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .collections-grid-wrap {
+      grid-template-columns: repeat(auto-fill, minmax(135px, 1fr));
+      gap: 12px;
+    }
+  }
+
+  .collection-card {
     width: 100%;
-    aspect-ratio: 1 / 1;
-    background: var(--ds-surface-elevated, #353c52);
+    min-width: 0;
+    background: var(--ds-surface, #30364a);
+    border: 1px solid var(--ds-border, #43495b);
+    border-radius: 14px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    padding: 12px;
+    transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
     display: flex;
-    align-items: center;
-    justify-content: center;
+    flex-direction: column;
     position: relative;
-    overflow: hidden;
-    border-radius: 10px;
-
-    img,
-    .v-img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      transition: transform 0.25s ease;
-    }
-  }
-  
-  .card-content {
-    padding: 10px 2px 2px 2px;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    background: transparent;
-    
-    .card-title {
-      font-size: 14px;
-      font-weight: 600;
-      line-height: 1.3;
-      color: var(--ds-text-primary, #f7f8fc);
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-      margin: 0;
-    }
-    
-    .card-stats {
-      font-size: 12px;
-      color: var(--ds-text-secondary, #a0a6b5);
-      margin-top: 4px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-  }
-}
-
-.modern-hymnal-table {
-  background: transparent !important;
-  
-  .v-table__wrapper {
-    background: transparent !important;
-    overflow-y: auto !important;
-    overflow-x: hidden !important;
-    flex: 1 1 auto;
-    height: 100%;
-  }
-  
-  table {
-    background: transparent !important;
-    border-spacing: 0;
-    width: 100%;
-  }
-
-  tr:hover td {
-    background: transparent !important;
-  }
-
-  .music-list-container {
-    display: flex;
-    flex-direction: column;
-    padding: 0;
-    width: 100%;
-  }
-
-  .music-item {
-    display: flex;
-    align-items: center;
-    padding: 12px 24px;
-    width: 100%;
-    border-bottom: 1px solid var(--border-color);
-    transition: var(--transition);
     
     &:hover {
-      background: var(--sidebar-hover) !important;
-    }
-    
-    td {
-      border-bottom: none !important;
-      padding: 0 !important;
-      height: auto !important;
-      background: transparent !important;
-      background-color: transparent !important;
+      border-color: rgba(0, 155, 226, 0.5);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.24);
+      transform: translateY(-4px);
+
+      .card-image img,
+      .card-image .v-img {
+        transform: scale(1.04);
+      }
     }
 
-    &:hover td,
-    &:hover > td {
-      background: transparent !important;
-      background-color: transparent !important;
+    &:active {
+      transform: scale(0.98);
+    }
+    
+    .card-image {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      background: var(--ds-surface-elevated, #353c52);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      border-radius: 10px;
+
+      img,
+      .v-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.25s ease;
+      }
+    }
+    
+    .card-content {
+      padding: 10px 2px 2px 2px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      background: transparent;
+      
+      .card-title {
+        font-size: 14px;
+        font-weight: 600;
+        line-height: 1.3;
+        color: var(--ds-text-primary, #f7f8fc);
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        margin: 0;
+      }
+      
+      .card-stats {
+        font-size: 12px;
+        color: var(--ds-text-secondary, #a0a6b5);
+        margin-top: 4px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
     }
   }
-  
-  .music-info {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+
+  .modern-hymnal-table {
+    background: transparent !important;
     
-    .music-title {
-      font-size: 15px;
-      font-weight: 500;
-      color: var(--sidebar-text);
-      margin-bottom: 2px;
-      line-height: 1.2;
+    .v-table__wrapper {
+      background: transparent !important;
+      overflow-y: auto !important;
+      overflow-x: hidden !important;
+      flex: 1 1 auto;
+      height: 100%;
     }
     
-    .music-artist {
+    table {
+      background: transparent !important;
+      border-spacing: 0;
+      width: 100%;
+    }
+
+    tr:hover td {
+      background: transparent !important;
+    }
+
+    .music-list-container {
+      display: flex;
+      flex-direction: column;
+      padding: 0;
+      width: 100%;
+    }
+
+    .music-item {
+      display: flex;
+      align-items: center;
+      padding: 12px 24px;
+      width: 100%;
+      border-bottom: 1px solid var(--border-color);
+      transition: var(--transition);
+      
+      &:hover {
+        background: var(--sidebar-hover) !important;
+      }
+      
+      td {
+        border-bottom: none !important;
+        padding: 0 !important;
+        height: auto !important;
+        background: transparent !important;
+        background-color: transparent !important;
+      }
+
+      &:hover td,
+      &:hover > td {
+        background: transparent !important;
+        background-color: transparent !important;
+      }
+    }
+    
+    .music-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      
+      .music-title {
+        font-size: 15px;
+        font-weight: 500;
+        color: var(--sidebar-text);
+        margin-bottom: 2px;
+        line-height: 1.2;
+      }
+      
+      .music-artist {
+        font-size: 13px;
+        color: var(--sidebar-text-secondary);
+        margin: 0;
+      }
+    }
+    
+    .music-duration {
       font-size: 13px;
       color: var(--sidebar-text-secondary);
-      margin: 0;
+      min-width: 60px;
+      padding-right: 16px !important;
+    }
+    
+    .music-actions {
+      min-width: 80px;
     }
   }
-  
-  .music-duration {
-    font-size: 13px;
-    color: var(--sidebar-text-secondary);
-    min-width: 60px;
-    padding-right: 16px !important;
-  }
-  
-  .music-actions {
-    min-width: 80px;
-  }
-}
 
-.category-select-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 40px;
-  min-width: 170px;
-  max-width: 240px;
-  padding: 0 16px;
-  border-radius: 20px;
-  background: var(--ds-surface, #30364a);
-  border: 1px solid var(--ds-border, #43495b);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  color: var(--ds-text-primary, #f7f8fc);
-  cursor: pointer;
-  outline: none;
-  user-select: none;
-  flex-shrink: 0;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-
-  .category-name {
-    font-size: 13.5px;
-    font-weight: 600;
-    line-height: 1;
+  .category-select-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 40px;
+    min-width: 170px;
+    max-width: 240px;
+    padding: 0 16px;
+    border-radius: 20px;
+    background: var(--ds-surface, #30364a);
+    border: 1px solid var(--ds-border, #43495b);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     color: var(--ds-text-primary, #f7f8fc);
-  }
-
-  .category-arrow {
-    color: var(--ds-text-secondary, #a0a6b5);
+    cursor: pointer;
+    outline: none;
+    user-select: none;
     flex-shrink: 0;
-    transition: transform 0.2s ease, color 0.2s ease;
-  }
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 
-  &:hover {
-    background: var(--ds-surface-elevated, #373e55);
-    border-color: rgba(0, 155, 226, 0.4);
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22);
+    .category-name {
+      font-size: 13.5px;
+      font-weight: 600;
+      line-height: 1;
+      color: var(--ds-text-primary, #f7f8fc);
+    }
 
     .category-arrow {
-      color: var(--ds-accent, #009be2);
+      color: var(--ds-text-secondary, #a0a6b5);
+      flex-shrink: 0;
+      transition: transform 0.2s ease, color 0.2s ease;
+    }
+
+    &:hover {
+      background: var(--ds-surface-elevated, #373e55);
+      border-color: rgba(0, 155, 226, 0.4);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22);
+
+      .category-arrow {
+        color: var(--ds-accent, #009be2);
+      }
+    }
+
+    &:active {
+      transform: scale(0.99);
     }
   }
 
-  &:active {
-    transform: scale(0.99);
+  .search-bar {
+    .v-field {
+      background: var(--ds-surface, var(--card-bg)) !important;
+      box-shadow: none !important;
+      border: 1px solid var(--ds-border, #43495b) !important;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      border-radius: 26px !important;
+      
+      .v-field__input {
+        padding: 10px 16px !important;
+        font-size: 14px !important;
+        color: var(--ds-text-primary, var(--sidebar-text)) !important;
+
+        &::placeholder {
+          color: var(--ds-text-secondary, var(--sidebar-text-secondary)) !important;
+          opacity: 0.8 !important;
+        }
+      }
+      
+      .v-field__prepend-inner {
+        padding-left: 16px !important;
+        
+        .v-icon {
+          color: var(--ds-text-secondary, #a0a6b5) !important;
+          opacity: 0.9 !important;
+          transition: color 0.2s ease !important;
+        }
+      }
+      
+      &:hover {
+        border-color: rgba(0, 155, 226, 0.45) !important;
+      }
+      
+      &.v-field--focused {
+        border-color: var(--ds-accent, #009be2) !important;
+        background: var(--ds-surface, var(--card-bg)) !important;
+        box-shadow: 0 0 0 3px rgba(0, 155, 226, 0.15) !important;
+
+        .v-field__prepend-inner .v-icon {
+          color: var(--ds-accent, #009be2) !important;
+          opacity: 1 !important;
+        }
+      }
+    }
+
+    .clear-search-btn {
+      color: var(--ds-text-secondary, #a0a6b5) !important;
+      border-radius: 50% !important;
+      transition: all 0.15s ease !important;
+
+      &:hover {
+        color: var(--ds-text-primary, #f7f8fc) !important;
+        background: var(--ds-accent-hover, rgba(0, 155, 226, 0.1)) !important;
+      }
+    }
+
+    .filter-search-btn {
+      color: var(--ds-text-secondary, #a0a6b5) !important;
+      border-radius: 50% !important;
+      transition: all 0.15s ease !important;
+
+      &:hover, &.filter-active {
+        color: var(--ds-accent, #009be2) !important;
+        background: var(--ds-accent-hover, rgba(0, 155, 226, 0.1)) !important;
+      }
+    }
   }
-}
 
-.filter-search-btn {
-  color: var(--ds-text-secondary, #a0a6b5) !important;
-  transition: all 0.2s ease !important;
+  .filter-search-btn {
+    color: var(--ds-text-secondary, #a0a6b5) !important;
+    transition: all 0.2s ease !important;
 
-  &:hover {
-    color: var(--ds-accent, #009be2) !important;
-    background: rgba(0, 155, 226, 0.1) !important;
-  }
+    &:hover {
+      color: var(--ds-accent, #009be2) !important;
+      background: rgba(0, 155, 226, 0.1) !important;
+    }
 
-  &.filter-active {
-    color: var(--ds-accent, #009be2) !important;
-    background: rgba(0, 155, 226, 0.15) !important;
+    &.filter-active {
+      color: var(--ds-accent, #009be2) !important;
+      background: rgba(0, 155, 226, 0.15) !important;
+    }
   }
 }
 
@@ -919,26 +1000,84 @@ export default defineComponent({
 // Suporte ao tema claro
 :root[data-theme="light"],
 .v-theme--light {
-  .category-select-btn {
-    background: #FFFFFF;
-    border-color: var(--ds-border, #DEE4EC);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
-    color: var(--ds-text-primary, #30333A);
-
-    .category-name {
+  .collections-module {
+    .category-select-btn {
+      background: #FFFFFF;
+      border-color: var(--ds-border, #DEE4EC);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
       color: var(--ds-text-primary, #30333A);
-    }
 
-    .category-arrow {
-      color: #94A3B8;
-    }
-
-    &:hover {
-      background: #F8FAFC;
-      border-color: var(--ds-accent, #008FD0);
+      .category-name {
+        color: var(--ds-text-primary, #30333A);
+      }
 
       .category-arrow {
-        color: var(--ds-accent, #008FD0);
+        color: #94A3B8;
+      }
+
+      &:hover {
+        background: #F8FAFC;
+        border-color: var(--ds-accent, #008FD0);
+
+        .category-arrow {
+          color: var(--ds-accent, #008FD0);
+        }
+      }
+    }
+
+    .search-bar {
+      .v-field {
+        background: #FFFFFF !important;
+        border-color: var(--ds-border, #DEE4EC) !important;
+        
+        .v-field__input {
+          color: var(--ds-text-primary, #30333A) !important;
+
+          &::placeholder {
+            color: var(--ds-text-secondary, #6D7480) !important;
+          }
+        }
+
+        .v-field__prepend-inner .v-icon {
+          color: #94A3B8 !important;
+        }
+
+        &:hover {
+          border-color: rgba(0, 155, 226, 0.45) !important;
+        }
+
+        &.v-field--focused {
+          border-color: var(--ds-accent, #009be2) !important;
+          box-shadow: 0 0 0 3px rgba(0, 155, 226, 0.15) !important;
+
+          .v-field__prepend-inner .v-icon {
+            color: var(--ds-accent, #009be2) !important;
+          }
+        }
+      }
+    }
+
+    .collection-card {
+      background: #FFFFFF;
+      border-color: var(--ds-border, #DEE4EC);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+
+      .card-image {
+        background: #F1F5F9;
+      }
+
+      .card-content {
+        .card-title {
+          color: var(--ds-text-primary, #30333A);
+        }
+        .card-stats {
+          color: var(--ds-text-secondary, #6D7480);
+        }
+      }
+
+      &:hover {
+        border-color: var(--ds-accent, #008FD0);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
       }
     }
   }
@@ -980,30 +1119,6 @@ export default defineComponent({
           color: var(--ds-accent, #008fd0);
         }
       }
-    }
-  }
-
-  .collection-card {
-    background: #FFFFFF;
-    border-color: var(--ds-border, #DEE4EC);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-
-    .card-image {
-      background: #F1F5F9;
-    }
-
-    .card-content {
-      .card-title {
-        color: var(--ds-text-primary, #30333A);
-      }
-      .card-stats {
-        color: var(--ds-text-secondary, #6D7480);
-      }
-    }
-
-    &:hover {
-      border-color: var(--ds-accent, #008FD0);
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
     }
   }
 }

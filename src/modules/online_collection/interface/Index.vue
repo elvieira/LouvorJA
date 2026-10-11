@@ -31,13 +31,24 @@
             variant="solo"
             density="comfortable"
             hide-details
-            clearable
             rounded="xl"
-          />
+          >
+            <template #append-inner>
+              <v-btn
+                v-if="search"
+                icon="mdi-close"
+                size="x-small"
+                variant="text"
+                class="clear-search-btn mr-1"
+                title="Limpar pesquisa"
+                @click="search = ''"
+              />
+            </template>
+          </v-text-field>
         </div>
       </ModuleHeader>
 
-      <div class="content-main flex-grow-1" style="overflow-y: auto; padding: 20px 24px;">
+      <div class="content-main flex-grow-1" style="overflow-y: auto; overflow-x: hidden; padding-top: 16px;">
         <template v-if="isSearching">
           <div v-if="searchLoading" class="d-flex flex-column align-center justify-center" style="height: 100%;">
             <v-progress-circular indeterminate color="primary" size="48" />
@@ -361,35 +372,88 @@ export default defineComponent({
 .online-collection-module {
   .search-bar {
     .v-field {
-      background: var(--card-bg) !important;
-      box-shadow: var(--shadow) !important;
-      border: 1px solid transparent;
-      transition: all 0.2s ease;
-      border-radius: 25px !important;
+      background: var(--ds-surface, var(--card-bg)) !important;
+      box-shadow: none !important;
+      border: 1px solid var(--ds-border, #43495b) !important;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      border-radius: 26px !important;
       
       .v-field__input {
-        padding: 12px 20px !important;
+        padding: 10px 16px !important;
         font-size: 14px !important;
+        color: var(--ds-text-primary, var(--sidebar-text)) !important;
+
+        &::placeholder {
+          color: var(--ds-text-secondary, var(--sidebar-text-secondary)) !important;
+          opacity: 0.8 !important;
+        }
       }
       
       .v-field__prepend-inner {
         padding-left: 16px !important;
         
         .v-icon {
-          color: var(--accent-blue) !important;
-          opacity: 0.7;
+          color: var(--ds-text-secondary, #a0a6b5) !important;
+          opacity: 0.9 !important;
+          transition: color 0.2s ease !important;
         }
       }
       
       &:hover {
-        box-shadow: var(--shadow-hover) !important;
+        border-color: rgba(0, 155, 226, 0.45) !important;
       }
       
       &.v-field--focused {
-        border-color: var(--accent-blue);
-        background: rgba(0, 151, 215, 0.05) !important;
-        box-shadow: 0 4px 20px rgba(0, 151, 215, 0.15) !important;
+        border-color: var(--ds-accent, #009be2) !important;
+        background: var(--ds-surface, var(--card-bg)) !important;
+        box-shadow: 0 0 0 3px rgba(0, 155, 226, 0.15) !important;
+
+        .v-field__prepend-inner .v-icon {
+          color: var(--ds-accent, #009be2) !important;
+          opacity: 1 !important;
+        }
       }
+    }
+
+    .clear-search-btn {
+      color: var(--ds-text-secondary, #a0a6b5) !important;
+      border-radius: 50% !important;
+      transition: all 0.15s ease !important;
+
+      &:hover {
+        color: var(--ds-text-primary, #f7f8fc) !important;
+        background: var(--ds-accent-hover, rgba(0, 155, 226, 0.1)) !important;
+      }
+    }
+
+    .filter-search-btn {
+      color: var(--ds-text-secondary, #a0a6b5) !important;
+      border-radius: 50% !important;
+      transition: all 0.15s ease !important;
+
+      &:hover, &.filter-active {
+        color: var(--ds-accent, #009be2) !important;
+        background: var(--ds-accent-hover, rgba(0, 155, 226, 0.1)) !important;
+      }
+    }
+  }
+
+  .content-main {
+    /* Scrollbar oficial do Louvor JA */
+    &::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: var(--accent-blue, #009FE3);
+      border-radius: 4px;
+      transition: background 0.2s ease;
+    }
+    &::-webkit-scrollbar-thumb:hover {
+      background: var(--accent-yellow, #FFC107);
     }
   }
 
@@ -397,31 +461,39 @@ export default defineComponent({
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 24px;
+    padding: 8px 16px 24px 16px;
   }
 
   .online-card {
     width: 100%;
     min-width: 0;
-    background: var(--card-bg);
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow);
-    transition: var(--transition);
+    background: var(--ds-surface, #232733);
+    border: 1px solid var(--ds-border, #43495b);
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: transform 0.25s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.25s cubic-bezier(0.2, 0, 0, 1), border-color 0.25s ease;
     cursor: pointer;
     overflow: hidden;
 
     &:hover {
-      box-shadow: var(--shadow-hover);
-      transform: translateY(-2px);
+      transform: translateY(-4px);
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.25);
+      border-color: var(--ds-accent, #009FE3);
+
+      .online-card-image img {
+        transform: scale(1.04);
+      }
 
       .online-play-icon {
         opacity: 1;
+        transform: translate(-50%, -50%) scale(1.1);
       }
     }
 
     .online-card-image {
       width: 100%;
       aspect-ratio: 1 / 1;
-      background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-blue-dark) 100%);
+      background: linear-gradient(135deg, var(--accent-blue, #009FE3) 0%, var(--accent-blue-dark, #0077b6) 100%);
       position: relative;
       overflow: hidden;
 
@@ -429,23 +501,24 @@ export default defineComponent({
         width: 100%;
         height: 100%;
         object-fit: cover;
+        transition: transform 0.35s ease;
       }
 
       .online-play-icon {
         position: absolute;
         top: 50%;
         left: 50%;
-        transform: translate(-50%, -50%);
+        transform: translate(-50%, -50%) scale(1);
         color: white;
         opacity: 0;
-        transition: opacity 0.2s ease;
-        filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.5));
+        transition: all 0.25s ease;
+        filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.6));
       }
     }
 
     .online-card-title {
-      padding: 12px 14px;
-      font-size: 14px;
+      padding: 16px 18px;
+      font-size: 15px;
       font-weight: 600;
       color: var(--sidebar-text);
       line-height: 1.3;
@@ -460,16 +533,17 @@ export default defineComponent({
   .online-list-wrap {
     display: flex;
     flex-direction: column;
+    padding: 0;
+    width: 100%;
   }
 
   .online-list-item {
     width: 100%;
     display: flex;
     align-items: center;
-    gap: 14px;
-    padding: 10px 14px 10px 8px;
+    padding: 12px 24px;
     background: transparent;
-    border-bottom: 1px solid var(--border-color, rgba(128, 128, 128, 0.2));
+    border-bottom: 1px solid var(--border-color);
     box-shadow: none;
     transition: var(--transition);
     cursor: pointer;
@@ -479,30 +553,39 @@ export default defineComponent({
     }
 
     &:hover {
-      box-shadow: var(--shadow-hover);
-      background: var(--sidebar-hover);
+      background: var(--sidebar-hover) !important;
+
+      .online-list-thumb img {
+        transform: scale(1.04);
+      }
 
       .online-play-icon {
         opacity: 1;
+        transform: translate(-50%, -50%) scale(1.1);
       }
     }
 
     .online-list-number {
-      flex-shrink: 0;
-      min-width: 32px;
-      text-align: center;
       font-size: 15px;
-      font-weight: 600;
+      font-weight: 700;
       line-height: 1;
-      color: var(--accent-blue);
+      color: var(--accent-blue, #009FE3);
+      min-width: 44px;
+      width: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      margin-right: 14px;
+      flex-shrink: 0;
     }
 
     .online-list-thumb {
       position: relative;
       flex-shrink: 0;
-      width: 96px;
+      width: 104px;
       aspect-ratio: 16 / 9;
-      background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-blue-dark) 100%);
+      background: linear-gradient(135deg, var(--accent-blue, #009FE3) 0%, var(--accent-blue-dark, #0077b6) 100%);
       border-radius: 8px;
       overflow: hidden;
 
@@ -510,16 +593,17 @@ export default defineComponent({
         width: 100%;
         height: 100%;
         object-fit: cover;
+        transition: transform 0.25s ease;
       }
 
       .online-play-icon {
         position: absolute;
         top: 50%;
         left: 50%;
-        transform: translate(-50%, -50%);
+        transform: translate(-50%, -50%) scale(1);
         color: white;
         opacity: 0;
-        transition: opacity 0.2s ease;
+        transition: all 0.25s ease;
         filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.5));
       }
     }
@@ -527,8 +611,8 @@ export default defineComponent({
     .online-list-title {
       flex: 1;
       min-width: 0;
-      font-size: 14px;
-      font-weight: 600;
+      font-size: 15px;
+      font-weight: 500;
       color: var(--sidebar-text);
       line-height: 1.3;
       display: -webkit-box;
@@ -536,6 +620,39 @@ export default defineComponent({
       line-clamp: 2;
       -webkit-box-orient: vertical;
       overflow: hidden;
+    }
+  }
+}
+
+// Suporte ao tema claro
+:root[data-theme="light"],
+.v-theme--light {
+  .online-collection-module {
+    .online-card {
+      background: #FFFFFF;
+      border-color: var(--ds-border, #DEE4EC);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+
+      .online-card-title {
+        color: var(--ds-text-primary, #30333A);
+      }
+
+      &:hover {
+        border-color: var(--ds-accent, #008FD0);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      }
+    }
+
+    .online-list-item {
+      border-bottom-color: rgba(0, 0, 0, 0.06);
+
+      &:hover {
+        background: rgba(0, 155, 226, 0.06) !important;
+      }
+
+      .online-list-title {
+        color: var(--ds-text-primary, #30333A);
+      }
     }
   }
 }

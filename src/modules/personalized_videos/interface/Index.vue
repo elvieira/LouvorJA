@@ -59,9 +59,20 @@
             variant="solo"
             density="comfortable"
             hide-details
-            clearable
             rounded="xl"
-          />
+          >
+            <template #append-inner>
+              <v-btn
+                v-if="musicSearch"
+                icon="mdi-close"
+                size="x-small"
+                variant="text"
+                class="clear-search-btn mr-1"
+                title="Limpar pesquisa"
+                @click="musicSearch = ''"
+              />
+            </template>
+          </v-text-field>
         </div>
         <div v-else-if="!selectedAlbum" class="search-bar mr-4 d-flex align-center" style="max-width: 360px; flex: 1;">
           <v-text-field
@@ -71,9 +82,20 @@
             variant="solo"
             density="comfortable"
             hide-details
-            clearable
             rounded="xl"
-          />
+          >
+            <template #append-inner>
+              <v-btn
+                v-if="albumSearch"
+                icon="mdi-close"
+                size="x-small"
+                variant="text"
+                class="clear-search-btn mr-1"
+                title="Limpar pesquisa"
+                @click="albumSearch = ''"
+              />
+            </template>
+          </v-text-field>
         </div>
 
         <v-btn
@@ -104,7 +126,7 @@
         </v-btn>
       </ModuleHeader>
 
-      <div class="content-main flex-grow-1" style="overflow-y: auto; padding: 20px 24px;">
+      <div class="content-main flex-grow-1" style="overflow-y: auto; overflow-x: hidden; padding-top: 16px;">
         <!-- Aba Música -->
         <template v-if="tab === 'music'">
           <div v-if="videos.length === 0" class="d-flex flex-column align-center justify-center" style="height: 100%;">
@@ -133,17 +155,18 @@
               v-for="(video, index) in filteredVideos"
               :key="video.id"
               class="personalized-list-item"
+              @click="playVideo(video)"
             >
               <div class="personalized-list-number">
                 {{ index + 1 }}
               </div>
-              <div class="personalized-list-thumb" @click="playVideo(video)">
+              <div class="personalized-list-thumb">
                 <img :src="thumbnailUrl(video.videoId)" loading="lazy" />
                 <v-icon class="personalized-play-icon" size="20">
                   mdi-play-circle
                 </v-icon>
               </div>
-              <div class="personalized-list-title" @click="playVideo(video)">
+              <div class="personalized-list-title">
                 {{ video.name }}
               </div>
               <v-menu location="bottom end">
@@ -160,43 +183,20 @@
                     </v-icon>
                   </v-btn>
                 </template>
-                <v-list density="compact" rounded="lg" class="py-1">
-                  <v-list-item @click="openEditDialog(video)">
-                    <template #prepend>
-                      <v-icon size="18">
-                        mdi-pencil-outline
-                      </v-icon>
-                    </template>
-                    <v-list-item-title>{{ t('edit') }}</v-list-item-title>
-                  </v-list-item>
-                  <v-list-item @click="copyLink(video)">
-                    <template #prepend>
-                      <v-icon size="18">
-                        mdi-content-copy
-                      </v-icon>
-                    </template>
-                    <v-list-item-title>{{ t('copy_link') }}</v-list-item-title>
-                  </v-list-item>
-                  <v-list-item @click="openInBrowser(video)">
-                    <template #prepend>
-                      <v-icon size="18">
-                        mdi-open-in-new
-                      </v-icon>
-                    </template>
-                    <v-list-item-title>{{ t('open_browser') }}</v-list-item-title>
-                  </v-list-item>
-                  <v-divider />
-                  <v-list-item @click="confirmDelete(video)">
-                    <template #prepend>
-                      <v-icon size="18" color="error">
-                        mdi-delete-outline
-                      </v-icon>
-                    </template>
-                    <v-list-item-title class="text-error">
-                      {{ t('delete') }}
-                    </v-list-item-title>
-                  </v-list-item>
-                </v-list>
+                <div class="search-filter-popover" style="min-width: 170px;">
+                  <button type="button" class="filter-item" @click="openEditDialog(video)">
+                    <span class="filter-label">{{ t('edit') }}</span>
+                  </button>
+                  <button type="button" class="filter-item" @click="copyLink(video)">
+                    <span class="filter-label">{{ t('copy_link') }}</span>
+                  </button>
+                  <button type="button" class="filter-item" @click="openInBrowser(video)">
+                    <span class="filter-label">{{ t('open_browser') }}</span>
+                  </button>
+                  <button type="button" class="filter-item text-error-item" @click="confirmDelete(video)">
+                    <span class="filter-label text-error">{{ t('delete') }}</span>
+                  </button>
+                </div>
               </v-menu>
             </div>
           </div>
@@ -317,35 +317,17 @@
                         </v-icon>
                       </v-btn>
                     </template>
-                    <v-list density="compact" rounded="lg" class="py-1">
-                      <v-list-item @click="copyAlbumLink(album)">
-                        <template #prepend>
-                          <v-icon size="18">
-                            mdi-content-copy
-                          </v-icon>
-                        </template>
-                        <v-list-item-title>{{ t('copy_link') }}</v-list-item-title>
-                      </v-list-item>
-                      <v-list-item @click="openAlbumInBrowser(album)">
-                        <template #prepend>
-                          <v-icon size="18">
-                            mdi-open-in-new
-                          </v-icon>
-                        </template>
-                        <v-list-item-title>{{ t('open_browser') }}</v-list-item-title>
-                      </v-list-item>
-                      <v-divider />
-                      <v-list-item @click="confirmDeleteAlbum(album)">
-                        <template #prepend>
-                          <v-icon size="18" color="error">
-                            mdi-delete-outline
-                          </v-icon>
-                        </template>
-                        <v-list-item-title class="text-error">
-                          {{ t('delete') }}
-                        </v-list-item-title>
-                      </v-list-item>
-                    </v-list>
+                    <div class="search-filter-popover" style="min-width: 170px;">
+                      <button type="button" class="filter-item" @click="copyAlbumLink(album)">
+                        <span class="filter-label">{{ t('copy_link') }}</span>
+                      </button>
+                      <button type="button" class="filter-item" @click="openAlbumInBrowser(album)">
+                        <span class="filter-label">{{ t('open_browser') }}</span>
+                      </button>
+                      <button type="button" class="filter-item text-error-item" @click="confirmDeleteAlbum(album)">
+                        <span class="filter-label text-error">{{ t('delete') }}</span>
+                      </button>
+                    </div>
                   </v-menu>
                 </div>
               </div>
@@ -930,45 +912,98 @@ export default defineComponent({
 
   .search-bar {
     .v-field {
-      background: var(--card-bg) !important;
-      box-shadow: var(--shadow) !important;
-      border: 1px solid transparent;
-      transition: all 0.2s ease;
-      border-radius: 25px !important;
+      background: var(--ds-surface, var(--card-bg)) !important;
+      box-shadow: none !important;
+      border: 1px solid var(--ds-border, #43495b) !important;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      border-radius: 26px !important;
       
       .v-field__input {
-        padding: 12px 20px !important;
+        padding: 10px 16px !important;
         font-size: 14px !important;
+        color: var(--ds-text-primary, var(--sidebar-text)) !important;
+
+        &::placeholder {
+          color: var(--ds-text-secondary, var(--sidebar-text-secondary)) !important;
+          opacity: 0.8 !important;
+        }
       }
       
       .v-field__prepend-inner {
         padding-left: 16px !important;
         
         .v-icon {
-          color: var(--accent-blue) !important;
-          opacity: 0.7;
+          color: var(--ds-text-secondary, #a0a6b5) !important;
+          opacity: 0.9 !important;
+          transition: color 0.2s ease !important;
         }
       }
       
       &:hover {
-        box-shadow: var(--shadow-hover) !important;
+        border-color: rgba(0, 155, 226, 0.45) !important;
       }
       
       &.v-field--focused {
-        border-color: var(--accent-blue);
-        background: rgba(0, 151, 215, 0.05) !important;
-        box-shadow: 0 4px 20px rgba(0, 151, 215, 0.15) !important;
+        border-color: var(--ds-accent, #009be2) !important;
+        background: var(--ds-surface, var(--card-bg)) !important;
+        box-shadow: 0 0 0 3px rgba(0, 155, 226, 0.15) !important;
+
+        .v-field__prepend-inner .v-icon {
+          color: var(--ds-accent, #009be2) !important;
+          opacity: 1 !important;
+        }
       }
+    }
+
+    .clear-search-btn {
+      color: var(--ds-text-secondary, #a0a6b5) !important;
+      border-radius: 50% !important;
+      transition: all 0.15s ease !important;
+
+      &:hover {
+        color: var(--ds-text-primary, #f7f8fc) !important;
+        background: var(--ds-accent-hover, rgba(0, 155, 226, 0.1)) !important;
+      }
+    }
+
+    .filter-search-btn {
+      color: var(--ds-text-secondary, #a0a6b5) !important;
+      border-radius: 50% !important;
+      transition: all 0.15s ease !important;
+
+      &:hover, &.filter-active {
+        color: var(--ds-accent, #009be2) !important;
+        background: var(--ds-accent-hover, rgba(0, 155, 226, 0.1)) !important;
+      }
+    }
+  }
+
+  .content-main {
+    /* Scrollbar oficial do Louvor JA */
+    &::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: var(--accent-blue, #009FE3);
+      border-radius: 4px;
+      transition: background 0.2s ease;
+    }
+    &::-webkit-scrollbar-thumb:hover {
+      background: var(--accent-yellow, #FFC107);
     }
   }
 
   .personalized-tabs-pill {
     position: relative;
-    background: var(--card-bg);
-    border: 1px solid var(--border-color);
+    background: var(--ds-surface, #232733);
+    border: 1px solid var(--ds-border, #43495b);
     border-radius: 20px;
     padding: 3px;
-    box-shadow: var(--shadow);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   }
 
   .personalized-tab-slider {
@@ -976,7 +1011,7 @@ export default defineComponent({
     top: 3px;
     bottom: 3px;
     border-radius: 16px;
-    background: var(--accent-blue);
+    background: var(--accent-blue, #009FE3);
     box-shadow: 0 2px 8px rgba(0, 151, 215, 0.35);
     transition: left 0.25s ease, width 0.25s ease;
     z-index: 0;
@@ -987,19 +1022,19 @@ export default defineComponent({
     z-index: 1;
     display: inline-flex;
     align-items: center;
-    padding: 5px 12px;
+    padding: 6px 14px;
     border-radius: 16px;
     border: none;
     background: transparent;
-    color: var(--sidebar-text-secondary);
-    font-size: 12.5px;
+    color: var(--sidebar-text-secondary, #8C94A0);
+    font-size: 13px;
     font-weight: 600;
     cursor: pointer;
     transition: color 0.2s ease, background 0.2s ease;
 
     &:hover:not(.active) {
-      color: var(--sidebar-text);
-      background: var(--sidebar-hover);
+      color: var(--sidebar-text, #E1E7EF);
+      background: rgba(255, 255, 255, 0.05);
     }
 
     &.active {
@@ -1011,30 +1046,39 @@ export default defineComponent({
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 24px;
+    padding: 8px 16px 24px 16px;
   }
 
   .personalized-card {
     width: 100%;
     min-width: 0;
-    background: var(--card-bg);
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow);
-    transition: var(--transition);
+    background: var(--ds-surface, #232733);
+    border: 1px solid var(--ds-border, #43495b);
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: transform 0.25s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.25s cubic-bezier(0.2, 0, 0, 1), border-color 0.25s ease;
+    cursor: pointer;
     overflow: hidden;
 
     &:hover {
-      box-shadow: var(--shadow-hover);
-      transform: translateY(-2px);
+      transform: translateY(-4px);
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.25);
+      border-color: var(--ds-accent, #009FE3);
+
+      .personalized-card-image img {
+        transform: scale(1.04);
+      }
 
       .personalized-play-icon {
         opacity: 1;
+        transform: translate(-50%, -50%) scale(1.1);
       }
     }
 
     .personalized-card-image {
       width: 100%;
-      aspect-ratio: 16 / 9;
-      background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-blue-dark) 100%);
+      aspect-ratio: 1 / 1;
+      background: linear-gradient(135deg, var(--accent-blue, #009FE3) 0%, var(--accent-blue-dark, #0077b6) 100%);
       position: relative;
       overflow: hidden;
       cursor: pointer;
@@ -1043,17 +1087,18 @@ export default defineComponent({
         width: 100%;
         height: 100%;
         object-fit: cover;
+        transition: transform 0.35s ease;
       }
 
       .personalized-play-icon {
         position: absolute;
         top: 50%;
         left: 50%;
-        transform: translate(-50%, -50%);
+        transform: translate(-50%, -50%) scale(1);
         color: white;
         opacity: 0;
-        transition: opacity 0.2s ease;
-        filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.5));
+        transition: all 0.25s ease;
+        filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.6));
       }
 
       .personalized-album-badge {
@@ -1062,21 +1107,22 @@ export default defineComponent({
         bottom: 8px;
         display: flex;
         align-items: center;
-        gap: 2px;
-        background: rgba(0, 0, 0, 0.7);
+        gap: 3px;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(6px);
         color: #fff;
-        font-size: 12px;
-        font-weight: 600;
-        padding: 2px 8px;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 3px 8px;
         border-radius: 999px;
       }
     }
 
     .personalized-card-footer {
-      padding: 10px 6px 10px 14px;
+      padding: 14px 14px 14px 16px;
 
       .personalized-card-title {
-        font-size: 14px;
+        font-size: 15px;
         font-weight: 600;
         color: var(--sidebar-text);
         line-height: 1.3;
@@ -1093,16 +1139,17 @@ export default defineComponent({
   .personalized-list-wrap {
     display: flex;
     flex-direction: column;
+    padding: 0;
+    width: 100%;
   }
 
   .personalized-list-item {
     width: 100%;
     display: flex;
     align-items: center;
-    gap: 14px;
-    padding: 10px 14px 10px 8px;
+    padding: 12px 24px;
     background: transparent;
-    border-bottom: 1px solid var(--border-color, rgba(128, 128, 128, 0.2));
+    border-bottom: 1px solid var(--border-color);
     box-shadow: none;
     transition: var(--transition);
     cursor: pointer;
@@ -1112,48 +1159,59 @@ export default defineComponent({
     }
 
     &:hover {
-      box-shadow: var(--shadow-hover);
-      background: var(--sidebar-hover);
+      background: var(--sidebar-hover) !important;
+
+      .personalized-list-thumb img {
+        transform: scale(1.04);
+      }
 
       .personalized-play-icon {
         opacity: 1;
+        transform: translate(-50%, -50%) scale(1.1);
       }
     }
 
     .personalized-list-number {
-      flex-shrink: 0;
-      min-width: 32px;
-      text-align: center;
       font-size: 15px;
-      font-weight: 600;
+      font-weight: 700;
       line-height: 1;
-      color: var(--accent-blue);
+      color: var(--accent-blue, #009FE3);
+      min-width: 44px;
+      width: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      margin-right: 14px;
+      flex-shrink: 0;
     }
 
     .personalized-list-thumb {
       position: relative;
       flex-shrink: 0;
-      width: 96px;
+      width: 104px;
       aspect-ratio: 16 / 9;
-      background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-blue-dark) 100%);
+      background: linear-gradient(135deg, var(--accent-blue, #009FE3) 0%, var(--accent-blue-dark, #0077b6) 100%);
       border-radius: 8px;
       overflow: hidden;
+      margin-right: 14px;
       cursor: pointer;
 
       img {
         width: 100%;
         height: 100%;
         object-fit: cover;
+        transition: transform 0.25s ease;
       }
 
       .personalized-play-icon {
         position: absolute;
         top: 50%;
         left: 50%;
-        transform: translate(-50%, -50%);
+        transform: translate(-50%, -50%) scale(1);
         color: white;
         opacity: 0;
-        transition: opacity 0.2s ease;
+        transition: all 0.25s ease;
         filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.5));
       }
     }
@@ -1161,8 +1219,8 @@ export default defineComponent({
     .personalized-list-title {
       flex: 1;
       min-width: 0;
-      font-size: 14px;
-      font-weight: 600;
+      font-size: 15px;
+      font-weight: 500;
       color: var(--sidebar-text);
       line-height: 1.3;
       cursor: pointer;
@@ -1171,6 +1229,106 @@ export default defineComponent({
       line-clamp: 2;
       -webkit-box-orient: vertical;
       overflow: hidden;
+    }
+  }
+}
+
+.search-filter-popover {
+  background: var(--ds-surface, #232733) !important;
+  border: 1px solid var(--ds-border, #43495b) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3) !important;
+  padding: 8px !important;
+  min-width: 170px;
+  backdrop-filter: blur(12px);
+
+  .filter-item {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--sidebar-text, #E1E7EF);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-align: left;
+
+    &:hover {
+      background: var(--ds-accent-hover, rgba(0, 155, 226, 0.08));
+      color: var(--ds-accent, #009be2);
+    }
+
+    &.text-error-item:hover {
+      background: rgba(244, 67, 54, 0.1) !important;
+      color: #F44336 !important;
+    }
+  }
+}
+
+// Suporte ao tema claro
+:root[data-theme="light"],
+.v-theme--light {
+  .personalized-videos-module {
+    .personalized-tabs-pill {
+      background: #FFFFFF;
+      border-color: var(--ds-border, #DEE4EC);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+
+      .personalized-tab-btn:hover:not(.active) {
+        color: var(--ds-text-primary, #30333A);
+        background: #F1F5F9;
+      }
+    }
+
+    .personalized-card {
+      background: #FFFFFF;
+      border-color: var(--ds-border, #DEE4EC);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+
+      .personalized-card-title {
+        color: var(--ds-text-primary, #30333A);
+      }
+
+      &:hover {
+        border-color: var(--ds-accent, #008FD0);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      }
+    }
+
+    .personalized-list-item {
+      border-bottom-color: rgba(0, 0, 0, 0.06);
+
+      &:hover {
+        background: rgba(0, 155, 226, 0.06) !important;
+      }
+
+      .personalized-list-title {
+        color: var(--ds-text-primary, #30333A);
+      }
+    }
+  }
+
+  .search-filter-popover {
+    background: #FFFFFF !important;
+    border: 1px solid var(--ds-border, #E2E8F0) !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
+
+    .filter-item {
+      color: var(--ds-text-primary, #334155);
+
+      &:hover {
+        background: rgba(0, 155, 226, 0.08);
+        color: var(--ds-accent, #008fd0);
+      }
+
+      &.text-error-item:hover {
+        background: rgba(244, 67, 54, 0.08) !important;
+        color: #E53935 !important;
+      }
     }
   }
 }

@@ -77,29 +77,42 @@ const props = withDefaults(defineProps<{
   moduleId?: string | null;
   image?: string;
   disabled?: boolean;
+  customAction?: boolean;
 }>(), {
   items: () => [],
   moduleId: null,
   image: "",
   disabled: false,
+  customAction: false,
 });
+
+const emit = defineEmits(["play", "play-mode"]);
 
 const media = useMedia();
 const menuOpen = ref(false);
 
 const isDisabled = computed(() => {
-  return props.disabled || !props.items || props.items.length === 0;
+  if (props.disabled) return true;
+  if (props.customAction) return false;
+  return !props.items || props.items.length === 0;
 });
 
 const playDefault = () => {
   if (isDisabled.value) return;
-  (media as any).playAll(props.items, "audio", props.moduleId, props.image);
+  emit("play");
+  emit("play-mode", "audio");
+  if (!props.customAction) {
+    (media as any).playAll(props.items, "audio", props.moduleId, props.image);
+  }
 };
 
 const playMode = (mode: "audio" | "instrumental") => {
   if (isDisabled.value) return;
   menuOpen.value = false;
-  (media as any).playAll(props.items, mode, props.moduleId, props.image);
+  emit("play-mode", mode);
+  if (!props.customAction) {
+    (media as any).playAll(props.items, mode, props.moduleId, props.image);
+  }
 };
 </script>
 

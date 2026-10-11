@@ -34,71 +34,77 @@
             variant="solo"
             density="comfortable"
             hide-details
-            clearable
             rounded="xl"
           >
             <template #append-inner>
-              <v-menu :close-on-content-click="false" location="bottom end">
-                <template #activator="{ props: menuProps }">
-                  <v-btn
-                    icon="mdi-filter-variant"
-                    size="small"
-                    variant="text"
-                    v-bind="menuProps"
-                    color="var(--sidebar-text-secondary)"
-                  />
-                </template>
-                <v-card
-                  class="elevation-3"
-                  :color="isDark ? 'var(--card-bg)' : '#ffffff'"
-                  :theme="isDark ? 'dark' : 'light'"
-                  rounded="lg"
-                  min-width="220"
-                  style="overflow: hidden; border: 1px solid rgba(150, 150, 150, 0.1);"
+              <div class="d-flex align-center">
+                <v-btn
+                  v-if="search"
+                  icon="mdi-close"
+                  size="x-small"
+                  variant="text"
+                  class="clear-search-btn mr-1"
+                  title="Limpar pesquisa"
+                  @click="search = ''"
+                />
+
+                <v-menu
+                  :close-on-content-click="false"
+                  location="bottom end"
+                  :offset="8"
+                  transition="slide-y-transition"
                 >
-                  <v-list
-                    class="py-2"
-                    bg-color="transparent"
-                  >
-                    <div
-                      class="text-caption font-weight-bold mb-2 mx-4 mt-1"
-                      style="color: var(--sidebar-text-secondary);"
-                    >
+                  <template #activator="{ props: filterProps }">
+                    <v-btn
+                      icon="mdi-filter-variant"
+                      size="small"
+                      variant="text"
+                      v-bind="filterProps"
+                      class="filter-search-btn"
+                      :class="{ 'filter-active': hasCustomFilter }"
+                      :title="t('filter_search_by')"
+                    />
+                  </template>
+                  <div class="search-filter-popover">
+                    <div class="filter-header">
                       {{ t('filter_search_by') }}
                     </div>
-                    <v-list-item
-                      :active="searchFilters.includes('name')"
-                      active-color="var(--accent-blue)"
-                      class="mx-2 rounded-lg mb-1"
-                      style="min-height: 40px;"
-                      @click="toggleSearchFilter('name')"
-                    >
-                      <div class="d-flex align-center">
-                        <v-icon :icon="searchFilters.includes('name') ? 'mdi-check-circle' : 'mdi-circle-outline'" size="small" class="mr-3" />
-                        <span class="text-body-2 font-weight-medium">{{ t('filter_collection_name') }}</span>
-                      </div>
-                    </v-list-item>
-                    <v-list-item
-                      :active="searchFilters.includes('songs')"
-                      active-color="var(--accent-blue)"
-                      class="mx-2 rounded-lg mb-1"
-                      style="min-height: 40px;"
+                    <button
+                      type="button"
+                      class="filter-item"
+                      :class="{ active: searchFilters.includes('songs') }"
                       @click="toggleSearchFilter('songs')"
                     >
-                      <div class="d-flex align-center">
-                        <v-icon :icon="searchFilters.includes('songs') ? 'mdi-check-circle' : 'mdi-circle-outline'" size="small" class="mr-3" />
-                        <span class="text-body-2 font-weight-medium">{{ t('filter_song_name') }}</span>
-                      </div>
-                    </v-list-item>
-                  </v-list>
-                </v-card>
-              </v-menu>
+                      <v-icon
+                        :icon="searchFilters.includes('songs') ? 'mdi-check-circle' : 'mdi-circle-outline'"
+                        size="18"
+                        class="filter-radio-icon mr-2.5"
+                      />
+                      <span class="filter-label">{{ t('filter_song_name') }}</span>
+                    </button>
+                    <button
+                      type="button"
+                      class="filter-item"
+                      :class="{ active: searchFilters.includes('name') }"
+                      @click="toggleSearchFilter('name')"
+                    >
+                      <v-icon
+                        :icon="searchFilters.includes('name') ? 'mdi-check-circle' : 'mdi-circle-outline'"
+                        size="18"
+                        class="filter-radio-icon mr-2.5"
+                      />
+                      <span class="filter-label">{{ t('filter_collection_name') }}</span>
+                    </button>
+                  </div>
+                </v-menu>
+              </div>
             </template>
           </v-text-field>
           <v-btn
             color="primary"
             variant="flat"
             rounded="lg"
+            height="36"
             class="text-none font-weight-bold px-4"
             @click="openCreateDialog"
           >
@@ -108,54 +114,24 @@
             {{ t('new_collection') }}
           </v-btn>
         </div>
-        <div v-else class="d-flex align-center" style="gap: 8px;">
-          <v-menu
+        <div v-else class="d-flex align-center" style="gap: 12px;">
+          <SplitPlayAllButton
             v-if="hasPlayableSongsInDetail"
-            location="bottom center"
-            open-on-hover
-            :close-on-content-click="true"
-          >
-            <template #activator="{ props: menuProps }">
-              <v-btn
-                v-bind="menuProps"
-                color="primary"
-                variant="tonal"
-                class="text-none rounded-lg"
-                prepend-icon="mdi-play"
-              >
-                {{ t('play_all') }}
-              </v-btn>
-            </template>
-            <v-card class="modern-glass-menu elevation-4 mt-2" rounded="lg">
-              <v-list class="py-1" bg-color="transparent" density="compact">
-                <v-list-item class="mx-1 rounded" style="min-height: 32px;" @click.stop="playAllCollection('audio')">
-                  <div class="d-flex align-center">
-                    <v-icon size="small" class="mr-2">
-                      mdi-play-circle
-                    </v-icon>
-                    <span class="text-caption font-weight-medium">{{ $t('modules.media.general.sung') }}</span>
-                  </div>
-                </v-list-item>
-                <v-list-item class="mx-1 rounded" style="min-height: 32px;" @click.stop="playAllCollection('instrumental')">
-                  <div class="d-flex align-center">
-                    <v-icon size="small" class="mr-2">
-                      mdi-play-circle-outline
-                    </v-icon>
-                    <span class="text-caption font-weight-medium">{{ $t('modules.media.general.instrumental') }}</span>
-                  </div>
-                </v-list-item>
-              </v-list>
-            </v-card>
-          </v-menu>
+            :custom-action="true"
+            @play="playAllCollection('audio')"
+            @play-mode="playAllCollection"
+          />
 
           <v-btn
             v-if="!isFavorites(detailCollection)"
             variant="tonal"
             color="primary"
-            class="text-none font-weight-bold rounded-lg"
+            rounded="lg"
+            height="32"
+            class="text-none font-weight-medium px-3 ml-1"
             @click="openAddSongDialog"
           >
-            <v-icon start>
+            <v-icon start size="16">
               mdi-plus
             </v-icon>
             {{ t('add') }}
@@ -284,57 +260,41 @@
                       >
                         {{ isFavorites(c) ? 'mdi-heart' : 'mdi-music-box-multiple' }}
                       </v-icon>
-                      <v-menu v-if="!isFavorites(c)" location="bottom end">
+                      <v-menu
+                        v-if="!isFavorites(c)"
+                        location="bottom end"
+                        :offset="6"
+                        transition="slide-y-transition"
+                      >
                         <template #activator="{ props: menuProps }">
-                          <v-btn
+                          <button
                             v-bind="menuProps"
-                            icon
-                            variant="flat"
-                            size="small"
-                            color="rgba(0,0,0,0.45)"
-                            style="position: absolute; top: 8px; right: 8px;"
+                            type="button"
+                            class="card-options-btn"
+                            :title="t('options') || 'Opções'"
                             @click.stop
                           >
                             <v-icon size="18">
                               mdi-dots-vertical
                             </v-icon>
-                          </v-btn>
+                          </button>
                         </template>
-                        <v-card
-                          class="elevation-3"
-                          :color="isDark ? 'var(--card-bg)' : '#ffffff'"
-                          :theme="isDark ? 'dark' : 'light'"
-                          rounded="lg"
-                          min-width="180"
-                          style="overflow: hidden; border: 1px solid rgba(150, 150, 150, 0.1);"
-                        >
-                          <v-list class="py-2" bg-color="transparent">
-                            <v-list-item
-                              class="mx-2 rounded-lg mb-1"
-                              style="min-height: 40px;"
-                              @click="openRenameDialog(c)"
-                            >
-                              <div class="d-flex align-center">
-                                <v-icon size="small" class="mr-3">
-                                  mdi-pencil
-                                </v-icon>
-                                <span class="text-body-2 font-weight-medium">{{ t('rename') }}</span>
-                              </div>
-                            </v-list-item>
-                            <v-list-item
-                              class="mx-2 rounded-lg mb-0"
-                              style="min-height: 40px;"
-                              @click="confirmDelete(c)"
-                            >
-                              <div class="d-flex align-center">
-                                <v-icon size="small" color="error" class="mr-3">
-                                  mdi-delete
-                                </v-icon>
-                                <span class="text-body-2 font-weight-medium text-error">{{ t('delete') }}</span>
-                              </div>
-                            </v-list-item>
-                          </v-list>
-                        </v-card>
+                        <div class="search-filter-popover card-context-popover" style="min-width: 160px;">
+                          <button
+                            type="button"
+                            class="filter-item"
+                            @click="openRenameDialog(c)"
+                          >
+                            <span class="filter-label">{{ t('rename') }}</span>
+                          </button>
+                          <button
+                            type="button"
+                            class="filter-item text-error-item"
+                            @click="confirmDelete(c)"
+                          >
+                            <span class="filter-label text-error">{{ t('delete') }}</span>
+                          </button>
+                        </div>
                       </v-menu>
                       <div
                         v-else
@@ -468,13 +428,19 @@
                         </v-tooltip>
                       </v-btn>
                     </template>
-                    <v-menu v-if="item.type === 'external' && !isFavorites(detailCollection)" location="bottom end" content-class="modern-glass-menu border">
+                    <v-menu
+                      v-if="item.type === 'external' && !isFavorites(detailCollection)"
+                      location="bottom end"
+                      :offset="8"
+                      transition="slide-y-transition"
+                    >
                       <template #activator="{ props: menuProps }">
                         <v-btn
                           v-bind="menuProps"
                           icon
                           size="small"
                           variant="text"
+                          :color="$theme.primary()"
                           class="mx-1"
                           @click.stop
                         >
@@ -491,83 +457,59 @@
                           </v-tooltip>
                         </v-btn>
                       </template>
-                      <v-card
-                        class="elevation-3"
-                        :color="isDark ? 'var(--card-bg)' : '#ffffff'"
-                        :theme="isDark ? 'dark' : 'light'"
-                        rounded="lg"
-                        min-width="180"
-                        style="overflow: hidden; border: 1px solid rgba(150, 150, 150, 0.1);"
-                      >
-                        <v-list class="py-2" bg-color="transparent">
-                          <v-list-item
-                            class="mx-2 rounded-lg mb-1"
-                            style="min-height: 40px;"
-                            @click="changeCantado(item)"
-                          >
-                            <div class="d-flex align-center">
-                              <v-icon size="small" class="mr-3">
-                                mdi-file-music-outline
-                              </v-icon>
-                              <span class="text-body-2 font-weight-medium">{{ t('change_cantado') }}</span>
-                            </div>
-                          </v-list-item>
-                          
-                          <v-list-item
-                            class="mx-2 rounded-lg mb-1"
-                            style="min-height: 40px;"
-                            @click="changePlayback(item)"
-                          >
-                            <div class="d-flex align-center">
-                              <v-icon size="small" class="mr-3">
-                                mdi-file-music-outline
-                              </v-icon>
-                              <span class="text-body-2 font-weight-medium">{{ item.filePathInstrumental ? t('change_playback') : t('add_playback') }}</span>
-                            </div>
-                          </v-list-item>
-                          
-                          <v-list-item
-                            v-if="item.filePathInstrumental"
-                            class="mx-2 rounded-lg mb-1"
-                            style="min-height: 40px;"
-                            @click="removePlayback(item)"
-                          >
-                            <div class="d-flex align-center">
-                              <v-icon size="small" class="mr-3">
-                                mdi-music-note-off-outline
-                              </v-icon>
-                              <span class="text-body-2 font-weight-medium">{{ t('remove_playback') }}</span>
-                            </div>
-                          </v-list-item>
+                      <div class="search-filter-popover" style="min-width: 190px;">
+                        <button
+                          type="button"
+                          class="filter-item"
+                          @click="changeCantado(item)"
+                        >
+                          <span class="filter-label">{{ t('change_cantado') }}</span>
+                        </button>
+                        
+                        <button
+                          type="button"
+                          class="filter-item"
+                          @click="changePlayback(item)"
+                        >
+                          <span class="filter-label">{{ item.filePathInstrumental ? t('change_playback') : t('add_playback') }}</span>
+                        </button>
+                        
+                        <button
+                          v-if="item.filePathInstrumental"
+                          type="button"
+                          class="filter-item"
+                          @click="removePlayback(item)"
+                        >
+                          <span class="filter-label">{{ t('remove_playback') }}</span>
+                        </button>
 
-                          <v-list-item
-                            class="mx-2 rounded-lg mb-0 mt-2"
-                            style="min-height: 40px;"
-                            @click="removeSong(item.id)"
-                          >
-                            <div class="d-flex align-center">
-                              <v-icon size="small" color="error" class="mr-3">
-                                mdi-delete-outline
-                              </v-icon>
-                              <span class="text-body-2 font-weight-medium text-error">{{ t('remove_from_collection') }}</span>
-                            </div>
-                          </v-list-item>
-                        </v-list>
-                      </v-card>
+                        <button
+                          type="button"
+                          class="filter-item text-error-item"
+                          @click="removeSong(item.id)"
+                        >
+                          <span class="filter-label text-error">{{ t('remove_from_collection') }}</span>
+                        </button>
+                      </div>
                     </v-menu>
                     <v-btn
                       v-else-if="!isFavorites(detailCollection)"
                       icon
                       size="small"
                       variant="text"
-                      color="error"
+                      :color="$theme.primary()"
                       class="mx-1"
                       @click="removeSong(item.id)"
                     >
                       <v-icon size="18">
                         mdi-close
                       </v-icon>
-                      <v-tooltip activator="parent" location="top">
+                      <v-tooltip
+                        activator="parent"
+                        location="top"
+                        open-delay="300"
+                        content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+                      >
                         {{ t('remove_from_collection') }}
                       </v-tooltip>
                     </v-btn>
@@ -1044,11 +986,22 @@
                 variant="solo"
                 density="comfortable"
                 hide-details
-                clearable
                 rounded="lg"
                 class="search-input-hero"
                 autofocus
-              />
+              >
+                <template #append-inner>
+                  <v-btn
+                    v-if="internalSearchQuery"
+                    icon="mdi-close"
+                    size="x-small"
+                    variant="text"
+                    class="clear-search-btn mr-1"
+                    title="Limpar pesquisa"
+                    @click="internalSearchQuery = ''"
+                  />
+                </template>
+              </v-text-field>
             </template>
           </div>
 
@@ -1408,6 +1361,7 @@ import manifest from "../manifest";
 import ModuleHeader from "@/components/ModuleHeader.vue";
 import LMusicMenuTable from "@/components/MusicMenuTable.vue";
 import PillSwitch, { PillSwitchItem } from "@/components/inputs/PillSwitch.vue";
+import SplitPlayAllButton from "@/components/SplitPlayAllButton.vue";
 import { FAVORITES_COLLECTION_ID, ensureFavoritesCollection } from "@/helpers/services/Favorites";
 
 interface InternalSong {
@@ -1473,12 +1427,13 @@ export default defineComponent({
     ModuleHeader,
     LMusicMenuTable,
     PillSwitch,
+    SplitPlayAllButton,
   },
   data() {
     return {
       collections: [] as CustomCollection[],
       search: "",
-      searchFilters: ["name"] as string[],
+      searchFilters: ["songs"] as string[],
       detailCollectionId: null as string | null,
       allSongs: [] as any[],
       showNameDialog: false,
@@ -1517,6 +1472,10 @@ export default defineComponent({
       return (this as any).$vuetify?.theme?.name === "dark";
     },
     /* COMPUTEDS OBRIGATÓRIAS - FIM */
+
+    hasCustomFilter(): boolean {
+      return this.searchFilters.includes("name");
+    },
 
     detailCollection(): CustomCollection | null {
       return this.collections.find((c) => c.id === this.detailCollectionId) || null;
@@ -1635,7 +1594,7 @@ export default defineComponent({
     searchFilters: {
       handler(val: string[]) {
         if (val.length === 0) {
-          this.$nextTick(() => { this.searchFilters = ["name"]; });
+          this.$nextTick(() => { this.searchFilters = ["songs"]; });
         }
       },
       deep: true,
@@ -2307,35 +2266,102 @@ export default defineComponent({
 .custom-collection-module {
   .search-bar {
     .v-field {
-      background: var(--card-bg) !important;
-      box-shadow: var(--shadow) !important;
-      border: 1px solid transparent;
-      transition: all 0.2s ease;
-      border-radius: 25px !important;
+      background: var(--ds-surface, var(--card-bg)) !important;
+      box-shadow: none !important;
+      border: 1px solid var(--ds-border, #43495b) !important;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      border-radius: 26px !important;
       
       .v-field__input {
-        padding: 12px 20px !important;
+        padding: 10px 16px !important;
         font-size: 14px !important;
+        color: var(--ds-text-primary, var(--sidebar-text)) !important;
+
+        &::placeholder {
+          color: var(--ds-text-secondary, var(--sidebar-text-secondary)) !important;
+          opacity: 0.8 !important;
+        }
       }
       
       .v-field__prepend-inner {
         padding-left: 16px !important;
         
         .v-icon {
-          color: var(--accent-blue) !important;
-          opacity: 0.7;
+          color: var(--ds-text-secondary, #a0a6b5) !important;
+          opacity: 0.9 !important;
+          transition: color 0.2s ease !important;
         }
       }
       
       &:hover {
-        box-shadow: var(--shadow-hover) !important;
+        border-color: rgba(0, 155, 226, 0.45) !important;
       }
       
       &.v-field--focused {
-        border-color: var(--accent-blue);
-        background: rgba(0, 151, 215, 0.05) !important;
-        box-shadow: 0 4px 20px rgba(0, 151, 215, 0.15) !important;
+        border-color: var(--ds-accent, #009be2) !important;
+        background: var(--ds-surface, var(--card-bg)) !important;
+        box-shadow: 0 0 0 3px rgba(0, 155, 226, 0.15) !important;
+
+        .v-field__prepend-inner .v-icon {
+          color: var(--ds-accent, #009be2) !important;
+          opacity: 1 !important;
+        }
       }
+    }
+
+    .clear-search-btn {
+      color: var(--ds-text-secondary, #a0a6b5) !important;
+      border-radius: 50% !important;
+      transition: all 0.15s ease !important;
+
+      &:hover {
+        color: var(--ds-text-primary, #f7f8fc) !important;
+        background: var(--ds-accent-hover, rgba(0, 155, 226, 0.1)) !important;
+      }
+    }
+
+    .filter-search-btn {
+      color: var(--ds-text-secondary, #a0a6b5) !important;
+      border-radius: 50% !important;
+      transition: all 0.15s ease !important;
+
+      &:hover, &.filter-active {
+        color: var(--ds-accent, #009be2) !important;
+        background: var(--ds-accent-hover, rgba(0, 155, 226, 0.1)) !important;
+      }
+    }
+  }
+
+  .filter-search-btn {
+    color: var(--sidebar-text-secondary);
+    transition: color 0.2s ease, transform 0.2s ease;
+
+    &:hover {
+      color: var(--ds-accent, #009FE3);
+      transform: scale(1.05);
+    }
+
+    &.filter-active {
+      color: var(--ds-accent, #009FE3);
+    }
+  }
+
+  .collections-page-scroll {
+    /* Scrollbar oficial do Louvor JA */
+    &::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: var(--accent-blue, #009FE3);
+      border-radius: 4px;
+      transition: background 0.2s ease;
+    }
+    &::-webkit-scrollbar-thumb:hover {
+      background: var(--accent-yellow, #FFC107);
     }
   }
 
@@ -2343,46 +2369,84 @@ export default defineComponent({
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 24px;
-    padding: 0 16px 24px 16px;
+    padding: 8px 16px 24px 16px;
   }
 
   .collection-card {
     width: 100%;
     min-width: 0;
-    background: var(--card-bg);
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow);
-    transition: var(--transition);
+    background: var(--ds-surface, #232733);
+    border: 1px solid var(--ds-border, #43495b);
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: transform 0.25s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.25s cubic-bezier(0.2, 0, 0, 1), border-color 0.25s ease;
     cursor: pointer;
     overflow: hidden;
+    position: relative;
 
     &:hover {
-      box-shadow: var(--shadow-hover);
-      transform: translateY(-2px);
+      transform: translateY(-4px);
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.25);
+      border-color: var(--ds-accent, #009FE3);
+
+      .card-image img,
+      .card-image .v-img {
+        transform: scale(1.04);
+      }
     }
 
     .card-image {
       width: 100%;
       aspect-ratio: 1 / 1;
       height: auto;
-      background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-blue-dark) 100%);
+      background: linear-gradient(135deg, var(--accent-blue, #009FE3) 0%, var(--accent-blue-dark, #0077b6) 100%);
       display: flex;
       align-items: center;
       justify-content: center;
       color: white;
       font-size: 48px;
       position: relative;
+      overflow: hidden;
+
+      img,
+      .v-img {
+        transition: transform 0.35s ease;
+      }
+    }
+
+    .card-options-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.45);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s ease, transform 0.15s ease;
+      z-index: 2;
+
+      &:hover {
+        background: rgba(0, 0, 0, 0.7);
+        transform: scale(1.08);
+      }
     }
 
     .card-content {
-      padding: 20px;
+      padding: 16px 18px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
       min-height: 80px;
 
       .card-title {
-        font-size: 16px;
+        font-size: 15px;
         font-weight: 600;
         color: var(--sidebar-text);
         margin-bottom: auto;
@@ -2397,7 +2461,7 @@ export default defineComponent({
       .card-stats {
         font-size: 12px;
         color: var(--sidebar-text-secondary);
-        margin-top: 8px;
+        margin-top: 6px;
         flex-shrink: 0;
       }
     }
@@ -2406,27 +2470,52 @@ export default defineComponent({
   .music-list-container {
     display: flex;
     flex-direction: column;
-    padding: 0 16px;
+    padding: 0;
+    width: 100%;
+
+    /* Scrollbar oficial do Louvor JA */
+    &::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: var(--accent-blue, #009FE3);
+      border-radius: 4px;
+      transition: background 0.2s ease;
+    }
+    &::-webkit-scrollbar-thumb:hover {
+      background: var(--accent-yellow, #FFC107);
+    }
   }
 
   .music-item {
     display: flex;
     align-items: center;
-    padding: 12px 20px;
+    padding: 12px 24px;
+    width: 100%;
     border-bottom: 1px solid var(--border-color);
     transition: var(--transition);
 
     &:hover {
-      background: var(--sidebar-hover);
+      background: var(--sidebar-hover) !important;
     }
 
     .music-number {
       font-size: 15px;
-      font-weight: 600;
+      font-weight: 700;
       line-height: 1;
-      color: var(--accent-blue);
-      min-width: 32px;
-      margin-right: 16px;
+      color: var(--accent-blue, #009FE3);
+      min-width: 44px;
+      width: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      margin-right: 14px;
+      flex-shrink: 0;
     }
 
     .music-info {
@@ -2457,6 +2546,167 @@ export default defineComponent({
       min-width: 60px;
       padding-right: 16px;
       text-align: right;
+    }
+  }
+}
+
+.search-filter-popover {
+  background: var(--ds-surface, #232733) !important;
+  border: 1px solid var(--ds-border, #43495b) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3) !important;
+  padding: 8px !important;
+  min-width: 200px;
+  backdrop-filter: blur(12px);
+
+  .filter-header {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--sidebar-text-secondary, #8C94A0);
+    padding: 6px 12px 8px 12px;
+  }
+
+  .filter-item {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--sidebar-text, #E1E7EF);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-align: left;
+
+    .filter-radio-icon {
+      color: var(--sidebar-text-secondary, #8C94A0);
+      transition: color 0.15s ease;
+      flex-shrink: 0;
+    }
+
+    &:hover {
+      background: var(--ds-accent-hover, rgba(0, 155, 226, 0.08));
+      color: var(--ds-accent, #009be2);
+
+      .filter-radio-icon {
+        color: var(--ds-accent, #009be2);
+      }
+    }
+
+    &.active {
+      background: rgba(0, 155, 226, 0.14) !important;
+      color: var(--ds-accent, #009be2) !important;
+      font-weight: 600;
+
+      .filter-radio-icon {
+        color: var(--ds-accent, #009be2) !important;
+      }
+
+      .filter-label {
+        font-weight: 600;
+      }
+    }
+
+    &.text-error-item:hover {
+      background: rgba(244, 67, 54, 0.1) !important;
+      color: #F44336 !important;
+
+      .filter-radio-icon {
+        color: #F44336 !important;
+      }
+    }
+  }
+}
+
+// Suporte ao tema claro
+:root[data-theme="light"],
+.v-theme--light {
+  .search-filter-popover {
+    background: #FFFFFF !important;
+    border: 1px solid var(--ds-border, #E2E8F0) !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
+
+    .filter-header {
+      color: #64748B;
+    }
+
+    .filter-item {
+      color: var(--ds-text-primary, #334155);
+
+      .filter-radio-icon {
+        color: #94A3B8;
+      }
+
+      &:hover {
+        background: rgba(0, 155, 226, 0.08);
+        color: var(--ds-accent, #008fd0);
+
+        .filter-radio-icon {
+          color: var(--ds-accent, #008fd0);
+        }
+      }
+
+      &.active {
+        background: rgba(0, 155, 226, 0.14) !important;
+        color: var(--ds-accent, #008fd0) !important;
+
+        .filter-radio-icon {
+          color: var(--ds-accent, #008fd0) !important;
+        }
+      }
+
+      &.text-error-item:hover {
+        background: rgba(244, 67, 54, 0.08) !important;
+        color: #E53935 !important;
+
+        .filter-radio-icon {
+          color: #E53935 !important;
+        }
+      }
+    }
+  }
+
+  .custom-collection-module {
+    .collection-card {
+      background: #FFFFFF;
+      border-color: var(--ds-border, #DEE4EC);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+
+      .card-content {
+        .card-title {
+          color: var(--ds-text-primary, #30333A);
+        }
+        .card-stats {
+          color: var(--ds-text-secondary, #6D7480);
+        }
+      }
+
+      &:hover {
+        border-color: var(--ds-accent, #008FD0);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      }
+    }
+
+    .music-item {
+      border-bottom-color: rgba(0, 0, 0, 0.06);
+
+      &:hover {
+        background: rgba(0, 155, 226, 0.06) !important;
+      }
+
+      .music-title {
+        color: var(--ds-text-primary, #30333A);
+      }
+
+      .music-artist,
+      .music-duration {
+        color: var(--ds-text-secondary, #6D7480);
+      }
     }
   }
 }

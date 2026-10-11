@@ -10,11 +10,22 @@
             variant="solo"
             density="comfortable"
             hide-details
-            clearable
             rounded="xl"
             :error="search !== '' && data.filter_count <= 0"
             @keydown.enter="playFirstResult"
-          />
+          >
+            <template #append-inner>
+              <v-btn
+                v-if="search"
+                icon="mdi-close"
+                size="x-small"
+                variant="text"
+                class="clear-search-btn mr-1"
+                title="Limpar pesquisa"
+                @click="search = ''"
+              />
+            </template>
+          </v-text-field>
         </div>
         <template #title-actions>
           <SplitPlayAllButton

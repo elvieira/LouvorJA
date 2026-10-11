@@ -1169,81 +1169,82 @@ export default defineComponent({
   &:active {
     cursor: grabbing;
   }
-}
-
-.collection-card {
-  width: 176px;
-  min-width: 176px;
-  background: var(--ds-surface, var(--card-bg));
-  border: 1px solid var(--ds-border, #43495b);
-  border-radius: 14px;
-  box-shadow: var(--shadow);
-  padding: 12px;
-  transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
-  cursor: pointer;
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  
-  &:hover {
-    border-color: rgba(0, 155, 226, 0.5);
-    box-shadow: var(--shadow-hover);
-    transform: translateY(-4px);
-
-    .card-image img, .card-image .v-img {
-      transform: scale(1.04);
-    }
-  }
-
-  &:active {
-    transform: scale(0.98);
-  }
-  
-  .card-image {
-    width: 100%;
-    aspect-ratio: 1 / 1;
-    background: var(--ds-surface-elevated, #353c52);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    overflow: hidden;
-    border-radius: 10px;
-
-    img, .v-img {
-      width: 100%;
-      height: 100%;
-      transition: transform 0.25s ease;
-    }
-  }
-  
-  .card-content {
-    padding: 10px 2px 2px 2px;
+  .collection-card {
+    width: 176px !important;
+    min-width: 176px !important;
+    max-width: 176px !important;
+    flex: 0 0 176px !important;
+    background: var(--ds-surface, var(--card-bg));
+    border: 1px solid var(--ds-border, #43495b);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    padding: 12px;
+    transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    flex-shrink: 0;
     display: flex;
     flex-direction: column;
-    justify-content: flex-start;
-    background: transparent;
     
-    .card-title {
-      font-size: 14px;
-      font-weight: 600;
-      line-height: 1.3;
-      color: var(--ds-text-primary, var(--sidebar-text));
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-      margin: 0;
+    &:hover {
+      border-color: rgba(0, 155, 226, 0.5);
+      box-shadow: var(--shadow-hover);
+      transform: translateY(-4px);
+
+      .card-image img, .card-image .v-img {
+        transform: scale(1.04);
+      }
+    }
+
+    &:active {
+      transform: scale(0.98);
     }
     
-    .card-stats {
-      font-size: 12px;
-      color: var(--ds-text-secondary, var(--sidebar-text-secondary));
-      margin-top: 4px;
-      white-space: nowrap;
+    .card-image {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      background: var(--ds-surface-elevated, #353c52);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
       overflow: hidden;
-      text-overflow: ellipsis;
+      border-radius: 10px;
+
+      img, .v-img {
+        width: 100%;
+        height: 100%;
+        transition: transform 0.25s ease;
+      }
+    }
+    
+    .card-content {
+      padding: 10px 2px 2px 2px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      background: transparent;
+      
+      .card-title {
+        font-size: 14px;
+        font-weight: 600;
+        line-height: 1.3;
+        color: var(--ds-text-primary, var(--sidebar-text));
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        margin: 0;
+      }
+      
+      .card-stats {
+        font-size: 12px;
+        color: var(--ds-text-secondary, var(--sidebar-text-secondary));
+        margin-top: 4px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
     }
   }
 }

@@ -30,7 +30,6 @@
           density="compact"
           flat
           hide-details
-          clearable
           :placeholder="$t('modules.help.manual.search_placeholder')"
           prepend-inner-icon="mdi-magnify"
           rounded="xl"
@@ -39,8 +38,19 @@
           elevation="0"
           class="search-bar"
           @keydown.esc="clearSearch"
-          @click:clear="clearSearch"
-        />
+        >
+          <template #append-inner>
+            <v-btn
+              v-if="search"
+              icon="mdi-close"
+              size="x-small"
+              variant="text"
+              class="clear-search-btn mr-1"
+              title="Limpar pesquisa"
+              @click="clearSearch"
+            />
+          </template>
+        </v-text-field>
       </div>
 
       <!-- Main Area (Sidebar + Content) -->

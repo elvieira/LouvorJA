@@ -6,19 +6,26 @@
       v-model="searchQuery"
       :placeholder="searchMode === 'reference' ? $t('modules.bible.placeholder_ref') : $t('modules.bible.placeholder_text')"
       prepend-inner-icon="mdi-magnify"
-      clearable
       variant="solo"
       density="comfortable"
       hide-details
       rounded="xl"
       class="search-input-hero w-100"
-      @click:clear="clearSearch"
       @keydown="onSearchKeyDown"
       @input="updateAutocompleteHint"
       @focus="onSearchFocus"
     >
       <template #append-inner>
         <div class="d-flex align-center ml-2" style="margin-right: -4px;">
+          <v-btn
+            v-if="searchQuery"
+            icon="mdi-close"
+            size="x-small"
+            variant="text"
+            class="clear-search-btn mr-1"
+            title="Limpar pesquisa"
+            @click="clearSearch"
+          />
           <div class="custom-segmented-control d-flex align-center pa-1" style="background: rgba(150, 150, 150, 0.15); border-radius: 20px; height: 32px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);">
             <div 
               class="d-flex align-center justify-center cursor-pointer"

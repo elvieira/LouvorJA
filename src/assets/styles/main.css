@@ -255,3 +255,102 @@ img, a {
     opacity: 0.5;
     cursor: not-allowed;
 }
+
+/* ==========================================================================
+   Design System: Search Bar (Global Standard - Same as Home)
+   ========================================================================== */
+.search-bar .v-field,
+.v-application .search-bar .v-field {
+    background: var(--ds-surface, var(--card-bg)) !important;
+    box-shadow: none !important;
+    border: 1px solid var(--ds-border, #43495b) !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    border-radius: 26px !important;
+}
+
+.search-bar .v-field .v-field__input,
+.v-application .search-bar .v-field .v-field__input {
+    padding: 10px 16px !important;
+    font-size: 14px !important;
+    color: var(--ds-text-primary, var(--sidebar-text)) !important;
+}
+
+.search-bar .v-field .v-field__input::placeholder,
+.v-application .search-bar .v-field .v-field__input::placeholder {
+    color: var(--ds-text-secondary, var(--sidebar-text-secondary)) !important;
+    opacity: 0.8 !important;
+}
+
+.search-bar .v-field .v-field__prepend-inner,
+.v-application .search-bar .v-field .v-field__prepend-inner {
+    padding-left: 16px !important;
+}
+
+.search-bar .v-field .v-field__prepend-inner .v-icon,
+.v-application .search-bar .v-field .v-field__prepend-inner .v-icon {
+    color: var(--ds-text-secondary, #a0a6b5) !important;
+    opacity: 0.9 !important;
+    transition: color 0.2s ease !important;
+}
+
+.search-bar .v-field:hover,
+.v-application .search-bar .v-field:hover {
+    border-color: rgba(0, 155, 226, 0.45) !important;
+}
+
+.search-bar .v-field.v-field--focused,
+.v-application .search-bar .v-field.v-field--focused {
+    border-color: var(--ds-accent, #009be2) !important;
+    background: var(--ds-surface, var(--card-bg)) !important;
+    box-shadow: 0 0 0 3px rgba(0, 155, 226, 0.15) !important;
+}
+
+.search-bar .v-field.v-field--focused .v-field__prepend-inner .v-icon,
+.v-application .search-bar .v-field.v-field--focused .v-field__prepend-inner .v-icon {
+    color: var(--ds-accent, #009be2) !important;
+    opacity: 1 !important;
+}
+
+.clear-search-btn {
+    color: var(--ds-text-secondary, #a0a6b5) !important;
+    border-radius: 50% !important;
+    transition: all 0.15s ease !important;
+}
+
+.clear-search-btn:hover {
+    color: var(--ds-text-primary, #f7f8fc) !important;
+    background: var(--ds-accent-hover, rgba(0, 155, 226, 0.1)) !important;
+}
+
+.filter-search-btn {
+    color: var(--ds-text-secondary, #a0a6b5) !important;
+    border-radius: 50% !important;
+    transition: all 0.15s ease !important;
+}
+
+.filter-search-btn:hover,
+.filter-search-btn.filter-active {
+    color: var(--ds-accent, #009be2) !important;
+    background: var(--ds-accent-hover, rgba(0, 155, 226, 0.1)) !important;
+}
+
+:root[data-theme="light"] .search-bar .v-field,
+.v-theme--light .search-bar .v-field {
+    background: #ffffff !important;
+    border-color: var(--ds-border, #dee4ec) !important;
+}
+
+:root[data-theme="light"] .search-bar .v-field .v-field__input,
+.v-theme--light .search-bar .v-field .v-field__input {
+    color: var(--ds-text-primary, #30333a) !important;
+}
+
+:root[data-theme="light"] .search-bar .v-field .v-field__input::placeholder,
+.v-theme--light .search-bar .v-field .v-field__input::placeholder {
+    color: var(--ds-text-secondary, #6d7480) !important;
+}
+
+:root[data-theme="light"] .search-bar .v-field .v-field__prepend-inner .v-icon,
+.v-theme--light .search-bar .v-field .v-field__prepend-inner .v-icon {
+    color: #94a3b8 !important;
+}

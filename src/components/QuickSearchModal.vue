@@ -27,102 +27,112 @@
           variant="solo"
           density="comfortable"
           hide-details
-          clearable
           rounded="lg"
           class="search-input-hero"
           autofocus
           @keydown.enter="playFirstResult"
         >
           <template #append-inner>
-            <v-menu :close-on-content-click="false" location="bottom end">
-              <template #activator="{ props: menuProps }">
-                <v-btn
-                  icon="mdi-filter-variant"
-                  size="small"
-                  variant="text"
-                  v-bind="menuProps"
-                  color="var(--sidebar-text-secondary)"
-                />
-              </template>
-              <v-card
-                class="elevation-3"
-                :color="isDark ? 'var(--card-bg)' : '#ffffff'"
-                :theme="isDark ? 'dark' : 'light'"
-                rounded="lg"
-                min-width="220"
-                style="overflow: hidden; border: 1px solid rgba(150, 150, 150, 0.1);"
-              >
-                <v-list class="py-2" bg-color="transparent">
-                  <div
-                    class="text-caption font-weight-bold mb-2 mx-4 mt-1"
-                    style="color: var(--sidebar-text-secondary);"
-                  >
-                    Filtrar pesquisa por:
-                  </div>
-                  <v-list-item
-                    :active="searchFilters.includes('name')"
-                    active-color="var(--accent-blue)"
-                    class="mx-2 rounded-lg mb-1"
-                    style="min-height: 40px;"
-                    @click="toggleSearchFilter('name')"
-                  >
-                    <div class="d-flex align-center">
-                      <v-icon :icon="searchFilters.includes('name') ? 'mdi-check-circle' : 'mdi-circle-outline'" size="small" class="mr-3" />
-                      <span class="text-body-2 font-weight-medium">Nome da música</span>
+            <div class="d-flex align-center">
+              <v-btn
+                v-if="searchQuery"
+                icon="mdi-close"
+                size="x-small"
+                variant="text"
+                class="clear-search-btn mr-1"
+                title="Limpar pesquisa"
+                @click="searchQuery = ''"
+              />
+              <v-menu :close-on-content-click="false" location="bottom end">
+                <template #activator="{ props: menuProps }">
+                  <v-btn
+                    icon="mdi-filter-variant"
+                    size="small"
+                    variant="text"
+                    v-bind="menuProps"
+                    color="var(--sidebar-text-secondary)"
+                  />
+                </template>
+                <v-card
+                  class="elevation-3"
+                  :color="isDark ? 'var(--card-bg)' : '#ffffff'"
+                  :theme="isDark ? 'dark' : 'light'"
+                  rounded="lg"
+                  min-width="220"
+                  style="overflow: hidden; border: 1px solid rgba(150, 150, 150, 0.1);"
+                >
+                  <v-list class="py-2" bg-color="transparent">
+                    <div
+                      class="text-caption font-weight-bold mb-2 mx-4 mt-1"
+                      style="color: var(--sidebar-text-secondary);"
+                    >
+                      Filtrar pesquisa por:
                     </div>
-                  </v-list-item>
-                  <v-list-item
-                    :active="searchFilters.includes('albums')"
-                    active-color="var(--accent-blue)"
-                    class="mx-2 rounded-lg mb-1"
-                    style="min-height: 40px;"
-                    @click="toggleSearchFilter('albums')"
-                  >
-                    <div class="d-flex align-center">
-                      <v-icon :icon="searchFilters.includes('albums') ? 'mdi-check-circle' : 'mdi-circle-outline'" size="small" class="mr-3" />
-                      <span class="text-body-2 font-weight-medium">Álbum/Coletânea</span>
-                    </div>
-                  </v-list-item>
-                  <v-list-item
-                    :active="searchFilters.includes('lyric')"
-                    active-color="var(--accent-blue)"
-                    class="mx-2 rounded-lg mb-1"
-                    style="min-height: 40px;"
-                    @click="toggleSearchFilter('lyric')"
-                  >
-                    <div class="d-flex align-center">
-                      <v-icon :icon="searchFilters.includes('lyric') ? 'mdi-check-circle' : 'mdi-circle-outline'" size="small" class="mr-3" />
-                      <span class="text-body-2 font-weight-medium">Letra da música</span>
-                    </div>
-                  </v-list-item>
-                  <v-divider class="my-1 border-opacity-25" />
-                  <v-list-item
-                    :active="searchFilters.includes('online_collection')"
-                    active-color="var(--accent-blue)"
-                    class="mx-2 rounded-lg mb-1"
-                    style="min-height: 40px;"
-                    @click="toggleSearchFilter('online_collection')"
-                  >
-                    <div class="d-flex align-center">
-                      <v-icon :icon="searchFilters.includes('online_collection') ? 'mdi-check-circle' : 'mdi-circle-outline'" size="small" class="mr-3" />
-                      <span class="text-body-2 font-weight-medium">Coletâneas Online</span>
-                    </div>
-                  </v-list-item>
-                  <v-list-item
-                    :active="searchFilters.includes('custom_collection')"
-                    active-color="var(--accent-blue)"
-                    class="mx-2 rounded-lg mb-1"
-                    style="min-height: 40px;"
-                    @click="toggleSearchFilter('custom_collection')"
-                  >
-                    <div class="d-flex align-center">
-                      <v-icon :icon="searchFilters.includes('custom_collection') ? 'mdi-check-circle' : 'mdi-circle-outline'" size="small" class="mr-3" />
-                      <span class="text-body-2 font-weight-medium">Coletâneas Personalizadas</span>
-                    </div>
-                  </v-list-item>
-                </v-list>
-              </v-card>
-            </v-menu>
+                    <v-list-item
+                      :active="searchFilters.includes('name')"
+                      active-color="var(--accent-blue)"
+                      class="mx-2 rounded-lg mb-1"
+                      style="min-height: 40px;"
+                      @click="toggleSearchFilter('name')"
+                    >
+                      <div class="d-flex align-center">
+                        <v-icon :icon="searchFilters.includes('name') ? 'mdi-check-circle' : 'mdi-circle-outline'" size="small" class="mr-3" />
+                        <span class="text-body-2 font-weight-medium">Nome da música</span>
+                      </div>
+                    </v-list-item>
+                    <v-list-item
+                      :active="searchFilters.includes('albums')"
+                      active-color="var(--accent-blue)"
+                      class="mx-2 rounded-lg mb-1"
+                      style="min-height: 40px;"
+                      @click="toggleSearchFilter('albums')"
+                    >
+                      <div class="d-flex align-center">
+                        <v-icon :icon="searchFilters.includes('albums') ? 'mdi-check-circle' : 'mdi-circle-outline'" size="small" class="mr-3" />
+                        <span class="text-body-2 font-weight-medium">Álbum/Coletânea</span>
+                      </div>
+                    </v-list-item>
+                    <v-list-item
+                      :active="searchFilters.includes('lyric')"
+                      active-color="var(--accent-blue)"
+                      class="mx-2 rounded-lg mb-1"
+                      style="min-height: 40px;"
+                      @click="toggleSearchFilter('lyric')"
+                    >
+                      <div class="d-flex align-center">
+                        <v-icon :icon="searchFilters.includes('lyric') ? 'mdi-check-circle' : 'mdi-circle-outline'" size="small" class="mr-3" />
+                        <span class="text-body-2 font-weight-medium">Letra da música</span>
+                      </div>
+                    </v-list-item>
+                    <v-divider class="my-1 border-opacity-25" />
+                    <v-list-item
+                      :active="searchFilters.includes('online_collection')"
+                      active-color="var(--accent-blue)"
+                      class="mx-2 rounded-lg mb-1"
+                      style="min-height: 40px;"
+                      @click="toggleSearchFilter('online_collection')"
+                    >
+                      <div class="d-flex align-center">
+                        <v-icon :icon="searchFilters.includes('online_collection') ? 'mdi-check-circle' : 'mdi-circle-outline'" size="small" class="mr-3" />
+                        <span class="text-body-2 font-weight-medium">Coletâneas Online</span>
+                      </div>
+                    </v-list-item>
+                    <v-list-item
+                      :active="searchFilters.includes('custom_collection')"
+                      active-color="var(--accent-blue)"
+                      class="mx-2 rounded-lg mb-1"
+                      style="min-height: 40px;"
+                      @click="toggleSearchFilter('custom_collection')"
+                    >
+                      <div class="d-flex align-center">
+                        <v-icon :icon="searchFilters.includes('custom_collection') ? 'mdi-check-circle' : 'mdi-circle-outline'" size="small" class="mr-3" />
+                        <span class="text-body-2 font-weight-medium">Coletâneas Personalizadas</span>
+                      </div>
+                    </v-list-item>
+                  </v-list>
+                </v-card>
+              </v-menu>
+            </div>
           </template>
         </v-text-field>
       </div>
