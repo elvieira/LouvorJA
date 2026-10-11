@@ -143,6 +143,35 @@ img, a {
 }
 
 /* ==========================================================================
+   Modern Dropdown Menu / Select & Autocomplete Popup Menus
+   ========================================================================== */
+.v-select__content,
+.v-autocomplete__content {
+    border-radius: 12px !important;
+}
+
+.v-select__content .v-list,
+.v-autocomplete__content .v-list {
+    background: var(--card-bg) !important;
+    border-radius: 12px !important;
+    border: 1px solid var(--border-color, rgba(150, 150, 150, 0.2)) !important;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35) !important;
+    padding: 8px 0 !important;
+}
+
+.v-select__content .v-list .v-list-item,
+.v-autocomplete__content .v-list .v-list-item {
+    margin: 0 8px 4px 8px !important;
+    border-radius: 8px !important;
+    min-height: 40px !important;
+}
+
+.v-select__content .v-list .v-list-item:last-child,
+.v-autocomplete__content .v-list .v-list-item:last-child {
+    margin-bottom: 0 !important;
+}
+
+/* ==========================================================================
    Custom Segmented Pill Switch (Estilo Editor de Música)
    ========================================================================== */
 .custom-tabs-pill {

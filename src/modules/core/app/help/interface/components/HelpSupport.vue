@@ -106,11 +106,50 @@
                     item-value="value"
                     prepend-inner-icon="mdi-shape-outline"
                     variant="outlined"
+                    color="primary"
                     density="comfortable"
                     rounded="lg"
                     :rules="[rules.required]"
-                    class="mb-2"
-                  />
+                    class="mb-2 modern-input-compact"
+                    :menu-props="{ transition: 'fade-transition' }"
+                    :list-props="{ style: 'background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border-color, rgba(150, 150, 150, 0.2)); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); padding: 8px 0;' }"
+                  >
+                    <template #selection="{ item }">
+                      <div class="d-flex align-center">
+                        <v-icon
+                          v-if="item.raw.icon"
+                          :icon="item.raw.icon"
+                          size="small"
+                          class="mr-2"
+                          style="opacity: 0.85;"
+                        />
+                        <span class="text-body-2">{{ item.title }}</span>
+                      </div>
+                    </template>
+                    <template #item="{ item, props }">
+                      <v-list-item
+                        v-bind="props"
+                        :title="undefined"
+                        class="mx-2 rounded-lg mb-1"
+                        color="primary"
+                        style="min-height: 40px;"
+                      >
+                        <template v-if="item.raw.icon" #prepend>
+                          <v-icon
+                            :icon="item.raw.icon"
+                            size="20"
+                            class="mr-2"
+                            :color="item.value === form.category ? 'primary' : 'rgba(128,128,128,0.7)'"
+                          />
+                        </template>
+                        <template #title>
+                          <span class="text-body-2 font-weight-medium" :class="item.value === form.category ? '' : 'opacity-80'">
+                            {{ item.title }}
+                          </span>
+                        </template>
+                      </v-list-item>
+                    </template>
+                  </v-select>
                 </v-col>
 
                 <!-- Assunto -->
@@ -297,10 +336,10 @@ export default defineComponent({
     });
 
     const categories = computed(() => [
-      { value: "doubt", label: t("modules.help.support.categories.doubt") },
-      { value: "suggestion", label: t("modules.help.support.categories.suggestion") },
-      { value: "bug", label: t("modules.help.support.categories.bug") },
-      { value: "other", label: t("modules.help.support.categories.other") },
+      { value: "doubt", label: t("modules.help.support.categories.doubt"), icon: "mdi-help-circle-outline" },
+      { value: "suggestion", label: t("modules.help.support.categories.suggestion"), icon: "mdi-lightbulb-outline" },
+      { value: "bug", label: t("modules.help.support.categories.bug"), icon: "mdi-bug-outline" },
+      { value: "other", label: t("modules.help.support.categories.other"), icon: "mdi-message-text-outline" },
     ]);
 
     const rules = {

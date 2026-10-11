@@ -326,27 +326,48 @@
                       item-title="name"
                       item-value="id"
                       variant="outlined"
-                      color="teal"
+                      color="primary"
                       rounded="lg"
                       density="compact"
                       hide-details
                       class="modern-input-compact"
                       :placeholder="t('fields.select_collection')"
+                      :menu-props="{ transition: 'fade-transition' }"
+                      :list-props="{ style: 'background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border-color, rgba(150, 150, 150, 0.2)); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); padding: 8px 0;' }"
                       @update:model-value="onSelectCustomCollection"
                     >
+                      <template #selection="{ item }">
+                        <div class="d-flex align-center justify-space-between w-100">
+                          <span class="text-body-2 font-weight-medium">{{ item.title }}</span>
+                          <v-chip
+                            size="x-small"
+                            color="primary"
+                            variant="tonal"
+                            class="ml-2"
+                          >
+                            {{ (item.raw.songs || []).length }} músicas
+                          </v-chip>
+                        </div>
+                      </template>
                       <template #item="{ item, props }">
                         <v-list-item
                           v-bind="props"
                           :title="undefined"
                           class="mx-2 rounded-lg mb-1"
-                          color="teal"
+                          color="primary"
+                          style="min-height: 40px;"
                         >
+                          <template #prepend>
+                            <v-icon :color="item.value === addForm.collectionId ? 'primary' : 'rgba(128,128,128,0.5)'" class="mr-2" size="20">
+                              mdi-folder-star-outline
+                            </v-icon>
+                          </template>
                           <template #title>
                             <div class="d-flex align-center justify-space-between w-100">
-                              <span class="text-body-2 font-weight-medium">{{ item.title }}</span>
+                              <span class="text-body-2 font-weight-medium" :class="item.value === addForm.collectionId ? '' : 'opacity-80'">{{ item.title }}</span>
                               <v-chip
                                 size="x-small"
-                                color="teal"
+                                color="primary"
                                 variant="tonal"
                                 class="ml-2"
                               >
@@ -370,12 +391,14 @@
                       item-title="name"
                       item-value="id"
                       variant="outlined"
-                      color="teal"
+                      color="primary"
                       rounded="lg"
                       density="compact"
                       hide-details
                       class="modern-input-compact"
                       :placeholder="t('fields.select_song')"
+                      :menu-props="{ transition: 'fade-transition' }"
+                      :list-props="{ style: 'background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border-color, rgba(150, 150, 150, 0.2)); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); padding: 8px 0;' }"
                       return-object
                       @update:model-value="onSelectCustomSong"
                     >
@@ -389,13 +412,19 @@
                           v-bind="props"
                           :title="undefined"
                           class="mx-2 rounded-lg mb-1"
-                          color="teal"
+                          color="primary"
+                          style="min-height: 40px;"
                         >
+                          <template #prepend>
+                            <v-icon :color="item.raw.id === addForm.collectionSongId?.id ? 'primary' : 'rgba(128,128,128,0.5)'" class="mr-2" size="20">
+                              {{ item.raw.type === 'internal' ? 'mdi-music-circle-outline' : 'mdi-file-music-outline' }}
+                            </v-icon>
+                          </template>
                           <template #title>
                             <div class="d-flex align-center justify-space-between w-100">
                               <div class="d-flex flex-column text-truncate" style="min-width: 0;">
-                                <span class="text-body-2 font-weight-medium text-truncate">{{ item.raw.name }}</span>
-                                <span class="text-caption text-truncate opacity-60">{{ item.raw.album }}</span>
+                                <span class="text-body-2 font-weight-medium text-truncate" :class="item.raw.id === addForm.collectionSongId?.id ? '' : 'opacity-80'">{{ item.raw.name }}</span>
+                                <span v-if="item.raw.album" class="text-caption text-truncate opacity-60" style="font-size: 0.72rem !important;">{{ item.raw.album }}</span>
                               </div>
                               <v-chip
                                 size="x-small"
