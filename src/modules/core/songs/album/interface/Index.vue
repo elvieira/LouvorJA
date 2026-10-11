@@ -37,44 +37,12 @@
             {{ module?.data?.name }}
           </h2>
           
-          <v-menu
-            v-if="module?.data?.musics && module.data.musics.length > 0"
-            location="bottom center"
-            open-on-hover
-            :close-on-content-click="true"
-          >
-            <template #activator="{ props: menuProps }">
-              <v-btn
-                v-bind="menuProps"
-                color="primary"
-                variant="tonal"
-                class="ml-6 text-none rounded"
-                prepend-icon="mdi-play"
-              >
-                {{ $t('modules.media.general.play_all') }}
-              </v-btn>
-            </template>
-            <v-card class="modern-glass-menu elevation-4 mt-2" rounded="lg">
-              <v-list class="py-1" bg-color="transparent" density="compact">
-                <v-list-item class="mx-1 rounded" style="min-height: 32px;" @click.stop="$media.playAll(module.data.musics, 'audio', module.data.id_album, module.data.url_image)">
-                  <div class="d-flex align-center">
-                    <v-icon size="small" class="mr-2">
-                      mdi-play-circle
-                    </v-icon>
-                    <span class="text-caption font-weight-medium">{{ $t('modules.media.general.sung') }}</span>
-                  </div>
-                </v-list-item>
-                <v-list-item class="mx-1 rounded" style="min-height: 32px;" @click.stop="$media.playAll(module.data.musics, 'instrumental', module.data.id_album, module.data.url_image)">
-                  <div class="d-flex align-center">
-                    <v-icon size="small" class="mr-2">
-                      mdi-play-circle-outline
-                    </v-icon>
-                    <span class="text-caption font-weight-medium">{{ $t('modules.media.general.instrumental') }}</span>
-                  </div>
-                </v-list-item>
-              </v-list>
-            </v-card>
-          </v-menu>
+          <SplitPlayAllButton
+            class="ml-6"
+            :items="module?.data?.musics"
+            :module-id="module?.data?.id_album"
+            :image="module?.data?.url_image"
+          />
         </div>
       </div>
 
@@ -95,10 +63,7 @@
                 style="cursor: pointer;"
                 @click="$media.open({ id_music: item.id_music, id_album: module?.data?.id_album, mode: 'audio' })"
               >
-                <td class="music-number text-center">
-                  {{ item.track }}
-                </td>
-                <td class="music-info">
+                <td class="music-info pl-3">
                   <h4 class="music-title">
                     {{ item.name }}
                   </h4>
@@ -129,12 +94,14 @@ import manifest from "../manifest";
 
 import MusicMenuTable from "@/components/MusicMenuTable.vue";
 import MenuToggleButton from "@/components/MenuToggleButton.vue";
+import SplitPlayAllButton from "@/components/SplitPlayAllButton.vue";
 
 export default defineComponent({
   name: "AlbumModule",
   components: {
     MusicMenuTable,
     MenuToggleButton,
+    SplitPlayAllButton,
   },
   computed: {
     /* COMPUTEDS OBRIGATÓRIAS - INÍCIO */
@@ -192,6 +159,7 @@ export default defineComponent({
   table {
     background: transparent !important;
     border-spacing: 0;
+    width: 100%;
   }
 
   tr:hover td {
@@ -201,13 +169,15 @@ export default defineComponent({
   .music-list-container {
     display: flex;
     flex-direction: column;
-    padding: 0 16px;
+    padding: 0;
+    width: 100%;
   }
 
   .music-item {
     display: flex;
     align-items: center;
-    padding: 12px 20px;
+    padding: 12px 24px;
+    width: 100%;
     border-bottom: 1px solid var(--border-color);
     transition: var(--transition);
     
@@ -230,14 +200,25 @@ export default defineComponent({
     }
   }
 
-  .music-number {
-    font-size: 15px;
-    font-weight: 600; line-height: 1;
-    color: var(--accent-blue);
-    min-width: 40px;
-    margin-right: 16px;
+  .v-table__wrapper {
+    /* Scrollbar oficial do Louvor JA */
+    &::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: var(--accent-blue, #009FE3);
+      border-radius: 4px;
+      transition: background 0.2s ease;
+    }
+    &::-webkit-scrollbar-thumb:hover {
+      background: var(--accent-yellow, #FFC107);
+    }
   }
-  
+
   .music-info {
     flex: 1;
     display: flex;
@@ -268,6 +249,29 @@ export default defineComponent({
   
   .music-actions {
     min-width: 80px;
+  }
+}
+
+// Suporte ao tema claro
+:root[data-theme="light"],
+.v-theme--light {
+  .modern-hymnal-table {
+    .music-item {
+      border-bottom-color: rgba(0, 0, 0, 0.06);
+
+      &:hover {
+        background: rgba(0, 155, 226, 0.06) !important;
+      }
+
+      .music-title {
+        color: var(--ds-text-primary, #30333A);
+      }
+
+      .music-artist,
+      .music-duration {
+        color: var(--ds-text-secondary, #6D7480);
+      }
+    }
   }
 }
 </style>

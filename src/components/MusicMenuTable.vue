@@ -28,10 +28,13 @@
 
     <!-- Adicionar à Fila -->
     <v-menu
-      v-if="canQueue && hasInstrumentalMusic"
+      v-if="canQueue"
       v-model="queueMenuOpen"
       location="top center"
-      :close-on-content-click="false"
+      :offset="8"
+      open-on-hover
+      :open-delay="120"
+      :close-on-content-click="true"
       transition="slide-y-reverse-transition"
     >
       <template #activator="{ props: menuProps }">
@@ -45,58 +48,43 @@
           :style="compact ? 'min-width: 26px; width: 26px; height: 26px;' : ''"
           icon
           @click.stop
-          @mouseenter="queueMenuOpen = true"
-          @mouseleave="queueMenuOpen = false"
         >
           <v-icon :size="compact ? 17 : undefined">
             mdi-playlist-plus
           </v-icon>
-          <v-tooltip
-            activator="parent"
-            location="top"
-            open-delay="300"
-            content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
-          >
-            {{ $t('modules.media.queue.add_to_queue') }}
-          </v-tooltip>
         </v-btn>
       </template>
-      <v-card
-        class="elevation-3"
-        :color="isDark ? 'var(--card-bg)' : '#f4f5f7'"
-        :theme="isDark ? 'dark' : 'light'"
-        rounded="lg"
-        @mouseenter="queueMenuOpen = true"
-        @mouseleave="queueMenuOpen = false"
-      >
-        <div class="text-caption text-center pt-2 pb-0 font-weight-bold opacity-70" :class="!isDark ? 'text-black' : ''">
+
+      <div class="queue-context-menu">
+        <div class="filter-header">
           {{ $t('modules.media.queue.add_to_queue') }}
         </div>
-        <v-list class="py-1" bg-color="transparent" density="compact">
-          <v-list-item class="mx-1 rounded" style="min-height: 32px;" @click.stop="addToQueue('audio')">
-            <div class="d-flex align-center">
-              <v-icon size="small" class="mr-2">
-                mdi-play-circle
-              </v-icon>
-              <span class="text-caption font-weight-medium">{{ $t('modules.media.general.sung') }}</span>
-            </div>
-          </v-list-item>
-          <v-list-item class="mx-1 rounded" style="min-height: 32px;" @click.stop="addToQueue('instrumental')">
-            <div class="d-flex align-center">
-              <v-icon size="small" class="mr-2">
-                mdi-play-circle-outline
-              </v-icon>
-              <span class="text-caption font-weight-medium">{{ $t('modules.media.general.instrumental') }}</span>
-            </div>
-          </v-list-item>
-        </v-list>
-      </v-card>
+        <!-- Opção: Cantado -->
+        <button
+          type="button"
+          class="filter-item"
+          @click.stop="addToQueue('audio')"
+        >
+          <span class="filter-label">{{ $t('modules.media.general.sung') || 'Cantado' }}</span>
+        </button>
+
+        <!-- Opção: Playback -->
+        <button
+          type="button"
+          class="filter-item"
+          :disabled="!hasInstrumentalMusic"
+          :class="{ 'is-disabled': !hasInstrumentalMusic }"
+          @click.stop="hasInstrumentalMusic ? addToQueue('instrumental') : null"
+        >
+          <span class="filter-label">{{ $t('modules.media.general.instrumental') || 'Playback' }}</span>
+        </button>
+      </div>
     </v-menu>
 
-    <!-- Se não tem instrumental ou não pode fila -->
+    <!-- Se não pode fila (externas / online) -->
     <v-btn
       v-else
-      :disabled="!canQueue"
+      :disabled="true"
       variant="text"
       :color="color ? color : $theme.primary()"
       :density="compact ? 'compact' : 'compact'"
@@ -104,7 +92,6 @@
       :class="compact ? 'mx-0 px-0' : 'mx-1'"
       :style="compact ? 'min-width: 26px; width: 26px; height: 26px;' : ''"
       icon
-      @click.stop="canQueue ? addToQueue('audio') : null"
     >
       <v-icon :size="compact ? 17 : undefined">
         mdi-playlist-plus
@@ -115,7 +102,7 @@
         open-delay="300"
         content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
       >
-        {{ canQueue ? $t('modules.media.queue.add_to_queue') : 'Fila disponível para músicas locais' }}
+        {{ 'Fila disponível para músicas locais' }}
       </v-tooltip>
     </v-btn>
 
@@ -150,7 +137,6 @@
 import { computed, ref } from "vue";
 import { useStore } from "vuex";
 import { useI18n } from "vue-i18n";
-import { useTheme } from "vuetify";
 import { useMedia } from "@/composables/useHelpers";
 import { toggleFavoriteSong } from "@/helpers/services/Favorites";
 
@@ -176,10 +162,7 @@ const emit = defineEmits(["action"]);
 
 const store = useStore();
 const { t } = useI18n();
-const theme = useTheme();
 const media = useMedia();
-
-const isDark = computed(() => theme.name.value === "dark");
 
 const queueMenuOpen = ref(false);
 
@@ -239,6 +222,16 @@ const canQueue = computed(() => {
 const addToQueue = (mode: string) => {
   media.addToQueue({ id_music: Number(props.idMusic), mode });
   queueMenuOpen.value = false;
+  import("@/helpers/ui/Snackbar").then(({ default: $snackbar }) => {
+    const modeLabel = mode === "instrumental" 
+      ? (t("modules.media.general.instrumental") || "Playback") 
+      : (t("modules.media.general.sung") || "Cantado");
+    $snackbar.show({
+      text: `${t("modules.media.queue.added") || "Música adicionada à fila"} (${modeLabel})`,
+      color: "success",
+      timeout: 2000,
+    });
+  });
   emit("action", "queue");
 };
 
@@ -416,5 +409,105 @@ const buttons = computed(() => {
 
 .favorite-active-btn {
   color: #e91e63 !important;
+}
+
+.queue-context-menu {
+  min-width: 150px;
+  background: var(--ds-surface, #30364a) !important;
+  border: 1px solid var(--ds-border, #43495b) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.28) !important;
+  padding: 8px !important;
+  user-select: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  .filter-header {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--ds-text-secondary, #a0a6b5);
+    padding: 6px 10px 4px 10px;
+    line-height: 1;
+  }
+
+  .filter-item {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 8px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    margin-bottom: 2px;
+    background: transparent;
+    border: none;
+    color: var(--ds-text-primary, #f7f8fc);
+    text-align: left;
+    outline: none;
+
+    .filter-label {
+      font-size: 13px;
+      font-weight: 500;
+      line-height: 1.2;
+    }
+
+    &:hover:not(:disabled):not(.is-disabled) {
+      background: var(--ds-accent-hover, rgba(0, 155, 226, 0.08));
+      color: var(--ds-accent, #009be2);
+    }
+
+    &:active:not(:disabled):not(.is-disabled) {
+      background: rgba(0, 155, 226, 0.14) !important;
+      color: var(--ds-accent, #009be2) !important;
+      font-weight: 600;
+    }
+
+    &.is-disabled,
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      color: var(--ds-text-secondary, #a0a6b5);
+
+      &:hover {
+        background: transparent;
+        color: var(--ds-text-secondary, #a0a6b5);
+      }
+    }
+  }
+}
+
+:root[data-theme="light"],
+.v-theme--light {
+  .queue-context-menu {
+    background: #FFFFFF !important;
+    border: 1px solid var(--ds-border, #E2E8F0) !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
+
+    .filter-header {
+      color: #64748B;
+    }
+
+    .filter-item {
+      color: var(--ds-text-primary, #334155);
+
+      &:hover:not(:disabled):not(.is-disabled) {
+        background: rgba(0, 155, 226, 0.08);
+        color: var(--ds-accent, #008fd0);
+      }
+
+      &:active:not(:disabled):not(.is-disabled) {
+        background: rgba(0, 155, 226, 0.14) !important;
+        color: var(--ds-accent, #008fd0) !important;
+      }
+
+      &.is-disabled,
+      &:disabled {
+        color: #94A3B8;
+      }
+    }
+  }
 }
 </style>

@@ -15,117 +15,118 @@
             @keydown.enter="playFirstResult"
           >
             <template #append-inner>
-              <v-menu :close-on-content-click="false" location="bottom end">
-                <template #activator="{ props }">
+              <v-menu
+                :close-on-content-click="false"
+                location="bottom end"
+                :offset="8"
+                transition="slide-y-transition"
+              >
+                <template #activator="{ props: filterProps }">
                   <v-btn
                     icon="mdi-filter-variant"
                     size="small"
                     variant="text"
-                    v-bind="props"
-                    color="var(--sidebar-text-secondary)"
+                    v-bind="filterProps"
+                    class="filter-search-btn"
+                    :class="{ 'filter-active': hasCustomFilter }"
+                    :title="t('filter_by')"
                   />
                 </template>
-                <v-card
-                  class="elevation-3"
-                  :color="isDark ? 'var(--card-bg)' : '#ffffff'"
-                  :theme="isDark ? 'dark' : 'light'"
-                  rounded="lg"
-                  min-width="220"
-                  style="overflow: hidden; border: 1px solid rgba(150, 150, 150, 0.1);"
-                >
-                  <v-list
-                    class="py-2"
-                    bg-color="transparent"
+                <div class="search-filter-popover">
+                  <div class="filter-header">
+                    {{ t('filter_by') }}
+                  </div>
+                  <button
+                    type="button"
+                    class="filter-item"
+                    :class="{ active: searchFilters.includes('name') }"
+                    @click="toggleSearchFilter('name')"
                   >
-                    <div
-                      class="text-caption font-weight-bold mb-2 mx-4 mt-1"
-                      style="color: var(--sidebar-text-secondary);"
-                    >
-                      {{ t('filter_by') }}
-                    </div>
-                    <v-list-item
-                      :active="searchFilters.includes('name')"
-                      active-color="var(--accent-blue)"
-                      class="mx-2 rounded-lg mb-1"
-                      style="min-height: 40px;"
-                      @click="toggleSearchFilter('name')"
-                    >
-                      <div class="d-flex align-center">
-                        <v-icon :icon="searchFilters.includes('name') ? 'mdi-check-circle' : 'mdi-circle-outline'" size="small" class="mr-3" />
-                        <span class="text-body-2 font-weight-medium">{{ t('filter_song_name') }}</span>
-                      </div>
-                    </v-list-item>
-                    <v-list-item
-                      :active="searchFilters.includes('albums')"
-                      active-color="var(--accent-blue)"
-                      class="mx-2 rounded-lg mb-1"
-                      style="min-height: 40px;"
-                      @click="toggleSearchFilter('albums')"
-                    >
-                      <div class="d-flex align-center">
-                        <v-icon :icon="searchFilters.includes('albums') ? 'mdi-check-circle' : 'mdi-circle-outline'" size="small" class="mr-3" />
-                        <span class="text-body-2 font-weight-medium">{{ t('filter_album') }}</span>
-                      </div>
-                    </v-list-item>
-                    <v-list-item
-                      :active="searchFilters.includes('lyric')"
-                      active-color="var(--accent-blue)"
-                      class="mx-2 rounded-lg mb-1"
-                      style="min-height: 40px;"
-                      @click="toggleSearchFilter('lyric')"
-                    >
-                      <div class="d-flex align-center">
-                        <v-icon :icon="searchFilters.includes('lyric') ? 'mdi-check-circle' : 'mdi-circle-outline'" size="small" class="mr-3" />
-                        <span class="text-body-2 font-weight-medium">{{ t('filter_lyrics') }}</span>
-                      </div>
-                    </v-list-item>
-                  </v-list>
-                </v-card>
+                    <v-icon
+                      :icon="searchFilters.includes('name') ? 'mdi-check-circle' : 'mdi-circle-outline'"
+                      size="18"
+                      class="filter-radio-icon mr-2.5"
+                    />
+                    <span class="filter-label">{{ t('filter_song_name') }}</span>
+                  </button>
+                  <button
+                    type="button"
+                    class="filter-item"
+                    :class="{ active: searchFilters.includes('albums') }"
+                    @click="toggleSearchFilter('albums')"
+                  >
+                    <v-icon
+                      :icon="searchFilters.includes('albums') ? 'mdi-check-circle' : 'mdi-circle-outline'"
+                      size="18"
+                      class="filter-radio-icon mr-2.5"
+                    />
+                    <span class="filter-label">{{ t('filter_album') }}</span>
+                  </button>
+                  <button
+                    type="button"
+                    class="filter-item"
+                    :class="{ active: searchFilters.includes('lyric') }"
+                    @click="toggleSearchFilter('lyric')"
+                  >
+                    <v-icon
+                      :icon="searchFilters.includes('lyric') ? 'mdi-check-circle' : 'mdi-circle-outline'"
+                      size="18"
+                      class="filter-radio-icon mr-2.5"
+                    />
+                    <span class="filter-label">{{ t('filter_lyrics') }}</span>
+                  </button>
+                </div>
               </v-menu>
             </template>
           </v-text-field>
-          <v-menu :close-on-content-click="true" location="bottom end">
-            <template #activator="{ props }">
-              <v-btn
-                v-bind="props"
-                variant="flat"
-                rounded="xl"
-                class="text-none px-4"
-                style="height: 44px; max-width: 220px; background: var(--card-bg); box-shadow: var(--shadow);"
+
+          <!-- Dropdown Seletor de Categoria de Coletâneas -->
+          <v-menu
+            :close-on-content-click="true"
+            location="bottom end"
+            :offset="8"
+            transition="slide-y-transition"
+          >
+            <template #activator="{ props: catMenuProps }">
+              <button
+                v-bind="catMenuProps"
+                type="button"
+                class="category-select-btn"
+                :title="selectedCategoryName"
               >
-                <div class="d-flex align-center text-truncate w-100 justify-space-between" style="color: var(--sidebar-text);">
-                  <span class="text-truncate font-weight-medium text-body-2">
-                    {{ categoryOptions.find(c => c.id_category === id_category)?.name || t('all') }}
-                  </span>
-                  <v-icon size="small" class="ml-3 opacity-50">
-                    mdi-menu-down
-                  </v-icon>
-                </div>
-              </v-btn>
+                <span class="category-name text-truncate">
+                  {{ selectedCategoryName }}
+                </span>
+                <v-icon size="18" class="category-arrow ml-2">
+                  mdi-chevron-down
+                </v-icon>
+              </button>
             </template>
-            <v-card
-              class="mt-2"
-              rounded="lg"
-              style="overflow: hidden; max-width: 220px; background: var(--card-bg); box-shadow: var(--shadow);"
-            >
-              <v-list class="py-2" bg-color="transparent">
-                <v-list-item
+            <div class="search-filter-popover category-dropdown-popover">
+              <div class="filter-header">
+                {{ t('categories') || 'Categorias' }}
+              </div>
+              <div class="category-items-list custom-scroll">
+                <button
                   v-for="cat in categoryOptions"
                   :key="cat.id_category"
-                  :active="cat.id_category === id_category"
-                  color="primary"
-                  class="mx-2 rounded-lg mb-1"
-                  style="min-height: 40px;"
+                  type="button"
+                  class="filter-item category-item"
+                  :class="{ active: cat.id_category === id_category }"
                   @click="id_category = cat.id_category"
                 >
-                  <div class="d-flex align-center">
-                    <span class="text-body-2 font-weight-medium" :class="cat.id_category === id_category ? '' : 'opacity-70'">
-                      {{ cat.name }}
-                    </span>
-                  </div>
-                </v-list-item>
-              </v-list>
-            </v-card>
+                  <v-icon
+                    v-if="cat.id_category === id_category"
+                    size="16"
+                    class="mr-2 active-check"
+                  >
+                    mdi-check
+                  </v-icon>
+                  <span v-else class="check-spacer" />
+                  <span class="filter-label text-truncate">{{ cat.name }}</span>
+                </button>
+              </div>
+            </div>
           </v-menu>
         </div>
       </ModuleHeader>
@@ -195,7 +196,7 @@
           </div>
         </div>
 
-        <div v-else class="collections-page-scroll flex-grow-1" style="overflow-y: auto; overflow-x: hidden; padding: 16px 8px;">
+        <div v-else class="collections-page-scroll flex-grow-1">
           <div class="collections-grid-wrap">
             <div 
               v-for="album in albums" 
@@ -267,6 +268,12 @@ export default defineComponent({
       return this.$modules.get(this.module_id);
     },
     /* COMPUTEDS OBRIGATÓRIAS - FIM */
+    selectedCategoryName(): string {
+      return this.categoryOptions.find((c: any) => c.id_category === this.id_category)?.name || this.t("all_collections");
+    },
+    hasCustomFilter(): boolean {
+      return !(this.searchFilters.length === 1 && this.searchFilters.includes("name"));
+    },
     categoryOptions(): any[] {
       return [
         { id_category: 0, name: this.t("all_collections") },
@@ -533,32 +540,128 @@ export default defineComponent({
   box-shadow: 0 4px 10px rgba(0, 151, 215, 0.3);
 }
 
+.collections-page-scroll {
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 14px 16px 36px 16px;
+
+  /* Scrollbar oficial do Louvor JA */
+  &::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: var(--accent-blue, #009FE3);
+    border-radius: 4px;
+    transition: background 0.2s ease;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-yellow, #FFC107);
+  }
+}
+
 .collections-grid-wrap {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 24px;
-  padding: 0 16px 24px 16px;
-  
-  .collection-card {
-    width: 100%;
-    min-width: 0;
-    flex-shrink: 1;
-    margin: 0;
-  }
+  grid-template-columns: repeat(auto-fill, minmax(185px, 1fr));
+  gap: 22px;
+  padding: 8px 8px 36px 8px;
 }
 
 @media (max-width: 768px) {
   .collections-grid-wrap {
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
     gap: 16px;
-    padding: 0 8px 16px 8px;
+    padding: 6px 4px 24px 4px;
   }
 }
 
 @media (max-width: 480px) {
   .collections-grid-wrap {
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(135px, 1fr));
     gap: 12px;
+  }
+}
+
+.collection-card {
+  width: 100%;
+  min-width: 0;
+  background: var(--ds-surface, #30364a);
+  border: 1px solid var(--ds-border, #43495b);
+  border-radius: 14px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  padding: 12px;
+  transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  
+  &:hover {
+    border-color: rgba(0, 155, 226, 0.5);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.24);
+    transform: translateY(-4px);
+
+    .card-image img,
+    .card-image .v-img {
+      transform: scale(1.04);
+    }
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+  
+  .card-image {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    background: var(--ds-surface-elevated, #353c52);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    border-radius: 10px;
+
+    img,
+    .v-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.25s ease;
+    }
+  }
+  
+  .card-content {
+    padding: 10px 2px 2px 2px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    background: transparent;
+    
+    .card-title {
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 1.3;
+      color: var(--ds-text-primary, #f7f8fc);
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      margin: 0;
+    }
+    
+    .card-stats {
+      font-size: 12px;
+      color: var(--ds-text-secondary, #a0a6b5);
+      margin-top: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
   }
 }
 
@@ -576,6 +679,7 @@ export default defineComponent({
   table {
     background: transparent !important;
     border-spacing: 0;
+    width: 100%;
   }
 
   tr:hover td {
@@ -585,13 +689,15 @@ export default defineComponent({
   .music-list-container {
     display: flex;
     flex-direction: column;
-    padding: 0 16px;
+    padding: 0;
+    width: 100%;
   }
 
   .music-item {
     display: flex;
     align-items: center;
-    padding: 12px 20px;
+    padding: 12px 24px;
+    width: 100%;
     border-bottom: 1px solid var(--border-color);
     transition: var(--transition);
     
@@ -644,6 +750,261 @@ export default defineComponent({
   
   .music-actions {
     min-width: 80px;
+  }
+}
+
+.category-select-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 40px;
+  min-width: 170px;
+  max-width: 240px;
+  padding: 0 16px;
+  border-radius: 20px;
+  background: var(--ds-surface, #30364a);
+  border: 1px solid var(--ds-border, #43495b);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  color: var(--ds-text-primary, #f7f8fc);
+  cursor: pointer;
+  outline: none;
+  user-select: none;
+  flex-shrink: 0;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+  .category-name {
+    font-size: 13.5px;
+    font-weight: 600;
+    line-height: 1;
+    color: var(--ds-text-primary, #f7f8fc);
+  }
+
+  .category-arrow {
+    color: var(--ds-text-secondary, #a0a6b5);
+    flex-shrink: 0;
+    transition: transform 0.2s ease, color 0.2s ease;
+  }
+
+  &:hover {
+    background: var(--ds-surface-elevated, #373e55);
+    border-color: rgba(0, 155, 226, 0.4);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22);
+
+    .category-arrow {
+      color: var(--ds-accent, #009be2);
+    }
+  }
+
+  &:active {
+    transform: scale(0.99);
+  }
+}
+
+.filter-search-btn {
+  color: var(--ds-text-secondary, #a0a6b5) !important;
+  transition: all 0.2s ease !important;
+
+  &:hover {
+    color: var(--ds-accent, #009be2) !important;
+    background: rgba(0, 155, 226, 0.1) !important;
+  }
+
+  &.filter-active {
+    color: var(--ds-accent, #009be2) !important;
+    background: rgba(0, 155, 226, 0.15) !important;
+  }
+}
+
+.search-filter-popover {
+  background: var(--ds-surface, #30364a) !important;
+  border: 1px solid var(--ds-border, #43495b) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.28) !important;
+  padding: 8px !important;
+  min-width: 200px;
+  user-select: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  &.category-dropdown-popover {
+    min-width: 220px;
+    max-width: 280px;
+
+    .category-items-list {
+      max-height: 360px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      padding-right: 2px;
+    }
+  }
+
+  .filter-header {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--ds-text-secondary, #a0a6b5);
+    padding: 6px 12px 4px 12px;
+    line-height: 1;
+  }
+
+  .filter-item {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 9px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    margin-bottom: 2px;
+    background: transparent;
+    border: none;
+    color: var(--ds-text-primary, #f7f8fc);
+    text-align: left;
+    outline: none;
+
+    .filter-label {
+      font-size: 13px;
+      font-weight: 500;
+      line-height: 1.2;
+    }
+
+    .filter-radio-icon {
+      font-size: 18px;
+      color: var(--ds-text-secondary, #a0a6b5);
+      transition: color 0.15s ease;
+      flex-shrink: 0;
+    }
+
+    .active-check {
+      color: var(--ds-accent, #009be2);
+      flex-shrink: 0;
+    }
+
+    .check-spacer {
+      width: 16px;
+      margin-right: 8px;
+      flex-shrink: 0;
+    }
+
+    &:hover {
+      background: var(--ds-accent-hover, rgba(0, 155, 226, 0.08));
+      color: var(--ds-accent, #009be2);
+
+      .filter-radio-icon {
+        color: var(--ds-accent, #009be2);
+      }
+    }
+
+    &.active {
+      background: rgba(0, 155, 226, 0.14) !important;
+      color: var(--ds-accent, #009be2) !important;
+      font-weight: 600;
+
+      .filter-radio-icon {
+        color: var(--ds-accent, #009be2) !important;
+      }
+
+      .filter-label {
+        font-weight: 600;
+      }
+    }
+  }
+}
+
+// Suporte ao tema claro
+:root[data-theme="light"],
+.v-theme--light {
+  .category-select-btn {
+    background: #FFFFFF;
+    border-color: var(--ds-border, #DEE4EC);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+    color: var(--ds-text-primary, #30333A);
+
+    .category-name {
+      color: var(--ds-text-primary, #30333A);
+    }
+
+    .category-arrow {
+      color: #94A3B8;
+    }
+
+    &:hover {
+      background: #F8FAFC;
+      border-color: var(--ds-accent, #008FD0);
+
+      .category-arrow {
+        color: var(--ds-accent, #008FD0);
+      }
+    }
+  }
+
+  .search-filter-popover {
+    background: #FFFFFF !important;
+    border: 1px solid var(--ds-border, #E2E8F0) !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
+
+    .filter-header {
+      color: #64748B;
+    }
+
+    .filter-item {
+      color: var(--ds-text-primary, #334155);
+
+      .filter-radio-icon {
+        color: #94A3B8;
+      }
+
+      &:hover {
+        background: rgba(0, 155, 226, 0.08);
+        color: var(--ds-accent, #008fd0);
+
+        .filter-radio-icon {
+          color: var(--ds-accent, #008fd0);
+        }
+      }
+
+      &.active {
+        background: rgba(0, 155, 226, 0.14) !important;
+        color: var(--ds-accent, #008fd0) !important;
+
+        .filter-radio-icon {
+          color: var(--ds-accent, #008fd0) !important;
+        }
+
+        .active-check {
+          color: var(--ds-accent, #008fd0);
+        }
+      }
+    }
+  }
+
+  .collection-card {
+    background: #FFFFFF;
+    border-color: var(--ds-border, #DEE4EC);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+
+    .card-image {
+      background: #F1F5F9;
+    }
+
+    .card-content {
+      .card-title {
+        color: var(--ds-text-primary, #30333A);
+      }
+      .card-stats {
+        color: var(--ds-text-secondary, #6D7480);
+      }
+    }
+
+    &:hover {
+      border-color: var(--ds-accent, #008FD0);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    }
   }
 }
 </style>

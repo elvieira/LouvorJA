@@ -9,5 +9,6 @@
     "filter_lyrics": "Letra de la canción",
     "filter_lyrics_soon": "Letra de la canción (próximamente)",
     "building_index": "Construyendo índice de búsqueda...",
-    "no_songs_found": "Ninguna canción encontrada"
+    "no_songs_found": "Ninguna canción encontrada",
+    "categories": "Categorías"
 }
