@@ -3,9 +3,15 @@ import $dev from "@/helpers/config/Dev";
 import $appdata from "@/helpers/config/AppData";
 import $media from "@/helpers/services/Media";
 import Telemetry from "@/helpers/services/Telemetry";
+import { toggleNotificationsPanel, notificationsState } from "@/helpers/services/Notifications";
 
 export default {
   open(id: string) {
+    // Fecha o painel de notificações se estiver aberto ao trocar ou abrir módulos
+    if (notificationsState.isOpen) {
+      toggleNotificationsPanel(false);
+    }
+
     if (!this.check(id)) {
       console.error(`Módulo ${id} não encontrado!`);
       return;

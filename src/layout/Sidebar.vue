@@ -194,19 +194,43 @@
       <div 
         v-if="currentModule !== 'home'" 
         class="nav-item notifications-item" 
-        :class="{ 'pulse-animation': hasUnreadNotifications }"
+        :class="{
+          'pulse-urgent': hasUrgentNotifications,
+          'pulse-high': !hasUrgentNotifications && hasHighNotifications,
+          'pulse-animation': !hasUrgentNotifications && !hasHighNotifications && hasUnreadNotifications,
+        }"
       >
         <a href="#" class="nav-link" @click.prevent="openNotifications">
           <div class="nav-icon-wrapper position-relative d-inline-flex align-center justify-center">
             <v-icon 
               class="nav-icon" 
-              :color="hasUnreadNotifications ? 'primary' : ''"
+              :color="
+                hasUrgentNotifications
+                  ? 'error'
+                  : hasHighNotifications
+                    ? 'warning'
+                    : hasUnreadNotifications
+                      ? 'primary'
+                      : ''
+              "
             >
-              {{ hasUnreadNotifications ? 'mdi-bell' : 'mdi-bell-outline' }}
+              {{
+                hasUrgentNotifications
+                  ? 'mdi-bell-alert'
+                  : hasHighNotifications
+                    ? 'mdi-bell-alert-outline'
+                    : hasUnreadNotifications
+                      ? 'mdi-bell'
+                      : 'mdi-bell-outline'
+              }}
             </v-icon>
             <span 
               v-if="hasUnreadNotifications" 
               class="sidebar-unread-badge"
+              :class="{
+                'badge-urgent': hasUrgentNotifications,
+                'badge-high': !hasUrgentNotifications && hasHighNotifications,
+              }"
             >
               {{ unreadNotificationsCount }}
             </span>
@@ -240,6 +264,8 @@ import { defineComponent } from "vue";
 import {
   unreadCount,
   hasUnread,
+  hasUrgentUnread,
+  hasHighUnread,
   toggleNotificationsPanel,
 } from "@/helpers/services/Notifications";
 
@@ -388,6 +414,12 @@ export default defineComponent({
     unreadNotificationsCount(): number {
       return unreadCount.value;
     },
+    hasUrgentNotifications(): boolean {
+      return hasUrgentUnread.value;
+    },
+    hasHighNotifications(): boolean {
+      return hasHighUnread.value;
+    },
   },
   watch: {
     currentModule: {
@@ -443,6 +475,7 @@ export default defineComponent({
       this.isOpen = false;
     },
     navigateTo(route: string) {
+      toggleNotificationsPanel(false);
       if (route === "home") {
         (this as any).$modules.open("home");
         this.sidebarSelectedModule = "home";
@@ -452,6 +485,7 @@ export default defineComponent({
       }
     },
     openModule(moduleId: string) {
+      toggleNotificationsPanel(false);
       (this as any).$modules.open(moduleId);
       this.sidebarSelectedModule = moduleId;
       if (this.isMobile) {
@@ -543,6 +577,14 @@ export default defineComponent({
   justify-content: center;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
   border: 2px solid var(--sidebar-bg, #10141d);
+
+  &.badge-high {
+    background-color: #f59e0b !important;
+  }
+
+  &.badge-urgent {
+    background-color: #ef4444 !important;
+  }
 }
 
 .dashboard-sidebar {
@@ -932,6 +974,14 @@ export default defineComponent({
   animation: pulse-border 2s infinite;
 }
 
+.pulse-high {
+  animation: pulse-border-high 2s infinite;
+}
+
+.pulse-urgent {
+  animation: pulse-border-urgent 1.5s infinite;
+}
+
 @keyframes pulse-border {
   0% {
     box-shadow: 0 0 0 0 rgba(0, 151, 215, 0.4);
@@ -941,6 +991,30 @@ export default defineComponent({
   }
   100% {
     box-shadow: 0 0 0 0 rgba(0, 151, 215, 0);
+  }
+}
+
+@keyframes pulse-border-high {
+  0% {
+    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(245, 158, 11, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0);
+  }
+}
+
+@keyframes pulse-border-urgent {
+  0% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5);
+  }
+  70% {
+    box-shadow: 0 0 0 7px rgba(239, 68, 68, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
   }
 }
 

@@ -10,16 +10,43 @@
           <button
             type="button"
             class="notification-bell-btn"
-            :class="{ 'pulse-animation': hasUnreadNotifications }"
+            :class="{
+              'pulse-urgent': hasUrgentNotifications,
+              'pulse-high': !hasUrgentNotifications && hasHighNotifications,
+              'pulse-animation': !hasUrgentNotifications && !hasHighNotifications && hasUnreadNotifications,
+            }"
             title="Notificações & Novidades"
             @click="openNotifications"
           >
-            <v-icon size="22" :color="hasUnreadNotifications ? 'primary' : 'var(--sidebar-text)'">
-              {{ hasUnreadNotifications ? 'mdi-bell' : 'mdi-bell-outline' }}
+            <v-icon
+              size="22"
+              :color="
+                hasUrgentNotifications
+                  ? 'error'
+                  : hasHighNotifications
+                    ? 'warning'
+                    : hasUnreadNotifications
+                      ? 'primary'
+                      : 'var(--sidebar-text)'
+              "
+            >
+              {{
+                hasUrgentNotifications
+                  ? 'mdi-bell-alert'
+                  : hasHighNotifications
+                    ? 'mdi-bell-alert-outline'
+                    : hasUnreadNotifications
+                      ? 'mdi-bell'
+                      : 'mdi-bell-outline'
+              }}
             </v-icon>
             <span 
               v-if="hasUnreadNotifications" 
               class="home-unread-badge"
+              :class="{
+                'badge-urgent': hasUrgentNotifications,
+                'badge-high': !hasUrgentNotifications && hasHighNotifications,
+              }"
             >
               {{ unreadNotificationsCount }}
             </span>
@@ -29,7 +56,15 @@
               open-delay="300"
               content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
             >
-              {{ hasUnreadNotifications ? `${unreadNotificationsCount} ${unreadNotificationsCount === 1 ? 'nova notificação' : 'novas notificações'}` : 'Notificações' }}
+              {{
+                hasUrgentNotifications
+                  ? `${unreadNotificationsCount} ${unreadNotificationsCount === 1 ? 'notificação urgente' : 'notificações (urgente)'}`
+                  : hasHighNotifications
+                    ? `${unreadNotificationsCount} ${unreadNotificationsCount === 1 ? 'notificação de alta prioridade' : 'notificações (alta prioridade)'}`
+                    : hasUnreadNotifications
+                      ? `${unreadNotificationsCount} ${unreadNotificationsCount === 1 ? 'nova notificação' : 'novas notificações'}`
+                      : 'Notificações'
+              }}
             </v-tooltip>
           </button>
         </div>
@@ -157,16 +192,43 @@
           <button
             type="button"
             class="notification-bell-btn"
-            :class="{ 'pulse-animation': hasUnreadNotifications }"
+            :class="{
+              'pulse-urgent': hasUrgentNotifications,
+              'pulse-high': !hasUrgentNotifications && hasHighNotifications,
+              'pulse-animation': !hasUrgentNotifications && !hasHighNotifications && hasUnreadNotifications,
+            }"
             title="Notificações & Novidades"
             @click="openNotifications"
           >
-            <v-icon size="22" :color="hasUnreadNotifications ? 'primary' : 'var(--sidebar-text)'">
-              {{ hasUnreadNotifications ? 'mdi-bell' : 'mdi-bell-outline' }}
+            <v-icon
+              size="22"
+              :color="
+                hasUrgentNotifications
+                  ? 'error'
+                  : hasHighNotifications
+                    ? 'warning'
+                    : hasUnreadNotifications
+                      ? 'primary'
+                      : 'var(--sidebar-text)'
+              "
+            >
+              {{
+                hasUrgentNotifications
+                  ? 'mdi-bell-alert'
+                  : hasHighNotifications
+                    ? 'mdi-bell-alert-outline'
+                    : hasUnreadNotifications
+                      ? 'mdi-bell'
+                      : 'mdi-bell-outline'
+              }}
             </v-icon>
             <span 
               v-if="hasUnreadNotifications" 
               class="home-unread-badge"
+              :class="{
+                'badge-urgent': hasUrgentNotifications,
+                'badge-high': !hasUrgentNotifications && hasHighNotifications,
+              }"
             >
               {{ unreadNotificationsCount }}
             </span>
@@ -176,7 +238,15 @@
               open-delay="300"
               content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
             >
-              {{ hasUnreadNotifications ? `${unreadNotificationsCount} ${unreadNotificationsCount === 1 ? 'nova notificação' : 'novas notificações'}` : 'Notificações' }}
+              {{
+                hasUrgentNotifications
+                  ? `${unreadNotificationsCount} ${unreadNotificationsCount === 1 ? 'notificação urgente' : 'notificações (urgente)'}`
+                  : hasHighNotifications
+                    ? `${unreadNotificationsCount} ${unreadNotificationsCount === 1 ? 'notificação de alta prioridade' : 'notificações (alta prioridade)'}`
+                    : hasUnreadNotifications
+                      ? `${unreadNotificationsCount} ${unreadNotificationsCount === 1 ? 'nova notificação' : 'novas notificações'}`
+                      : 'Notificações'
+              }}
             </v-tooltip>
           </button>
         </div>
@@ -341,6 +411,8 @@ import { useTheme } from "vuetify";
 import {
   unreadCount,
   hasUnread,
+  hasUrgentUnread,
+  hasHighUnread,
   toggleNotificationsPanel,
 } from "@/helpers/services/Notifications";
 
@@ -359,6 +431,8 @@ export default defineComponent({
     const isDark = computed(() => theme.name.value === "dark");
     const hasUnreadNotifications = hasUnread;
     const unreadNotificationsCount = unreadCount;
+    const hasUrgentNotifications = hasUrgentUnread;
+    const hasHighNotifications = hasHighUnread;
     const openNotifications = () => {
       toggleNotificationsPanel(true);
     };
@@ -367,6 +441,8 @@ export default defineComponent({
       isDark,
       hasUnreadNotifications,
       unreadNotificationsCount,
+      hasUrgentNotifications,
+      hasHighNotifications,
       openNotifications,
     };
   },
@@ -1234,6 +1310,14 @@ export default defineComponent({
   &.pulse-animation {
     animation: pulse-border-home 2s infinite !important;
   }
+
+  &.pulse-high {
+    animation: pulse-border-high 2s infinite !important;
+  }
+
+  &.pulse-urgent {
+    animation: pulse-border-urgent 1.5s infinite !important;
+  }
 }
 
 @keyframes pulse-border-home {
@@ -1245,6 +1329,30 @@ export default defineComponent({
   }
   100% {
     box-shadow: 0 0 0 0 rgba(0, 151, 215, 0) !important;
+  }
+}
+
+@keyframes pulse-border-high {
+  0% {
+    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.5) !important;
+  }
+  70% {
+    box-shadow: 0 0 0 8px rgba(245, 158, 11, 0) !important;
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0) !important;
+  }
+}
+
+@keyframes pulse-border-urgent {
+  0% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.6) !important;
+  }
+  70% {
+    box-shadow: 0 0 0 9px rgba(239, 68, 68, 0) !important;
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0) !important;
   }
 }
 
@@ -1266,5 +1374,23 @@ export default defineComponent({
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
   border: 2px solid var(--card-bg, #ffffff);
   pointer-events: none;
+
+  &.badge-high {
+    background-color: #f59e0b !important;
+  }
+
+  &.badge-urgent {
+    background-color: #ef4444 !important;
+    animation: badge-pulse-urgent 1.5s infinite;
+  }
+}
+
+@keyframes badge-pulse-urgent {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.12);
+  }
 }
 </style>

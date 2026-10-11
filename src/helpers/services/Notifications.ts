@@ -14,6 +14,9 @@ export interface AppNotification {
   target_audience?: NotificationAudience;
   link_url?: string | null;
   link_label?: string | null;
+  action_module?: string | null;
+  action_label?: string | null;
+  action_params?: Record<string, unknown> | string | null;
   is_active: boolean;
   created_at: string;
   expires_at?: string | null;
@@ -170,6 +173,78 @@ export const unreadCount = computed(() => {
  * Se existem notificações não lidas
  */
 export const hasUnread = computed(() => unreadCount.value > 0);
+
+/**
+ * Retorna o nível de prioridade mais crítico entre as notificações não lidas
+ */
+export const highestUnreadPriority = computed<NotificationPriority | null>(() => {
+  const unreadItems = notificationsState.items.filter(
+    (item) => !notificationsState.readIds.includes(item.id),
+  );
+  if (unreadItems.length === 0) return null;
+
+  if (unreadItems.some((item) => item.priority === "urgent")) {
+    return "urgent";
+  }
+  if (unreadItems.some((item) => item.priority === "high")) {
+    return "high";
+  }
+  return "normal";
+});
+
+/**
+ * Se existe notificação urgente não lida
+ */
+export const hasUrgentUnread = computed(() => highestUnreadPriority.value === "urgent");
+
+/**
+ * Se existe notificação de alta prioridade não lida (sem urgentes)
+ */
+export const hasHighUnread = computed(() => highestUnreadPriority.value === "high");
+
+const STORAGE_AUTO_OPENED_URGENT = "louvorja_auto_opened_urgent_ids";
+
+function getAutoOpenedUrgentIds(): number[] {
+  if (typeof localStorage === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(STORAGE_AUTO_OPENED_URGENT);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveAutoOpenedUrgentIds(ids: number[]): void {
+  if (typeof localStorage === "undefined") return;
+  try {
+    localStorage.setItem(STORAGE_AUTO_OPENED_URGENT, JSON.stringify(ids));
+  } catch (err) {
+    console.warn("[Notifications] Falha ao salvar urgentes auto-abertas:", err);
+  }
+}
+
+/**
+ * Abre o painel automaticamente se houver nova notificação urgente ainda não lida
+ */
+export function checkAndAutoOpenUrgent(items: AppNotification[]): void {
+  const unreadUrgent = items.filter(
+    (item) => item.priority === "urgent" && !notificationsState.readIds.includes(item.id),
+  );
+  if (unreadUrgent.length === 0) return;
+
+  const alreadyAutoOpened = new Set<number>(getAutoOpenedUrgentIds());
+  const newUrgent = unreadUrgent.filter((item) => !alreadyAutoOpened.has(item.id));
+
+  if (newUrgent.length > 0) {
+    for (const item of newUrgent) {
+      alreadyAutoOpened.add(item.id);
+    }
+    saveAutoOpenedUrgentIds(Array.from(alreadyAutoOpened));
+
+    // Abre o painel de notificações para alertar o usuário imediatamente
+    toggleNotificationsPanel(true);
+  }
+}
 
 /**
  * Marca uma ou mais notificações como lidas.
@@ -341,6 +416,7 @@ export async function fetchActiveNotifications(): Promise<AppNotification[]> {
     // Envia ao Supabase que o usuário viu as notificações ativas no app
     if (filtered.length > 0) {
       trackNotificationsViewed(filtered);
+      checkAndAutoOpenUrgent(filtered);
     }
 
     return filtered;
