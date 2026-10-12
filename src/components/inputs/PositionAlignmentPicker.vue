@@ -1,28 +1,29 @@
 <template>
-  <div class="position-alignment-picker">
+  <div class="position-alignment-picker w-100">
     <!-- Grade 3x3 de Alinhamento Rápido -->
-    <div class="d-flex flex-column align-center mb-4">
-      <div class="text-caption font-weight-medium mb-2 text-center" style="color: var(--sidebar-text-secondary);">
+    <div class="d-flex flex-column align-center mb-5 w-100">
+      <div class="text-caption font-weight-bold mb-2 text-center" style="color: var(--sidebar-text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">
         Alinhamento Rápido na Tela
       </div>
-      <div class="alignment-grid-container pa-1 rounded-xl" style="background: var(--main-bg, #f0f2f5); display: inline-grid; grid-template-columns: repeat(3, 44px); gap: 6px;">
+      <div
+        class="alignment-grid-container pa-3 rounded-xl w-100"
+        style="background: rgba(150, 150, 150, 0.08); border: 1px solid var(--border-color); display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 320px;"
+      >
         <v-btn
           v-for="preset in presets"
           :key="preset.id"
-          icon
-          size="small"
           :variant="isPresetActive(preset) ? 'flat' : 'text'"
           :color="isPresetActive(preset) ? 'primary' : undefined"
           class="alignment-btn rounded-lg"
           :style="{
-            width: '44px',
-            height: '44px',
+            height: '52px',
+            borderRadius: '8px !important',
             transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
             boxShadow: isPresetActive(preset) ? '0 4px 12px rgba(var(--v-theme-primary), 0.35)' : 'none',
           }"
           @click="selectPreset(preset)"
         >
-          <v-icon size="20" :color="isPresetActive(preset) ? 'white' : 'grey-darken-1'">
+          <v-icon size="24" :color="isPresetActive(preset) ? 'white' : 'grey-darken-1'">
             {{ preset.icon }}
           </v-icon>
           <v-tooltip activator="parent" location="top" open-delay="200">
@@ -33,9 +34,9 @@
     </div>
 
     <!-- Sliders de Ajuste Manual Fino (X e Y) -->
-    <div v-if="!hideSliders" class="manual-position-controls">
+    <div v-if="!hideSliders" class="manual-position-controls w-100">
       <!-- Posição Horizontal (X) -->
-      <div class="mb-4">
+      <div class="mb-4 w-100">
         <div class="d-flex align-center justify-space-between mb-2">
           <div class="d-flex align-center">
             <v-icon size="18" color="primary" class="mr-2">
@@ -74,15 +75,16 @@
             </v-btn>
           </div>
         </div>
-        <div class="d-flex align-center" style="gap: 8px;">
+        <div class="d-flex align-center w-100" style="gap: 12px;">
           <v-btn
-            icon
-            size="x-small"
+            size="small"
             variant="tonal"
             color="primary"
+            class="slider-step-btn rounded-lg"
+            style="width: 34px !important; height: 34px !important; min-width: 34px !important; border-radius: 8px !important; padding: 0 !important;"
             @click="updateX(Math.max(0, x - 5))"
           >
-            <v-icon size="16">
+            <v-icon size="18">
               mdi-minus
             </v-icon>
           </v-btn>
@@ -93,18 +95,19 @@
             step="1"
             hide-details
             color="primary"
-            track-color="grey-lighten-3"
+            track-color="rgba(150, 150, 150, 0.2)"
             class="flex-grow-1"
             @update:model-value="updateX"
           />
           <v-btn
-            icon
-            size="x-small"
+            size="small"
             variant="tonal"
             color="primary"
+            class="slider-step-btn rounded-lg"
+            style="width: 34px !important; height: 34px !important; min-width: 34px !important; border-radius: 8px !important; padding: 0 !important;"
             @click="updateX(Math.min(100, x + 5))"
           >
-            <v-icon size="16">
+            <v-icon size="18">
               mdi-plus
             </v-icon>
           </v-btn>
@@ -112,7 +115,7 @@
       </div>
 
       <!-- Posição Vertical (Y) -->
-      <div>
+      <div class="w-100">
         <div class="d-flex align-center justify-space-between mb-2">
           <div class="d-flex align-center">
             <v-icon size="18" color="primary" class="mr-2">
@@ -151,15 +154,16 @@
             </v-btn>
           </div>
         </div>
-        <div class="d-flex align-center" style="gap: 8px;">
+        <div class="d-flex align-center w-100" style="gap: 12px;">
           <v-btn
-            icon
-            size="x-small"
+            size="small"
             variant="tonal"
             color="primary"
+            class="slider-step-btn rounded-lg"
+            style="width: 34px !important; height: 34px !important; min-width: 34px !important; border-radius: 8px !important; padding: 0 !important;"
             @click="updateY(Math.max(0, y - 5))"
           >
-            <v-icon size="16">
+            <v-icon size="18">
               mdi-minus
             </v-icon>
           </v-btn>
@@ -170,18 +174,19 @@
             step="1"
             hide-details
             color="primary"
-            track-color="grey-lighten-3"
+            track-color="rgba(150, 150, 150, 0.2)"
             class="flex-grow-1"
             @update:model-value="updateY"
           />
           <v-btn
-            icon
-            size="x-small"
+            size="small"
             variant="tonal"
             color="primary"
+            class="slider-step-btn rounded-lg"
+            style="width: 34px !important; height: 34px !important; min-width: 34px !important; border-radius: 8px !important; padding: 0 !important;"
             @click="updateY(Math.min(100, y + 5))"
           >
-            <v-icon size="16">
+            <v-icon size="18">
               mdi-plus
             </v-icon>
           </v-btn>
@@ -269,6 +274,12 @@ const yLabel = computed(() => {
   border: 1px solid rgba(0, 0, 0, 0.06);
 }
 .alignment-btn {
+  border-radius: 8px !important;
+}
+.slider-step-btn {
+  border-radius: 8px !important;
+}
+:deep(.slider-step-btn) {
   border-radius: 8px !important;
 }
 </style>

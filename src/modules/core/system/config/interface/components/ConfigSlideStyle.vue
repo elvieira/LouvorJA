@@ -14,33 +14,15 @@
           <div class="text-body-2 font-weight-medium mb-2" style="color: var(--sidebar-text-secondary);">
             {{ t('font_align') }}
           </div>
-          <v-btn-toggle
+          <PillSwitch
             v-model="slide_align"
-            color="primary"
-            variant="tonal"
-            mandatory
-            class="rounded-xl d-flex"
-            style="height: 48px; background: var(--card-bg); box-shadow: inset 0 0 0 1px var(--border-color); border-radius: 16px !important;"
-          >
-            <v-btn value="Cima" class="flex-grow-1 text-none font-weight-bold">
-              <v-icon start size="20">
-                mdi-align-vertical-top
-              </v-icon>
-              {{ t('align_top') }}
-            </v-btn>
-            <v-btn value="Centro" class="flex-grow-1 text-none font-weight-bold">
-              <v-icon start size="20">
-                mdi-align-vertical-center
-              </v-icon>
-              {{ t('align_center') }}
-            </v-btn>
-            <v-btn value="Baixo" class="flex-grow-1 text-none font-weight-bold">
-              <v-icon start size="20">
-                mdi-align-vertical-bottom
-              </v-icon>
-              {{ t('align_bottom') }}
-            </v-btn>
-          </v-btn-toggle>
+            block
+            :items="[
+              { value: 'Cima', label: t('align_top'), icon: 'mdi-align-vertical-top' },
+              { value: 'Centro', label: t('align_center'), icon: 'mdi-align-vertical-center' },
+              { value: 'Baixo', label: t('align_bottom'), icon: 'mdi-align-vertical-bottom' },
+            ]"
+          />
         </div>
 
         <v-switch
@@ -189,27 +171,16 @@
                 </v-icon>
                 <span class="text-body-2 font-weight-bold" style="color: var(--sidebar-text);">{{ t('font_weight') }}</span>
               </div>
-              <v-btn-toggle
+              <PillSwitch
                 v-model="slide_font_weight"
-                color="primary"
-                variant="tonal"
-                mandatory
-                class="rounded-xl d-flex"
-                style="height: 42px; background: var(--card-bg); box-shadow: inset 0 0 0 1px var(--border-color); border-radius: 16px !important;"
-              >
-                <v-btn value="400" class="flex-grow-1 text-none" style="font-weight: 400;">
-                  {{ t('weight_normal') }}
-                </v-btn>
-                <v-btn value="600" class="flex-grow-1 text-none" style="font-weight: 600;">
-                  {{ t('weight_semi') }}
-                </v-btn>
-                <v-btn value="700" class="flex-grow-1 text-none" style="font-weight: 700;">
-                  {{ t('weight_bold') }}
-                </v-btn>
-                <v-btn value="900" class="flex-grow-1 text-none" style="font-weight: 900;">
-                  {{ t('weight_extra') }}
-                </v-btn>
-              </v-btn-toggle>
+                block
+                :items="[
+                  { value: '400', label: t('weight_normal') },
+                  { value: '600', label: t('weight_semi') },
+                  { value: '700', label: t('weight_bold') },
+                  { value: '900', label: t('weight_extra') },
+                ]"
+              />
             </div>
 
             <!-- Cor da tarja atrás das letras -->
@@ -514,11 +485,13 @@
 import { defineComponent } from "vue";
 import manifest from "../../manifest";
 import ModernColorPicker from "@/components/inputs/ModernColorPicker.vue";
+import PillSwitch from "@/components/inputs/PillSwitch.vue";
 
 export default defineComponent({
   name: "ConfigSlideStyle",
   components: {
     ModernColorPicker,
+    PillSwitch,
   },
   data: () => ({
     isInitializing: true as boolean,

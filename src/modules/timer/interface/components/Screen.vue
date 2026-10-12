@@ -38,7 +38,7 @@
 
       <!-- Texto Personalizado Livre (Independente) -->
       <div
-        v-if="config.customText && config.customTextPosition === 'custom'"
+        v-if="config.customText && (config.customTextPosition === 'custom' || config.customTextPosition === 'free')"
         class="custom-timer-title font-weight-bold"
         :style="customTextFreeStyle"
       >
@@ -157,7 +157,7 @@
 
             <!-- Texto Personalizado Livre no Culto -->
             <div
-              v-if="effectiveCultCustomText && (config.cultCustomTextPosition === 'custom' || (!config.cultCustomTextPosition && config.customTextPosition === 'custom'))"
+              v-if="effectiveCultCustomText && (config.cultCustomTextPosition === 'custom' || (!config.cultCustomTextPosition && (config.customTextPosition === 'custom' || config.customTextPosition === 'free')))"
               class="custom-timer-title font-weight-bold"
               :style="cultTextStyle"
             >
@@ -427,6 +427,8 @@ export default defineComponent({
     },
     customTextStyle(): any {
       const sizePc = this.config.customTextSizePc ?? 8;
+      const x = this.config.posX ?? 50;
+      const textAlign = this.preview ? "center" : (x <= 30 ? "left" : x >= 70 ? "right" : "center");
       return {
         color: this.config.customTextColor || this.effectiveFontColor,
         fontSize: this.preview ? `clamp(1rem, ${sizePc * 0.3}vw, 3rem)` : `${sizePc}vmin`,
@@ -436,6 +438,8 @@ export default defineComponent({
         textShadow: this.textShadowValue,
         letterSpacing: "0.02em",
         wordBreak: "break-word",
+        width: "100%",
+        textAlign,
       };
     },
     customTextFreeStyle(): any {
@@ -462,6 +466,8 @@ export default defineComponent({
     },
     textStyle(): any {
       const sizePc = this.config.fontSizePc ?? 25;
+      const x = this.config.posX ?? 50;
+      const textAlign = this.preview ? "center" : (x <= 30 ? "left" : x >= 70 ? "right" : "center");
       return {
         color: this.isAlerting
           ? "#ffffff"
@@ -470,6 +476,8 @@ export default defineComponent({
         lineHeight: 1,
         textShadow: this.textShadowValue,
         fontVariantNumeric: "tabular-nums",
+        width: "100%",
+        textAlign,
       };
     },
     cultWrapperStyle(): any {
@@ -506,6 +514,7 @@ export default defineComponent({
         textShadow: this.cultClockTextShadowValue,
         fontVariantNumeric: "tabular-nums",
         textAlign: align,
+        width: isIndividual ? "auto" : "100%",
       };
       if (isIndividual) {
         base.position = "absolute";
@@ -532,6 +541,7 @@ export default defineComponent({
         textShadow: this.textShadowValue,
         fontVariantNumeric: "tabular-nums",
         textAlign: align,
+        width: isIndividual ? "auto" : "100%",
       };
       if (isIndividual) {
         base.position = "absolute";
@@ -590,6 +600,7 @@ export default defineComponent({
         letterSpacing: "0.02em",
         maxWidth: "94%",
         whiteSpace: "nowrap",
+        width: "100%",
         textAlign,
         userSelect: "none",
       };

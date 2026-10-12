@@ -15,14 +15,26 @@
     <!-- Texto Personalizado Livre (se customTextPosition === 'custom') -->
     <div
       v-if="config.customText && config.customTextPosition === 'custom'"
-      class="position-absolute font-weight-bold text-center pointer-events-none"
-      :style="customTextFreeStyle"
+      class="position-absolute font-weight-bold"
+      :class="{
+        'preview-interactive-element': interactive,
+        'preview-selected-element': interactive && selectedTarget === 'text',
+      }"
+      :style="{
+        ...customTextFreeStyle,
+        pointerEvents: interactive ? 'auto' : 'none',
+      }"
+      @pointerdown.stop="onTextPointerDown"
     >
       {{ config.customText }}
     </div>
 
     <div
-      class="position-absolute d-flex flex-column pointer-events-none"
+      class="position-absolute d-flex flex-column"
+      :class="{
+        'preview-interactive-element': interactive,
+        'preview-selected-element': interactive && selectedTarget === 'clock',
+      }"
       :style="{
         left: preview ? '50%' : `${config.posX ?? 50}%`,
         top: preview ? '50%' : `${config.posY ?? 50}%`,
@@ -32,16 +44,25 @@
         maxWidth: '94%',
         width: 'max-content',
         whiteSpace: 'nowrap',
+        pointerEvents: interactive ? 'auto' : 'none',
       }"
+      @pointerdown.stop="onClockPointerDown"
     >
       <!-- Texto Personalizado Acima -->
       <div
         v-if="config.customText && (config.customTextPosition === 'above' || !config.customTextPosition)"
         class="font-weight-bold mb-2"
+        :class="{
+          'preview-interactive-element': interactive,
+          'preview-selected-element': interactive && selectedTarget === 'text',
+        }"
         :style="{
           ...customTextStyle,
+          width: '100%',
           textAlign: preview ? 'center' : ((config.posX ?? 50) <= 30 ? 'left' : (config.posX ?? 50) >= 70 ? 'right' : 'center'),
+          pointerEvents: interactive ? 'auto' : 'none',
         }"
+        @pointerdown.stop="onTextPointerDown"
       >
         {{ config.customText }}
       </div>
@@ -50,8 +71,11 @@
       <v-fade-transition>
         <div 
           v-if="config.style === 'digital'" 
-          class="digital-clock font-weight-black d-flex align-baseline justify-center text-center"
+          class="digital-clock font-weight-black d-flex align-baseline"
           :style="{
+            width: '100%',
+            justifyContent: preview ? 'center' : ((config.posX ?? 50) <= 30 ? 'flex-start' : (config.posX ?? 50) >= 70 ? 'flex-end' : 'center'),
+            textAlign: preview ? 'center' : ((config.posX ?? 50) <= 30 ? 'left' : (config.posX ?? 50) >= 70 ? 'right' : 'center'),
             fontSize: `${digitalFontSize}px`,
             textShadow: preview ? 'none' : (config.bgImage ? '0 4px 20px rgba(0,0,0,0.8), 0 2px 8px rgba(0,0,0,0.9)' : `0 4px 30px ${config.textColor}40`),
             fontFamily: 'system-ui, -apple-system, sans-serif'
@@ -83,6 +107,7 @@
           :style="{
             width: `${analogSize}px`,
             height: `${analogSize}px`,
+            alignSelf: preview ? 'center' : ((config.posX ?? 50) <= 30 ? 'flex-start' : (config.posX ?? 50) >= 70 ? 'flex-end' : 'center'),
             border: `min(8px, ${analogSize * 0.02}px) solid ${config.textColor}`,
             boxShadow: config.bgImage 
               ? `inset 0 0 40px rgba(0,0,0,0.6), 0 10px 40px rgba(0,0,0,0.6), 0 0 15px ${config.textColor}40`
@@ -187,10 +212,17 @@
       <div
         v-if="config.customText && config.customTextPosition === 'below'"
         class="font-weight-bold mt-2"
+        :class="{
+          'preview-interactive-element': interactive,
+          'preview-selected-element': interactive && selectedTarget === 'text',
+        }"
         :style="{
           ...customTextStyle,
+          width: '100%',
           textAlign: preview ? 'center' : ((config.posX ?? 50) <= 30 ? 'left' : (config.posX ?? 50) >= 70 ? 'right' : 'center'),
+          pointerEvents: interactive ? 'auto' : 'none',
         }"
+        @pointerdown.stop="onTextPointerDown"
       >
         {{ config.customText }}
       </div>
@@ -216,7 +248,16 @@ export default defineComponent({
       type: Object as PropType<any>,
       default: null,
     },
+    interactive: {
+      type: Boolean as PropType<boolean>,
+      default: false,
+    },
+    selectedTarget: {
+      type: String as PropType<"clock" | "text" | null>,
+      default: "clock",
+    },
   },
+  emits: ["drag-start"],
   data: () => ({
     s_width: 0,
     s_height: 0,
@@ -360,6 +401,14 @@ export default defineComponent({
         }
       }
     },
+    onTextPointerDown(e: PointerEvent) {
+      if (!this.interactive) return;
+      this.$emit("drag-start", { target: "text", event: e });
+    },
+    onClockPointerDown(e: PointerEvent) {
+      if (!this.interactive) return;
+      this.$emit("drag-start", { target: "clock", event: e });
+    },
   },
 });
 </script>
@@ -374,5 +423,15 @@ export default defineComponent({
 }
 .second-hand {
   transition: none; /* Smooth sweep */
+}
+.preview-interactive-element {
+  cursor: move !important;
+  user-select: none !important;
+  transition: outline 0.15s ease;
+}
+.preview-selected-element {
+  outline: 2px dashed rgb(var(--v-theme-primary)) !important;
+  outline-offset: 6px !important;
+  border-radius: 8px !important;
 }
 </style>

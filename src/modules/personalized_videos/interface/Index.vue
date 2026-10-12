@@ -25,29 +25,10 @@
 
         <template #title-actions>
           <div v-if="!selectedAlbum" class="ml-6 d-flex align-center">
-            <div class="personalized-tabs-pill d-flex align-center flex-shrink-0">
-              <div class="personalized-tab-slider" :style="tabSliderStyle" />
-              <button
-                ref="musicTabBtn"
-                type="button"
-                class="personalized-tab-btn"
-                :class="{ active: tab === 'music' }"
-                @click="tab = 'music'"
-              >
-                <v-icon icon="mdi-music-note" size="16" class="mr-1" />
-                {{ t('tab_music') }}
-              </button>
-              <button
-                ref="playlistsTabBtn"
-                type="button"
-                class="personalized-tab-btn"
-                :class="{ active: tab === 'playlists' }"
-                @click="tab = 'playlists'"
-              >
-                <v-icon icon="mdi-playlist-play" size="16" class="mr-1" />
-                {{ t('tab_playlists') }}
-              </button>
-            </div>
+            <PillSwitch
+              v-model="tab"
+              :items="tabItems"
+            />
           </div>
         </template>
 
@@ -473,6 +454,7 @@
 import { defineComponent } from "vue";
 import manifest from "../manifest";
 import ModuleHeader from "@/components/ModuleHeader.vue";
+import PillSwitch, { PillSwitchItem } from "@/components/inputs/PillSwitch.vue";
 import $snackbar from "@/helpers/ui/Snackbar";
 
 interface PersonalizedVideo {
@@ -521,6 +503,7 @@ export default defineComponent({
   name: "PersonalizedVideosModule",
   components: {
     ModuleHeader,
+    PillSwitch,
   },
   data() {
     return {
@@ -541,9 +524,6 @@ export default defineComponent({
 
       musicSearch: "",
       albumSearch: "",
-
-      tabSliderLeft: 0,
-      tabSliderWidth: 0,
     };
   },
   computed: {
@@ -564,11 +544,11 @@ export default defineComponent({
       if (this.tab === "playlists" && this.selectedAlbum) return this.selectedAlbum.name;
       return this.t("title");
     },
-    tabSliderStyle(): Record<string, string> {
-      return {
-        left: `${this.tabSliderLeft}px`,
-        width: `${this.tabSliderWidth}px`,
-      };
+    tabItems(): PillSwitchItem[] {
+      return [
+        { value: "music", label: this.t("tab_music"), icon: "mdi-music-note" },
+        { value: "playlists", label: this.t("tab_playlists"), icon: "mdi-playlist-play" },
+      ];
     },
     filteredVideos(): PersonalizedVideo[] {
       const query = (this.musicSearch || "").trim().toLowerCase();
@@ -597,15 +577,6 @@ export default defineComponent({
       if (val) {
         this.loadVideos();
         this.loadAlbums();
-        this.$nextTick(() => this.updateTabSlider());
-      }
-    },
-    tab() {
-      this.$nextTick(() => this.updateTabSlider());
-    },
-    selectedAlbum(val: PersonalizedAlbum | null) {
-      if (!val) {
-        this.$nextTick(() => this.updateTabSlider());
       }
     },
   },
@@ -613,12 +584,7 @@ export default defineComponent({
     if (this.module?.show) {
       this.loadVideos();
       this.loadAlbums();
-      this.$nextTick(() => this.updateTabSlider());
     }
-    window.addEventListener("resize", this.updateTabSlider);
-  },
-  beforeUnmount() {
-    window.removeEventListener("resize", this.updateTabSlider);
   },
   methods: {
     /* METHODS OBRIGATÓRIOS - INÍCIO */
@@ -627,13 +593,6 @@ export default defineComponent({
       return (this as any).$t(`modules.${this.module_id}.${text}`, params || []);
     },
     /* METHODS OBRIGATÓRIOS - FIM */
-
-    updateTabSlider() {
-      const activeBtn = (this.tab === "music" ? this.$refs.musicTabBtn : this.$refs.playlistsTabBtn) as HTMLElement | undefined;
-      if (!activeBtn) return;
-      this.tabSliderLeft = activeBtn.offsetLeft;
-      this.tabSliderWidth = activeBtn.offsetWidth;
-    },
 
     loadVideos() {
       this.videos = (this as any).$userdata.get("modules.personalized_videos.list") || [];
@@ -997,50 +956,7 @@ export default defineComponent({
     }
   }
 
-  .personalized-tabs-pill {
-    position: relative;
-    background: var(--ds-surface, #232733);
-    border: 1px solid var(--ds-border, #43495b);
-    border-radius: 20px;
-    padding: 3px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  }
 
-  .personalized-tab-slider {
-    position: absolute;
-    top: 3px;
-    bottom: 3px;
-    border-radius: 16px;
-    background: var(--accent-blue, #009FE3);
-    box-shadow: 0 2px 8px rgba(0, 151, 215, 0.35);
-    transition: left 0.25s ease, width 0.25s ease;
-    z-index: 0;
-  }
-
-  .personalized-tab-btn {
-    position: relative;
-    z-index: 1;
-    display: inline-flex;
-    align-items: center;
-    padding: 6px 14px;
-    border-radius: 16px;
-    border: none;
-    background: transparent;
-    color: var(--sidebar-text-secondary, #8C94A0);
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: color 0.2s ease, background 0.2s ease;
-
-    &:hover:not(.active) {
-      color: var(--sidebar-text, #E1E7EF);
-      background: rgba(255, 255, 255, 0.05);
-    }
-
-    &.active {
-      color: #ffffff;
-    }
-  }
 
   .personalized-grid-wrap {
     display: grid;
@@ -1273,16 +1189,7 @@ export default defineComponent({
 :root[data-theme="light"],
 .v-theme--light {
   .personalized-videos-module {
-    .personalized-tabs-pill {
-      background: #FFFFFF;
-      border-color: var(--ds-border, #DEE4EC);
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
 
-      .personalized-tab-btn:hover:not(.active) {
-        color: var(--ds-text-primary, #30333A);
-        background: #F1F5F9;
-      }
-    }
 
     .personalized-card {
       background: #FFFFFF;

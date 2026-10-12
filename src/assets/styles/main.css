@@ -237,8 +237,12 @@ img, a {
 }
 
 .custom-tab-btn:hover:not(:disabled):not(.active) {
-    color: var(--sidebar-text);
-    background: var(--sidebar-hover);
+    color: var(--sidebar-text, #ffffff);
+    background: transparent !important;
+}
+
+.custom-tab-btn:hover:not(:disabled):not(.active) .v-icon {
+    color: var(--sidebar-text, #ffffff);
 }
 
 .custom-tab-btn.active {

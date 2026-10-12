@@ -68,35 +68,13 @@
             <button
               type="button"
               class="nav-tab-btn"
-              :class="{ active: activeTab === 'text' }"
-              @click="activeTab = 'text'"
-            >
-              <v-icon size="18">
-                mdi-format-size
-              </v-icon>
-              <span>{{ t('tab_text') }}</span>
-            </button>
-            <button
-              type="button"
-              class="nav-tab-btn"
-              :class="{ active: activeTab === 'format' }"
-              @click="activeTab = 'format'"
+              :class="{ active: activeTab === 'display' }"
+              @click="activeTab = 'display'"
             >
               <v-icon size="18">
                 mdi-clock-outline
               </v-icon>
-              <span>{{ t('tab_format') }}</span>
-            </button>
-            <button
-              type="button"
-              class="nav-tab-btn"
-              :class="{ active: activeTab === 'position' }"
-              @click="activeTab = 'position'"
-            >
-              <v-icon size="18">
-                mdi-arrow-all
-              </v-icon>
-              <span>{{ t('tab_position') }}</span>
+              <span>{{ t('tab_display') }}</span>
             </button>
             <button
               type="button"
@@ -108,6 +86,17 @@
                 mdi-subtitles-outline
               </v-icon>
               <span>{{ t('tab_title') }}</span>
+            </button>
+            <button
+              type="button"
+              class="nav-tab-btn"
+              :class="{ active: activeTab === 'position' }"
+              @click="activeTab = 'position'"
+            >
+              <v-icon size="18">
+                mdi-arrow-all
+              </v-icon>
+              <span>{{ t('tab_position') }}</span>
             </button>
           </div>
 
@@ -267,9 +256,10 @@
               </div>
             </div>
 
-            <!-- ABA: TEXTO / PONTEIROS -->
-            <div v-if="activeTab === 'text'" class="tab-pane">
-              <div class="settings-section mb-4">
+            <!-- ABA: MOSTRADOR (Unifica Cor, Tamanho, Segundos e 24h) -->
+            <div v-if="activeTab === 'display'" class="tab-pane">
+              <!-- Cor do Texto / Ponteiros -->
+              <div class="settings-section mb-5">
                 <div class="d-flex align-center mb-1">
                   <v-icon size="18" color="primary" class="mr-2">
                     mdi-palette-outline
@@ -281,7 +271,7 @@
                 <p class="text-caption mb-3" style="color: var(--sidebar-text-secondary);">
                   {{ localConfig.style === 'analog' ? 'Cor dos ponteiros principais e marcações da esfera analógica' : 'Cor dos dígitos de horas, minutos e segundos na tela' }}
                 </p>
-                <div class="color-palette-row mb-4">
+                <div class="color-palette-row">
                   <div
                     v-for="color in textPaletteColors"
                     :key="color"
@@ -305,61 +295,7 @@
                   </ModernColorPicker>
                 </div>
               </div>
-            </div>
 
-            <!-- ABA: FORMATO -->
-            <div v-if="activeTab === 'format'" class="tab-pane">
-              <!-- Mostrar Segundos -->
-              <div class="setting-item-card mb-4 d-flex align-center justify-space-between">
-                <div class="d-flex align-center" style="gap: 12px;">
-                  <v-icon size="22" color="primary">
-                    mdi-timer-sand
-                  </v-icon>
-                  <div>
-                    <h4 class="font-weight-bold text-body-2 mb-0" style="color: var(--sidebar-text);">
-                      {{ t('show_seconds') }}
-                    </h4>
-                    <p class="text-caption mb-0" style="color: var(--sidebar-text-secondary);">
-                      Exibir segundos em tempo real ao lado dos minutos
-                    </p>
-                  </div>
-                </div>
-                <v-switch
-                  v-model="localConfig.showSeconds"
-                  color="primary"
-                  inset
-                  hide-details
-                  density="compact"
-                />
-              </div>
-
-              <!-- Formato 24h -->
-              <div class="setting-item-card d-flex align-center justify-space-between">
-                <div class="d-flex align-center" style="gap: 12px;">
-                  <v-icon size="22" color="primary">
-                    mdi-clock-digital
-                  </v-icon>
-                  <div>
-                    <h4 class="font-weight-bold text-body-2 mb-0" style="color: var(--sidebar-text);">
-                      {{ t('format_24h') }}
-                    </h4>
-                    <p class="text-caption mb-0" style="color: var(--sidebar-text-secondary);">
-                      Alternar entre formato 24h e formato 12h (com indicador AM/PM)
-                    </p>
-                  </div>
-                </div>
-                <v-switch
-                  v-model="localConfig.format24h"
-                  color="primary"
-                  inset
-                  hide-details
-                  density="compact"
-                />
-              </div>
-            </div>
-
-            <!-- ABA: POSICIONAMENTO -->
-            <div v-if="activeTab === 'position'" class="tab-pane">
               <!-- Tamanho do Relógio (Escala) -->
               <div class="settings-section mb-5">
                 <div class="d-flex align-center mb-1">
@@ -419,58 +355,67 @@
                 </div>
               </div>
 
-              <!-- Alinhamento Rápido -->
-              <div class="settings-section mb-4">
-                <div class="d-flex align-center justify-space-between mb-2">
-                  <div class="d-flex align-center">
-                    <v-icon size="18" color="primary" class="mr-2">
-                      mdi-crosshairs
-                    </v-icon>
-                    <span class="text-subtitle-2 font-weight-bold section-title">
-                      {{ t('position') }}
-                    </span>
-                  </div>
-                  <v-btn
-                    variant="tonal"
-                    color="primary"
-                    size="small"
-                    class="text-none font-weight-bold rounded-lg"
-                    prepend-icon="mdi-crosshairs-gps"
-                    @click="centerClock"
-                  >
-                    {{ t('center') }}
-                  </v-btn>
-                </div>
-                <p class="text-caption mb-3" style="color: var(--sidebar-text-secondary);">
-                  {{ t('position_desc') }}
-                </p>
-
-                <!-- Seletor de Alvo de Arraste (quando título está livre) -->
-                <div
-                  v-if="effectiveConfig.customText && localConfig.customTextPosition === 'custom'"
-                  class="mb-3 d-flex align-center"
-                  style="gap: 10px;"
-                >
-                  <span class="text-caption font-weight-bold" style="color: var(--sidebar-text);">
-                    {{ t('drag_target') }}
+              <!-- Opções de Formato (Mostrar Segundos e Formato 24h) -->
+              <div class="settings-section">
+                <div class="d-flex align-center mb-3">
+                  <v-icon size="18" color="primary" class="mr-2">
+                    mdi-tune
+                  </v-icon>
+                  <span class="text-subtitle-2 font-weight-bold section-title">
+                    {{ t('options') }}
                   </span>
-                  <PillSwitch
-                    v-model="activePosTarget"
-                    :items="[
-                      { label: t('pos_target_clock'), value: 'clock', icon: 'mdi-clock-outline' },
-                      { label: t('pos_target_text'), value: 'text', icon: 'mdi-format-title' }
-                    ]"
-                  />
                 </div>
 
-                <div class="d-flex justify-center pa-2">
-                  <PositionAlignmentPicker
-                    :x="currentCoordX"
-                    :y="currentCoordY"
-                    :hide-sliders="true"
-                    @update:x="onUpdateCoordX"
-                    @update:y="onUpdateCoordY"
-                  />
+                <!-- Mostrar Segundos -->
+                <div class="setting-item-card mb-3 d-flex align-center justify-space-between">
+                  <div class="d-flex align-center flex-grow-1 pr-4" style="gap: 12px; min-width: 0;">
+                    <v-icon size="22" color="primary" class="flex-shrink-0">
+                      mdi-timer-sand
+                    </v-icon>
+                    <div class="flex-grow-1" style="min-width: 0;">
+                      <h4 class="font-weight-bold text-body-2 mb-0" style="color: var(--sidebar-text);">
+                        {{ t('show_seconds') }}
+                      </h4>
+                      <p class="text-caption mb-0" style="color: var(--sidebar-text-secondary); line-height: 1.35;">
+                        Exibir segundos em tempo real ao lado dos minutos
+                      </p>
+                    </div>
+                  </div>
+                  <div class="flex-shrink-0 d-flex justify-end align-center" style="min-width: 52px;">
+                    <v-switch
+                      v-model="localConfig.showSeconds"
+                      color="primary"
+                      inset
+                      hide-details
+                      density="compact"
+                    />
+                  </div>
+                </div>
+
+                <!-- Formato 24h -->
+                <div class="setting-item-card d-flex align-center justify-space-between">
+                  <div class="d-flex align-center flex-grow-1 pr-4" style="gap: 12px; min-width: 0;">
+                    <v-icon size="22" color="primary" class="flex-shrink-0">
+                      mdi-clock-digital
+                    </v-icon>
+                    <div class="flex-grow-1" style="min-width: 0;">
+                      <h4 class="font-weight-bold text-body-2 mb-0" style="color: var(--sidebar-text);">
+                        {{ t('format_24h') }}
+                      </h4>
+                      <p class="text-caption mb-0" style="color: var(--sidebar-text-secondary); line-height: 1.35;">
+                        Alternar entre formato 24h e formato 12h (com indicador AM/PM)
+                      </p>
+                    </div>
+                  </div>
+                  <div class="flex-shrink-0 d-flex justify-end align-center" style="min-width: 52px;">
+                    <v-switch
+                      v-model="localConfig.format24h"
+                      color="primary"
+                      inset
+                      hide-details
+                      density="compact"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -479,30 +424,51 @@
             <div v-if="activeTab === 'title'" class="tab-pane">
               <!-- Habilitar Título -->
               <div class="setting-item-card mb-4 d-flex align-center justify-space-between">
-                <div class="d-flex align-center" style="gap: 12px;">
-                  <v-icon size="22" color="primary">
+                <div class="d-flex align-center flex-grow-1 pr-4" style="gap: 12px; min-width: 0;">
+                  <v-icon size="22" color="primary" class="flex-shrink-0">
                     mdi-subtitles-outline
                   </v-icon>
-                  <div>
+                  <div class="flex-grow-1" style="min-width: 0;">
                     <h4 class="font-weight-bold text-body-2 mb-0" style="color: var(--sidebar-text);">
                       {{ t('title_enable') }}
                     </h4>
-                    <p class="text-caption mb-0" style="color: var(--sidebar-text-secondary);">
+                    <p class="text-caption mb-0" style="color: var(--sidebar-text-secondary); line-height: 1.35;">
                       {{ t('custom_text_desc') }}
                     </p>
                   </div>
                 </div>
-                <v-switch
-                  v-model="enableCustomText"
+                <div class="flex-shrink-0 d-flex justify-end align-center" style="min-width: 52px;">
+                  <v-switch
+                    v-model="enableCustomText"
+                    color="primary"
+                    inset
+                    hide-details
+                    density="compact"
+                  />
+                </div>
+              </div>
+
+              <!-- Card de Orientação quando Desativado -->
+              <div
+                v-if="!enableCustomText"
+                class="pa-6 rounded-xl text-center d-flex flex-column align-center justify-center my-4"
+                style="background: rgba(150, 150, 150, 0.05); border: 1px dashed var(--border-color);"
+              >
+                <v-icon
+                  size="36"
                   color="primary"
-                  inset
-                  hide-details
-                  density="compact"
-                />
+                  class="mb-2"
+                  style="opacity: 0.6;"
+                >
+                  mdi-format-title
+                </v-icon>
+                <p class="text-caption mb-0" style="color: var(--sidebar-text-secondary); max-width: 340px; line-height: 1.5;">
+                  {{ t('title_disabled_hint') }}
+                </p>
               </div>
 
               <!-- Configurações do Título (quando habilitado) -->
-              <template v-if="enableCustomText">
+              <template v-else>
                 <!-- Texto -->
                 <div class="settings-section mb-4">
                   <span class="text-subtitle-2 font-weight-bold section-title d-block mb-2">
@@ -512,12 +478,23 @@
                     v-model="localConfig.customText"
                     :placeholder="t('custom_text_placeholder')"
                     density="comfortable"
-                    variant="outlined"
+                    variant="solo"
                     rounded="lg"
                     hide-details
-                    color="primary"
-                    clearable
-                  />
+                    class="standard-text-input"
+                  >
+                    <template #append-inner>
+                      <v-btn
+                        v-if="localConfig.customText"
+                        icon="mdi-close"
+                        size="x-small"
+                        variant="text"
+                        class="clear-search-btn"
+                        title="Limpar texto"
+                        @click="localConfig.customText = ''"
+                      />
+                    </template>
+                  </v-text-field>
                 </div>
 
                 <!-- Posição do Título -->
@@ -618,6 +595,71 @@
                 </div>
               </template>
             </div>
+
+            <!-- ABA: POSICIONAMENTO -->
+            <div v-if="activeTab === 'position'" class="tab-pane">
+              <!-- Seletor de Alvo de Arraste (quando título está livre) -->
+              <div
+                v-if="effectiveConfig.customText && localConfig.customTextPosition === 'custom'"
+                class="settings-section mb-5"
+              >
+                <div class="d-flex align-center mb-1">
+                  <v-icon size="18" color="primary" class="mr-2">
+                    mdi-target
+                  </v-icon>
+                  <span class="text-subtitle-2 font-weight-bold section-title">
+                    {{ t('drag_target') }}
+                  </span>
+                </div>
+                <p class="text-caption mb-3" style="color: var(--sidebar-text-secondary);">
+                  Selecione qual elemento deseja posicionar
+                </p>
+                <PillSwitch
+                  v-model="activePosTarget"
+                  block
+                  :items="[
+                    { label: t('pos_target_clock'), value: 'clock', icon: 'mdi-clock-outline' },
+                    { label: t('pos_target_text'), value: 'text', icon: 'mdi-format-title' }
+                  ]"
+                />
+              </div>
+
+              <!-- Alinhamento e Posição Rápida -->
+              <div class="settings-section mb-4">
+                <div class="d-flex align-center justify-space-between mb-2">
+                  <div class="d-flex align-center">
+                    <v-icon size="18" color="primary" class="mr-2">
+                      mdi-grid
+                    </v-icon>
+                    <span class="text-subtitle-2 font-weight-bold section-title">
+                      {{ t('position') }}
+                    </span>
+                  </div>
+                  <v-btn
+                    variant="tonal"
+                    color="primary"
+                    size="small"
+                    class="text-none font-weight-bold rounded-lg"
+                    prepend-icon="mdi-crosshairs-gps"
+                    @click="centerClock"
+                  >
+                    {{ t('center') }}
+                  </v-btn>
+                </div>
+                <p class="text-caption mb-3" style="color: var(--sidebar-text-secondary);">
+                  {{ t('position_desc') }}
+                </p>
+
+                <div class="w-100 pa-1">
+                  <PositionAlignmentPicker
+                    :x="currentCoordX"
+                    :y="currentCoordY"
+                    @update:x="onUpdateCoordX"
+                    @update:y="onUpdateCoordY"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
 
           <!-- Coluna 3: Pré-visualização Fixa 16:9 com Arraste -->
@@ -648,28 +690,10 @@
               <ClockScreen
                 :preview="false"
                 :preview-config="effectiveConfig"
+                :interactive="true"
+                :selected-target="activePosTarget"
+                @drag-start="handleScreenDragStart"
               />
-
-              <!-- Alça delimitadora interativa para Título Livre -->
-              <template v-if="effectiveConfig.customText && localConfig.customTextPosition === 'custom'">
-                <div
-                  class="position-absolute custom-text-drag-box"
-                  :style="{
-                    left: `${localConfig.customTextX ?? 50}%`,
-                    top: `${localConfig.customTextY ?? 20}%`,
-                    transform: `translate(-${localConfig.customTextX ?? 50}%, -${localConfig.customTextY ?? 20}%)`,
-                    border: activePosTarget === 'text' ? '2px dashed rgb(var(--v-theme-primary))' : '1px dashed rgba(255,255,255,0.5)',
-                    borderRadius: '6px',
-                    cursor: 'move',
-                    zIndex: 15,
-                  }"
-                  @pointerdown.stop="selectAndDrag('text', $event)"
-                >
-                  <span class="drag-handle-tag">
-                    {{ t('pos_target_text') }}
-                  </span>
-                </div>
-              </template>
             </div>
 
             <!-- Dica Visual de Arraste Livre -->
@@ -742,7 +766,7 @@ export default defineComponent({
   },
   emits: ["update:modelValue"],
   data: () => ({
-    activeTab: "appearance" as "appearance" | "text" | "format" | "position" | "title",
+    activeTab: "appearance" as "appearance" | "display" | "title" | "position",
     activePosTarget: "clock" as "clock" | "text",
     enableCustomText: false,
     savedImages: [] as string[],
@@ -842,6 +866,11 @@ export default defineComponent({
     internalValue(val: boolean) {
       if (val) {
         this.loadConfig();
+      }
+    },
+    enableCustomText(val: boolean) {
+      if (!val && this.activePosTarget === "text") {
+        this.activePosTarget = "clock";
       }
     },
   },
@@ -957,37 +986,58 @@ export default defineComponent({
       }
       this.$userdata.set("clock_user_wallpapers", this.savedImages);
     },
-    selectAndDrag(target: "clock" | "text", e: PointerEvent) {
-      this.activePosTarget = target;
-      this.startDrag(e);
+    handleScreenDragStart(payload: { target: "clock" | "text"; event: PointerEvent }) {
+      this.activePosTarget = payload.target;
+      if (payload.target === "text" && this.localConfig.customTextPosition !== "custom") {
+        this.localConfig.customTextX = this.localConfig.posX ?? 50;
+        this.localConfig.customTextY = this.localConfig.customTextPosition === "below"
+          ? Math.min(95, (this.localConfig.posY ?? 50) + 15)
+          : Math.max(5, (this.localConfig.posY ?? 50) - 15);
+        this.localConfig.customTextPosition = "custom";
+      }
+      this.startDrag(payload.event);
     },
     startDrag(e: PointerEvent) {
       const el = this.$refs.previewClockRef as HTMLElement;
       if (!el) return;
-      const updatePos = (evt: PointerEvent) => {
-        const rect = el.getBoundingClientRect();
-        const rawX = Math.round(((evt.clientX - rect.left) / rect.width) * 100);
-        const rawY = Math.round(((evt.clientY - rect.top) / rect.height) * 100);
-        const clampedX = Math.max(5, Math.min(95, rawX));
-        const clampedY = Math.max(5, Math.min(95, rawY));
-        if (
-          this.effectiveConfig.customText &&
-          this.localConfig.customTextPosition === "custom" &&
-          this.activePosTarget === "text"
-        ) {
-          this.localConfig.customTextX = clampedX;
-          this.localConfig.customTextY = clampedY;
+
+      const rect = el.getBoundingClientRect();
+      const initialMouseX = e.clientX;
+      const initialMouseY = e.clientY;
+
+      const isText =
+        this.activePosTarget === "text" &&
+        this.effectiveConfig.customText &&
+        this.localConfig.customTextPosition === "custom";
+
+      const initialElemX = isText
+        ? (this.localConfig.customTextX ?? 50)
+        : (this.localConfig.posX ?? 50);
+      const initialElemY = isText
+        ? (this.localConfig.customTextY ?? 20)
+        : (this.localConfig.posY ?? 50);
+
+      const onMove = (evt: PointerEvent) => {
+        const deltaXPc = ((evt.clientX - initialMouseX) / rect.width) * 100;
+        const deltaYPc = ((evt.clientY - initialMouseY) / rect.height) * 100;
+
+        const newX = Math.round(Math.max(5, Math.min(95, initialElemX + deltaXPc)));
+        const newY = Math.round(Math.max(5, Math.min(95, initialElemY + deltaYPc)));
+
+        if (isText) {
+          this.localConfig.customTextX = newX;
+          this.localConfig.customTextY = newY;
         } else {
-          this.localConfig.posX = clampedX;
-          this.localConfig.posY = clampedY;
+          this.localConfig.posX = newX;
+          this.localConfig.posY = newY;
         }
       };
-      updatePos(e);
-      const onMove = (evt: PointerEvent) => updatePos(evt);
+
       const onUp = () => {
         window.removeEventListener("pointermove", onMove);
         window.removeEventListener("pointerup", onUp);
       };
+
       window.addEventListener("pointermove", onMove);
       window.addEventListener("pointerup", onUp);
     },
@@ -1293,6 +1343,17 @@ export default defineComponent({
   border-radius: 12px;
   background: rgba(150, 150, 150, 0.04);
   border: 1px solid var(--border-color);
+  box-sizing: border-box;
+}
+
+.setting-item-card :deep(.v-switch) {
+  margin: 0 !important;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.setting-item-card :deep(.v-selection-control) {
+  min-height: unset;
 }
 
 /* Coluna 3: Pré-visualização Fixa */
@@ -1366,21 +1427,6 @@ export default defineComponent({
   line-height: 1.4;
 }
 
-.custom-text-drag-box {
-  padding: 4px 10px;
-  background: rgba(0, 0, 0, 0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.drag-handle-tag {
-  font-size: 10px;
-  font-weight: 700;
-  color: #ffffff;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.8);
-}
-
 /* Footer */
 .clock-config-footer {
   background: var(--card-bg);
@@ -1388,5 +1434,23 @@ export default defineComponent({
 
 .slider-step-btn {
   border-radius: 8px !important;
+}
+
+.standard-text-input :deep(.v-field) {
+  background: var(--card-bg) !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) !important;
+  border: 1px solid rgba(128, 128, 128, 0.15) !important;
+  border-radius: 8px !important;
+  transition: all 0.2s ease !important;
+}
+
+.standard-text-input :deep(.v-field--focused) {
+  border-color: rgb(var(--v-theme-primary)) !important;
+  box-shadow: 0 4px 12px rgba(var(--v-theme-primary), 0.15) !important;
+}
+
+.standard-text-input :deep(.v-field__input) {
+  color: var(--sidebar-text) !important;
+  font-size: 14px !important;
 }
 </style>

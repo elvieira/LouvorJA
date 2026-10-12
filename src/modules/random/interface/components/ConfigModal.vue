@@ -109,18 +109,6 @@
               </v-icon>
               <span>{{ t('tab_animation') }}</span>
             </button>
-            <!-- Aba de Prévia (Exibida em telas compactas onde a coluna fixa se esconde) -->
-            <button
-              type="button"
-              class="nav-tab-btn nav-tab-preview-only"
-              :class="{ active: activeTab === 'preview' }"
-              @click="activeTab = 'preview'"
-            >
-              <v-icon size="18">
-                mdi-monitor-dashboard
-              </v-icon>
-              <span>{{ t('tab_preview') }}</span>
-            </button>
           </div>
 
           <!-- Coluna 2: Configurações da Aba Ativa -->
@@ -380,32 +368,81 @@
 
             <!-- ABA: TÍTULO DO SORTEIO -->
             <div v-if="activeTab === 'title'" class="tab-pane">
-              <div class="settings-section mb-5">
-                <div class="d-flex align-center mb-1">
-                  <v-icon size="18" color="primary" class="mr-2">
-                    mdi-format-title
+              <!-- Habilitar Título -->
+              <div class="setting-item-card mb-4 d-flex align-center justify-space-between">
+                <div class="d-flex align-center flex-grow-1 pr-4" style="gap: 12px; min-width: 0;">
+                  <v-icon size="22" color="primary" class="flex-shrink-0">
+                    mdi-subtitles-outline
                   </v-icon>
-                  <span class="text-subtitle-2 font-weight-bold section-title">
-                    {{ t('custom_text') }}
-                  </span>
+                  <div class="flex-grow-1" style="min-width: 0;">
+                    <h4 class="font-weight-bold text-body-2 mb-0" style="color: var(--sidebar-text);">
+                      {{ t('title_enable') }}
+                    </h4>
+                    <p class="text-caption mb-0" style="color: var(--sidebar-text-secondary); line-height: 1.35;">
+                      {{ t('custom_text_desc') }}
+                    </p>
+                  </div>
                 </div>
-                <p class="text-caption mb-3" style="color: var(--sidebar-text-secondary);">
-                  {{ t('custom_text_desc') }}
-                </p>
-
-                <v-text-field
-                  v-model="localConfig.customText"
-                  variant="outlined"
-                  density="comfortable"
-                  color="primary"
-                  :placeholder="t('custom_text_placeholder')"
-                  clearable
-                  hide-details
-                  class="mb-4"
-                />
+                <div class="flex-shrink-0 d-flex justify-end align-center" style="min-width: 52px;">
+                  <v-switch
+                    v-model="enableCustomText"
+                    color="primary"
+                    inset
+                    hide-details
+                    density="compact"
+                  />
+                </div>
               </div>
 
-              <template v-if="localConfig.customText">
+              <!-- Card de Orientação quando Desativado -->
+              <div
+                v-if="!enableCustomText"
+                class="pa-6 rounded-xl text-center d-flex flex-column align-center justify-center my-4"
+                style="background: rgba(150, 150, 150, 0.05); border: 1px dashed var(--border-color);"
+              >
+                <v-icon
+                  size="36"
+                  color="primary"
+                  class="mb-2"
+                  style="opacity: 0.6;"
+                >
+                  mdi-format-title
+                </v-icon>
+                <p class="text-caption mb-0" style="color: var(--sidebar-text-secondary); max-width: 340px; line-height: 1.5;">
+                  {{ t('title_disabled_hint') }}
+                </p>
+              </div>
+
+              <!-- Configurações do Título (quando habilitado) -->
+              <template v-else>
+                <!-- Texto do Título -->
+                <div class="settings-section mb-4">
+                  <span class="text-subtitle-2 font-weight-bold section-title d-block mb-2">
+                    {{ t('custom_text') }}
+                  </span>
+                  <v-text-field
+                    v-model="localConfig.customText"
+                    variant="solo"
+                    density="comfortable"
+                    rounded="lg"
+                    color="primary"
+                    :placeholder="t('custom_text_placeholder')"
+                    hide-details
+                    class="standard-text-input mb-4"
+                  >
+                    <template #append-inner>
+                      <v-btn
+                        v-if="localConfig.customText"
+                        icon="mdi-close"
+                        size="x-small"
+                        variant="text"
+                        class="clear-search-btn"
+                        title="Limpar texto"
+                        @click="localConfig.customText = ''"
+                      />
+                    </template>
+                  </v-text-field>
+                </div>
                 <!-- Cor do Título -->
                 <div class="settings-section mb-5">
                   <div class="d-flex align-center mb-2">
@@ -529,7 +566,7 @@
             <div v-if="activeTab === 'position'" class="tab-pane">
               <!-- Seletor de Alvo se Título for Livre -->
               <div
-                v-if="localConfig.customText && localConfig.customTextPosition === 'custom'"
+                v-if="enableCustomText && localConfig.customText && localConfig.customTextPosition === 'custom'"
                 class="settings-section mb-5"
               >
                 <div class="d-flex align-center mb-1">
@@ -553,15 +590,15 @@
                 />
               </div>
 
-              <!-- Grade de 9 Pontos -->
-              <div class="settings-section mb-5">
+              <!-- Alinhamento e Posição Rápida -->
+              <div class="settings-section mb-4">
                 <div class="d-flex align-center justify-space-between mb-2">
                   <div class="d-flex align-center">
                     <v-icon size="18" color="primary" class="mr-2">
                       mdi-grid
                     </v-icon>
                     <span class="text-subtitle-2 font-weight-bold section-title">
-                      Alinhamento Rápido
+                      {{ t('position') }}
                     </span>
                   </div>
                   <v-btn
@@ -576,11 +613,11 @@
                   </v-btn>
                 </div>
                 <p class="text-caption mb-3" style="color: var(--sidebar-text-secondary);">
-                  Toque em um ponto da grade ou use os controles finos
+                  {{ t('position_desc') }}
                 </p>
-                <div class="d-flex justify-center my-3">
+                <div class="w-100 pa-1">
                   <PositionAlignmentPicker
-                    v-if="activePosTarget === 'draw' || !localConfig.customText || localConfig.customTextPosition !== 'custom'"
+                    v-if="activePosTarget === 'draw' || !enableCustomText || !localConfig.customText || localConfig.customTextPosition !== 'custom'"
                     v-model:x="localConfig.posX"
                     v-model:y="localConfig.posY"
                   />
@@ -588,92 +625,6 @@
                     v-else
                     v-model:x="localConfig.customTextX"
                     v-model:y="localConfig.customTextY"
-                  />
-                </div>
-              </div>
-
-              <!-- Ajustes Finos X / Y -->
-              <div class="settings-section">
-                <div class="d-flex align-center mb-3">
-                  <v-icon size="18" color="primary" class="mr-2">
-                    mdi-tune
-                  </v-icon>
-                  <span class="text-subtitle-2 font-weight-bold section-title">
-                    Ajuste Fino Numérico (%)
-                  </span>
-                </div>
-
-                <!-- Eixo X -->
-                <div class="mb-4">
-                  <div class="d-flex align-center justify-space-between mb-1">
-                    <span class="text-caption font-weight-bold" style="color: var(--sidebar-text);">
-                      Posição Horizontal (X)
-                    </span>
-                    <v-chip
-                      size="x-small"
-                      variant="tonal"
-                      color="primary"
-                      class="font-weight-bold"
-                    >
-                      {{ currentActiveX }}%
-                    </v-chip>
-                  </div>
-                  <v-slider
-                    v-if="activePosTarget === 'draw' || !localConfig.customText || localConfig.customTextPosition !== 'custom'"
-                    v-model="localConfig.posX"
-                    :min="5"
-                    :max="95"
-                    :step="1"
-                    hide-details
-                    color="primary"
-                    track-color="rgba(150, 150, 150, 0.2)"
-                  />
-                  <v-slider
-                    v-else
-                    v-model="localConfig.customTextX"
-                    :min="5"
-                    :max="95"
-                    :step="1"
-                    hide-details
-                    color="primary"
-                    track-color="rgba(150, 150, 150, 0.2)"
-                  />
-                </div>
-
-                <!-- Eixo Y -->
-                <div>
-                  <div class="d-flex align-center justify-space-between mb-1">
-                    <span class="text-caption font-weight-bold" style="color: var(--sidebar-text);">
-                      Posição Vertical (Y)
-                    </span>
-                    <v-chip
-                      size="x-small"
-                      variant="tonal"
-                      color="primary"
-                      class="font-weight-bold"
-                    >
-                      {{ currentActiveY }}%
-                    </v-chip>
-                  </div>
-                  <v-slider
-                    v-if="activePosTarget === 'draw' || !localConfig.customText || localConfig.customTextPosition !== 'custom'"
-                    v-model="localConfig.posY"
-                    :min="5"
-                    :max="95"
-                    :step="1"
-                    hide-details
-                    color="primary"
-                    track-color="rgba(150, 150, 150, 0.2)"
-                  />
-                  <v-slider
-                    v-else
-                    v-model="localConfig.customTextY"
-                    :min="5"
-                    :max="95"
-                    :step="1"
-                    hide-details
-                    color="primary"
-                    track-color="rgba(150, 150, 150, 0.2)"
                   />
                 </div>
               </div>
@@ -766,89 +717,6 @@
                 </div>
               </div>
             </div>
-
-            <!-- ABA: PRÉVIA (Visível apenas em telas menores via tab-pane) -->
-            <div v-if="activeTab === 'preview'" class="tab-pane">
-              <div class="preview-mobile-wrapper">
-                <div class="d-flex align-center justify-space-between mb-3">
-                  <div class="d-flex align-center">
-                    <v-icon size="18" color="primary" class="mr-2">
-                      mdi-monitor-dashboard
-                    </v-icon>
-                    <span class="text-subtitle-2 font-weight-bold section-title">
-                      {{ t('preview') }}
-                    </span>
-                  </div>
-                  <v-chip
-                    size="x-small"
-                    color="primary"
-                    variant="tonal"
-                    class="font-weight-bold"
-                  >
-                    {{ t('preview_ratio') }}
-                  </v-chip>
-                </div>
-
-                <!-- Box 16:9 Mobile com Arraste -->
-                <div
-                  ref="previewMobileRef"
-                  class="preview-box-16-9 position-relative overflow-hidden cursor-move user-select-none"
-                  :style="previewContainerStyle"
-                  @pointerdown="startDrag"
-                >
-                  <!-- Título Livre -->
-                  <div
-                    v-if="localConfig.customText && localConfig.customTextPosition === 'custom'"
-                    class="position-absolute font-weight-bold"
-                    :style="previewCustomTextFreeStyle"
-                    @pointerdown.stop="selectAndDrag('text', $event)"
-                  >
-                    {{ localConfig.customText }}
-                  </div>
-
-                  <!-- Container Sorteado (com Título Acima / Abaixo se aplicável) -->
-                  <div
-                    class="position-absolute d-flex flex-column"
-                    :style="previewDrawContainerStyle"
-                    @pointerdown.stop="selectAndDrag('draw', $event)"
-                  >
-                    <div
-                      v-if="localConfig.customText && (localConfig.customTextPosition === 'above' || !localConfig.customTextPosition)"
-                      class="font-weight-bold mb-1"
-                      :style="previewTitleStyle"
-                    >
-                      {{ localConfig.customText }}
-                    </div>
-
-                    <div
-                      class="font-weight-black"
-                      :style="previewDrawTextStyle"
-                    >
-                      {{ sampleDisplayText }}
-                    </div>
-
-                    <div
-                      v-if="localConfig.customText && localConfig.customTextPosition === 'below'"
-                      class="font-weight-bold mt-1"
-                      :style="previewTitleStyle"
-                    >
-                      {{ localConfig.customText }}
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Dica de Arraste -->
-                <div class="preview-info-box mt-4 pa-3 rounded-lg d-flex align-start" style="gap: 10px;">
-                  <v-icon size="18" color="primary" class="mt-0.5">
-                    mdi-cursor-move
-                  </v-icon>
-                  <div class="text-caption preview-info-text">
-                    <strong style="color: var(--sidebar-text);">{{ t('drag_hint_title') }}</strong>
-                    {{ t('drag_hint') }}
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
 
           <!-- Coluna 3: Pré-visualização Fixa (Sticky à Direita) -->
@@ -877,12 +745,13 @@
               ref="previewBoxRef"
               class="preview-box-16-9 position-relative overflow-hidden cursor-move user-select-none"
               :style="previewContainerStyle"
-              @pointerdown="startDrag"
+              @pointerdown="handlePreviewPointerDown"
             >
               <!-- Título Livre na Tela -->
               <div
-                v-if="localConfig.customText && localConfig.customTextPosition === 'custom'"
-                class="position-absolute font-weight-bold"
+                v-if="enableCustomText && localConfig.customText && localConfig.customTextPosition === 'custom'"
+                class="position-absolute font-weight-bold preview-interactive-element"
+                :class="{ 'preview-selected-element': activePosTarget === 'text' }"
                 :style="previewCustomTextFreeStyle"
                 @pointerdown.stop="selectAndDrag('text', $event)"
               >
@@ -891,13 +760,14 @@
 
               <!-- Container Sorteado (com Título Acima / Abaixo se aplicável) -->
               <div
-                class="position-absolute d-flex flex-column"
+                class="position-absolute d-flex flex-column preview-interactive-element"
+                :class="{ 'preview-selected-element': !enableCustomText || !localConfig.customText || localConfig.customTextPosition !== 'custom' || activePosTarget === 'draw' }"
                 :style="previewDrawContainerStyle"
                 @pointerdown.stop="selectAndDrag('draw', $event)"
               >
                 <!-- Título Acima -->
                 <div
-                  v-if="localConfig.customText && (localConfig.customTextPosition === 'above' || !localConfig.customTextPosition)"
+                  v-if="enableCustomText && localConfig.customText && (localConfig.customTextPosition === 'above' || !localConfig.customTextPosition)"
                   class="font-weight-bold mb-1"
                   :style="previewTitleStyle"
                 >
@@ -914,7 +784,7 @@
 
                 <!-- Título Abaixo -->
                 <div
-                  v-if="localConfig.customText && localConfig.customTextPosition === 'below'"
+                  v-if="enableCustomText && localConfig.customText && localConfig.customTextPosition === 'below'"
                   class="font-weight-bold mt-1"
                   :style="previewTitleStyle"
                 >
@@ -1043,8 +913,10 @@ export default defineComponent({
   },
   emits: ["update:modelValue"],
   data: () => ({
-    activeTab: "appearance" as "appearance" | "text" | "title" | "position" | "animation" | "preview",
+    activeTab: "appearance" as "appearance" | "text" | "title" | "position" | "animation",
     activePosTarget: "draw" as "draw" | "text",
+    enableCustomText: false,
+    savedCustomText: "",
     showResetConfirm: false,
     savedWallpapers: [] as string[],
     bgPaletteColors: [
@@ -1116,6 +988,7 @@ export default defineComponent({
     },
     currentActiveX(): number {
       if (
+        this.enableCustomText &&
         this.localConfig.customText &&
         this.localConfig.customTextPosition === "custom" &&
         this.activePosTarget === "text"
@@ -1126,6 +999,7 @@ export default defineComponent({
     },
     currentActiveY(): number {
       if (
+        this.enableCustomText &&
         this.localConfig.customText &&
         this.localConfig.customTextPosition === "custom" &&
         this.activePosTarget === "text"
@@ -1156,7 +1030,6 @@ export default defineComponent({
         maxWidth: "94%",
         width: "max-content",
         whiteSpace: "nowrap",
-        border: this.activePosTarget === "draw" ? "1px dashed rgba(var(--v-theme-primary), 0.7)" : "1px dashed transparent",
         borderRadius: "6px",
         padding: "2px 6px",
       };
@@ -1202,8 +1075,7 @@ export default defineComponent({
           ? "0 4px 12px rgba(0,0,0,0.85)"
           : `0 4px 16px ${titleColor}60`,
         padding: "2px 6px",
-        border: this.activePosTarget === "text" ? "1px dashed var(--accent-blue, #0097d7)" : "1px dashed transparent",
-        borderRadius: "4px",
+        borderRadius: "6px",
         whiteSpace: "nowrap",
         maxWidth: "94%",
         width: "max-content",
@@ -1215,6 +1087,21 @@ export default defineComponent({
     visible(val: boolean) {
       if (val) {
         this.loadConfig();
+      }
+    },
+    enableCustomText(val: boolean) {
+      if (!val) {
+        if (this.localConfig.customText) {
+          this.savedCustomText = this.localConfig.customText;
+        }
+        this.localConfig.customText = "";
+        if (this.activePosTarget === "text") {
+          this.activePosTarget = "draw";
+        }
+      } else {
+        if (!this.localConfig.customText) {
+          this.localConfig.customText = this.savedCustomText || this.t("title");
+        }
       }
     },
   },
@@ -1234,6 +1121,8 @@ export default defineComponent({
       } else {
         this.localConfig = { ...this.defaultConfig };
       }
+      this.enableCustomText = Boolean(this.localConfig.customText && this.localConfig.customText.trim().length > 0);
+      this.savedCustomText = this.localConfig.customText || "";
       this.initialConfig = JSON.parse(JSON.stringify(this.localConfig));
       this.loadSavedWallpapers();
     },
@@ -1253,6 +1142,7 @@ export default defineComponent({
     },
     centerCurrent() {
       if (
+        this.enableCustomText &&
         this.localConfig.customText &&
         this.localConfig.customTextPosition === "custom" &&
         this.activePosTarget === "text"
@@ -1266,6 +1156,8 @@ export default defineComponent({
     },
     resetToDefault() {
       this.localConfig = { ...this.defaultConfig };
+      this.enableCustomText = false;
+      this.savedCustomText = "";
       this.showResetConfirm = false;
     },
     onBgImageSelect(event: Event) {
@@ -1315,22 +1207,23 @@ export default defineComponent({
     },
     selectAndDrag(target: "draw" | "text", e: PointerEvent) {
       this.activePosTarget = target;
-      this.startDrag(e);
-    },
-    startDrag(e: PointerEvent) {
-      const el = (this.$refs.previewBoxRef || this.$refs.previewMobileRef) as HTMLElement;
+      const el = (this.$refs.previewBoxRef || (e.currentTarget as HTMLElement)?.closest(".preview-box-16-9")) as HTMLElement;
       if (!el) return;
-      const updatePos = (evt: PointerEvent) => {
-        const rect = el.getBoundingClientRect();
-        const rawX = Math.round(((evt.clientX - rect.left) / rect.width) * 100);
-        const rawY = Math.round(((evt.clientY - rect.top) / rect.height) * 100);
-        const clampedX = Math.max(5, Math.min(95, rawX));
-        const clampedY = Math.max(5, Math.min(95, rawY));
-        if (
-          this.localConfig.customText &&
-          this.localConfig.customTextPosition === "custom" &&
-          this.activePosTarget === "text"
-        ) {
+      const rect = el.getBoundingClientRect();
+      const initialMouseX = e.clientX;
+      const initialMouseY = e.clientY;
+
+      const isText = target === "text";
+      const initialX = isText ? (this.localConfig.customTextX ?? 50) : (this.localConfig.posX ?? 50);
+      const initialY = isText ? (this.localConfig.customTextY ?? 20) : (this.localConfig.posY ?? 50);
+
+      const onMove = (evt: PointerEvent) => {
+        const deltaX = ((evt.clientX - initialMouseX) / rect.width) * 100;
+        const deltaY = ((evt.clientY - initialMouseY) / rect.height) * 100;
+        const clampedX = Math.round(Math.max(5, Math.min(95, initialX + deltaX)));
+        const clampedY = Math.round(Math.max(5, Math.min(95, initialY + deltaY)));
+
+        if (isText) {
           this.localConfig.customTextX = clampedX;
           this.localConfig.customTextY = clampedY;
         } else {
@@ -1338,8 +1231,6 @@ export default defineComponent({
           this.localConfig.posY = clampedY;
         }
       };
-      updatePos(e);
-      const onMove = (evt: PointerEvent) => updatePos(evt);
       const onUp = () => {
         window.removeEventListener("pointermove", onMove);
         window.removeEventListener("pointerup", onUp);
@@ -1347,8 +1238,14 @@ export default defineComponent({
       window.addEventListener("pointermove", onMove);
       window.addEventListener("pointerup", onUp);
     },
+    handlePreviewPointerDown(e: PointerEvent) {
+      this.selectAndDrag(this.activePosTarget || "draw", e);
+    },
     saveAndClose() {
       const cloned = JSON.parse(JSON.stringify(this.localConfig));
+      if (!this.enableCustomText) {
+        cloned.customText = "";
+      }
       this.$appdata.set(`modules.${this.moduleId}.config`, cloned);
       this.$userdata.set("sorteio_config", cloned);
       this.close();
@@ -1678,25 +1575,71 @@ export default defineComponent({
   border-radius: 8px !important;
 }
 
+/* Card de Configuração */
+.setting-item-card {
+  padding: 16px;
+  border-radius: 12px;
+  background: rgba(150, 150, 150, 0.04);
+  border: 1px solid var(--border-color);
+  box-sizing: border-box;
+}
+
+.setting-item-card :deep(.v-switch) {
+  margin: 0 !important;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.setting-item-card :deep(.v-selection-control) {
+  min-height: unset;
+}
+
+/* Input Padrão */
+.standard-text-input :deep(.v-field) {
+  background: var(--card-bg) !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) !important;
+  border: 1px solid rgba(128, 128, 128, 0.15) !important;
+  border-radius: 8px !important;
+  transition: all 0.2s ease !important;
+}
+
+.standard-text-input :deep(.v-field--focused) {
+  border-color: rgb(var(--v-theme-primary)) !important;
+  box-shadow: 0 4px 12px rgba(var(--v-theme-primary), 0.15) !important;
+}
+
+.standard-text-input :deep(.v-field__input) {
+  color: var(--sidebar-text) !important;
+  font-size: 14px !important;
+}
+
+.clear-search-btn {
+  color: var(--sidebar-text-secondary) !important;
+  opacity: 0.7;
+}
+
+.clear-search-btn:hover {
+  opacity: 1;
+  color: rgb(var(--v-theme-primary)) !important;
+}
+
+/* Elementos Interativos do Preview */
+.preview-interactive-element {
+  cursor: grab;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.preview-interactive-element:active {
+  cursor: grabbing;
+}
+
+.preview-selected-element {
+  outline: 2px dashed rgb(var(--v-theme-primary)) !important;
+  outline-offset: 6px !important;
+  border-radius: 8px !important;
+}
+
 /* Container Queries e Responsividade */
-@container config-modal (max-width: 980px) {
-  .sorteio-config-preview-col {
-    display: none !important;
-  }
-  .nav-tab-preview-only {
-    display: flex !important;
-  }
-}
-
-@media (max-width: 980px) {
-  .sorteio-config-preview-col {
-    display: none !important;
-  }
-  .nav-tab-preview-only {
-    display: flex !important;
-  }
-}
-
 @container config-modal (max-width: 560px) {
   .sorteio-config-nav-col {
     width: 60px !important;

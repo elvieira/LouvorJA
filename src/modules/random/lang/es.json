@@ -53,6 +53,8 @@
   "transform_none": "Aa (Normal)",
   "transform_uppercase": "AA (MAYÚSCULAS)",
   "transform_lowercase": "aa (minúsculas)",
+  "title_enable": "Habilitar Título / Mensaje",
+  "title_disabled_hint": "El título está desactivado. Active la opción superior para agregar un texto fijo en la pantalla de proyección.",
   "custom_text": "Título del Sorteo (Opcional)",
   "custom_text_desc": "Mostrar un título o mensaje en la proyección (ej: Premio, Libro)",
   "custom_text_placeholder": "Ej: Sorteo Especial, Premio de Bienvenida...",

@@ -342,31 +342,14 @@
                       {{ t('text_align') }}
                     </span>
                   </div>
-                  <v-btn-toggle
+                  <PillSwitch
                     v-model="localConfig.align"
-                    color="primary"
-                    variant="tonal"
-                    divided
-                    mandatory
-                    rounded="lg"
-                    style="height: 38px;"
-                  >
-                    <v-btn value="text-left" class="px-3">
-                      <v-icon size="20">
-                        mdi-format-align-left
-                      </v-icon>
-                    </v-btn>
-                    <v-btn value="text-center" class="px-3">
-                      <v-icon size="20">
-                        mdi-format-align-center
-                      </v-icon>
-                    </v-btn>
-                    <v-btn value="text-right" class="px-3">
-                      <v-icon size="20">
-                        mdi-format-align-right
-                      </v-icon>
-                    </v-btn>
-                  </v-btn-toggle>
+                    :items="[
+                      { value: 'text-left', icon: 'mdi-format-align-left', label: '', title: 'Alinhar à esquerda' },
+                      { value: 'text-center', icon: 'mdi-format-align-center', label: '', title: 'Centralizar' },
+                      { value: 'text-right', icon: 'mdi-format-align-right', label: '', title: 'Alinhar à direita' },
+                    ]"
+                  />
                 </div>
               </div>
             </div>
@@ -472,31 +455,14 @@
                       {{ t('text_align') }}
                     </span>
                   </div>
-                  <v-btn-toggle
+                  <PillSwitch
                     v-model="localConfig.refAlign"
-                    color="primary"
-                    variant="tonal"
-                    divided
-                    mandatory
-                    rounded="lg"
-                    style="height: 38px;"
-                  >
-                    <v-btn value="text-left" class="px-3">
-                      <v-icon size="20">
-                        mdi-format-align-left
-                      </v-icon>
-                    </v-btn>
-                    <v-btn value="text-center" class="px-3">
-                      <v-icon size="20">
-                        mdi-format-align-center
-                      </v-icon>
-                    </v-btn>
-                    <v-btn value="text-right" class="px-3">
-                      <v-icon size="20">
-                        mdi-format-align-right
-                      </v-icon>
-                    </v-btn>
-                  </v-btn-toggle>
+                    :items="[
+                      { value: 'text-left', icon: 'mdi-format-align-left', label: '', title: 'Alinhar à esquerda' },
+                      { value: 'text-center', icon: 'mdi-format-align-center', label: '', title: 'Centralizar' },
+                      { value: 'text-right', icon: 'mdi-format-align-right', label: '', title: 'Alinhar à direita' },
+                    ]"
+                  />
                 </div>
               </div>
             </div>
@@ -609,11 +575,13 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import ModernColorPicker from "@/components/inputs/ModernColorPicker.vue";
+import PillSwitch from "@/components/inputs/PillSwitch.vue";
 
 export default defineComponent({
   name: "ConfigModal",
   components: {
     ModernColorPicker,
+    PillSwitch,
   },
   props: {
     modelValue: {

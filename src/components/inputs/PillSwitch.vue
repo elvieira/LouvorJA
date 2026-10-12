@@ -21,19 +21,21 @@
       :class="{
         active: modelValue === item.value,
         'flex-grow-1 justify-center': block,
+        'icon-only-btn': !item.label,
       }"
-      :title="item.label"
+      :title="item.title || item.label"
       :disabled="disabled || item.disabled"
       @click="selectItem(item.value)"
     >
       <v-icon
         v-if="item.icon"
-        size="16"
-        class="mr-1 flex-shrink-0"
+        size="18"
+        :class="{ 'mr-1': !!item.label }"
+        class="flex-shrink-0"
       >
         {{ item.icon }}
       </v-icon>
-      <span class="pill-btn-label">{{ item.label }}</span>
+      <span v-if="item.label" class="pill-btn-label">{{ item.label }}</span>
     </button>
   </div>
 </template>
@@ -43,7 +45,8 @@ import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from "vue"
 
 export interface PillSwitchItem {
   value: string | number | boolean;
-  label: string;
+  label?: string;
+  title?: string;
   icon?: string;
   disabled?: boolean;
 }
@@ -197,6 +200,13 @@ onBeforeUnmount(() => {
   box-sizing: border-box !important;
   min-width: 0 !important;
   padding: 6px 10px;
+  color: var(--sidebar-text-secondary);
+  transition: color 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.custom-tab-btn.icon-only-btn {
+  padding: 6px 12px;
+  justify-content: center;
 }
 
 .custom-tabs-pill.w-100 .custom-tab-btn {
@@ -214,9 +224,19 @@ onBeforeUnmount(() => {
 .custom-tab-btn.active {
   background: transparent !important;
   box-shadow: none !important;
+  color: #ffffff !important;
+}
+
+.custom-tab-btn.active .v-icon {
+  color: #ffffff !important;
 }
 
 .custom-tab-btn:hover:not(:disabled):not(.active) {
-  background: var(--sidebar-hover) !important;
+  background: transparent !important;
+  color: var(--sidebar-text, #ffffff) !important;
+}
+
+.custom-tab-btn:hover:not(:disabled):not(.active) .v-icon {
+  color: var(--sidebar-text, #ffffff) !important;
 }
 </style>

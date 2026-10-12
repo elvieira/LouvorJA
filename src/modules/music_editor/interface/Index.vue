@@ -24,19 +24,10 @@
         <div class="editor-header-controls">
           <div class="editor-tools-group d-flex flex-wrap justify-end align-center" style="gap: 8px;">
             <!-- Segmented Tab Navigation -->
-            <div class="editor-tabs-pill d-flex align-center flex-shrink-0">
-              <button
-                v-for="tabItem in ribbonTabs"
-                :key="tabItem.key"
-                type="button"
-                class="editor-tab-btn"
-                :class="{ active: ribbonTab === tabItem.key }"
-                @click="ribbonTab = tabItem.key"
-              >
-                <v-icon :icon="tabItem.icon" size="16" class="mr-1" />
-                {{ tabItem.label }}
-              </button>
-            </div>
+            <PillSwitch
+              v-model="ribbonTab"
+              :items="ribbonTabs"
+            />
 
             <!-- Contextual Action Bar -->
             <div class="editor-actions-pill d-flex align-center flex-shrink-0">
@@ -1055,6 +1046,7 @@ import manifest from "../manifest";
 import ModuleHeader from "@/components/ModuleHeader.vue";
 import LSlide from "@/components/Slide.vue";
 import ModernColorPicker from "@/components/inputs/ModernColorPicker.vue";
+import PillSwitch, { PillSwitchItem } from "@/components/inputs/PillSwitch.vue";
 
 interface EditorSlide {
   text: string;
@@ -1158,6 +1150,7 @@ export default defineComponent({
     ModuleHeader,
     LSlide,
     ModernColorPicker,
+    PillSwitch,
   },
   data() {
     return {
@@ -1208,11 +1201,11 @@ export default defineComponent({
       if (this.mode === "present") return this.presentingSong?.name || "";
       return this.nameInput || this.t("new_song");
     },
-    ribbonTabs(): { key: "file" | "format" | "sync"; label: string; icon: string }[] {
+    ribbonTabs(): PillSwitchItem[] {
       return [
-        { key: "file", label: this.t("ribbon_tab_file"), icon: "mdi-folder-outline" },
-        { key: "format", label: this.t("ribbon_tab_format"), icon: "mdi-format-paint" },
-        { key: "sync", label: this.t("ribbon_tab_sync"), icon: "mdi-clock-check-outline" },
+        { value: "file", label: this.t("ribbon_tab_file"), icon: "mdi-folder-outline" },
+        { value: "format", label: this.t("ribbon_tab_format"), icon: "mdi-format-paint" },
+        { value: "sync", label: this.t("ribbon_tab_sync"), icon: "mdi-clock-check-outline" },
       ];
     },
     canSave(): boolean {
@@ -1338,7 +1331,7 @@ export default defineComponent({
       this.scrollActiveSlideIntoView();
     },
     ribbonTab(val: string) {
-      const valid = this.ribbonTabs.some((t) => t.key === val);
+      const valid = this.ribbonTabs.some((t) => t.value === val);
       if (!valid) {
         this.ribbonTab = "file";
       }
@@ -2072,38 +2065,7 @@ export default defineComponent({
       pointer-events: auto;
     }
 
-    .editor-tabs-pill {
-      background: var(--card-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 20px;
-      padding: 3px;
-      box-shadow: var(--shadow);
-    }
 
-    .editor-tab-btn {
-      display: inline-flex;
-      align-items: center;
-      padding: 5px 12px;
-      border-radius: 16px;
-      border: none;
-      background: transparent;
-      color: var(--sidebar-text-secondary);
-      font-size: 12.5px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: var(--transition);
-
-      &:hover {
-        color: var(--sidebar-text);
-        background: var(--sidebar-hover);
-      }
-
-      &.active {
-        background: var(--accent-blue);
-        color: #ffffff;
-        box-shadow: 0 2px 8px rgba(0, 151, 215, 0.35);
-      }
-    }
 
     .editor-actions-pill {
       background: var(--card-bg);

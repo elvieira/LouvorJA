@@ -26,8 +26,14 @@
             title="Limpar pesquisa"
             @click="clearSearch"
           />
-          <div class="bible-segmented-mode d-flex align-center">
+          <div ref="modeContainerRef" class="bible-segmented-mode d-flex align-center position-relative">
+            <!-- Marcador Deslizante (Sliding Active Indicator) -->
+            <div
+              class="mode-pill-slider"
+              :style="modeIndicatorStyle"
+            />
             <button
+              ref="refBtnRef"
               type="button"
               class="mode-pill-btn"
               :class="{ active: searchMode === 'reference' }"
@@ -37,6 +43,7 @@
               <span>REF</span>
             </button>
             <button
+              ref="texBtnRef"
               type="button"
               class="mode-pill-btn"
               :class="{ active: searchMode === 'text' }"
@@ -90,10 +97,37 @@ export default defineComponent({
       justFocused: false,
       nativeInput: null as HTMLInputElement | null,
       mouseupHandler: null as ((_e: MouseEvent) => void) | null,
+      modeIndicatorLeft: 2,
+      modeIndicatorWidth: 0,
+      modeIndicatorReady: false,
     };
+  },
+  computed: {
+    modeIndicatorStyle(): Record<string, string> {
+      return {
+        transform: `translateX(${this.modeIndicatorLeft}px)`,
+        width: `${this.modeIndicatorWidth}px`,
+        opacity: this.modeIndicatorWidth > 0 ? "1" : "0",
+        transition: this.modeIndicatorReady
+          ? "transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), width 0.25s cubic-bezier(0.4, 0, 0.2, 1)"
+          : "none",
+      };
+    },
+  },
+  watch: {
+    searchMode() {
+      this.$nextTick(() => {
+        this.updateModeIndicator();
+      });
+    },
   },
   mounted() {
     this.$nextTick(() => {
+      this.updateModeIndicator();
+      requestAnimationFrame(() => {
+        this.modeIndicatorReady = true;
+      });
+
       // Localiza o input nativo dentro do v-text-field
       const component = this.$refs.searchInput as any;
       let inputEl: HTMLInputElement | null = null;
@@ -140,9 +174,20 @@ export default defineComponent({
     }
   },
   methods: {
+    updateModeIndicator() {
+      const target = this.searchMode === "reference" ? this.$refs.refBtnRef : this.$refs.texBtnRef;
+      const btn = target as HTMLElement;
+      if (btn) {
+        this.modeIndicatorLeft = btn.offsetLeft;
+        this.modeIndicatorWidth = btn.offsetWidth;
+      }
+    },
     setMode(mode: "reference" | "text") {
       this.searchMode = mode;
       this.clearSearch();
+      this.$nextTick(() => {
+        this.updateModeIndicator();
+      });
     },
     clearSearch() {
       this.searchQuery = "";
@@ -433,6 +478,7 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .bible-segmented-mode {
+  position: relative;
   background: rgba(0, 0, 0, 0.22);
   border-radius: 20px;
   padding: 2px;
@@ -440,31 +486,47 @@ export default defineComponent({
   height: 30px;
   border: 1px solid rgba(255, 255, 255, 0.08);
 
+  .mode-pill-slider {
+    position: absolute;
+    top: 2px;
+    bottom: 2px;
+    left: 0;
+    background: var(--ds-accent, #009be2);
+    border-radius: 14px;
+    box-shadow: 0 2px 6px rgba(0, 155, 226, 0.35);
+    pointer-events: none;
+    z-index: 1;
+  }
+
   .mode-pill-btn {
+    position: relative;
+    z-index: 2;
     height: 24px;
     padding: 0 10px;
     border-radius: 14px;
     border: none;
     outline: none;
     cursor: pointer;
-    background: transparent;
+    background: transparent !important;
+    box-shadow: none !important;
     color: var(--ds-text-secondary, #a0a6b5);
     font-size: 11px;
     font-weight: 700;
     letter-spacing: 0.5px;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     display: inline-flex;
     align-items: center;
     justify-content: center;
 
-    &:hover {
+    &:hover:not(.active) {
       color: var(--ds-text-primary, #f7f8fc);
+      background: transparent !important;
     }
 
     &.active {
-      background: var(--ds-accent, #009be2);
+      background: transparent !important;
       color: #ffffff !important;
-      box-shadow: 0 2px 6px rgba(0, 155, 226, 0.35);
+      box-shadow: none !important;
     }
   }
 }
@@ -475,16 +537,22 @@ export default defineComponent({
     background: rgba(0, 0, 0, 0.06);
     border-color: rgba(0, 0, 0, 0.08);
 
+    .mode-pill-slider {
+      background: var(--ds-accent, #009be2);
+    }
+
     .mode-pill-btn {
       color: #64748b;
 
-      &:hover {
+      &:hover:not(.active) {
         color: #1e293b;
+        background: transparent !important;
       }
 
       &.active {
-        background: var(--ds-accent, #009be2);
+        background: transparent !important;
         color: #ffffff !important;
+        box-shadow: none !important;
       }
     }
   }

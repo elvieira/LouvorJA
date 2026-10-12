@@ -121,18 +121,6 @@
               </v-icon>
               <span>{{ t('tab_behavior') }}</span>
             </button>
-            <!-- Sub-aba de Prévia (Exibida em telas compactas < 980px) -->
-            <button
-              type="button"
-              class="nav-tab-btn nav-tab-preview-only"
-              :class="{ active: activeSubTab === 'preview' }"
-              @click="activeSubTab = 'preview'"
-            >
-              <v-icon size="18">
-                mdi-monitor-dashboard
-              </v-icon>
-              <span>{{ t('tab_preview') }}</span>
-            </button>
           </div>
 
           <!-- Coluna 2: Conteúdo Rolável da Aba Ativa -->
@@ -371,108 +359,111 @@
               <!-- PERFIL ESCOLA SABATINA -->
               <template v-else>
                 <!-- Relógio Atual (Hora Atual) -->
-                <div class="settings-section mb-5">
-                  <div class="d-flex align-center justify-space-between mb-2">
-                    <div class="d-flex align-center">
-                      <v-icon size="18" color="primary" class="mr-2">
-                        mdi-clock-outline
-                      </v-icon>
-                      <span class="text-subtitle-2 font-weight-bold section-title">
+                <div class="setting-item-card mb-4 d-flex align-center justify-space-between">
+                  <div class="d-flex align-center flex-grow-1 pr-4" style="gap: 12px; min-width: 0;">
+                    <v-icon size="22" color="primary" class="flex-shrink-0">
+                      mdi-clock-outline
+                    </v-icon>
+                    <div class="flex-grow-1" style="min-width: 0;">
+                      <h4 class="font-weight-bold text-body-2 mb-0" style="color: var(--sidebar-text);">
                         {{ t('show_clock') }}
-                      </span>
+                      </h4>
+                      <p class="text-caption mb-0" style="color: var(--sidebar-text-secondary); line-height: 1.35;">
+                        {{ t('show_clock_desc') }}
+                      </p>
                     </div>
+                  </div>
+                  <div class="flex-shrink-0 d-flex justify-end align-center" style="min-width: 52px;">
                     <v-switch
                       v-model="localConfig.cultAlwaysShowClock"
                       color="primary"
+                      inset
                       hide-details
                       density="compact"
                     />
                   </div>
-                  <p class="text-caption mb-3" style="color: var(--sidebar-text-secondary);">
-                    {{ t('show_clock_desc') }}
-                  </p>
-
-                  <template v-if="localConfig.cultAlwaysShowClock">
-                    <!-- Cor da Hora Atual -->
-                    <div class="text-caption font-weight-bold mb-2" style="color: var(--sidebar-text);">
-                      {{ t('clock_color') }}
-                    </div>
-                    <div class="color-palette-row mb-4">
-                      <div
-                        v-for="color in textPaletteColors"
-                        :key="color"
-                        class="color-circle"
-                        :class="{ active: localConfig.cultClockColor === color }"
-                        :style="{ backgroundColor: color }"
-                        @click="localConfig.cultClockColor = color"
-                      />
-                      <ModernColorPicker v-model="localConfig.cultClockColor">
-                        <template #activator="{ props: pickerProps }">
-                          <div
-                            v-bind="pickerProps"
-                            class="color-circle color-picker-btn"
-                            title="Cor personalizada"
-                          >
-                            <v-icon size="16">
-                              mdi-eyedropper
-                            </v-icon>
-                          </div>
-                        </template>
-                      </ModernColorPicker>
-                    </div>
-
-                    <!-- Tamanho da Hora Atual -->
-                    <div class="d-flex align-center justify-space-between mb-1">
-                      <span class="text-caption font-weight-bold" style="color: var(--sidebar-text);">
-                        {{ t('settings_cult_clock_size') }}
-                      </span>
-                      <v-chip
-                        size="x-small"
-                        variant="tonal"
-                        color="primary"
-                        class="font-weight-bold"
-                      >
-                        {{ localConfig.cultClockSizePc }}%
-                      </v-chip>
-                    </div>
-                    <div class="d-flex align-center" style="gap: 12px;">
-                      <v-btn
-                        icon
-                        size="small"
-                        variant="tonal"
-                        color="primary"
-                        class="slider-step-btn"
-                        @click="localConfig.cultClockSizePc = Math.max(6, localConfig.cultClockSizePc - 1)"
-                      >
-                        <v-icon size="18">
-                          mdi-minus
-                        </v-icon>
-                      </v-btn>
-                      <v-slider
-                        v-model="localConfig.cultClockSizePc"
-                        :min="6"
-                        :max="30"
-                        :step="1"
-                        hide-details
-                        color="primary"
-                        track-color="rgba(150, 150, 150, 0.2)"
-                        class="flex-grow-1"
-                      />
-                      <v-btn
-                        icon
-                        size="small"
-                        variant="tonal"
-                        color="primary"
-                        class="slider-step-btn"
-                        @click="localConfig.cultClockSizePc = Math.min(30, localConfig.cultClockSizePc + 1)"
-                      >
-                        <v-icon size="18">
-                          mdi-plus
-                        </v-icon>
-                      </v-btn>
-                    </div>
-                  </template>
                 </div>
+
+                <template v-if="localConfig.cultAlwaysShowClock">
+                  <!-- Cor da Hora Atual -->
+                  <div class="text-caption font-weight-bold mb-2" style="color: var(--sidebar-text);">
+                    {{ t('clock_color') }}
+                  </div>
+                  <div class="color-palette-row mb-4">
+                    <div
+                      v-for="color in textPaletteColors"
+                      :key="color"
+                      class="color-circle"
+                      :class="{ active: localConfig.cultClockColor === color }"
+                      :style="{ backgroundColor: color }"
+                      @click="localConfig.cultClockColor = color"
+                    />
+                    <ModernColorPicker v-model="localConfig.cultClockColor">
+                      <template #activator="{ props: pickerProps }">
+                        <div
+                          v-bind="pickerProps"
+                          class="color-circle color-picker-btn"
+                          title="Cor personalizada"
+                        >
+                          <v-icon size="16">
+                            mdi-eyedropper
+                          </v-icon>
+                        </div>
+                      </template>
+                    </ModernColorPicker>
+                  </div>
+
+                  <!-- Tamanho da Hora Atual -->
+                  <div class="d-flex align-center justify-space-between mb-1">
+                    <span class="text-caption font-weight-bold" style="color: var(--sidebar-text);">
+                      {{ t('settings_cult_clock_size') }}
+                    </span>
+                    <v-chip
+                      size="x-small"
+                      variant="tonal"
+                      color="primary"
+                      class="font-weight-bold"
+                    >
+                      {{ localConfig.cultClockSizePc }}%
+                    </v-chip>
+                  </div>
+                  <div class="d-flex align-center" style="gap: 12px;">
+                    <v-btn
+                      icon
+                      size="small"
+                      variant="tonal"
+                      color="primary"
+                      class="slider-step-btn"
+                      @click="localConfig.cultClockSizePc = Math.max(6, localConfig.cultClockSizePc - 1)"
+                    >
+                      <v-icon size="18">
+                        mdi-minus
+                      </v-icon>
+                    </v-btn>
+                    <v-slider
+                      v-model="localConfig.cultClockSizePc"
+                      :min="6"
+                      :max="30"
+                      :step="1"
+                      hide-details
+                      color="primary"
+                      track-color="rgba(150, 150, 150, 0.2)"
+                      class="flex-grow-1"
+                    />
+                    <v-btn
+                      icon
+                      size="small"
+                      variant="tonal"
+                      color="primary"
+                      class="slider-step-btn"
+                      @click="localConfig.cultClockSizePc = Math.min(30, localConfig.cultClockSizePc + 1)"
+                    >
+                      <v-icon size="18">
+                        mdi-plus
+                      </v-icon>
+                    </v-btn>
+                  </div>
+                </template>
 
                 <v-divider class="my-4" style="opacity: 0.1;" />
 
@@ -566,45 +557,104 @@
 
             <!-- ================= SUB-ABA: TEXTOS ================= -->
             <div v-if="activeSubTab === 'text'" class="tab-pane">
-              <div class="settings-section mb-5">
-                <div class="d-flex align-center mb-1">
-                  <v-icon size="18" color="primary" class="mr-2">
-                    mdi-format-title
+              <!-- Habilitar Texto Personalizado -->
+              <div class="setting-item-card mb-4 d-flex align-center justify-space-between">
+                <div class="d-flex align-center flex-grow-1 pr-4" style="gap: 12px; min-width: 0;">
+                  <v-icon size="22" color="primary" class="flex-shrink-0">
+                    mdi-subtitles-outline
                   </v-icon>
-                  <span class="text-subtitle-2 font-weight-bold section-title">
-                    {{ t('settings_custom_text') }}
-                  </span>
+                  <div class="flex-grow-1" style="min-width: 0;">
+                    <h4 class="font-weight-bold text-body-2 mb-0" style="color: var(--sidebar-text);">
+                      {{ activeProfile === 'general' ? t('title_enable') : t('title_enable_cult') }}
+                    </h4>
+                    <p class="text-caption mb-0" style="color: var(--sidebar-text-secondary); line-height: 1.35;">
+                      {{ t('settings_custom_text_desc') }}
+                    </p>
+                  </div>
                 </div>
-                <p class="text-caption mb-3" style="color: var(--sidebar-text-secondary);">
-                  {{ t('settings_custom_text_desc') }}
-                </p>
-
-                <v-text-field
-                  v-if="activeProfile === 'general'"
-                  v-model="localConfig.customText"
-                  variant="outlined"
-                  density="comfortable"
-                  color="primary"
-                  :placeholder="t('custom_text_placeholder')"
-                  clearable
-                  hide-details
-                  class="mb-4"
-                />
-                <v-text-field
-                  v-else
-                  v-model="localConfig.cultCustomText"
-                  variant="outlined"
-                  density="comfortable"
-                  color="primary"
-                  :placeholder="t('custom_text_placeholder')"
-                  clearable
-                  hide-details
-                  class="mb-4"
-                />
+                <div class="flex-shrink-0 d-flex justify-end align-center" style="min-width: 52px;">
+                  <v-switch
+                    v-model="enableCurrentCustomText"
+                    color="primary"
+                    inset
+                    hide-details
+                    density="compact"
+                  />
+                </div>
               </div>
 
-              <!-- Opções se Título Ativo -->
-              <template v-if="currentCustomText">
+              <!-- Card de Orientação quando Desativado -->
+              <div
+                v-if="!enableCurrentCustomText"
+                class="pa-6 rounded-xl text-center d-flex flex-column align-center justify-center my-4"
+                style="background: rgba(150, 150, 150, 0.05); border: 1px dashed var(--border-color);"
+              >
+                <v-icon
+                  size="36"
+                  color="primary"
+                  class="mb-2"
+                  style="opacity: 0.6;"
+                >
+                  mdi-format-title
+                </v-icon>
+                <p class="text-caption mb-0" style="color: var(--sidebar-text-secondary); max-width: 340px; line-height: 1.5;">
+                  {{ t('title_disabled_hint') }}
+                </p>
+              </div>
+
+              <!-- Opções do Texto quando Habilitado -->
+              <template v-else>
+                <!-- Texto -->
+                <div class="settings-section mb-4">
+                  <span class="text-subtitle-2 font-weight-bold section-title d-block mb-2">
+                    {{ t('settings_custom_text') }}
+                  </span>
+
+                  <v-text-field
+                    v-if="activeProfile === 'general'"
+                    v-model="localConfig.customText"
+                    variant="solo"
+                    density="comfortable"
+                    rounded="lg"
+                    :placeholder="t('custom_text_placeholder')"
+                    hide-details
+                    class="standard-text-input mb-4"
+                  >
+                    <template #append-inner>
+                      <v-btn
+                        v-if="localConfig.customText"
+                        icon="mdi-close"
+                        size="x-small"
+                        variant="text"
+                        class="clear-search-btn"
+                        title="Limpar texto"
+                        @click="localConfig.customText = ''"
+                      />
+                    </template>
+                  </v-text-field>
+                  <v-text-field
+                    v-else
+                    v-model="localConfig.cultCustomText"
+                    variant="solo"
+                    density="comfortable"
+                    rounded="lg"
+                    :placeholder="t('custom_text_placeholder')"
+                    hide-details
+                    class="standard-text-input mb-4"
+                  >
+                    <template #append-inner>
+                      <v-btn
+                        v-if="localConfig.cultCustomText"
+                        icon="mdi-close"
+                        size="x-small"
+                        variant="text"
+                        class="clear-search-btn"
+                        title="Limpar texto"
+                        @click="localConfig.cultCustomText = ''"
+                      />
+                    </template>
+                  </v-text-field>
+                </div>
                 <!-- Cor do Texto -->
                 <div class="settings-section mb-5">
                   <div class="text-caption font-weight-bold mb-2" style="color: var(--sidebar-text);">
@@ -725,6 +775,29 @@
             <div v-if="activeSubTab === 'position'" class="tab-pane">
               <!-- PERFIL PADRÃO -->
               <template v-if="activeProfile === 'general'">
+                <!-- Seletor de Alvo se customText estiver livre -->
+                <div
+                  v-if="localConfig.customText && (localConfig.customTextPosition === 'free' || localConfig.customTextPosition === 'custom')"
+                  class="settings-section mb-5"
+                >
+                  <div class="d-flex align-center mb-1">
+                    <v-icon size="18" color="primary" class="mr-2">
+                      mdi-target
+                    </v-icon>
+                    <span class="text-subtitle-2 font-weight-bold section-title">
+                      {{ t('drag_target') || 'Alvo de Ajuste' }}
+                    </span>
+                  </div>
+                  <p class="text-caption mb-3" style="color: var(--sidebar-text-secondary);">
+                    Selecione qual elemento deseja posicionar
+                  </p>
+                  <PillSwitch
+                    v-model="generalActivePosTarget"
+                    block
+                    :items="generalTargetItems"
+                  />
+                </div>
+
                 <!-- Grade 9 Pontos -->
                 <div class="settings-section mb-5">
                   <div class="d-flex align-center justify-space-between mb-2">
@@ -742,77 +815,21 @@
                       size="small"
                       class="rounded-lg text-none font-weight-bold"
                       prepend-icon="mdi-crosshairs-gps"
-                      @click="localConfig.posX = 50; localConfig.posY = 50;"
+                      @click="centerCurrentGeneralTarget"
                     >
                       {{ t('center') }}
                     </v-btn>
                   </div>
-                  <div class="d-flex justify-center my-3">
+                  <div class="w-100 my-2">
                     <PositionAlignmentPicker
+                      v-if="!localConfig.customText || (localConfig.customTextPosition !== 'free' && localConfig.customTextPosition !== 'custom') || generalActivePosTarget === 'timer'"
                       v-model:x="localConfig.posX"
                       v-model:y="localConfig.posY"
                     />
-                  </div>
-                </div>
-
-                <!-- Sliders X / Y -->
-                <div class="settings-section">
-                  <div class="d-flex align-center mb-3">
-                    <v-icon size="18" color="primary" class="mr-2">
-                      mdi-tune
-                    </v-icon>
-                    <span class="text-subtitle-2 font-weight-bold section-title">
-                      Ajuste Fino Numérico (%)
-                    </span>
-                  </div>
-
-                  <div class="mb-4">
-                    <div class="d-flex align-center justify-space-between mb-1">
-                      <span class="text-caption font-weight-bold" style="color: var(--sidebar-text);">
-                        {{ t('pos_x') }}
-                      </span>
-                      <v-chip
-                        size="x-small"
-                        variant="tonal"
-                        color="primary"
-                        class="font-weight-bold"
-                      >
-                        {{ localConfig.posX }}%
-                      </v-chip>
-                    </div>
-                    <v-slider
-                      v-model="localConfig.posX"
-                      :min="5"
-                      :max="95"
-                      :step="1"
-                      hide-details
-                      color="primary"
-                      track-color="rgba(150, 150, 150, 0.2)"
-                    />
-                  </div>
-
-                  <div>
-                    <div class="d-flex align-center justify-space-between mb-1">
-                      <span class="text-caption font-weight-bold" style="color: var(--sidebar-text);">
-                        {{ t('pos_y') }}
-                      </span>
-                      <v-chip
-                        size="x-small"
-                        variant="tonal"
-                        color="primary"
-                        class="font-weight-bold"
-                      >
-                        {{ localConfig.posY }}%
-                      </v-chip>
-                    </div>
-                    <v-slider
-                      v-model="localConfig.posY"
-                      :min="5"
-                      :max="95"
-                      :step="1"
-                      hide-details
-                      color="primary"
-                      track-color="rgba(150, 150, 150, 0.2)"
+                    <PositionAlignmentPicker
+                      v-else
+                      v-model:x="localConfig.customTextX"
+                      v-model:y="localConfig.customTextY"
                     />
                   </div>
                 </div>
@@ -872,7 +889,7 @@
                       {{ t('center') }}
                     </v-btn>
                   </div>
-                  <div class="d-flex justify-center my-3">
+                  <div class="w-100 my-2">
                     <PositionAlignmentPicker
                       v-if="localConfig.cultPosMode === 'together'"
                       v-model:x="localConfig.cultPosX"
@@ -895,61 +912,6 @@
                     />
                   </div>
                 </div>
-
-                <!-- Sliders X / Y Culto -->
-                <div class="settings-section">
-                  <div class="mb-4">
-                    <div class="d-flex align-center justify-space-between mb-1">
-                      <span class="text-caption font-weight-bold" style="color: var(--sidebar-text);">
-                        {{ t('pos_x') }}
-                      </span>
-                      <v-chip
-                        size="x-small"
-                        variant="tonal"
-                        color="primary"
-                        class="font-weight-bold"
-                      >
-                        {{ currentCultTargetX }}%
-                      </v-chip>
-                    </div>
-                    <v-slider
-                      :model-value="currentCultTargetX"
-                      :min="5"
-                      :max="95"
-                      :step="1"
-                      hide-details
-                      color="primary"
-                      track-color="rgba(150, 150, 150, 0.2)"
-                      @update:model-value="setCultTargetX"
-                    />
-                  </div>
-
-                  <div>
-                    <div class="d-flex align-center justify-space-between mb-1">
-                      <span class="text-caption font-weight-bold" style="color: var(--sidebar-text);">
-                        {{ t('pos_y') }}
-                      </span>
-                      <v-chip
-                        size="x-small"
-                        variant="tonal"
-                        color="primary"
-                        class="font-weight-bold"
-                      >
-                        {{ currentCultTargetY }}%
-                      </v-chip>
-                    </div>
-                    <v-slider
-                      :model-value="currentCultTargetY"
-                      :min="5"
-                      :max="95"
-                      :step="1"
-                      hide-details
-                      color="primary"
-                      track-color="rgba(150, 150, 150, 0.2)"
-                      @update:model-value="setCultTargetY"
-                    />
-                  </div>
-                </div>
               </template>
             </div>
 
@@ -957,72 +919,96 @@
             <div v-if="activeSubTab === 'behavior'" class="tab-pane">
               <!-- PERFIL PADRÃO -->
               <template v-if="activeProfile === 'general'">
-                <div class="settings-section mb-5">
-                  <div class="d-flex align-center justify-space-between mb-2">
-                    <div>
-                      <div class="text-subtitle-2 font-weight-bold section-title">
+                <!-- Alerta Visual ao Finalizar -->
+                <div class="setting-item-card mb-4 d-flex align-center justify-space-between">
+                  <div class="d-flex align-center flex-grow-1 pr-4" style="gap: 12px; min-width: 0;">
+                    <v-icon size="22" color="primary" class="flex-shrink-0">
+                      mdi-alert-circle-outline
+                    </v-icon>
+                    <div class="flex-grow-1" style="min-width: 0;">
+                      <h4 class="font-weight-bold text-body-2 mb-0" style="color: var(--sidebar-text);">
                         {{ t('settings_visual_alert') }}
-                      </div>
-                      <div class="text-caption" style="color: var(--sidebar-text-secondary);">
+                      </h4>
+                      <p class="text-caption mb-0" style="color: var(--sidebar-text-secondary); line-height: 1.35;">
                         {{ t('settings_visual_alert_desc') }}
-                      </div>
+                      </p>
                     </div>
+                  </div>
+                  <div class="flex-shrink-0 d-flex justify-end align-center" style="min-width: 52px;">
                     <v-switch
                       v-model="localConfig.visualAlert"
                       color="primary"
+                      inset
                       hide-details
                       density="compact"
                     />
                   </div>
                 </div>
 
-                <div class="settings-section">
-                  <div class="d-flex align-center justify-space-between mb-2">
-                    <div>
-                      <div class="text-subtitle-2 font-weight-bold section-title">
+                <!-- Aviso Sonoro ao Finalizar -->
+                <div class="setting-item-card mb-4 d-flex align-center justify-space-between">
+                  <div class="d-flex align-center flex-grow-1 pr-3" style="gap: 12px; min-width: 0;">
+                    <v-icon size="22" color="primary" class="flex-shrink-0">
+                      mdi-volume-high
+                    </v-icon>
+                    <div class="flex-grow-1" style="min-width: 0;">
+                      <h4 class="font-weight-bold text-body-2 mb-0" style="color: var(--sidebar-text);">
                         {{ t('settings_audio_alert') }}
-                      </div>
-                      <div class="text-caption" style="color: var(--sidebar-text-secondary);">
+                      </h4>
+                      <p class="text-caption mb-0" style="color: var(--sidebar-text-secondary); line-height: 1.35;">
                         {{ t('settings_audio_alert_desc') }}
-                      </div>
+                      </p>
                     </div>
-                    <v-switch
-                      v-model="localConfig.audioAlert"
-                      color="primary"
-                      hide-details
-                      density="compact"
-                    />
                   </div>
-                  <v-btn
-                    v-if="localConfig.audioAlert"
-                    variant="tonal"
-                    color="primary"
-                    size="small"
-                    class="rounded-lg text-none mt-2"
-                    prepend-icon="mdi-volume-high"
-                    @click="testSound"
-                  >
-                    Testar Som
-                  </v-btn>
+                  <div class="d-flex align-center flex-shrink-0" style="gap: 10px;">
+                    <v-btn
+                      size="x-small"
+                      variant="tonal"
+                      color="primary"
+                      class="text-none font-weight-bold rounded-lg px-2.5 test-audio-btn"
+                      title="Testar som"
+                      @click.stop="testSound"
+                    >
+                      <v-icon size="14" class="mr-1">
+                        mdi-volume-high
+                      </v-icon>
+                      Testar
+                    </v-btn>
+                    <div class="flex-shrink-0 d-flex justify-end align-center" style="min-width: 52px;">
+                      <v-switch
+                        v-model="localConfig.audioAlert"
+                        color="primary"
+                        inset
+                        hide-details
+                        density="compact"
+                      />
+                    </div>
+                  </div>
                 </div>
               </template>
 
               <!-- PERFIL ESCOLA SABATINA -->
               <template v-else>
                 <!-- Contagem Negativa -->
-                <div class="settings-section mb-5">
-                  <div class="d-flex align-center justify-space-between mb-2">
-                    <div>
-                      <div class="text-subtitle-2 font-weight-bold section-title">
+                <div class="setting-item-card mb-4 d-flex align-center justify-space-between">
+                  <div class="d-flex align-center flex-grow-1 pr-4" style="gap: 12px; min-width: 0;">
+                    <v-icon size="22" color="primary" class="flex-shrink-0">
+                      mdi-timer-minus-outline
+                    </v-icon>
+                    <div class="flex-grow-1" style="min-width: 0;">
+                      <h4 class="font-weight-bold text-body-2 mb-0" style="color: var(--sidebar-text);">
                         {{ t('settings_cult_negative') }}
-                      </div>
-                      <div class="text-caption" style="color: var(--sidebar-text-secondary);">
+                      </h4>
+                      <p class="text-caption mb-0" style="color: var(--sidebar-text-secondary); line-height: 1.35;">
                         {{ t('settings_cult_negative_desc') }}
-                      </div>
+                      </p>
                     </div>
+                  </div>
+                  <div class="flex-shrink-0 d-flex justify-end align-center" style="min-width: 52px;">
                     <v-switch
                       v-model="localConfig.cultAllowNegative"
                       color="primary"
+                      inset
                       hide-details
                       density="compact"
                     />
@@ -1069,236 +1055,170 @@
 
                 <!-- Avisos Sonoros do Culto -->
                 <div class="settings-section">
-                  <div class="text-subtitle-2 font-weight-bold section-title mb-3">
-                    Avisos Sonoros
+                  <div class="d-flex align-center mb-3">
+                    <v-icon size="18" color="primary" class="mr-2">
+                      mdi-volume-high
+                    </v-icon>
+                    <span class="text-subtitle-2 font-weight-bold section-title">
+                      Avisos Sonoros
+                    </span>
                   </div>
 
-                  <div class="d-flex flex-column" style="gap: 12px;">
-                    <div class="d-flex align-center justify-space-between">
-                      <div class="d-flex align-center">
-                        <span class="text-body-2" style="color: var(--sidebar-text);">{{ t('settings_cult_audio_start') }}</span>
+                  <div class="d-flex flex-column" style="gap: 10px;">
+                    <!-- Aviso sonoro na abertura -->
+                    <div class="setting-item-card d-flex align-center justify-space-between">
+                      <div class="d-flex align-center flex-grow-1 pr-3" style="gap: 12px; min-width: 0;">
+                        <v-icon size="22" color="primary" class="flex-shrink-0">
+                          mdi-play-circle-outline
+                        </v-icon>
+                        <div class="flex-grow-1" style="min-width: 0;">
+                          <h4 class="font-weight-bold text-body-2 mb-0" style="color: var(--sidebar-text);">
+                            {{ t('settings_cult_audio_start') }}
+                          </h4>
+                        </div>
+                      </div>
+                      <div class="d-flex align-center flex-shrink-0" style="gap: 10px;">
                         <v-btn
-                          icon
                           size="x-small"
-                          variant="text"
+                          variant="tonal"
                           color="primary"
-                          class="ml-2"
-                          @click="testCultSound('start')"
+                          class="text-none font-weight-bold rounded-lg px-2.5 test-audio-btn"
+                          title="Testar áudio"
+                          @click.stop="testCultSound('start')"
                         >
-                          <v-icon size="16">
+                          <v-icon size="14" class="mr-1">
                             mdi-volume-high
                           </v-icon>
+                          Testar
                         </v-btn>
+                        <div class="flex-shrink-0 d-flex justify-end align-center" style="min-width: 52px;">
+                          <v-switch
+                            v-model="localConfig.cultAudioStart"
+                            color="primary"
+                            inset
+                            hide-details
+                            density="compact"
+                          />
+                        </div>
                       </div>
-                      <v-switch
-                        v-model="localConfig.cultAudioStart"
-                        color="primary"
-                        hide-details
-                        density="compact"
-                      />
                     </div>
 
-                    <div class="d-flex align-center justify-space-between">
-                      <div class="d-flex align-center">
-                        <span class="text-body-2" style="color: var(--sidebar-text);">{{ t('settings_cult_audio_5min') }}</span>
+                    <!-- Aviso sonoro aos 5 minutos -->
+                    <div class="setting-item-card d-flex align-center justify-space-between">
+                      <div class="d-flex align-center flex-grow-1 pr-3" style="gap: 12px; min-width: 0;">
+                        <v-icon size="22" color="primary" class="flex-shrink-0">
+                          mdi-timer-outline
+                        </v-icon>
+                        <div class="flex-grow-1" style="min-width: 0;">
+                          <h4 class="font-weight-bold text-body-2 mb-0" style="color: var(--sidebar-text);">
+                            {{ t('settings_cult_audio_5min') }}
+                          </h4>
+                        </div>
+                      </div>
+                      <div class="d-flex align-center flex-shrink-0" style="gap: 10px;">
                         <v-btn
-                          icon
                           size="x-small"
-                          variant="text"
+                          variant="tonal"
                           color="primary"
-                          class="ml-2"
-                          @click="testCultSound('5min')"
+                          class="text-none font-weight-bold rounded-lg px-2.5 test-audio-btn"
+                          title="Testar áudio"
+                          @click.stop="testCultSound('5min')"
                         >
-                          <v-icon size="16">
+                          <v-icon size="14" class="mr-1">
                             mdi-volume-high
                           </v-icon>
+                          Testar
                         </v-btn>
+                        <div class="flex-shrink-0 d-flex justify-end align-center" style="min-width: 52px;">
+                          <v-switch
+                            v-model="localConfig.cultAudio5min"
+                            color="primary"
+                            inset
+                            hide-details
+                            density="compact"
+                          />
+                        </div>
                       </div>
-                      <v-switch
-                        v-model="localConfig.cultAudio5min"
-                        color="primary"
-                        hide-details
-                        density="compact"
-                      />
                     </div>
 
-                    <div class="d-flex align-center justify-space-between">
-                      <div class="d-flex align-center">
-                        <span class="text-body-2" style="color: var(--sidebar-text);">{{ t('settings_cult_audio_1min') }}</span>
+                    <!-- Aviso sonoro a 1 minuto -->
+                    <div class="setting-item-card d-flex align-center justify-space-between">
+                      <div class="d-flex align-center flex-grow-1 pr-3" style="gap: 12px; min-width: 0;">
+                        <v-icon size="22" color="primary" class="flex-shrink-0">
+                          mdi-timer-sand
+                        </v-icon>
+                        <div class="flex-grow-1" style="min-width: 0;">
+                          <h4 class="font-weight-bold text-body-2 mb-0" style="color: var(--sidebar-text);">
+                            {{ t('settings_cult_audio_1min') }}
+                          </h4>
+                        </div>
+                      </div>
+                      <div class="d-flex align-center flex-shrink-0" style="gap: 10px;">
                         <v-btn
-                          icon
                           size="x-small"
-                          variant="text"
+                          variant="tonal"
                           color="primary"
-                          class="ml-2"
-                          @click="testCultSound('1min')"
+                          class="text-none font-weight-bold rounded-lg px-2.5 test-audio-btn"
+                          title="Testar áudio"
+                          @click.stop="testCultSound('1min')"
                         >
-                          <v-icon size="16">
+                          <v-icon size="14" class="mr-1">
                             mdi-volume-high
                           </v-icon>
+                          Testar
                         </v-btn>
+                        <div class="flex-shrink-0 d-flex justify-end align-center" style="min-width: 52px;">
+                          <v-switch
+                            v-model="localConfig.cultAudio1min"
+                            color="primary"
+                            inset
+                            hide-details
+                            density="compact"
+                          />
+                        </div>
                       </div>
-                      <v-switch
-                        v-model="localConfig.cultAudio1min"
-                        color="primary"
-                        hide-details
-                        density="compact"
-                      />
                     </div>
 
-                    <div class="d-flex align-center justify-space-between">
-                      <div class="d-flex align-center">
-                        <span class="text-body-2" style="color: var(--sidebar-text);">{{ t('settings_cult_audio_end') }}</span>
+                    <!-- Aviso sonoro ao encerrar -->
+                    <div class="setting-item-card d-flex align-center justify-space-between">
+                      <div class="d-flex align-center flex-grow-1 pr-3" style="gap: 12px; min-width: 0;">
+                        <v-icon size="22" color="primary" class="flex-shrink-0">
+                          mdi-bell-ring-outline
+                        </v-icon>
+                        <div class="flex-grow-1" style="min-width: 0;">
+                          <h4 class="font-weight-bold text-body-2 mb-0" style="color: var(--sidebar-text);">
+                            {{ t('settings_cult_audio_end') }}
+                          </h4>
+                        </div>
+                      </div>
+                      <div class="d-flex align-center flex-shrink-0" style="gap: 10px;">
                         <v-btn
-                          icon
                           size="x-small"
-                          variant="text"
+                          variant="tonal"
                           color="primary"
-                          class="ml-2"
-                          @click="testCultSound('end')"
+                          class="text-none font-weight-bold rounded-lg px-2.5 test-audio-btn"
+                          title="Testar áudio"
+                          @click.stop="testCultSound('end')"
                         >
-                          <v-icon size="16">
+                          <v-icon size="14" class="mr-1">
                             mdi-volume-high
                           </v-icon>
+                          Testar
                         </v-btn>
+                        <div class="flex-shrink-0 d-flex justify-end align-center" style="min-width: 52px;">
+                          <v-switch
+                            v-model="localConfig.cultAudioEnd"
+                            color="primary"
+                            inset
+                            hide-details
+                            density="compact"
+                          />
+                        </div>
                       </div>
-                      <v-switch
-                        v-model="localConfig.cultAudioEnd"
-                        color="primary"
-                        hide-details
-                        density="compact"
-                      />
                     </div>
                   </div>
                 </div>
               </template>
-            </div>
-
-            <!-- ================= SUB-ABA: PRÉVIA MOBILE ================= -->
-            <div v-if="activeSubTab === 'preview'" class="tab-pane">
-              <div class="d-flex align-center justify-space-between mb-3">
-                <div class="d-flex align-center">
-                  <v-icon size="18" color="primary" class="mr-2">
-                    mdi-monitor-dashboard
-                  </v-icon>
-                  <span class="text-subtitle-2 font-weight-bold section-title">
-                    {{ t('preview') }}
-                  </span>
-                </div>
-                <v-chip
-                  size="x-small"
-                  color="primary"
-                  variant="tonal"
-                  class="font-weight-bold"
-                >
-                  {{ t('preview_ratio') }}
-                </v-chip>
-              </div>
-
-              <!-- Box 16:9 Mobile com Arraste -->
-              <div
-                class="preview-box-16-9 position-relative overflow-hidden cursor-move user-select-none"
-                :style="previewBoxContainerStyle"
-                @pointerdown="handlePreviewPointerDown"
-              >
-                <!-- Modo Padrão -->
-                <template v-if="activeProfile === 'general'">
-                  <div
-                    class="position-absolute d-flex flex-column"
-                    :style="previewStandardStyle"
-                  >
-                    <div
-                      v-if="localConfig.customText && (localConfig.customTextPosition === 'above' || !localConfig.customTextPosition)"
-                      class="font-weight-bold mb-1"
-                      :style="previewStandardTitleStyle"
-                    >
-                      {{ localConfig.customText }}
-                    </div>
-                    <div
-                      class="font-weight-black font-tabular"
-                      :style="previewStandardTimerStyle"
-                    >
-                      05:00
-                    </div>
-                    <div
-                      v-if="localConfig.customText && localConfig.customTextPosition === 'below'"
-                      class="font-weight-bold mt-1"
-                      :style="previewStandardTitleStyle"
-                    >
-                      {{ localConfig.customText }}
-                    </div>
-                  </div>
-                </template>
-
-                <!-- Modo Escola Sabatina -->
-                <template v-else>
-                  <!-- Escola Sabatina: Elementos Juntos -->
-                  <div
-                    v-if="localConfig.cultPosMode === 'together'"
-                    class="position-absolute d-flex flex-column align-center"
-                    :style="previewCultTogetherStyle"
-                  >
-                    <div
-                      v-if="effectivePreviewCultCustomText && (localConfig.cultCustomTextPosition === 'above' || !localConfig.cultCustomTextPosition)"
-                      class="font-weight-bold mb-1"
-                      :style="previewCultTitleStyle"
-                    >
-                      {{ effectivePreviewCultCustomText }}
-                    </div>
-                    <div
-                      v-if="localConfig.cultAlwaysShowClock"
-                      class="font-weight-bold font-tabular mb-1"
-                      :style="previewCultClockStyle"
-                    >
-                      10:15
-                    </div>
-                    <div
-                      class="font-weight-black font-tabular"
-                      :style="previewCultTimerStyle"
-                    >
-                      {{ previewAlert ? '-02:15' : '14:32' }}
-                    </div>
-                  </div>
-
-                  <!-- Escola Sabatina: Individual -->
-                  <template v-else>
-                    <div
-                      v-if="localConfig.cultAlwaysShowClock"
-                      class="position-absolute font-weight-bold font-tabular"
-                      :style="previewCultIndividualClockStyle"
-                    >
-                      10:15
-                    </div>
-                    <div
-                      class="position-absolute font-weight-black font-tabular"
-                      :style="previewCultIndividualTimerStyle"
-                    >
-                      {{ previewAlert ? '-02:15' : '14:32' }}
-                    </div>
-                    <div
-                      v-if="effectivePreviewCultCustomText"
-                      class="position-absolute font-weight-bold"
-                      :style="previewCultIndividualTextStyle"
-                    >
-                      {{ effectivePreviewCultCustomText }}
-                    </div>
-                  </template>
-                </template>
-              </div>
-
-              <!-- Botão Simular Término -->
-              <div v-if="activeProfile === 'cult'" class="d-flex justify-center mt-3">
-                <v-btn
-                  variant="tonal"
-                  :color="previewAlert ? 'error' : 'primary'"
-                  size="small"
-                  class="rounded-lg text-none font-weight-bold"
-                  :prepend-icon="previewAlert ? 'mdi-bell-off' : 'mdi-bell-alert'"
-                  @click="previewAlert = !previewAlert"
-                >
-                  {{ previewAlert ? t('simulate_normal') : t('simulate_time_up') }}
-                </v-btn>
-              </div>
             </div>
           </div>
 
@@ -1334,16 +1254,20 @@
               <template v-if="activeProfile === 'general'">
                 <!-- Título Livre -->
                 <div
-                  v-if="localConfig.customText && localConfig.customTextPosition === 'free'"
-                  class="position-absolute font-weight-bold"
+                  v-if="localConfig.customText && (localConfig.customTextPosition === 'free' || localConfig.customTextPosition === 'custom')"
+                  class="position-absolute font-weight-bold preview-interactive-element"
+                  :class="{ 'preview-selected-element': generalActivePosTarget === 'text' }"
                   :style="previewStandardFreeTextStyle"
+                  @pointerdown.stop="selectAndDragStandard('text', $event)"
                 >
                   {{ localConfig.customText }}
                 </div>
 
                 <div
-                  class="position-absolute d-flex flex-column"
+                  class="position-absolute d-flex flex-column preview-interactive-element"
+                  :class="{ 'preview-selected-element': !localConfig.customText || (localConfig.customTextPosition !== 'free' && localConfig.customTextPosition !== 'custom') || generalActivePosTarget === 'timer' }"
                   :style="previewStandardStyle"
+                  @pointerdown.stop="selectAndDragStandard('timer', $event)"
                 >
                   <div
                     v-if="localConfig.customText && (localConfig.customTextPosition === 'above' || !localConfig.customTextPosition)"
@@ -1373,8 +1297,9 @@
                 <!-- Escola Sabatina: Elementos Juntos -->
                 <div
                   v-if="localConfig.cultPosMode === 'together'"
-                  class="position-absolute d-flex flex-column align-center"
+                  class="position-absolute d-flex flex-column preview-interactive-element preview-selected-element"
                   :style="previewCultTogetherStyle"
+                  @pointerdown.stop="startDragCultTogether"
                 >
                   <div
                     v-if="effectivePreviewCultCustomText && (localConfig.cultCustomTextPosition === 'above' || !localConfig.cultCustomTextPosition)"
@@ -1409,14 +1334,16 @@
                 <template v-else>
                   <div
                     v-if="localConfig.cultAlwaysShowClock"
-                    class="position-absolute font-weight-bold font-tabular cursor-pointer"
+                    class="position-absolute font-weight-bold font-tabular preview-interactive-element"
+                    :class="{ 'preview-selected-element': cultActivePosTarget === 'clock' }"
                     :style="previewCultIndividualClockStyle"
                     @pointerdown.stop="selectAndDragCult('clock', $event)"
                   >
                     10:15
                   </div>
                   <div
-                    class="position-absolute font-weight-black font-tabular cursor-pointer"
+                    class="position-absolute font-weight-black font-tabular preview-interactive-element"
+                    :class="{ 'preview-selected-element': cultActivePosTarget === 'timer' }"
                     :style="previewCultIndividualTimerStyle"
                     @pointerdown.stop="selectAndDragCult('timer', $event)"
                   >
@@ -1424,7 +1351,8 @@
                   </div>
                   <div
                     v-if="effectivePreviewCultCustomText"
-                    class="position-absolute font-weight-bold cursor-pointer"
+                    class="position-absolute font-weight-bold preview-interactive-element"
+                    :class="{ 'preview-selected-element': cultActivePosTarget === 'text' }"
                     :style="previewCultIndividualTextStyle"
                     @pointerdown.stop="selectAndDragCult('text', $event)"
                   >
@@ -1566,8 +1494,11 @@ export default defineComponent({
   emits: ["update:modelValue"],
   data: () => ({
     activeProfile: "general" as "general" | "cult",
-    activeSubTab: "appearance" as "appearance" | "display" | "text" | "position" | "behavior" | "preview",
+    activeSubTab: "appearance" as "appearance" | "display" | "text" | "position" | "behavior",
     cultActivePosTarget: "timer" as "timer" | "clock" | "text",
+    generalActivePosTarget: "timer" as "timer" | "text",
+    savedGeneralCustomText: "",
+    savedCultCustomText: "",
     previewAlert: false,
     showResetConfirm: false,
     savedWallpapers: [] as string[],
@@ -1703,6 +1634,31 @@ export default defineComponent({
         ? this.localConfig.customText
         : (this.localConfig.cultCustomText || "");
     },
+    enableCurrentCustomText: {
+      get(): boolean {
+        if (this.activeProfile === "general") {
+          return Boolean(this.localConfig.customText && this.localConfig.customText.trim().length > 0);
+        }
+        return Boolean(this.localConfig.cultCustomText && this.localConfig.cultCustomText.trim().length > 0);
+      },
+      set(val: boolean) {
+        if (this.activeProfile === "general") {
+          if (!val) {
+            this.savedGeneralCustomText = this.localConfig.customText || this.savedGeneralCustomText;
+            this.localConfig.customText = "";
+          } else {
+            this.localConfig.customText = this.savedGeneralCustomText || "Cronômetro";
+          }
+        } else {
+          if (!val) {
+            this.savedCultCustomText = this.localConfig.cultCustomText || this.savedCultCustomText;
+            this.localConfig.cultCustomText = "";
+          } else {
+            this.localConfig.cultCustomText = this.savedCultCustomText || "Escola Sabatina";
+          }
+        }
+      },
+    },
     currentCustomTextColor(): string {
       return this.activeProfile === "general"
         ? (this.localConfig.customTextColor || "#ffffff")
@@ -1725,6 +1681,12 @@ export default defineComponent({
         items.push({ value: "text", label: this.t("pos_target_text"), icon: "mdi-format-title" });
       }
       return items;
+    },
+    generalTargetItems(): any[] {
+      return [
+        { value: "timer", label: this.t("pos_target_timer") || "Cronômetro", icon: "mdi-timer-outline" },
+        { value: "text", label: this.t("pos_target_text") || "Texto", icon: "mdi-format-title" },
+      ];
     },
     currentCultTargetX(): number {
       if (this.localConfig.cultPosMode === "together") return this.localConfig.cultPosX ?? 50;
@@ -1790,6 +1752,7 @@ export default defineComponent({
         fontSize: `${(this.localConfig.customTextSizePc || 8) * 1.6}px`,
         color: this.localConfig.customTextColor || this.localConfig.fontColor,
         textShadow: this.localConfig.bgImage ? "0 4px 12px rgba(0,0,0,0.85)" : "none",
+        textAlign: x <= 30 ? "left" : x >= 70 ? "right" : "center",
       };
     },
     previewCultTogetherStyle(): Record<string, any> {
@@ -1799,6 +1762,8 @@ export default defineComponent({
         left: `${x}%`,
         top: `${y}%`,
         transform: `translate(-${x}%, -${y}%)`,
+        alignItems: x <= 30 ? "flex-start" : x >= 70 ? "flex-end" : "center",
+        textAlign: x <= 30 ? "left" : x >= 70 ? "right" : "center",
         maxWidth: "94%",
         width: "max-content",
         whiteSpace: "nowrap",
@@ -1841,6 +1806,7 @@ export default defineComponent({
         fontSize: `${(this.localConfig.cultClockSizePc || 12) * 1.6}px`,
         color: this.localConfig.cultClockColor,
         textShadow: this.localConfig.cultBgImage ? "0 3px 12px rgba(0,0,0,0.8)" : "none",
+        textAlign: x <= 30 ? "left" : x >= 70 ? "right" : "center",
         border: this.cultActivePosTarget === "clock" ? "1px dashed var(--accent-blue, #0097d7)" : "1px dashed transparent",
         borderRadius: "4px",
         padding: "2px 6px",
@@ -1859,6 +1825,7 @@ export default defineComponent({
         fontSize: `${(this.localConfig.cultTimerSizePc || 22) * 2.0}px`,
         color: timerColor,
         textShadow: this.localConfig.cultBgImage ? "0 4px 16px rgba(0,0,0,0.85)" : "none",
+        textAlign: x <= 30 ? "left" : x >= 70 ? "right" : "center",
         border: this.cultActivePosTarget === "timer" ? "1px dashed var(--accent-blue, #0097d7)" : "1px dashed transparent",
         borderRadius: "4px",
         padding: "2px 6px",
@@ -1874,6 +1841,7 @@ export default defineComponent({
         fontSize: `${(this.localConfig.cultCustomTextSizePc || 8) * 1.5}px`,
         color: this.localConfig.cultCustomTextColor || "#ffffff",
         textShadow: this.localConfig.cultBgImage ? "0 3px 12px rgba(0,0,0,0.8)" : "none",
+        textAlign: x <= 30 ? "left" : x >= 70 ? "right" : "center",
         border: this.cultActivePosTarget === "text" ? "1px dashed var(--accent-blue, #0097d7)" : "1px dashed transparent",
         borderRadius: "4px",
         padding: "2px 6px",
@@ -2073,29 +2041,54 @@ export default defineComponent({
       else if (this.cultActivePosTarget === "text") this.localConfig.cultTextY = val;
       else this.localConfig.cultTimerY = val;
     },
-    handlePreviewPointerDown(e: PointerEvent) {
-      if (this.activeProfile === "general") {
-        this.startDragStandard(e);
-      } else if (this.localConfig.cultPosMode === "together") {
-        this.startDragCultTogether(e);
+    centerCurrentGeneralTarget() {
+      if (
+        this.localConfig.customText &&
+        (this.localConfig.customTextPosition === "free" || this.localConfig.customTextPosition === "custom") &&
+        this.generalActivePosTarget === "text"
+      ) {
+        this.localConfig.customTextX = 50;
+        this.localConfig.customTextY = 20;
+      } else {
+        this.localConfig.posX = 50;
+        this.localConfig.posY = 50;
       }
     },
-    selectAndDragCult(target: "timer" | "clock" | "text", e: PointerEvent) {
-      this.cultActivePosTarget = target;
-      this.startDragCultIndividual(e);
+    handlePreviewPointerDown(e: PointerEvent) {
+      if (this.activeProfile === "general") {
+        this.selectAndDragStandard(this.generalActivePosTarget || "timer", e);
+      } else if (this.localConfig.cultPosMode === "together") {
+        this.startDragCultTogether(e);
+      } else {
+        this.selectAndDragCult(this.cultActivePosTarget || "timer", e);
+      }
     },
-    startDragStandard(e: PointerEvent) {
-      const el = (this.$refs.previewBoxRef || e.currentTarget) as HTMLElement;
+    selectAndDragStandard(target: "timer" | "text", e: PointerEvent) {
+      this.generalActivePosTarget = target;
+      const el = (this.$refs.previewBoxRef || (e.currentTarget as HTMLElement)?.closest(".preview-box-16-9")) as HTMLElement;
       if (!el) return;
-      const updatePos = (evt: PointerEvent) => {
-        const rect = el.getBoundingClientRect();
-        const rawX = Math.round(((evt.clientX - rect.left) / rect.width) * 100);
-        const rawY = Math.round(((evt.clientY - rect.top) / rect.height) * 100);
-        this.localConfig.posX = Math.max(5, Math.min(95, rawX));
-        this.localConfig.posY = Math.max(5, Math.min(95, rawY));
+      const rect = el.getBoundingClientRect();
+      const initialMouseX = e.clientX;
+      const initialMouseY = e.clientY;
+
+      const isText = target === "text";
+      const initialX = isText ? (this.localConfig.customTextX ?? 50) : (this.localConfig.posX ?? 50);
+      const initialY = isText ? (this.localConfig.customTextY ?? 20) : (this.localConfig.posY ?? 50);
+
+      const onMove = (evt: PointerEvent) => {
+        const deltaX = ((evt.clientX - initialMouseX) / rect.width) * 100;
+        const deltaY = ((evt.clientY - initialMouseY) / rect.height) * 100;
+        const clampedX = Math.round(Math.max(5, Math.min(95, initialX + deltaX)));
+        const clampedY = Math.round(Math.max(5, Math.min(95, initialY + deltaY)));
+
+        if (isText) {
+          this.localConfig.customTextX = clampedX;
+          this.localConfig.customTextY = clampedY;
+        } else {
+          this.localConfig.posX = clampedX;
+          this.localConfig.posY = clampedY;
+        }
       };
-      updatePos(e);
-      const onMove = (evt: PointerEvent) => updatePos(evt);
       const onUp = () => {
         window.removeEventListener("pointermove", onMove);
         window.removeEventListener("pointerup", onUp);
@@ -2103,22 +2096,32 @@ export default defineComponent({
       window.addEventListener("pointermove", onMove);
       window.addEventListener("pointerup", onUp);
     },
+    selectAndDragCult(target: "timer" | "clock" | "text", e: PointerEvent) {
+      this.cultActivePosTarget = target;
+      this.startDragCultIndividual(e);
+    },
+    startDragStandard(e: PointerEvent) {
+      this.selectAndDragStandard(this.generalActivePosTarget || "timer", e);
+    },
     startDragCultTogether(e: PointerEvent) {
       const el = (this.$refs.previewBoxRef || e.currentTarget) as HTMLElement;
       if (!el) return;
-      const updatePos = (evt: PointerEvent) => {
-        const rect = el.getBoundingClientRect();
-        const rawX = Math.round(((evt.clientX - rect.left) / rect.width) * 100);
-        const rawY = Math.round(((evt.clientY - rect.top) / rect.height) * 100);
-        const clampedX = Math.max(5, Math.min(95, rawX));
-        const clampedY = Math.max(5, Math.min(95, rawY));
+      const rect = el.getBoundingClientRect();
+      const initialMouseX = e.clientX;
+      const initialMouseY = e.clientY;
+      const initialX = this.localConfig.cultPosX ?? 50;
+      const initialY = this.localConfig.cultPosY ?? 50;
+
+      const onMove = (evt: PointerEvent) => {
+        const deltaX = ((evt.clientX - initialMouseX) / rect.width) * 100;
+        const deltaY = ((evt.clientY - initialMouseY) / rect.height) * 100;
+        const clampedX = Math.round(Math.max(5, Math.min(95, initialX + deltaX)));
+        const clampedY = Math.round(Math.max(5, Math.min(95, initialY + deltaY)));
         this.localConfig.cultPosX = clampedX;
         this.localConfig.cultPosY = clampedY;
         this.localConfig.posX = clampedX;
         this.localConfig.posY = clampedY;
       };
-      updatePos(e);
-      const onMove = (evt: PointerEvent) => updatePos(evt);
       const onUp = () => {
         window.removeEventListener("pointermove", onMove);
         window.removeEventListener("pointerup", onUp);
@@ -2129,12 +2132,29 @@ export default defineComponent({
     startDragCultIndividual(e: PointerEvent) {
       const el = (this.$refs.previewBoxRef || (e.currentTarget as HTMLElement)?.closest(".preview-box-16-9")) as HTMLElement;
       if (!el) return;
-      const updatePos = (evt: PointerEvent) => {
-        const rect = el.getBoundingClientRect();
-        const rawX = Math.round(((evt.clientX - rect.left) / rect.width) * 100);
-        const rawY = Math.round(((evt.clientY - rect.top) / rect.height) * 100);
-        const clampedX = Math.max(5, Math.min(95, rawX));
-        const clampedY = Math.max(5, Math.min(95, rawY));
+      const rect = el.getBoundingClientRect();
+      const initialMouseX = e.clientX;
+      const initialMouseY = e.clientY;
+
+      let initialX = 50;
+      let initialY = 50;
+      if (this.cultActivePosTarget === "clock") {
+        initialX = this.localConfig.cultClockX ?? 50;
+        initialY = this.localConfig.cultClockY ?? 35;
+      } else if (this.cultActivePosTarget === "text") {
+        initialX = this.localConfig.cultTextX ?? 50;
+        initialY = this.localConfig.cultTextY ?? 15;
+      } else {
+        initialX = this.localConfig.cultTimerX ?? 50;
+        initialY = this.localConfig.cultTimerY ?? 60;
+      }
+
+      const onMove = (evt: PointerEvent) => {
+        const deltaX = ((evt.clientX - initialMouseX) / rect.width) * 100;
+        const deltaY = ((evt.clientY - initialMouseY) / rect.height) * 100;
+        const clampedX = Math.round(Math.max(5, Math.min(95, initialX + deltaX)));
+        const clampedY = Math.round(Math.max(5, Math.min(95, initialY + deltaY)));
+
         if (this.cultActivePosTarget === "clock") {
           this.localConfig.cultClockX = clampedX;
           this.localConfig.cultClockY = clampedY;
@@ -2146,8 +2166,6 @@ export default defineComponent({
           this.localConfig.cultTimerY = clampedY;
         }
       };
-      updatePos(e);
-      const onMove = (evt: PointerEvent) => updatePos(evt);
       const onUp = () => {
         window.removeEventListener("pointermove", onMove);
         window.removeEventListener("pointerup", onUp);
@@ -2505,5 +2523,77 @@ export default defineComponent({
   .nav-tab-btn span {
     display: none !important;
   }
+}
+
+.preview-interactive-element {
+  cursor: move !important;
+  user-select: none !important;
+  transition: outline 0.15s ease;
+}
+
+.preview-selected-element {
+  outline: 2px dashed rgb(var(--v-theme-primary)) !important;
+  outline-offset: 6px !important;
+  border-radius: 8px !important;
+}
+
+.standard-text-input :deep(.v-field) {
+  background: var(--card-bg) !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) !important;
+  border: 1px solid rgba(128, 128, 128, 0.15) !important;
+  border-radius: 8px !important;
+  transition: all 0.2s ease !important;
+}
+
+.standard-text-input :deep(.v-field--focused) {
+  border-color: rgb(var(--v-theme-primary)) !important;
+  box-shadow: 0 4px 12px rgba(var(--v-theme-primary), 0.15) !important;
+}
+
+.standard-text-input :deep(.v-field__input) {
+  color: var(--sidebar-text) !important;
+  font-size: 14px !important;
+}
+
+/* Card de Configuração */
+.setting-item-card {
+  padding: 16px;
+  border-radius: 12px;
+  background: rgba(150, 150, 150, 0.04);
+  border: 1px solid var(--border-color);
+  box-sizing: border-box;
+}
+
+.setting-item-card :deep(.v-switch) {
+  margin: 0 !important;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.setting-item-card :deep(.v-selection-control) {
+  min-height: unset;
+}
+
+/* Botão de Teste de Áudio */
+.test-audio-btn {
+  height: 30px !important;
+  border-radius: 8px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  background: rgba(var(--v-theme-primary), 0.12) !important;
+  color: rgb(var(--v-theme-primary)) !important;
+  border: 1px solid rgba(var(--v-theme-primary), 0.25) !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.test-audio-btn:hover {
+  background: rgba(var(--v-theme-primary), 0.22) !important;
+  border-color: rgb(var(--v-theme-primary)) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(var(--v-theme-primary), 0.25) !important;
+}
+
+.test-audio-btn:active {
+  transform: translateY(0);
 }
 </style>
