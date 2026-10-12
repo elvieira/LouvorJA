@@ -1,6 +1,6 @@
 <template>
   <v-slide-y-reverse-transition>
-    <div v-if="module?.show" class="module-full-page dashboard-home d-flex flex-column flex-grow-1 w-100 h-100">
+    <div v-if="module?.show" class="module-full-page dashboard-home d-flex flex-column">
       <!-- Top Bar -->
       <ModuleHeader :title="t('title')" :icon="module.icon">
         <div class="search-bar ml-4 d-flex align-center" style="flex: 1; justify-content: flex-end; gap: 12px;" />
@@ -84,14 +84,6 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.module-full-page {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  flex: 1 1 auto;
-  min-width: 0;
-}
-
 .config-palette-btn {
   width: 36px !important;
   height: 36px !important;

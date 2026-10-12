@@ -10,14 +10,13 @@
             { value: 'numbers', label: t('mode_numbers') },
           ]"
         />
-        
+
         <v-btn
-          variant="flat"
+          variant="tonal"
           color="error"
-          rounded="lg"
-          class="text-none font-weight-bold ml-4"
+          class="rounded-lg text-none font-weight-bold ml-4"
           prepend-icon="mdi-refresh"
-          @click="resetAll"
+          @click="showResetAllConfirm = true"
         >
           {{ t('reset') }}
         </v-btn>
@@ -28,7 +27,10 @@
         <!-- =================== COMPACT TOP ROW (Left + Right) =================== -->
         <div v-if="compact" class="compact-top-row d-flex w-100 flex-grow-1">
           <!-- Left Panel -->
-          <div class="participants-col d-flex flex-column flex-grow-1" style="width: calc(50% - 12px); min-height: 0; background: var(--card-bg, #fff); border-radius: 24px; box-shadow: var(--shadow); overflow: hidden; border: 1px solid var(--border-color, rgba(0,0,0,0.05));">
+          <div
+            class="participants-col d-flex flex-column flex-grow-1"
+            style="width: calc(50% - 12px); min-height: 0; background: var(--card-bg, #fff); border-radius: 24px; box-shadow: var(--shadow); overflow: hidden; border: 1px solid var(--border-color, rgba(0,0,0,0.05));"
+          >
             <AvailableList
               v-model:available-names="availableNames"
               :drawn-names="drawnNames"
@@ -37,13 +39,20 @@
             />
           </div>
           <!-- Right Panel -->
-          <div class="history-col d-flex flex-column flex-grow-1" style="width: calc(50% - 12px); min-height: 0; background: var(--card-bg, #fff); border-radius: 24px; box-shadow: var(--shadow); overflow: hidden; border: 1px solid var(--border-color, rgba(0,0,0,0.05));">
+          <div
+            class="history-col d-flex flex-column flex-grow-1"
+            style="width: calc(50% - 12px); min-height: 0; background: var(--card-bg, #fff); border-radius: 24px; box-shadow: var(--shadow); overflow: hidden; border: 1px solid var(--border-color, rgba(0,0,0,0.05));"
+          >
             <HistoryList v-model:drawn-names="drawnNames" />
           </div>
         </div>
 
         <!-- =================== NORMAL MODE (Left) =================== -->
-        <div v-if="!compact" class="participants-col d-flex flex-column flex-shrink-0" style="width: 25%; min-width: 280px; max-width: 320px; height: 100%; min-height: 0; background: var(--card-bg, #fff); border-radius: 24px; box-shadow: var(--shadow); overflow: hidden; border: 1px solid var(--border-color, rgba(0,0,0,0.05));">
+        <div
+          v-if="!compact"
+          class="participants-col d-flex flex-column flex-shrink-0"
+          style="width: 25%; min-width: 280px; max-width: 320px; height: 100%; min-height: 0; background: var(--card-bg, #fff); border-radius: 24px; box-shadow: var(--shadow); overflow: hidden; border: 1px solid var(--border-color, rgba(0,0,0,0.05));"
+        >
           <AvailableList
             v-model:available-names="availableNames"
             :drawn-names="drawnNames"
@@ -53,18 +62,26 @@
         </div>
 
         <!-- =================== THE STAGE (Both Modes) =================== -->
-        <div class="stage-col d-flex position-relative" :class="compact ? 'is-compact flex-row align-center flex-shrink-0' : 'flex-column flex-grow-1 align-center justify-center'">
+        <div
+          class="stage-col d-flex position-relative"
+          :class="compact ? 'is-compact flex-row align-center flex-shrink-0' : 'flex-column flex-grow-1 align-center justify-center'"
+        >
           <!-- Background decoration -->
-          <div class="position-absolute top-0 left-0 w-100 h-100" style="background: linear-gradient(135deg, rgba(0,151,215,0.05) 0%, rgba(0,151,215,0.01) 100%); pointer-events: none;" />
+          <div
+            class="position-absolute top-0 left-0 w-100 h-100"
+            style="background: linear-gradient(135deg, rgba(0,151,215,0.05) 0%, rgba(0,151,215,0.01) 100%); pointer-events: none;"
+          />
 
           <!-- Actions in top-right (visible in standard height) -->
-          <div class="stage-top-actions position-absolute top-0 right-0 ma-4 d-flex align-center" style="z-index: 2; gap: 8px;">
+          <div
+            class="stage-top-actions position-absolute top-0 right-0 ma-4 d-flex align-center"
+            style="z-index: 2; gap: 8px;"
+          >
             <v-btn
               variant="tonal"
               color="primary"
               icon
               size="small"
-              style="width: 36px; height: 36px;"
               class="config-palette-btn"
               @click="showConfig = true"
             >
@@ -84,25 +101,44 @@
           </div>
 
           <!-- Name Display Area -->
-          <div class="text-center px-8 flex-grow-1 d-flex flex-column align-center justify-center" :style="{ zIndex: 1, height: compact ? '100%' : 'auto' }">
+          <div
+            class="text-center px-8 flex-grow-1 d-flex flex-column align-center justify-center"
+            :style="{ zIndex: 1, height: compact ? '100%' : 'auto' }"
+          >
             <v-slide-y-transition mode="out-in">
-              <div :key="isDrawing ? 'drawing' : currentDisplay" class="draw-text font-weight-black text-center" :style="{ fontSize: 'clamp(2rem, 3.5vw, 4.5rem)', color: isDrawing ? 'var(--sidebar-text-secondary)' : 'var(--accent-blue)', transition: 'color 0.3s', minHeight: '100px', display: 'flex', alignItems: 'center', justifyContent: 'center', textShadow: isDrawing ? 'none' : '0 4px 20px rgba(0,151,215,0.3)' }">
+              <div
+                :key="isDrawing ? 'drawing' : currentDisplay"
+                class="draw-text font-weight-black text-center"
+                :style="{
+                  fontSize: 'clamp(2rem, 3.5vw, 4.5rem)',
+                  color: isDrawing ? 'var(--sidebar-text-secondary)' : 'var(--accent-blue)',
+                  transition: 'color 0.3s',
+                  minHeight: '100px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  textShadow: isDrawing ? 'none' : '0 4px 20px rgba(0,151,215,0.3)',
+                }"
+              >
                 {{ currentDisplay || "- - - -" }}
               </div>
             </v-slide-y-transition>
           </div>
-          
+
           <!-- Button Area -->
-          <div class="stage-btn-area text-center flex-shrink-0 d-flex flex-column align-center justify-center" :class="compact ? 'pb-4 pt-12 px-8 h-100' : 'pa-6 w-100'" style="z-index: 1;">
+          <div
+            class="stage-btn-area text-center flex-shrink-0 d-flex flex-column align-center justify-center"
+            :class="compact ? 'pb-4 pt-12 px-8 h-100' : 'pa-6 w-100'"
+            style="z-index: 1;"
+          >
             <div class="d-flex align-center justify-center" style="gap: 12px;">
-              <!-- Action buttons on vertical column to the left -->
+              <!-- Action buttons on vertical column to the left (compact mode) -->
               <div class="stage-side-actions d-flex flex-column align-center justify-center" style="gap: 8px;">
                 <v-btn
                   variant="tonal"
                   color="primary"
                   icon
                   size="small"
-                  style="width: 36px; height: 36px;"
                   class="config-palette-btn"
                   @click="showConfig = true"
                 >
@@ -120,9 +156,6 @@
                 </v-btn>
                 <LScreenBtn
                   module="random"
-                  variant="tonal"
-                  size="small"
-                  style="width: 36px; height: 36px;"
                   class="stage-screen-btn"
                 />
               </div>
@@ -145,7 +178,7 @@
                   </v-icon>
                   {{ t('draw_button') }}
                 </v-btn>
-                
+
                 <div class="draw-caption mt-3 opacity-70 text-caption font-weight-medium text-center">
                   <span v-if="availableUndrawnNames.length === 0">{{ t('empty_list') }}</span>
                   <span v-else-if="!isDrawing">{{ t('ready_to_draw') }}</span>
@@ -156,12 +189,60 @@
         </div>
 
         <!-- =================== NORMAL MODE (Right) =================== -->
-        <div v-if="!compact" class="history-col d-flex flex-column flex-shrink-0" style="width: 25%; min-width: 280px; max-width: 320px; height: 100%; min-height: 0; background: var(--card-bg, #fff); border-radius: 24px; box-shadow: var(--shadow); overflow: hidden; border: 1px solid var(--border-color, rgba(0,0,0,0.05));">
+        <div
+          v-if="!compact"
+          class="history-col d-flex flex-column flex-shrink-0"
+          style="width: 25%; min-width: 280px; max-width: 320px; height: 100%; min-height: 0; background: var(--card-bg, #fff); border-radius: 24px; box-shadow: var(--shadow); overflow: hidden; border: 1px solid var(--border-color, rgba(0,0,0,0.05));"
+        >
           <HistoryList v-model:drawn-names="drawnNames" />
         </div>
       </div>
-      
-      <ConfigModal v-model="showConfig" :module-id="module_id" />
+
+      <!-- Config Modal -->
+      <ConfigModal
+        v-model="showConfig"
+        :module-id="module_id"
+        :draw-mode="drawMode"
+        :sample-text="currentDisplay"
+      />
+
+      <!-- Diálogo de Confirmação: Resetar Tudo -->
+      <v-dialog v-model="showResetAllConfirm" max-width="440">
+        <v-card class="rounded-xl pa-5" style="background: var(--card-bg, #ffffff);">
+          <div class="d-flex align-center mb-3" style="gap: 12px;">
+            <v-avatar color="error" variant="tonal" size="40">
+              <v-icon color="error" size="22">
+                mdi-alert-outline
+              </v-icon>
+            </v-avatar>
+            <div>
+              <h3 class="text-subtitle-1 font-weight-bold mb-0" style="color: var(--sidebar-text);">
+                {{ t('confirm_reset_title') }}
+              </h3>
+            </div>
+          </div>
+          <p class="text-body-2 mb-4" style="color: var(--sidebar-text-secondary); line-height: 1.5;">
+            {{ t('confirm_reset_desc') }}
+          </p>
+          <div class="d-flex justify-end" style="gap: 10px;">
+            <v-btn
+              variant="tonal"
+              class="rounded-lg text-none font-weight-bold"
+              @click="showResetAllConfirm = false"
+            >
+              {{ t('cancel') }}
+            </v-btn>
+            <v-btn
+              variant="flat"
+              color="error"
+              class="rounded-lg text-none font-weight-bold"
+              @click="confirmResetAll"
+            >
+              {{ t('reset') }}
+            </v-btn>
+          </div>
+        </v-card>
+      </v-dialog>
     </div>
   </v-slide-y-reverse-transition>
 </template>
@@ -187,18 +268,29 @@ export default defineComponent({
     PillSwitch,
   },
   data: () => ({
-    defaultConfig: { background: "#ffffff", color: "#0097d7", fontSizePc: 15, textTransform: "none", animationSpeed: "normal" },
-    newName: "",
-    drawMode: "names",
-    numMin: 1,
-    numMax: 100,
-    availableNames: [] as string[],
-    drawnNames: [] as string[],
+    defaultConfig: {
+      background: "#ffffff",
+      color: "#0097d7",
+      fontSizePc: 15,
+      textTransform: "none",
+      animationSpeed: "normal",
+    },
+    drawMode: "names" as "names" | "numbers",
+    modeData: {
+      names: {
+        available: [] as string[],
+        drawn: [] as string[],
+      },
+      numbers: {
+        available: [] as string[],
+        drawn: [] as string[],
+      },
+    },
     isDrawing: false,
     currentDisplay: "",
     showConfig: false,
+    showResetAllConfirm: false,
     drawInterval: null as ReturnType<typeof setTimeout> | null,
-    animationDuration: 3000,
   }),
   computed: {
     module_id(): string {
@@ -207,34 +299,43 @@ export default defineComponent({
     module(): any {
       return this.$appdata.get(`modules.${this.module_id}`);
     },
-    availableUndrawnNames(): string[] {
-      return this.availableNames.filter(n => !this.drawnNames.includes(n));
+    availableNames: {
+      get(): string[] {
+        return this.modeData[this.drawMode]?.available || [];
+      },
+      set(val: string[]) {
+        if (this.modeData[this.drawMode]) {
+          this.modeData[this.drawMode].available = val;
+          this.persistCurrentModeData();
+        }
+      },
     },
-    reversedDrawnNames(): string[] {
-      return [...this.drawnNames].reverse();
+    drawnNames: {
+      get(): string[] {
+        return this.modeData[this.drawMode]?.drawn || [];
+      },
+      set(val: string[]) {
+        if (this.modeData[this.drawMode]) {
+          this.modeData[this.drawMode].drawn = val;
+          this.persistCurrentModeData();
+        }
+      },
+    },
+    availableUndrawnNames(): string[] {
+      return this.availableNames.filter((n) => !this.drawnNames.includes(n));
     },
     compact(): boolean {
       return this.$vuetify.display.width < 1050;
     },
     config(): any {
-      return this.$appdata.get(`modules.${this.module_id}.config`) || this.$userdata.get("sorteio_config") || this.defaultConfig;
+      return (
+        this.$appdata.get(`modules.${this.module_id}.config`) ||
+        this.$userdata.get("sorteio_config") ||
+        this.defaultConfig
+      );
     },
   },
   watch: {
-    availableNames: {
-      handler(val: string[]) {
-        this.$appdata.set(`modules.${this.module_id}.data.availableNames`, val);
-        this.$userdata.set("sorteio_available", val);
-      },
-      deep: true,
-    },
-    drawnNames: {
-      handler(val: string[]) {
-        this.$appdata.set(`modules.${this.module_id}.data.drawnNames`, val);
-        this.$userdata.set("sorteio_drawn", val);
-      },
-      deep: true,
-    },
     currentDisplay(val: string) {
       this.$appdata.set(`modules.${this.module_id}.data.currentDisplay`, val);
       this.$appdata.set(`modules.${this.module_id}.data.isDrawing`, this.isDrawing);
@@ -242,13 +343,20 @@ export default defineComponent({
     isDrawing(val: boolean) {
       this.$appdata.set(`modules.${this.module_id}.data.isDrawing`, val);
     },
-    drawMode() {
-      this.resetAll();
+    drawMode(newMode: "names" | "numbers") {
+      this.$userdata.set("sorteio_mode", newMode);
+      this.currentDisplay = "";
+      this.isDrawing = false;
+      if (this.drawInterval) {
+        clearTimeout(this.drawInterval);
+        this.drawInterval = null;
+      }
+      this.$appdata.set(`modules.${this.module_id}.data.currentDisplay`, "");
+      this.$appdata.set(`modules.${this.module_id}.data.isDrawing`, false);
     },
   },
   mounted() {
     this.loadState();
-    // Pre-populate projection initial state
     this.$appdata.set(`modules.${this.module_id}.data.currentDisplay`, this.currentDisplay);
     this.$appdata.set(`modules.${this.module_id}.data.isDrawing`, this.isDrawing);
   },
@@ -264,20 +372,59 @@ export default defineComponent({
       if (mainEl) mainEl.dispatchEvent(new CustomEvent("toggle-sidebar"));
     },
     loadState() {
-      const available = this.$userdata.get("sorteio_available");
-      if (available && Array.isArray(available)) this.availableNames = available;
-      
-      const drawn = this.$userdata.get("sorteio_drawn");
-      if (drawn && Array.isArray(drawn)) this.drawnNames = drawn;
+      const savedMode = this.$userdata.get("sorteio_mode");
+      if (savedMode === "numbers" || savedMode === "names") {
+        this.drawMode = savedMode;
+      }
+
+      // Names data
+      const namesAvail =
+        this.$userdata.get("sorteio_available_names") ||
+        this.$userdata.get("sorteio_available");
+      if (Array.isArray(namesAvail)) this.modeData.names.available = namesAvail;
+
+      const namesDrawn =
+        this.$userdata.get("sorteio_drawn_names") ||
+        this.$userdata.get("sorteio_drawn");
+      if (Array.isArray(namesDrawn)) this.modeData.names.drawn = namesDrawn;
+
+      // Numbers data
+      const numsAvail = this.$userdata.get("sorteio_available_numbers");
+      if (Array.isArray(numsAvail)) this.modeData.numbers.available = numsAvail;
+
+      const numsDrawn = this.$userdata.get("sorteio_drawn_numbers");
+      if (Array.isArray(numsDrawn)) this.modeData.numbers.drawn = numsDrawn;
+
+      this.persistCurrentModeData();
+    },
+    persistCurrentModeData() {
+      const currentAvail = this.availableNames;
+      const currentDrawn = this.drawnNames;
+
+      this.$appdata.set(`modules.${this.module_id}.data.availableNames`, currentAvail);
+      this.$appdata.set(`modules.${this.module_id}.data.drawnNames`, currentDrawn);
+
+      if (this.drawMode === "names") {
+        this.$userdata.set("sorteio_available_names", currentAvail);
+        this.$userdata.set("sorteio_drawn_names", currentDrawn);
+        // For backwards compatibility
+        this.$userdata.set("sorteio_available", currentAvail);
+        this.$userdata.set("sorteio_drawn", currentDrawn);
+      } else {
+        this.$userdata.set("sorteio_available_numbers", currentAvail);
+        this.$userdata.set("sorteio_drawn_numbers", currentDrawn);
+      }
     },
     clearHistory() {
       this.drawnNames = [];
       this.currentDisplay = "";
     },
-    resetAll() {
+    confirmResetAll() {
       this.availableNames = [];
       this.drawnNames = [];
       this.currentDisplay = "";
+      this.isDrawing = false;
+      this.showResetAllConfirm = false;
     },
     startDraw() {
       const undrawn = this.availableUndrawnNames;
@@ -285,8 +432,8 @@ export default defineComponent({
 
       this.isDrawing = true;
       let ticks = 0;
-      let maxTicks = 30; // normal
-      let intervalTime = 50; // normal
+      let maxTicks = 30;
+      let intervalTime = 50;
 
       if (this.config.animationSpeed === "fast") {
         maxTicks = 15;
@@ -298,22 +445,19 @@ export default defineComponent({
 
       const tick = () => {
         ticks++;
-        // Pick random name for animation
         const randIndex = Math.floor(Math.random() * undrawn.length);
         this.currentDisplay = undrawn[randIndex];
 
         if (ticks < maxTicks) {
-          // Slow down animation towards the end
           if (ticks > maxTicks * 0.7) {
             intervalTime += 20;
           }
           this.drawInterval = setTimeout(tick, intervalTime);
         } else {
-          // Final Winner
           this.finishDraw(undrawn);
         }
       };
-      
+
       this.drawInterval = setTimeout(tick, intervalTime);
     },
     finishDraw(undrawn: string[]) {
@@ -321,9 +465,7 @@ export default defineComponent({
       const randIndex = Math.floor(Math.random() * undrawn.length);
       const winner = undrawn[randIndex];
       this.currentDisplay = winner;
-      this.drawnNames.push(winner);
-      
-      // We can add a confetti trigger here if we implement one
+      this.drawnNames = [...this.drawnNames, winner];
     },
   },
 });
@@ -359,44 +501,47 @@ export default defineComponent({
   }
 }
 
+.config-palette-btn {
+  width: 36px !important;
+  height: 36px !important;
+  min-width: 36px !important;
+  border-radius: 10px !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.config-palette-btn:hover {
+  transform: translateY(-1px);
+}
+
+:deep(.stage-screen-btn) {
+  width: 36px !important;
+  height: 36px !important;
+  min-width: 36px !important;
+  border-radius: 10px !important;
+  background: transparent !important;
+  color: var(--sidebar-text-secondary, rgba(255, 255, 255, 0.75)) !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+  .v-btn__overlay,
+  .v-btn__underlay {
+    border-radius: 10px !important;
+  }
+
+  &:hover {
+    transform: translateY(-1px);
+    background: rgba(150, 150, 150, 0.12) !important;
+    color: var(--sidebar-text, #ffffff) !important;
+  }
+}
+
 .stage-top-actions {
   display: flex !important;
   gap: 8px !important;
-
-  .config-palette-btn,
-  .stage-screen-btn,
-  :deep(.stage-screen-btn),
-  :deep(.v-btn) {
-    width: 36px !important;
-    height: 36px !important;
-    min-width: 36px !important;
-    min-height: 36px !important;
-    border-radius: 50% !important;
-
-    .v-icon {
-      font-size: 18px !important;
-    }
-  }
 }
 
 .stage-side-actions {
   display: none !important;
   gap: 8px !important;
-
-  .config-palette-btn,
-  .stage-screen-btn,
-  :deep(.stage-screen-btn),
-  :deep(.v-btn) {
-    width: 36px !important;
-    height: 36px !important;
-    min-width: 36px !important;
-    min-height: 36px !important;
-    border-radius: 50% !important;
-
-    .v-icon {
-      font-size: 18px !important;
-    }
-  }
 }
 
 .stage-col {
@@ -419,21 +564,6 @@ export default defineComponent({
     .stage-side-actions {
       display: flex !important;
       gap: 8px !important;
-
-      .config-palette-btn,
-      .stage-screen-btn,
-      :deep(.stage-screen-btn),
-      :deep(.v-btn) {
-        width: 36px !important;
-        height: 36px !important;
-        min-width: 36px !important;
-        min-height: 36px !important;
-        border-radius: 50% !important;
-
-        .v-icon {
-          font-size: 18px !important;
-        }
-      }
     }
 
     &.is-compact {

@@ -21,9 +21,8 @@
         transform: `translate(-${config.posX ?? 50}%, -${config.posY ?? 50}%)`,
         alignItems: (config.posX ?? 50) <= 30 ? 'flex-start' : (config.posX ?? 50) >= 70 ? 'flex-end' : 'center',
         textAlign: (config.posX ?? 50) <= 30 ? 'left' : (config.posX ?? 50) >= 70 ? 'right' : 'center',
-        maxWidth: '94%',
+        maxWidth: '92vw',
         width: 'max-content',
-        whiteSpace: 'nowrap',
       }"
     >
       <!-- Texto Personalizado Acima -->
@@ -39,9 +38,9 @@
       </div>
 
       <v-slide-y-transition mode="out-in">
-        <div 
-          :key="data.isDrawing ? 'drawing' : data.currentDisplay" 
-          class="font-weight-black" 
+        <div
+          :key="data.isDrawing ? 'drawing' : data.currentDisplay"
+          class="font-weight-black"
           :style="{
             fontSize: data.isDrawing ? (config.fontSizePc * 0.8) + 'vw' : config.fontSizePc + 'vw',
             transition: 'all 0.3s ease-out',
@@ -50,7 +49,10 @@
             textShadow: data.isDrawing
               ? (config.bgImage ? '0 4px 12px rgba(0,0,0,0.8)' : 'none')
               : (config.bgImage ? `0 10px 40px ${config.color}60, 0 2px 10px rgba(0,0,0,0.8)` : `0 10px 40px ${config.color}60`),
-            opacity: data.currentDisplay ? 1 : 0
+            opacity: data.currentDisplay ? 1 : 0,
+            maxWidth: '92vw',
+            wordBreak: 'break-word',
+            lineHeight: '1.15',
           }"
         >
           {{ data.currentDisplay }}
@@ -131,9 +133,9 @@ export default defineComponent({
           : `0 4px 16px ${this.config.customTextColor || this.config.color}60`,
         fontFamily: "system-ui, -apple-system, sans-serif",
         lineHeight: 1.2,
-        maxWidth: "94%",
+        maxWidth: "92vw",
         width: "max-content",
-        whiteSpace: "nowrap",
+        wordBreak: "break-word",
         zIndex: 5,
       };
     },
