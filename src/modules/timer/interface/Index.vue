@@ -37,20 +37,31 @@
             transition: 'background 0.3s ease, border 0.3s ease, box-shadow 0.3s ease'
           }"
         >
-          <div class="preview-actions position-absolute top-0 right-0 ma-4 d-flex align-center" style="z-index: 2; gap: 8px;">
+          <div
+            class="position-absolute top-0 right-0 ma-4 d-flex align-center preview-actions-bar"
+            style="z-index: 2; gap: 8px;"
+          >
             <v-btn
               variant="tonal"
               color="primary"
               icon
               size="small"
+              class="config-palette-btn"
               @click="showConfig = true"
             >
-              <v-icon>mdi-palette-outline</v-icon>
-              <v-tooltip activator="parent" location="bottom">
+              <v-icon size="18">
+                mdi-palette
+              </v-icon>
+              <v-tooltip
+                activator="parent"
+                location="bottom"
+                open-delay="300"
+                content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+              >
                 {{ t('config') }}
               </v-tooltip>
             </v-btn>
-            <LScreenBtn module="timer" />
+            <LScreenBtn module="timer" class="timer-screen-btn" />
           </div>
 
           <!-- Botões Flutuantes de Ajuste de Tempo (Modo Culto) -->
@@ -177,9 +188,9 @@
 
         <!-- CONTROLS -->
         <div class="controls-area d-flex flex-column align-center justify-center">
-          <!-- CONTROLES DO MODO PADRÃO (Regressivo / Progressivo) -->
+          <!-- CONTROLES DO MODO REGRESSIVO -->
           <v-expand-transition>
-            <div v-if="currentMode !== 'cult'">
+            <div v-if="currentMode === 'timer'">
               <div v-if="!isRunning" class="d-flex align-center mb-6">
                 <div class="d-flex flex-column align-center">
                   <input
@@ -349,9 +360,10 @@
               :color="isRunning ? 'warning' : 'primary'"
               variant="flat"
               rounded="pill"
+              :disabled="!canStart"
               class="font-weight-bold px-10 text-none"
               :style="{ height: '64px', fontSize: '1.2rem', boxShadow: isRunning ? 'none' : '0 10px 30px rgba(var(--v-theme-primary),0.3)' }"
-              @click="toggleTimer"
+              @click="toggleTimer(false)"
             >
               <v-icon
                 start
@@ -361,6 +373,14 @@
                 {{ isRunning ? 'mdi-pause-circle' : 'mdi-play-circle' }}
               </v-icon>
               {{ isRunning ? t('pause') : (isPaused ? t('resume') : t('start')) }}
+              <v-tooltip
+                v-if="!canStart && !isRunning"
+                activator="parent"
+                location="top"
+                open-delay="200"
+              >
+                {{ t('duration_required') }}
+              </v-tooltip>
             </v-btn>
 
             <!-- Botão Zerar / Resetar -->
@@ -385,6 +405,54 @@
         :module-id="module_id"
         :initial-tab="currentMode === 'cult' ? 'cult' : 'general'"
       />
+
+      <!-- Diálogo de Confirmação: Horário Passado (Escola Sabatina) -->
+      <v-dialog
+        v-model="showPastTimeDialog"
+        max-width="440"
+      >
+        <v-card class="rounded-xl pa-5">
+          <div class="d-flex align-center mb-3">
+            <v-icon
+              color="warning"
+              size="28"
+              class="mr-3"
+            >
+              mdi-clock-alert-outline
+            </v-icon>
+            <span class="text-h6 font-weight-bold">
+              {{ t('confirm_past_time_title') }}
+            </span>
+          </div>
+          <p class="text-body-2 mb-3" style="color: var(--sidebar-text-secondary); line-height: 1.5;">
+            {{ t('confirm_past_time_desc') }}
+          </p>
+          <div
+            v-if="pastTimeCalculatedText"
+            class="pa-3 rounded-lg mb-4 text-center font-weight-bold text-caption"
+            style="background: rgba(var(--v-theme-primary), 0.1); color: var(--v-theme-primary);"
+          >
+            {{ pastTimeCalculatedText }}
+          </div>
+          <v-card-actions class="pa-0 d-flex justify-end" style="gap: 8px;">
+            <v-btn
+              variant="tonal"
+              class="rounded-lg text-none font-weight-bold px-4"
+              @click="showPastTimeDialog = false"
+            >
+              {{ t('adjust_time') }}
+            </v-btn>
+            <v-btn
+              color="primary"
+              variant="flat"
+              class="rounded-lg text-none font-weight-bold px-4"
+              @click="confirmPastTimeStart"
+            >
+              {{ t('calc_next_day') }}
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
     </div>
   </v-slide-y-reverse-transition>
 </template>
@@ -411,6 +479,7 @@ export default defineComponent({
   data: () => ({
     currentMode: "timer", // 'timer' | 'stopwatch' | 'cult'
     showConfig: false,
+    showPastTimeDialog: false,
     // Culto
     cultType: "duration", // 'duration' | 'time'
     cultDurationMinutes: 40,
@@ -421,6 +490,22 @@ export default defineComponent({
     timerTickerId: null as any,
   }),
   computed: {
+    canStart(): boolean {
+      if (this.isRunning || this.isAlerting) return true;
+      if (this.currentMode === "timer") {
+        const duration = (this.editHours * 3600000) + (this.editMinutes * 60000) + (this.editSeconds * 1000);
+        return duration > 0;
+      }
+      if (this.currentMode === "cult" && this.cultType === "duration") {
+        return (Number(this.cultDurationMinutes) || 0) >= 1;
+      }
+      return true;
+    },
+    pastTimeCalculatedText(): string {
+      const h = (Number(this.cultEndHour) || 0).toString().padStart(2, "0");
+      const m = (Number(this.cultEndMinute) || 0).toString().padStart(2, "0");
+      return `Término amanhã às ${h}:${m} (${this.calculatedRemainingByTime})`;
+    },
     config(): any {
       return this.$appdata.get(`modules.${this.module_id}.config`) || {
         fontColor: "#ffffff",
@@ -497,17 +582,19 @@ export default defineComponent({
       const now = new Date();
       const target = new Date();
       target.setHours(Number(this.cultEndHour) || 0, Number(this.cultEndMinute) || 0, 0, 0);
-      if (target.getTime() <= now.getTime()) {
+      const isPast = target.getTime() <= now.getTime();
+      if (isPast) {
         target.setDate(target.getDate() + 1);
       }
       const diffMs = target.getTime() - now.getTime();
       const diffMins = Math.floor(diffMs / 60000);
       const h = Math.floor(diffMins / 60);
       const m = diffMins % 60;
-      if (h > 0) {
-        return `${h}h ${m}min`;
+      const timeStr = h > 0 ? `${h}h ${m}min` : `${m} minutos`;
+      if (isPast) {
+        return `${timeStr} (${this.t("calc_next_day") || "amanhã"})`;
       }
-      return `${m} minutos`;
+      return timeStr;
     },
     editHours: {
       get(): number {
@@ -759,7 +846,7 @@ export default defineComponent({
         isAlerting: false,
       });
     },
-    toggleTimer() {
+    toggleTimer(fromConfirm = false) {
       if (this.isRunning) {
         // Pausar
         pauseSchoolBellAlert();
@@ -817,7 +904,12 @@ export default defineComponent({
               const now = new Date();
               const target = new Date();
               target.setHours(Number(this.cultEndHour) || 0, Number(this.cultEndMinute) || 0, 0, 0);
-              if (target.getTime() <= now.getTime()) {
+              const isPast = target.getTime() <= now.getTime();
+              if (isPast) {
+                if (!fromConfirm) {
+                  this.showPastTimeDialog = true;
+                  return;
+                }
                 target.setDate(target.getDate() + 1);
               }
               targetEndTime = target.getTime();
@@ -894,6 +986,10 @@ export default defineComponent({
         });
       }
     },
+    confirmPastTimeStart() {
+      this.showPastTimeDialog = false;
+      this.toggleTimer(true);
+    },
     checkTimerTick() {
       const data = this.timerData;
       if (!data || !data.isRunning) return;
@@ -953,23 +1049,52 @@ export default defineComponent({
     },
     resetTimer() {
       stopSchoolBellAlert();
-      let cultInitial = 0;
       if (this.currentMode === "cult") {
-        cultInitial = (Number(this.cultDurationMinutes) || 40) * 60000;
+        const cultInitial = (Number(this.cultDurationMinutes) || 40) * 60000;
+        this.updateData({
+          mode: "cult",
+          isRunning: false,
+          isFinished: false,
+          isPaused: false,
+          isAlerting: false,
+          accumulatedTime: 0,
+          baseTime: 0,
+          targetDuration: cultInitial,
+          configuredDuration: cultInitial,
+          cultTotalDurationMs: cultInitial,
+          cultRemainingMs: cultInitial,
+          cultTargetEndTime: 0,
+        });
+        return;
       }
+      if (this.currentMode === "stopwatch") {
+        this.updateData({
+          mode: "stopwatch",
+          isStopwatch: true,
+          isRunning: false,
+          isFinished: false,
+          isPaused: false,
+          isAlerting: false,
+          accumulatedTime: 0,
+          baseTime: 0,
+          targetDuration: 0,
+          configuredDuration: 0,
+        });
+        return;
+      }
+      // Modo Timer (regressivo)
+      const configured = this.timerData.configuredDuration || this.timerData.targetDuration || 0;
       this.updateData({
-        mode: this.currentMode,
+        mode: "timer",
+        isStopwatch: false,
         isRunning: false,
         isFinished: false,
         isPaused: false,
         isAlerting: false,
         accumulatedTime: 0,
         baseTime: 0,
-        targetDuration: cultInitial,
-        configuredDuration: cultInitial,
-        cultTotalDurationMs: cultInitial,
-        cultRemainingMs: cultInitial,
-        cultTargetEndTime: 0,
+        targetDuration: configured,
+        configuredDuration: configured,
       });
     },
   },
@@ -977,6 +1102,39 @@ export default defineComponent({
 </script>
 
 <style scoped>
+.config-palette-btn {
+  width: 36px !important;
+  height: 36px !important;
+  min-width: 36px !important;
+  border-radius: 10px !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.config-palette-btn:hover {
+  transform: translateY(-1px);
+}
+
+:deep(.timer-screen-btn) {
+  width: 36px !important;
+  height: 36px !important;
+  min-width: 36px !important;
+  border-radius: 10px !important;
+  background: transparent !important;
+  color: var(--sidebar-text-secondary, rgba(255, 255, 255, 0.75)) !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+  .v-btn__overlay,
+  .v-btn__underlay {
+    border-radius: 10px !important;
+  }
+
+  &:hover {
+    transform: translateY(-1px);
+    background: rgba(150, 150, 150, 0.12) !important;
+    color: var(--sidebar-text, #ffffff) !important;
+  }
+}
+
 .time-input {
   width: 100px;
   height: 100px;
