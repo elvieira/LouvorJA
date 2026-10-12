@@ -1,5 +1,5 @@
 <template>
-  <div v-if="import_modules">
+  <div v-if="import_modules" class="modules-layout-wrapper w-100 h-100 flex-grow-1 d-flex flex-column" style="min-width: 0;">
     <component
       :is="loadModuleComponent(module)"
       v-for="module in modules"

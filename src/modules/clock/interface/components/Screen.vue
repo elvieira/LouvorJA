@@ -50,7 +50,7 @@
       <v-fade-transition>
         <div 
           v-if="config.style === 'digital'" 
-          class="digital-clock font-weight-black d-flex align-center justify-center text-center"
+          class="digital-clock font-weight-black d-flex align-baseline justify-center text-center"
           :style="{
             fontSize: `${digitalFontSize}px`,
             textShadow: preview ? 'none' : (config.bgImage ? '0 4px 20px rgba(0,0,0,0.8), 0 2px 8px rgba(0,0,0,0.9)' : `0 4px 30px ${config.textColor}40`),
@@ -61,14 +61,14 @@
           <span 
             v-if="config.showSeconds" 
             class="ml-2 opacity-70"
-            :style="{ fontSize: `${digitalFontSize * 0.5}px`, alignSelf: 'flex-end', marginBottom: `${digitalFontSize * 0.15}px` }"
+            :style="{ fontSize: `${digitalFontSize * 0.45}px` }"
           >
             {{ formattedSeconds }}
           </span>
           <span 
             v-if="!config.format24h" 
-            class="ml-4 opacity-50 font-weight-bold"
-            :style="{ fontSize: `${digitalFontSize * 0.3}px`, alignSelf: 'flex-end', marginBottom: `${digitalFontSize * 0.2}px` }"
+            class="ml-3 opacity-50 font-weight-bold"
+            :style="{ fontSize: `${digitalFontSize * 0.3}px` }"
           >
             {{ ampm }}
           </span>

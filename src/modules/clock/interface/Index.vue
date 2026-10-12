@@ -1,6 +1,6 @@
 <template>
   <v-slide-y-reverse-transition>
-    <div v-if="module?.show" class="module-full-page dashboard-home d-flex flex-column">
+    <div v-if="module?.show" class="module-full-page dashboard-home d-flex flex-column flex-grow-1 w-100 h-100">
       <!-- Top Bar -->
       <ModuleHeader :title="t('title')" :icon="module.icon">
         <div class="search-bar ml-4 d-flex align-center" style="flex: 1; justify-content: flex-end; gap: 12px;" />
@@ -9,17 +9,18 @@
       <!-- Clock Display -->
       <div class="content-main flex-grow-1 w-100 pa-6 d-flex align-center justify-center" style="overflow: hidden; background: transparent;">
         <div class="clock-widget-container d-flex flex-column justify-center align-center position-relative" style="width: 100%; max-width: 900px; aspect-ratio: 21/9; max-height: 100%; background: var(--card-bg, #ffffff); border-radius: 40px; box-shadow: 0 20px 60px rgba(0,0,0,0.05); border: 1px solid var(--border-color, rgba(0,0,0,0.05)); overflow: hidden; transition: transform 0.3s ease;">
-          <div class="position-absolute top-0 right-0 ma-4 d-flex align-center" style="z-index: 2; gap: 8px;">
+          <div class="position-absolute top-0 right-0 ma-4 d-flex align-center clock-actions-bar" style="z-index: 2; gap: 8px;">
             <v-btn
               variant="tonal"
               color="primary"
               icon
               size="small"
-              style="width: 36px; height: 36px;"
               class="config-palette-btn"
               @click="showConfig = true"
             >
-              <v-icon>mdi-palette</v-icon>
+              <v-icon size="18">
+                mdi-palette
+              </v-icon>
               <v-tooltip
                 activator="parent"
                 location="bottom"
@@ -29,7 +30,7 @@
                 {{ t('config') }}
               </v-tooltip>
             </v-btn>
-            <LScreenBtn module="clock" />
+            <LScreenBtn module="clock" class="clock-screen-btn" />
           </div>
           <Screen :preview="true" />
         </div>
@@ -81,3 +82,46 @@ export default defineComponent({
   },
 });
 </script>
+
+<style scoped>
+.module-full-page {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.config-palette-btn {
+  width: 36px !important;
+  height: 36px !important;
+  min-width: 36px !important;
+  border-radius: 10px !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.config-palette-btn:hover {
+  transform: translateY(-1px);
+}
+
+:deep(.clock-screen-btn) {
+  width: 36px !important;
+  height: 36px !important;
+  min-width: 36px !important;
+  border-radius: 10px !important;
+  background: transparent !important;
+  color: var(--sidebar-text-secondary, rgba(255, 255, 255, 0.75)) !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+  .v-btn__overlay,
+  .v-btn__underlay {
+    border-radius: 10px !important;
+  }
+
+  &:hover {
+    transform: translateY(-1px);
+    background: rgba(150, 150, 150, 0.12) !important;
+    color: var(--sidebar-text, #ffffff) !important;
+  }
+}
+</style>

@@ -135,14 +135,15 @@
                   </v-tooltip>
                 </v-btn>
                 <v-btn
-                  variant="text"
+                  variant="tonal"
+                  color="primary"
                   size="small"
                   icon
                   class="preview-action-btn config-palette-btn"
                   @click="showConfigModal = true"
                 >
                   <v-icon size="18">
-                    mdi-palette-outline
+                    mdi-palette
                   </v-icon>
                   <v-tooltip
                     activator="parent"
@@ -1005,8 +1006,8 @@ export default defineComponent({
   position: relative;
   overflow: hidden;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  background: rgba(24, 24, 36, 0.95);
-  border: 1px solid var(--ds-border, #43495b);
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--border-color);
   min-height: 48px;
 
   &.expanded {
@@ -1023,32 +1024,40 @@ export default defineComponent({
   }
 
   .preview-action-btn {
-    border-radius: 8px !important;
+    border-radius: 10px !important;
     min-width: 32px !important;
     width: 32px !important;
     height: 32px !important;
-    background: rgba(255, 255, 255, 0.1) !important;
-    backdrop-filter: blur(12px) !important;
-    -webkit-backdrop-filter: blur(12px) !important;
-    border: 1px solid rgba(255, 255, 255, 0.15) !important;
-    color: rgba(255, 255, 255, 0.9) !important;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25) !important;
+    background: transparent !important;
+    border: none !important;
+    color: rgba(255, 255, 255, 0.75) !important;
+    box-shadow: none !important;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
 
-    :deep(.v-btn__overlay) {
-      display: none !important;
+    :deep(.v-btn__overlay),
+    :deep(.v-btn__underlay) {
+      border-radius: 10px !important;
     }
 
     &:hover {
-      background: rgba(0, 155, 226, 0.35) !important;
-      border-color: rgba(0, 155, 226, 0.65) !important;
+      background: rgba(255, 255, 255, 0.1) !important;
       color: #ffffff !important;
       transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(0, 155, 226, 0.35) !important;
     }
 
     &:active {
       transform: translateY(0);
+    }
+
+    &.config-palette-btn {
+      background: rgba(var(--v-theme-primary), 0.16) !important;
+      color: rgb(var(--v-theme-primary)) !important;
+
+      &:hover {
+        background: rgba(var(--v-theme-primary), 0.26) !important;
+        color: rgb(var(--v-theme-primary)) !important;
+        transform: translateY(-1px);
+      }
     }
   }
 
@@ -1110,22 +1119,24 @@ export default defineComponent({
     border-color: var(--ds-border, #dee4ec);
 
     .preview-action-btn {
-      background: rgba(0, 0, 0, 0.05) !important;
-      backdrop-filter: blur(8px) !important;
-      -webkit-backdrop-filter: blur(8px) !important;
-      border: 1px solid rgba(0, 0, 0, 0.08) !important;
-      color: #475569 !important;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04) !important;
-
-      :deep(.v-btn__overlay) {
-        display: none !important;
-      }
+      background: transparent !important;
+      border: none !important;
+      color: #64748b !important;
+      box-shadow: none !important;
 
       &:hover {
-        background: rgba(0, 155, 226, 0.15) !important;
-        border-color: rgba(0, 155, 226, 0.4) !important;
+        background: rgba(0, 0, 0, 0.06) !important;
+        color: #1e293b !important;
+      }
+
+      &.config-palette-btn {
+        background: rgba(0, 155, 226, 0.12) !important;
         color: var(--ds-accent, #009be2) !important;
-        box-shadow: 0 4px 10px rgba(0, 155, 226, 0.2) !important;
+
+        &:hover {
+          background: rgba(0, 155, 226, 0.22) !important;
+          color: var(--ds-accent, #009be2) !important;
+        }
       }
     }
   }
