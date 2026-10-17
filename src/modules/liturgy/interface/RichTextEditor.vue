@@ -356,14 +356,20 @@ export default defineComponent({
     overflow-y: auto !important;
 
     &::-webkit-scrollbar {
-      width: 5px;
+      width: 6px;
+      height: 6px;
+    }
+    &::-webkit-scrollbar-track {
+      background: transparent;
     }
     &::-webkit-scrollbar-thumb {
-      background: rgba(128, 128, 128, 0.25);
+      background: var(--accent-blue, #009FE3);
       border-radius: 4px;
+      transition: background 0.2s ease;
     }
-    &::-webkit-scrollbar-thumb:hover {
-      background: rgba(128, 128, 128, 0.4);
+    &::-webkit-scrollbar-thumb:hover,
+    &::-webkit-scrollbar-thumb:active {
+      background: var(--accent-yellow, #FFC107);
     }
   }
 
@@ -438,10 +444,19 @@ export default defineComponent({
 
   &::-webkit-scrollbar {
     width: 6px;
+    height: 6px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
   }
   &::-webkit-scrollbar-thumb {
-    background: rgba(128, 128, 128, 0.25);
+    background: var(--accent-blue, #009FE3);
     border-radius: 4px;
+    transition: background 0.2s ease;
+  }
+  &::-webkit-scrollbar-thumb:hover,
+  &::-webkit-scrollbar-thumb:active {
+    background: var(--accent-yellow, #FFC107);
   }
 }
 

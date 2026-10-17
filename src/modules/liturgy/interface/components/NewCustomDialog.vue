@@ -132,7 +132,7 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .modern-custom-dialog-card {
-  background: var(--card-bg, #202431) !important;
+  background: var(--main-bg, #202431) !important;
   border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08)) !important;
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45) !important;
   border-radius: 16px !important;
@@ -190,8 +190,9 @@ export default defineComponent({
 
 .standard-text-input {
   :deep(.v-field) {
-    background: rgba(var(--v-theme-on-surface), 0.05) !important;
-    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08)) !important;
+    background: var(--card-bg, #30364a) !important;
+    border: 1px solid rgba(128, 128, 128, 0.18) !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) !important;
     border-radius: 10px !important;
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
 
@@ -200,8 +201,16 @@ export default defineComponent({
     }
 
     &.v-field--focused {
-      border-color: rgba(var(--v-theme-primary), 0.9) !important;
+      border-color: var(--accent-blue, rgb(var(--v-theme-primary))) !important;
       box-shadow: 0 0 0 2px rgba(var(--v-theme-primary), 0.2) !important;
+    }
+
+    .v-field__outline {
+      display: none !important;
+    }
+
+    .v-field__overlay {
+      display: none !important;
     }
   }
 
@@ -238,9 +247,10 @@ export default defineComponent({
   }
 
   .standard-text-input {
-    :deep(.v-field) {
-      background: #f8fafc !important;
-      border-color: rgba(0, 0, 0, 0.1) !important;
+    :deep(.v-field:not(.v-field--focused)) {
+      background: #ffffff !important;
+      border-color: rgba(0, 0, 0, 0.12) !important;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05) !important;
     }
 
     :deep(input) {

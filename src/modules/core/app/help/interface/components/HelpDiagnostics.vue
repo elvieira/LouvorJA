@@ -7,56 +7,49 @@
     >
       <!-- Top Header Area -->
       <div
-        class="d-flex align-center justify-between py-4 px-6 flex-shrink-0 flex-wrap gap-2"
-        style="border-bottom: 1px solid var(--border-color); background: rgba(0, 0, 0, 0.01);"
+        class="diagnostics-header d-flex align-center justify-between py-4 px-6 flex-shrink-0 flex-wrap gap-2"
       >
         <div class="d-flex align-center">
           <v-btn
-            class="mr-4"
-            icon="mdi-arrow-left"
+            icon
             size="small"
-            variant="tonal"
-            color="primary"
+            variant="text"
+            class="modal-nav-icon-btn mr-3"
             @click="$emit('back')"
-          />
-          <div
-            class="d-flex align-center justify-center rounded-circle pa-2 mr-3"
-            style="background: rgba(0, 151, 215, 0.1);"
           >
+            <v-icon size="20">
+              mdi-arrow-left
+            </v-icon>
+          </v-btn>
+          <div class="header-icon-box mr-3">
             <v-icon
-              color="primary"
+              color="#009fe3"
               icon="mdi-text-box-search-outline"
               size="22"
             />
           </div>
           <div>
-            <h3
-              class="font-weight-bold mb-0"
-              style="color: var(--sidebar-text); font-size: 1.25rem; letter-spacing: -0.01em; line-height: 1.2;"
-            >
+            <h2 class="modal-title font-weight-bold">
               {{ $t('modules.help.diagnostics.title') }}
-            </h3>
-            <span
-              class="text-caption"
-              style="color: var(--sidebar-text-secondary);"
-            >
+            </h2>
+            <p class="modal-subtitle mb-0">
               {{ $t('modules.help.diagnostics.subtitle') }}
-            </span>
+            </p>
           </div>
         </div>
 
         <!-- Navigation Tabs -->
         <v-tabs
           v-model="activeTab"
-          color="var(--accent-blue)"
+          color="primary"
           density="compact"
-          class="ml-auto"
+          class="ml-auto diagnostics-tabs"
         >
-          <v-tab value="logs" class="text-none">
+          <v-tab value="logs" class="text-none font-weight-medium">
             <v-icon start icon="mdi-console-line" size="18" />
             {{ $t('modules.help.diagnostics.tab_logs') }}
           </v-tab>
-          <v-tab value="system" class="text-none">
+          <v-tab value="system" class="text-none font-weight-medium">
             <v-icon start icon="mdi-laptop" size="18" />
             {{ $t('modules.help.diagnostics.tab_system') }}
           </v-tab>
@@ -141,26 +134,28 @@
         </div>
 
         <!-- TAB 2: INFORMAÇÕES DO SISTEMA -->
-        <div v-else-if="activeTab === 'system'" class="h-100 overflow-y-auto pa-6">
+        <div v-else-if="activeTab === 'system'" class="diagnostics-scroll-area h-100 overflow-y-auto pa-6">
           <div class="mx-auto d-flex flex-column gap-6" style="max-width: 960px;">
             <!-- Header Bar da Aba de Sistema -->
             <div class="d-flex align-center justify-space-between">
               <div>
-                <h4 class="font-weight-bold mb-1" style="color: var(--sidebar-text);">
+                <h3 class="modal-title font-weight-bold mb-1" style="font-size: 1.15rem;">
                   {{ $t('modules.help.diagnostics.tab_system') }}
-                </h4>
-                <span class="text-caption" style="color: var(--sidebar-text-secondary);">
+                </h3>
+                <span class="modal-subtitle">
                   Dados coletados do hardware, ambiente Electron e conectividade do Louvor JA.
                 </span>
               </div>
 
-              <div class="d-flex gap-2">
+              <div class="d-flex align-center gap-2">
                 <v-btn
                   variant="tonal"
                   size="small"
+                  rounded="lg"
+                  height="36"
                   prepend-icon="mdi-refresh"
                   :loading="loadingDiagnostics"
-                  class="text-none"
+                  class="text-none font-weight-medium"
                   @click="loadDiagnostics"
                 >
                   {{ $t('modules.help.diagnostics.refresh') }}
@@ -169,8 +164,10 @@
                   variant="flat"
                   color="primary"
                   size="small"
+                  rounded="lg"
+                  height="36"
                   prepend-icon="mdi-content-copy"
-                  class="text-none"
+                  class="text-none font-weight-bold"
                   @click="copyFullReport"
                 >
                   {{ $t('modules.help.diagnostics.copy_full_report') }}
@@ -190,14 +187,15 @@
               <v-row dense>
                 <!-- 1. Aplicativo & Runtime -->
                 <v-col cols="12" md="6">
-                  <v-card class="rounded-xl pa-4 h-100" flat style="background: var(--card-bg); border: 1px solid var(--border-color);">
+                  <v-card class="diagnostics-card pa-4 h-100" flat>
                     <div class="d-flex align-center mb-3">
-                      <v-icon
-                        color="primary"
-                        icon="mdi-apps"
-                        size="20"
-                        class="mr-2"
-                      />
+                      <div class="card-icon-box mr-2.5">
+                        <v-icon
+                          color="#009fe3"
+                          icon="mdi-apps"
+                          size="18"
+                        />
+                      </div>
                       <span class="font-weight-bold text-subtitle-2" style="color: var(--sidebar-text);">
                         {{ $t('modules.help.diagnostics.categories.app') }}
                       </span>
@@ -225,14 +223,15 @@
 
                 <!-- 2. Sistema Operacional -->
                 <v-col cols="12" md="6">
-                  <v-card class="rounded-xl pa-4 h-100" flat style="background: var(--card-bg); border: 1px solid var(--border-color);">
+                  <v-card class="diagnostics-card pa-4 h-100" flat>
                     <div class="d-flex align-center mb-3">
-                      <v-icon
-                        color="primary"
-                        :icon="getOsIcon(diagnostics.os.platform)"
-                        size="20"
-                        class="mr-2"
-                      />
+                      <div class="card-icon-box mr-2.5">
+                        <v-icon
+                          color="#009fe3"
+                          :icon="getOsIcon(diagnostics.os.platform)"
+                          size="18"
+                        />
+                      </div>
                       <span class="font-weight-bold text-subtitle-2" style="color: var(--sidebar-text);">
                         {{ $t('modules.help.diagnostics.categories.os') }}
                       </span>
@@ -260,14 +259,15 @@
 
                 <!-- 3. Hardware & CPU -->
                 <v-col cols="12" md="6">
-                  <v-card class="rounded-xl pa-4 h-100" flat style="background: var(--card-bg); border: 1px solid var(--border-color);">
+                  <v-card class="diagnostics-card pa-4 h-100" flat>
                     <div class="d-flex align-center mb-3">
-                      <v-icon
-                        color="primary"
-                        icon="mdi-cpu-64-bit"
-                        size="20"
-                        class="mr-2"
-                      />
+                      <div class="card-icon-box mr-2.5">
+                        <v-icon
+                          color="#009fe3"
+                          icon="mdi-cpu-64-bit"
+                          size="18"
+                        />
+                      </div>
                       <span class="font-weight-bold text-subtitle-2" style="color: var(--sidebar-text);">
                         {{ $t('modules.help.diagnostics.categories.cpu') }}
                       </span>
@@ -295,15 +295,16 @@
 
                 <!-- 4. Memória RAM -->
                 <v-col cols="12" md="6">
-                  <v-card class="rounded-xl pa-4 h-100" flat style="background: var(--card-bg); border: 1px solid var(--border-color);">
+                  <v-card class="diagnostics-card pa-4 h-100" flat>
                     <div class="d-flex align-center justify-space-between mb-3">
                       <div class="d-flex align-center">
-                        <v-icon
-                          color="primary"
-                          icon="mdi-memory"
-                          size="20"
-                          class="mr-2"
-                        />
+                        <div class="card-icon-box mr-2.5">
+                          <v-icon
+                            color="#009fe3"
+                            icon="mdi-memory"
+                            size="18"
+                          />
+                        </div>
                         <span class="font-weight-bold text-subtitle-2" style="color: var(--sidebar-text);">
                           {{ $t('modules.help.diagnostics.categories.memory') }}
                         </span>
@@ -340,14 +341,15 @@
 
                 <!-- 5. Armazenamento & Bancos de Dados -->
                 <v-col cols="12" md="6">
-                  <v-card class="rounded-xl pa-4 h-100" flat style="background: var(--card-bg); border: 1px solid var(--border-color);">
+                  <v-card class="diagnostics-card pa-4 h-100" flat>
                     <div class="d-flex align-center mb-3">
-                      <v-icon
-                        color="primary"
-                        icon="mdi-database-outline"
-                        size="20"
-                        class="mr-2"
-                      />
+                      <div class="card-icon-box mr-2.5">
+                        <v-icon
+                          color="#009fe3"
+                          icon="mdi-database-outline"
+                          size="18"
+                        />
+                      </div>
                       <span class="font-weight-bold text-subtitle-2" style="color: var(--sidebar-text);">
                         {{ $t('modules.help.diagnostics.categories.storage') }}
                       </span>
@@ -375,14 +377,15 @@
 
                 <!-- 6. Rede & Conectividade -->
                 <v-col cols="12" md="6">
-                  <v-card class="rounded-xl pa-4 h-100" flat style="background: var(--card-bg); border: 1px solid var(--border-color);">
+                  <v-card class="diagnostics-card pa-4 h-100" flat>
                     <div class="d-flex align-center mb-3">
-                      <v-icon
-                        color="primary"
-                        icon="mdi-wifi"
-                        size="20"
-                        class="mr-2"
-                      />
+                      <div class="card-icon-box mr-2.5">
+                        <v-icon
+                          color="#009fe3"
+                          icon="mdi-wifi"
+                          size="18"
+                        />
+                      </div>
                       <span class="font-weight-bold text-subtitle-2" style="color: var(--sidebar-text);">
                         {{ $t('modules.help.diagnostics.categories.network') }}
                       </span>
@@ -413,14 +416,15 @@
 
                 <!-- 7. Telas e Monitores Detectados -->
                 <v-col cols="12">
-                  <v-card class="rounded-xl pa-4" flat style="background: var(--card-bg); border: 1px solid var(--border-color);">
+                  <v-card class="diagnostics-card pa-4" flat>
                     <div class="d-flex align-center mb-3">
-                      <v-icon
-                        color="primary"
-                        icon="mdi-monitor-multiple"
-                        size="20"
-                        class="mr-2"
-                      />
+                      <div class="card-icon-box mr-2.5">
+                        <v-icon
+                          color="#009fe3"
+                          icon="mdi-monitor-multiple"
+                          size="18"
+                        />
+                      </div>
                       <span class="font-weight-bold text-subtitle-2" style="color: var(--sidebar-text);">
                         {{ $t('modules.help.diagnostics.categories.displays') }} ({{ diagnostics.displays.length }})
                       </span>
@@ -433,7 +437,7 @@
                         sm="6"
                         md="4"
                       >
-                        <div class="pa-3 rounded-lg border-subtle d-flex flex-column gap-1 text-caption" style="background: rgba(0, 0, 0, 0.05);">
+                        <div class="pa-3 rounded-lg border-subtle d-flex flex-column gap-1 text-caption display-item-box" style="background: rgba(0, 0, 0, 0.15);">
                           <div class="d-flex align-center justify-space-between">
                             <span class="font-weight-bold" style="color: var(--sidebar-text);">{{ d.label }}</span>
                             <v-chip
@@ -614,26 +618,131 @@ export default defineComponent({
 });
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
+.diagnostics-container {
+  width: 100%;
+}
+
+.diagnostics-header {
+  border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+  background: rgba(var(--v-theme-on-surface), 0.015);
+}
+
+.modal-nav-icon-btn {
+  color: var(--sidebar-text-secondary, #94a3b8) !important;
+  border-radius: 10px !important;
+  width: 36px !important;
+  height: 36px !important;
+  transition: all 0.2s ease !important;
+
+  &:hover {
+    color: var(--sidebar-text, #ffffff) !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+  }
+}
+
+.header-icon-box {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: rgba(0, 159, 227, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.modal-title {
+  color: var(--sidebar-text, #ffffff);
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1.25;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.modal-subtitle {
+  color: var(--sidebar-text-secondary, #94a3b8);
+  font-size: 0.825rem;
+  line-height: 1.3;
+}
+
+.card-icon-box {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(0, 159, 227, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.diagnostics-scroll-area {
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent-blue, #009FE3) transparent;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: var(--accent-blue, #009FE3);
+    border-radius: 4px;
+    transition: background 0.2s ease;
+
+    &:hover,
+    &:active {
+      background: var(--accent-yellow, #FFC107);
+    }
+  }
+}
+
+.log-terminal {
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent-blue, #009FE3) transparent;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: var(--accent-blue, #009FE3);
+    border-radius: 4px;
+    transition: background 0.2s ease;
+
+    &:hover,
+    &:active {
+      background: var(--accent-yellow, #FFC107);
+    }
+  }
+}
+
+.diagnostics-card {
+  background: var(--card-bg, #30364a) !important;
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08)) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08) !important;
+  transition: all 0.2s ease;
+}
+
 .gap-1 { gap: 4px; }
 .gap-2 { gap: 8px; }
 .gap-4 { gap: 16px; }
 .gap-6 { gap: 24px; }
 
 .border-subtle {
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
 }
 
 .border-bottom-subtle {
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.log-terminal::-webkit-scrollbar {
-  width: 8px;
-}
-.log-terminal::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 4px;
 }
 
 .badge-info {
@@ -665,5 +774,46 @@ export default defineComponent({
 
 .log-warn {
   background: rgba(255, 152, 0, 0.03);
+}
+
+// Light theme support
+:root[data-theme="light"],
+.v-theme--light {
+  .diagnostics-header {
+    background: #fafafa;
+    border-color: rgba(0, 0, 0, 0.06);
+  }
+
+  .modal-nav-icon-btn {
+    color: #64748b !important;
+
+    &:hover {
+      color: #1e293b !important;
+      background: rgba(0, 0, 0, 0.05) !important;
+    }
+  }
+
+  .modal-title {
+    color: #1e293b;
+  }
+
+  .modal-subtitle {
+    color: #64748b;
+  }
+
+  .diagnostics-card {
+    background: #ffffff !important;
+    border-color: rgba(0, 0, 0, 0.08) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05) !important;
+  }
+
+  .border-bottom-subtle {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  }
+
+  .display-item-box {
+    background: #f8fafc !important;
+    border-color: rgba(0, 0, 0, 0.08) !important;
+  }
 }
 </style>
