@@ -28,18 +28,19 @@
     "media": "Mídia e Arquivos",
     "link": "Link",
     "file": "Mídia e Arquivos",
-    "scheduled_item": "Item Agendado"
+    "scheduled_item": "Item Agendado",
+    "collection_short": "Coletânea"
   },
   "type_descriptions": {
-    "annotation": "Texto livre sem ação (ex: Oração, Doxologia)",
+    "annotation": "Texto livre sem ação",
     "category": "Separador visual de seção",
-    "music": "Selecione uma música do Hinário ou Coletânea",
-    "collection_item": "Músicas de coletâneas ou vídeos do YouTube",
-    "verse": "Selecione um versículo bíblico",
-    "media": "Vídeos, áudios, slides PPTX, PDFs ou outros arquivos",
-    "link": "Adicione uma URL para abrir no navegador",
-    "file": "Vídeos, áudios, slides PPTX, PDFs ou outros arquivos",
-    "scheduled_item": "Selecione uma categoria de agendamento"
+    "music": "Hinários e coletâneas",
+    "collection_item": "YouTube e outras fontes",
+    "verse": "Texto bíblico",
+    "media": "Vídeos, áudios, slides, PDFs",
+    "link": "URL para abrir no navegador",
+    "file": "Vídeos, áudios, slides, PDFs",
+    "scheduled_item": "Selecione um item da agenda"
   },
   "fields": {
     "name": "Nome",
@@ -51,7 +52,8 @@
     "book": "Livro",
     "chapter": "Capítulo",
     "verses": "Versículos",
-    "search_music": "Buscar música...",
+    "search_music": "Buscar música",
+    "search_music_placeholder": "Procure aqui...",
     "click_to_browse": "Clique para buscar no computador",
     "select_media": "Selecionar Mídia",
     "verses_placeholder": "Ex: 1-5, 8",
@@ -65,6 +67,10 @@
     "select_collection": "Selecionar Coletânea",
     "select_song": "Selecionar Música",
     "search_online_videos": "Buscar vídeo online...",
+    "filter_by": "Filtrar pesquisa por:",
+    "filter_song_name": "Nome da música",
+    "filter_album": "Álbum/Coletânea",
+    "filter_lyrics": "Letra da música",
     "no_custom_collections": "Nenhuma coletânea personalizada encontrada",
     "no_custom_collections_hint": "Crie coletâneas no módulo Coletâneas Personalizadas para adicioná-las aqui."
   },
@@ -75,6 +81,8 @@
     "edit": "Editar",
     "delete": "Excluir",
     "duplicate": "Duplicar",
+    "clear": "Limpar",
+    "close": "Fechar",
     "clear_all": "Limpar Tudo",
     "reset_checks": "Desmarcar Todos",
     "project": "Projetar",

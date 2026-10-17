@@ -1,9 +1,9 @@
 <template>
   <div
     ref="containerRef"
-    class="custom-tabs-pill d-flex align-center flex-shrink-0"
-    :class="{ 'w-100': block }"
-    :style="block ? 'width: 100%; position: relative;' : 'position: relative;'"
+    class="custom-tabs-pill align-center flex-shrink-0"
+    :class="block ? 'd-flex w-100' : 'd-inline-flex'"
+    :style="block ? 'width: 100%; position: relative;' : 'position: relative; width: fit-content;'"
   >
     <!-- Marcador Deslizante (Sliding Active Indicator) -->
     <div

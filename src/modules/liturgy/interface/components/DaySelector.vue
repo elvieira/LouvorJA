@@ -1,7 +1,7 @@
 <template>
-  <div class="px-6 py-4 flex-shrink-0" style="border-bottom: 1px solid var(--border-color, rgba(0,0,0,0.05));">
+  <div class="day-selector-wrapper">
     <div 
-      style="background: rgba(128, 128, 128, 0.15); border-radius: 12px; padding: 4px; display: flex; gap: 4px; width: 100%; overflow-x: auto;"
+      class="day-selector-track"
       @wheel.prevent="onWheelScroll"
     >
       <v-btn
@@ -9,24 +9,44 @@
         :key="day.value"
         :color="selectedDay === day.value ? 'primary' : undefined"
         :variant="selectedDay === day.value ? 'flat' : 'text'"
-        class="flex-grow-1 text-none font-weight-bold rounded-lg"
-        :style="{ color: selectedDay === day.value ? '#fff' : 'var(--sidebar-text)', letterSpacing: 0, height: '40px', minWidth: isCompactView ? '50px' : '80px' }"
+        class="day-pill-btn flex-grow-1 text-none font-weight-bold rounded-lg"
+        :class="{ 'is-active': selectedDay === day.value }"
+        :style="{ height: '38px', minWidth: isCompactView ? '50px' : '75px' }"
         @click="selectDay(day.value)"
       >
-        {{ isCompactView ? day.label.substring(0, 3) : day.label }}
+        <span class="day-label">{{ isCompactView ? day.label.substring(0, 3) : day.label }}</span>
+        <v-tooltip
+          v-if="isCompactView"
+          activator="parent"
+          location="bottom"
+          open-delay="200"
+          content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+        >
+          {{ day.label }}
+        </v-tooltip>
       </v-btn>
       
-      <v-divider vertical class="mx-1 my-2" style="opacity: 0.1;" />
+      <div class="day-selector-divider" />
 
       <v-btn
         :color="selectedDay === 'custom' ? 'primary' : undefined"
         :variant="selectedDay === 'custom' ? 'flat' : 'text'"
-        class="flex-grow-1 text-none font-weight-bold rounded-lg"
-        :style="{ color: selectedDay === 'custom' ? '#fff' : 'var(--sidebar-text)', letterSpacing: 0, height: '40px', minWidth: isCompactView ? '0' : '100px' }"
+        class="day-pill-btn flex-grow-1 text-none font-weight-bold rounded-lg"
+        :class="{ 'is-active': selectedDay === 'custom' }"
+        :style="{ height: '38px', minWidth: isCompactView ? '60px' : '95px' }"
         prepend-icon="mdi-star-outline"
         @click="selectDay('custom')"
       >
-        {{ isCompactView ? 'Avul.' : (customDayLabel || 'Avulsa') }}
+        <span class="day-label">{{ isCompactView ? 'Avul.' : (customDayLabel || 'Avulsa') }}</span>
+        <v-tooltip
+          v-if="isCompactView"
+          activator="parent"
+          location="bottom"
+          open-delay="200"
+          content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+        >
+          {{ customDayLabel || 'Avulsa' }}
+        </v-tooltip>
       </v-btn>
     </div>
   </div>
@@ -74,3 +94,58 @@ export default defineComponent({
   },
 });
 </script>
+
+<style lang="scss" scoped>
+.day-selector-wrapper {
+  padding: 12px 24px;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.07));
+  background: rgba(var(--v-theme-on-surface), 0.015);
+}
+
+.day-selector-track {
+  background: rgba(var(--v-theme-on-surface), 0.04);
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.06));
+  border-radius: 12px;
+  padding: 3px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.day-pill-btn {
+  letter-spacing: 0;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  color: var(--sidebar-text-secondary, #94a3b8);
+  position: relative;
+
+  &:not(.is-active):hover {
+    color: var(--sidebar-text, #ffffff);
+    background: rgba(var(--v-theme-on-surface), 0.05) !important;
+  }
+
+  &.is-active {
+    color: #ffffff !important;
+    box-shadow: 0 2px 8px rgba(0, 159, 227, 0.25);
+  }
+}
+
+.day-label {
+  font-size: 0.88rem;
+}
+
+.day-selector-divider {
+  width: 1px;
+  height: 20px;
+  background: var(--border-color, rgba(255, 255, 255, 0.08));
+  margin: 0 2px;
+  flex-shrink: 0;
+}
+</style>

@@ -12,48 +12,49 @@
         icon="mdi-hands-pray"
         @close="module.show = false"
       >
-        <div class="d-flex" style="gap: 12px;">
-          <v-menu location="bottom end">
+        <div class="d-flex align-center" style="gap: 10px;">
+          <v-menu location="bottom end" transition="slide-y-transition">
             <template #activator="{ props }">
               <v-btn
                 variant="tonal"
                 color="secondary"
                 v-bind="props"
-                append-icon="mdi-swap-vertical"
-                class="rounded-lg text-body-2 font-weight-medium"
+                prepend-icon="mdi-swap-vertical"
+                class="rounded-lg text-body-2 font-weight-medium px-4 header-action-btn"
+                height="38"
                 style="text-transform: none; letter-spacing: normal;"
               >
                 Importar / Exportar
               </v-btn>
             </template>
-            <v-card class="elevation-3" rounded="lg" style="overflow: hidden; border: 1px solid var(--border-color, rgba(255, 255, 255, 0.05));">
-              <v-list class="py-2" bg-color="var(--card-bg)">
+            <v-card class="elevation-4 rounded-xl overflow-hidden header-dropdown-menu" style="border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08)); min-width: 170px;">
+              <v-list class="py-1.5" bg-color="var(--card-bg)">
                 <v-list-item 
-                  class="mx-2 rounded-lg mb-1" 
-                  style="min-height: 40px;"
+                  class="mx-1.5 rounded-lg mb-1 menu-item-action" 
+                  style="min-height: 38px;"
                   @click="importLiturgy"
                 >
                   <div class="d-flex align-center">
                     <v-icon 
                       icon="mdi-import" 
-                      size="small" 
+                      size="18" 
                       class="mr-3" 
-                      style="opacity: 0.9;" 
+                      color="primary" 
                     />
                     <span class="text-body-2 font-weight-medium">Importar</span>
                   </div>
                 </v-list-item>
                 <v-list-item 
-                  class="mx-2 rounded-lg mb-0" 
-                  style="min-height: 40px;"
+                  class="mx-1.5 rounded-lg mb-0 menu-item-action" 
+                  style="min-height: 38px;"
                   @click="exportLiturgy"
                 >
                   <div class="d-flex align-center">
                     <v-icon 
                       icon="mdi-export" 
-                      size="small" 
+                      size="18" 
                       class="mr-3" 
-                      style="opacity: 0.9;" 
+                      color="secondary" 
                     />
                     <span class="text-body-2 font-weight-medium">Exportar</span>
                   </div>
@@ -65,8 +66,9 @@
           <v-btn
             variant="tonal"
             color="#f6c32a"
-            append-icon="mdi-view-dashboard-outline"
-            class="rounded-lg text-body-2 font-weight-medium"
+            prepend-icon="mdi-view-dashboard-outline"
+            class="rounded-lg text-body-2 font-weight-medium px-4 header-action-btn"
+            height="38"
             style="text-transform: none; letter-spacing: normal;"
             @click="showTemplatesDialog = true"
           >
@@ -75,8 +77,9 @@
           <v-btn
             variant="tonal"
             color="primary"
-            append-icon="mdi-calendar-clock"
-            class="rounded-lg text-body-2 font-weight-bold"
+            prepend-icon="mdi-calendar-clock"
+            class="rounded-lg text-body-2 font-weight-bold px-4 header-action-btn"
+            height="38"
             style="text-transform: none; letter-spacing: normal;"
             @click="showScheduledItems = true"
           >
@@ -104,7 +107,7 @@
       />
 
       <!-- Main Content Area -->
-      <div class="content-main d-flex" style="flex-direction: row !important; overflow: hidden; flex-grow: 1; min-height: 0; padding: 24px; gap: 24px;">
+      <div class="content-main d-flex" style="flex-direction: row !important; overflow: hidden; flex-grow: 1; min-height: 0; padding: 20px 24px 24px; gap: 20px;">
         <template v-if="selectedDay !== 'custom' || customLiturgies.length > 0">
           <!-- Left Panel: Liturgy List -->
           <LiturgyList 
@@ -177,6 +180,7 @@
         :extra-data="extraData"
         @update-extra-data="updateExtraDataAndSave"
         @add-item="openAddMenuForTemplate"
+        @add-item-to-category="openAddMenuForTemplateCategory"
         @edit-item="editTemplateItem"
         @apply-template="applyTemplateToCurrentDay"
       />
@@ -872,6 +876,15 @@ export default defineComponent({
       this.templateTargetId = templateId;
       this.showAddMenu = true;
     },
+    openAddMenuForTemplateCategory({ templateId, categoryId }: any) {
+      this.editData = null;
+      this.editingIndex = null;
+      this.insertingCategoryId = categoryId;
+      this.isTemplateMode = true;
+      this.isFillingPlaceholder = false;
+      this.templateTargetId = templateId;
+      this.showAddMenu = true;
+    },
     editTemplateItem({ item, index, templateId }: any) {
       this.editData = { ...item };
       this.editingIndex = index;
@@ -912,6 +925,13 @@ export default defineComponent({
           const t = this.extraData.templates[tIndex];
           if (this.editingIndex !== null) {
             t.items.splice(this.editingIndex, 1, item);
+          } else if (this.insertingCategoryId) {
+            const catIndex = t.items.findIndex((i: any) => i.id === this.insertingCategoryId);
+            if (catIndex !== -1) {
+              t.items.splice(catIndex + 1, 0, item);
+            } else {
+              t.items.push(item);
+            }
           } else {
             t.items.push(item);
           }
@@ -1564,23 +1584,46 @@ export default defineComponent({
 .no-hover :deep(.v-btn__overlay) {
   display: none !important;
 }
+
+.header-action-btn {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover {
+    transform: translateY(-1px);
+  }
+}
+
+.menu-item-action {
+  cursor: pointer;
+  transition: background 0.15s ease;
+
+  &:hover {
+    background: rgba(var(--v-theme-on-surface), 0.06);
+  }
+}
 </style>
 
 <style lang="scss">
 .liturgy-dialog-wrapper {
   transform: translateX(calc(var(--sidebar-width, 280px) / 2));
   max-width: calc(100vw - var(--sidebar-width, 280px) - 48px) !important;
+  max-height: calc(100vh - 84px) !important;
+  margin-top: 48px !important;
 }
 
 body.sidebar-collapsed .liturgy-dialog-wrapper {
   transform: translateX(calc(var(--sidebar-collapsed-width, 72px) / 2));
   max-width: calc(100vw - var(--sidebar-collapsed-width, 72px) - 48px) !important;
+  max-height: calc(100vh - 84px) !important;
+  margin-top: 48px !important;
 }
 
 @media (max-width: 1024px) {
   body:not(.sidebar-collapsed) .liturgy-dialog-wrapper {
     transform: none !important;
     max-width: calc(100vw - 48px) !important;
+    max-height: calc(100vh - 84px) !important;
+    margin-top: 48px !important;
   }
 }
 </style>

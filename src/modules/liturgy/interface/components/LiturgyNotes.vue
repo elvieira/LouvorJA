@@ -1,8 +1,8 @@
 <template>
-  <div class="d-flex flex-column flex-shrink-0" style="flex: 0 0 380px; width: 380px; min-height: 0; background: var(--main-bg, transparent); border-radius: 20px;">
-    <div class="px-6 py-4 d-flex align-center justify-space-between">
-      <h3 style="font-size: 1.25rem; color: var(--sidebar-text); font-weight: 700;">
-        <v-icon size="22" class="mr-2 mb-1" color="primary">
+  <div class="d-flex flex-column flex-shrink-0 notes-panel" style="flex: 0 0 380px; width: 380px; min-height: 0; background: var(--main-bg, transparent); border-radius: 20px;">
+    <div class="px-6 py-4 d-flex align-center justify-space-between notes-header">
+      <h3 style="font-size: 1.15rem; color: var(--sidebar-text); font-weight: 700;" class="d-flex align-center">
+        <v-icon size="20" class="mr-2" color="primary">
           mdi-note-edit-outline
         </v-icon>
         {{ t('notes') }}
@@ -42,3 +42,14 @@ export default defineComponent({
   },
 });
 </script>
+
+<style lang="scss" scoped>
+.notes-panel {
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.06));
+}
+
+.notes-header {
+  border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.05));
+  min-height: 64px;
+}
+</style>

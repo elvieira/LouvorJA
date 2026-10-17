@@ -1,17 +1,18 @@
 <template>
-  <div class="d-flex flex-column flex-grow-1" style="min-width: 0; min-height: 0; background: var(--main-bg, transparent); border-radius: 20px; position: relative;">
+  <div class="d-flex flex-column flex-grow-1 liturgy-list-panel" style="min-width: 0; min-height: 0; background: var(--main-bg, transparent); border-radius: 20px; position: relative;">
     <!-- List Header -->
-    <div class="px-6 py-4 d-flex align-center justify-space-between">
-      <h3 style="font-size: 1.25rem; color: var(--sidebar-text); font-weight: 700;">
+    <div class="px-6 py-4 d-flex align-center justify-space-between list-header-bar">
+      <h3 class="list-panel-title">
         {{ title }}
       </h3>
-      <div class="d-flex align-center" style="gap: 12px;">
+      <div class="d-flex align-center" style="gap: 10px;">
         <v-btn
           v-if="hasDoneItems"
           variant="tonal"
           color="warning"
           rounded="lg"
-          class="text-none font-weight-bold px-4"
+          class="text-none font-weight-bold px-3.5"
+          height="38"
           prepend-icon="mdi-restart"
           @click="$emit('reset-checks')"
         >
@@ -23,7 +24,9 @@
           variant="tonal"
           color="error"
           rounded="lg"
-          class="text-none font-weight-bold px-4"
+          class="text-none font-weight-bold px-3.5"
+          height="38"
+          prepend-icon="mdi-trash-can-outline"
           @click="$emit('clear-all')"
         >
           {{ t('actions.clear_all') }}
@@ -33,7 +36,8 @@
           variant="flat"
           color="primary"
           rounded="lg"
-          class="text-none font-weight-bold px-5"
+          class="text-none font-weight-bold px-4"
+          height="38"
           prepend-icon="mdi-plus"
           @click="$emit('add-item')"
         >
@@ -44,14 +48,16 @@
 
     <!-- Drag & Drop List -->
     <div class="flex-grow-1 px-2 py-2" style="overflow-y: auto; min-height: 0;">
-      <div v-if="items.length === 0" class="d-flex flex-column align-center justify-center h-100 opacity-50 py-8">
-        <v-icon size="56" class="mb-3">
-          mdi-playlist-plus
-        </v-icon>
-        <div class="text-body-1 font-weight-medium mb-1">
+      <div v-if="items.length === 0" class="d-flex flex-column align-center justify-center h-100 py-12 empty-list-container">
+        <div class="empty-icon-box mb-4">
+          <v-icon size="36" color="var(--sidebar-text-secondary)">
+            mdi-playlist-plus
+          </v-icon>
+        </div>
+        <div class="text-subtitle-1 font-weight-bold mb-1" style="color: var(--sidebar-text);">
           {{ t('empty_list') }}
         </div>
-        <div class="text-body-2" style="max-width: 260px; text-align: center;">
+        <div class="text-body-2" style="max-width: 260px; text-align: center; color: var(--sidebar-text-secondary);">
           {{ t('empty_list_hint') }}
         </div>
       </div>
@@ -135,6 +141,7 @@
               <div
                 v-if="element.type === 'category'"
                 class="liturgy-category-card"
+                :style="element.color ? `border-left: 3px solid ${element.color}; padding-left: 13px !important;` : ''"
               >
                 <div class="d-flex align-center w-100 px-4 py-3">
                   <v-icon class="drag-handle mr-2" size="18" style="cursor: grab; opacity: 0.3;">
@@ -159,7 +166,7 @@
                       {{ collapsedCategories.includes(element.id) ? t('liturgy_list.expand_category') : t('liturgy_list.collapse_category') }}
                     </v-tooltip>
                   </v-btn>
-                  <v-icon color="grey" size="18" class="mr-3">
+                  <v-icon :color="element.color || 'grey'" size="18" class="mr-3">
                     mdi-flag-outline
                   </v-icon>
                   
@@ -256,10 +263,10 @@
                 class="liturgy-item-card"
                 :class="{ 
                   'liturgy-item-active': selectedItemIndex === index,
-                  'liturgy-item-placeholder': isItemPlaceholder(element)
+                  'liturgy-item-placeholder': !isTemplateMode && isItemPlaceholder(element)
                 }"
                 :style="element.color ? `border-left: 3px solid ${element.color}; padding-left: 13px !important;` : ''"
-                @click="$emit('select-item', index)"
+                @click="isTemplateMode ? $emit('edit-item', index) : $emit('select-item', index)"
               >
                 <div class="d-flex align-center w-100 px-4 py-3">
                   <v-icon class="drag-handle mr-3" size="18" style="cursor: grab; opacity: 0.3;">
@@ -267,6 +274,7 @@
                   </v-icon>
 
                   <v-btn
+                    v-if="!isTemplateMode"
                     icon
                     size="x-small"
                     variant="text"
@@ -298,82 +306,91 @@
                       <div class="font-weight-medium" style="font-size: 0.95rem; color: rgba(var(--v-theme-on-surface), 0.9); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                         {{ element.name ? element.name.replace(/^undefined\s*-\s*/, '') : '' }}
                       </div>
-                      <v-chip
-                        v-if="isItemPlaceholder(element)"
-                        size="x-small"
-                        color="warning"
-                        variant="flat"
-                        class="ml-2 font-weight-bold px-2"
-                        style="height: 18px; font-size: 0.65rem;"
-                      >
-                        {{ t('liturgy_list.placeholder') }}
-                      </v-chip>
-                      <v-chip
-                        v-if="element.type === 'music'"
-                        size="x-small"
-                        :color="element.musicMode === 'instrumental' ? 'purple' : 'primary'"
-                        variant="tonal"
-                        class="ml-2 font-weight-bold px-2"
-                        style="height: 18px; font-size: 0.65rem;"
-                      >
-                        <v-icon start size="11" class="mr-1">
-                          {{ element.musicMode === 'instrumental' ? 'mdi-music-note' : 'mdi-account-voice' }}
-                        </v-icon>
-                        {{ element.musicMode === 'instrumental' ? t('fields.music_mode_instrumental') : t('fields.music_mode_audio') }}
-                      </v-chip>
-                      <v-chip
-                        v-if="(element.type === 'file' || element.type === 'media') && element.filePath"
-                        size="x-small"
-                        :color="getFileInfo(element.filePath).color"
-                        variant="tonal"
-                        class="ml-2 font-weight-bold px-2"
-                        style="height: 18px; font-size: 0.65rem;"
-                      >
-                        <v-icon start size="11" class="mr-1">
-                          {{ getFileInfo(element.filePath).icon }}
-                        </v-icon>
-                        {{ getFileInfo(element.filePath).label }}
-                        <span v-if="getFileInfo(element.filePath).extension" class="ml-1 opacity-70">
-                          ({{ getFileInfo(element.filePath).extension }})
-                        </span>
-                      </v-chip>
-                      <v-chip
-                        v-if="element.type === 'collection_item'"
-                        size="x-small"
-                        :color="element.collectionType === 'online' ? 'red' : 'teal'"
-                        variant="tonal"
-                        class="ml-2 font-weight-bold px-2"
-                        style="height: 18px; font-size: 0.65rem;"
-                      >
-                        <v-icon start size="11" class="mr-1">
-                          {{ element.collectionType === 'online' ? 'mdi-youtube' : 'mdi-folder-music' }}
-                        </v-icon>
-                        {{ element.collectionType === 'online' ? 'Coletânea Online' : 'Coletânea Personalizada' }}
-                      </v-chip>
-                      <v-chip
-                        v-if="element.type === 'collection_item' && element.collectionType === 'custom' && element.musicMode === 'instrumental'"
-                        size="x-small"
-                        color="purple"
-                        variant="tonal"
-                        class="ml-2 font-weight-bold px-2"
-                        style="height: 18px; font-size: 0.65rem;"
-                      >
-                        <v-icon
-                          start
-                          size="11"
-                          class="mr-1"
+                      <template v-if="!isTemplateMode">
+                        <v-chip
+                          v-if="isItemPlaceholder(element)"
+                          size="x-small"
+                          color="warning"
+                          variant="flat"
+                          class="ml-2 font-weight-bold px-2"
+                          style="height: 18px; font-size: 0.65rem;"
                         >
-                          mdi-music-note
-                        </v-icon>
-                        {{ t('fields.music_mode_instrumental') }}
-                      </v-chip>
+                          {{ t('liturgy_list.placeholder') }}
+                        </v-chip>
+                        <v-chip
+                          v-if="element.type === 'music'"
+                          size="x-small"
+                          :color="element.musicMode === 'instrumental' ? 'purple' : 'primary'"
+                          variant="tonal"
+                          class="ml-2 font-weight-bold px-2"
+                          style="height: 18px; font-size: 0.65rem;"
+                        >
+                          <v-icon start size="11" class="mr-1">
+                            {{ element.musicMode === 'instrumental' ? 'mdi-music-note' : 'mdi-account-voice' }}
+                          </v-icon>
+                          {{ element.musicMode === 'instrumental' ? t('fields.music_mode_instrumental') : t('fields.music_mode_audio') }}
+                        </v-chip>
+                        <v-chip
+                          v-if="(element.type === 'file' || element.type === 'media') && element.filePath"
+                          size="x-small"
+                          :color="getFileInfo(element.filePath).color"
+                          variant="tonal"
+                          class="ml-2 font-weight-bold px-2"
+                          style="height: 18px; font-size: 0.65rem;"
+                        >
+                          <v-icon start size="11" class="mr-1">
+                            {{ getFileInfo(element.filePath).icon }}
+                          </v-icon>
+                          {{ getFileInfo(element.filePath).label }}
+                          <span v-if="getFileInfo(element.filePath).extension" class="ml-1 opacity-70">
+                            ({{ getFileInfo(element.filePath).extension }})
+                          </span>
+                        </v-chip>
+                        <v-chip
+                          v-if="element.type === 'collection_item'"
+                          size="x-small"
+                          :color="element.collectionType === 'online' ? 'red' : 'teal'"
+                          variant="tonal"
+                          class="ml-2 font-weight-bold px-2"
+                          style="height: 18px; font-size: 0.65rem;"
+                        >
+                          <v-icon start size="11" class="mr-1">
+                            {{ element.collectionType === 'online' ? 'mdi-web' : 'mdi-folder-music' }}
+                          </v-icon>
+                          {{ element.collectionType === 'online' ? 'Coletânea Online' : 'Coletânea Personalizada' }}
+                        </v-chip>
+                        <v-chip
+                          v-if="element.type === 'collection_item' && element.collectionType === 'custom' && element.musicMode === 'instrumental'"
+                          size="x-small"
+                          color="purple"
+                          variant="tonal"
+                          class="ml-2 font-weight-bold px-2"
+                          style="height: 18px; font-size: 0.65rem;"
+                        >
+                          <v-icon
+                            start
+                            size="11"
+                            class="mr-1"
+                          >
+                            mdi-music-note
+                          </v-icon>
+                          {{ t('fields.music_mode_instrumental') }}
+                        </v-chip>
+                      </template>
                     </div>
-                    <div v-if="element.subtitle && !isItemPlaceholder(element)" class="text-caption" style="color: rgba(var(--v-theme-on-surface), 0.5); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                      {{ element.subtitle }}
-                    </div>
-                    <div v-else-if="isItemPlaceholder(element)" class="text-caption font-weight-medium text-warning" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                      {{ t('liturgy_list.placeholder_hint') }}
-                    </div>
+                    <template v-if="!isTemplateMode">
+                      <div v-if="element.subtitle && !isItemPlaceholder(element)" class="text-caption" style="color: rgba(var(--v-theme-on-surface), 0.5); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                        {{ element.subtitle }}
+                      </div>
+                      <div v-else-if="isItemPlaceholder(element)" class="text-caption font-weight-medium text-warning" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                        {{ t('liturgy_list.placeholder_hint') }}
+                      </div>
+                    </template>
+                    <template v-else>
+                      <div class="text-caption" style="color: rgba(var(--v-theme-on-surface), 0.5); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                        {{ getItemTypeLabel(element) }}
+                      </div>
+                    </template>
                   </div>
 
                   <div class="d-flex align-center item-actions" style="gap: 4px; flex-shrink: 0;">
@@ -559,6 +576,10 @@ export default defineComponent({
       type: Boolean,
       default: false,
     },
+    isTemplateMode: {
+      type: Boolean,
+      default: false,
+    },
   },
   emits: [
     "update:items", 
@@ -612,7 +633,7 @@ export default defineComponent({
     },
     getItemIcon(element: any): string {
       if (element.type === "collection_item") {
-        return element.collectionType === "online" ? "mdi-youtube" : "mdi-folder-music";
+        return element.collectionType === "online" ? "mdi-web" : "mdi-folder-music";
       }
       if ((element.type === "file" || element.type === "media") && element.filePath) {
         return getLiturgyFileInfo(element.filePath).icon;
@@ -621,6 +642,17 @@ export default defineComponent({
         return element.musicMode === "instrumental" ? "mdi-music-note" : "mdi-account-voice";
       }
       return this.getTypeIcon(element.type);
+    },
+    getItemTypeLabel(element: any): string {
+      if (!element || !element.type) return "";
+      const type = element.type;
+      if (type === "collection_item") {
+        return this.t("types.collection_short") || "Coletânea";
+      }
+      if (type === "media" || type === "file") {
+        return this.t("types.media");
+      }
+      return this.t(`types.${type}`);
     },
     getItemColor(element: any): string {
       if (element.type === "collection_item") {
@@ -990,19 +1022,48 @@ export default defineComponent({
   padding-bottom: 8px;
 }
 
+.liturgy-list-panel {
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.06));
+}
+
+.list-header-bar {
+  border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.05));
+  min-height: 64px;
+}
+
+.list-panel-title {
+  font-size: 1.15rem;
+  color: var(--sidebar-text, #ffffff);
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  margin: 0;
+}
+
+.empty-icon-box {
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  background: rgba(var(--v-theme-on-surface), 0.04);
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.06));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 /* Category Card */
 .liturgy-category-card {
   background: rgba(var(--v-theme-on-surface), 0.03);
   border-radius: 12px;
-  border: 1px solid rgba(var(--v-theme-on-surface), 0.05);
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.05));
   margin-bottom: 8px;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   user-select: none;
   cursor: pointer;
 
   &:hover {
     background: rgba(var(--v-theme-on-surface), 0.06);
-    .category-actions .v-btn { opacity: 1; }
+    border-color: var(--border-color, rgba(255, 255, 255, 0.09));
+    .category-actions .v-btn { opacity: 0.85; }
   }
 
   .category-badge {
@@ -1011,28 +1072,33 @@ export default defineComponent({
     padding: 2px 8px;
     font-size: 0.7rem;
     font-weight: 600;
-    color: rgba(var(--v-theme-on-surface), 0.6);
+    color: var(--sidebar-text-secondary, rgba(var(--v-theme-on-surface), 0.6));
   }
 
   .category-actions .v-btn {
-    opacity: 0.4;
-    transition: opacity 0.2s;
-    color: rgba(var(--v-theme-on-surface), 0.7);
-    &:hover { opacity: 1; color: white; }
+    opacity: 0.35;
+    transition: opacity 0.2s, color 0.2s;
+    color: var(--sidebar-text-secondary, rgba(var(--v-theme-on-surface), 0.7));
+    &:hover {
+      opacity: 1;
+      color: var(--sidebar-text, #ffffff);
+    }
   }
 }
 
 /* Item Card */
 .liturgy-item-card {
-  background: rgba(var(--v-theme-on-surface), 0.05);
+  background: rgba(var(--v-theme-on-surface), 0.04);
   border-radius: 12px;
-  border: 1px solid rgba(var(--v-theme-on-surface), 0.03);
-  transition: all 0.2s ease;
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.04));
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
 
   &:hover {
-    background: rgba(var(--v-theme-on-surface), 0.08);
-    .item-actions .v-btn { opacity: 1; }
+    background: rgba(var(--v-theme-on-surface), 0.07);
+    border-color: var(--border-color, rgba(255, 255, 255, 0.09));
+    transform: translateY(-1px);
+    .item-actions .v-btn { opacity: 0.85; }
   }
 
   .item-icon-wrapper {
@@ -1045,21 +1111,26 @@ export default defineComponent({
   }
 
   .item-actions .v-btn {
-    opacity: 0.3;
-    transition: opacity 0.2s;
-    color: rgba(var(--v-theme-on-surface), 0.7);
-    &:hover { opacity: 1; color: white; }
+    opacity: 0.35;
+    transition: opacity 0.2s, color 0.2s;
+    color: var(--sidebar-text-secondary, rgba(var(--v-theme-on-surface), 0.7));
+    &:hover {
+      opacity: 1;
+      color: var(--sidebar-text, #ffffff);
+    }
   }
 }
 
 .liturgy-item-active {
-  background: rgba(var(--v-theme-primary), 0.15) !important;
-  border: 1px solid rgba(var(--v-theme-primary), 0.3) !important;
+  background: rgba(var(--v-theme-primary), 0.14) !important;
+  border: 1px solid rgba(var(--v-theme-primary), 0.35) !important;
+  box-shadow: 0 2px 10px rgba(0, 159, 227, 0.15) !important;
 }
 
 .liturgy-ghost {
-  opacity: 0.4;
-  background: rgba(0, 151, 215, 0.05);
+  opacity: 0.45;
+  background: rgba(0, 159, 227, 0.08);
+  border: 1.5px dashed rgba(0, 159, 227, 0.5) !important;
   border-radius: 12px;
 }
 </style>

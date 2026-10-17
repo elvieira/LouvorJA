@@ -8,9 +8,9 @@
       @blur="$emit('blur')"
     />
 
-    <div class="editor-toolbar d-flex flex-column pb-4 pt-2 px-2" style="border-top: 1px solid rgba(var(--v-theme-on-surface), 0.05);">
+    <div class="editor-toolbar d-flex flex-column">
       <!-- Linha 1: Fontes e Cores -->
-      <div class="d-flex align-center w-100 mb-2" style="gap: 8px;">
+      <div class="d-flex align-center w-100" style="gap: 8px;">
         <v-select
           v-model="selectedFont"
           :items="fonts"
@@ -19,209 +19,187 @@
           color="primary"
           rounded="lg"
           hide-details
-          class="toolbar-select flex-grow-1"
-          :menu-props="{ contentClass: 'elevation-3 rounded-lg' }"
+          class="toolbar-select font-select flex-grow-1"
+          :menu-props="{ contentClass: 'editor-select-menu', transition: 'fade-transition', offset: 4 }"
           @update:model-value="exec('fontName', selectedFont)"
         >
-          <template #item="{ props }">
+          <template #item="{ item, props }">
             <v-list-item
               v-bind="props"
-              color="primary"
-              class="mx-2 rounded-lg mb-1 text-body-2 font-weight-medium"
-              style="min-height: 40px;"
+              :title="item.title"
+              :style="{ fontFamily: item.value }"
             />
           </template>
         </v-select>
-
-        <v-divider vertical class="mx-1 h-auto py-2" />
 
         <v-select
           v-model="selectedSize"
           :items="sizes"
+          item-title="title"
+          item-value="value"
           density="compact"
           variant="outlined"
           color="primary"
           rounded="lg"
-          style="max-width: 120px;"
           hide-details
-          class="toolbar-select"
-          :menu-props="{ contentClass: 'elevation-3 rounded-lg' }"
+          class="toolbar-select size-select"
+          :menu-props="{ contentClass: 'editor-select-menu', transition: 'fade-transition', offset: 4 }"
           @update:model-value="exec('fontSize', selectedSize)"
         >
-          <template #item="{ props }">
+          <template #item="{ item, props }">
             <v-list-item
               v-bind="props"
-              color="primary"
-              class="mx-2 rounded-lg mb-1 text-body-2 font-weight-medium"
-              style="min-height: 40px;"
+              :title="item.title"
             />
           </template>
         </v-select>
 
-        <v-divider vertical class="mx-1 h-auto py-2" />
-
         <ModernColorPicker :model-value="selectedColor" @update:model-value="(color) => { selectedColor = color; exec('foreColor', color, false); }">
-          <template #activator="{ props }">
-            <v-btn
-              icon
-              size="small"
-              variant="text"
-              v-bind="props"
+          <template #activator="{ props: pickerProps }">
+            <button
+              type="button"
+              class="toolbar-color-btn"
+              v-bind="pickerProps"
             >
-              <div class="d-flex flex-column align-center justify-center pt-1">
-                <span class="font-weight-bold" style="font-size: 15px; line-height: 1;">A</span>
-                <div :style="{ backgroundColor: selectedColor, height: '4px', width: '16px', marginTop: '2px', borderRadius: '2px' }" />
+              <div class="d-flex flex-column align-center justify-center">
+                <span class="color-letter font-weight-bold">A</span>
+                <div class="color-bar" :style="{ backgroundColor: selectedColor }" />
               </div>
               <v-tooltip activator="parent" location="top" open-delay="300">
                 {{ t('richtext.text_color') }}
               </v-tooltip>
-            </v-btn>
+            </button>
           </template>
         </ModernColorPicker>
       </div>
 
-      <!-- Divider removed for cleaner look -->
-
-      <!-- Linha 2: Ferramentas de Formatação -->
-      <div class="d-flex align-center pt-1 w-100 justify-space-between">
-        <div class="d-flex align-center" style="gap: 2px;">
-          <v-btn
-            icon
-            size="x-small"
-            :variant="activeFormats.bold ? 'tonal' : 'text'"
-            :color="activeFormats.bold ? 'primary' : undefined"
+      <!-- Linha 2: Ferramentas de Formatação em Grupos -->
+      <div class="d-flex align-center w-100 justify-space-between mt-1">
+        <!-- Grupo Estilos de Texto -->
+        <div class="toolbar-btn-group d-flex align-center">
+          <button
+            type="button"
+            class="toolbar-action-btn"
+            :class="{ active: activeFormats.bold }"
             @click="exec('bold')"
           >
-            <v-icon size="16">
+            <v-icon size="17">
               mdi-format-bold
             </v-icon>
             <v-tooltip activator="parent" location="top" open-delay="300">
               {{ t('richtext.bold') }}
             </v-tooltip>
-          </v-btn>
-          <v-btn
-            icon
-            size="x-small"
-            :variant="activeFormats.italic ? 'tonal' : 'text'"
-            :color="activeFormats.italic ? 'primary' : undefined"
+          </button>
+          <button
+            type="button"
+            class="toolbar-action-btn"
+            :class="{ active: activeFormats.italic }"
             @click="exec('italic')"
           >
-            <v-icon size="16">
+            <v-icon size="17">
               mdi-format-italic
             </v-icon>
             <v-tooltip activator="parent" location="top" open-delay="300">
               {{ t('richtext.italic') }}
             </v-tooltip>
-          </v-btn>
-          <v-btn
-            icon
-            size="x-small"
-            :variant="activeFormats.underline ? 'tonal' : 'text'"
-            :color="activeFormats.underline ? 'primary' : undefined"
+          </button>
+          <button
+            type="button"
+            class="toolbar-action-btn"
+            :class="{ active: activeFormats.underline }"
             @click="exec('underline')"
           >
-            <v-icon size="16">
+            <v-icon size="17">
               mdi-format-underline
             </v-icon>
             <v-tooltip activator="parent" location="top" open-delay="300">
               {{ t('richtext.underline') }}
             </v-tooltip>
-          </v-btn>
-          <v-btn
-            icon
-            size="x-small"
-            :variant="activeFormats.strikeThrough ? 'tonal' : 'text'"
-            :color="activeFormats.strikeThrough ? 'primary' : undefined"
+          </button>
+          <button
+            type="button"
+            class="toolbar-action-btn"
+            :class="{ active: activeFormats.strikeThrough }"
             @click="exec('strikeThrough')"
           >
-            <v-icon size="16">
+            <v-icon size="17">
               mdi-format-strikethrough
             </v-icon>
             <v-tooltip activator="parent" location="top" open-delay="300">
               {{ t('richtext.strikethrough') }}
             </v-tooltip>
-          </v-btn>
+          </button>
         </div>
 
-        <v-divider vertical class="mx-1 h-auto py-2" />
-
-        <div class="d-flex align-center" style="gap: 2px;">
-          <v-btn
-            icon
-            size="x-small"
-            :variant="activeFormats.justifyLeft ? 'tonal' : 'text'"
-            :color="activeFormats.justifyLeft ? 'primary' : undefined"
+        <!-- Grupo Alinhamento -->
+        <div class="toolbar-btn-group d-flex align-center">
+          <button
+            type="button"
+            class="toolbar-action-btn"
+            :class="{ active: activeFormats.justifyLeft }"
             @click="exec('justifyLeft')"
           >
-            <v-icon size="16">
+            <v-icon size="17">
               mdi-format-align-left
             </v-icon>
             <v-tooltip activator="parent" location="top" open-delay="300">
               {{ t('richtext.align_left') }}
             </v-tooltip>
-          </v-btn>
-          <v-btn
-            icon
-            size="x-small"
-            :variant="activeFormats.justifyCenter ? 'tonal' : 'text'"
-            :color="activeFormats.justifyCenter ? 'primary' : undefined"
+          </button>
+          <button
+            type="button"
+            class="toolbar-action-btn"
+            :class="{ active: activeFormats.justifyCenter }"
             @click="exec('justifyCenter')"
           >
-            <v-icon size="16">
+            <v-icon size="17">
               mdi-format-align-center
             </v-icon>
             <v-tooltip activator="parent" location="top" open-delay="300">
               {{ t('richtext.align_center') }}
             </v-tooltip>
-          </v-btn>
-          <v-btn
-            icon
-            size="x-small"
-            :variant="activeFormats.justifyRight ? 'tonal' : 'text'"
-            :color="activeFormats.justifyRight ? 'primary' : undefined"
+          </button>
+          <button
+            type="button"
+            class="toolbar-action-btn"
+            :class="{ active: activeFormats.justifyRight }"
             @click="exec('justifyRight')"
           >
-            <v-icon size="16">
+            <v-icon size="17">
               mdi-format-align-right
             </v-icon>
             <v-tooltip activator="parent" location="top" open-delay="300">
               {{ t('richtext.align_right') }}
             </v-tooltip>
-          </v-btn>
+          </button>
         </div>
 
-        <v-spacer />
-
-        <v-divider vertical class="mx-2 h-auto py-2" />
-
-        <div class="d-flex align-center" style="gap: 2px;">
-          <v-btn
-            icon
-            size="x-small"
-            variant="text"
+        <!-- Grupo Limpeza / Ações -->
+        <div class="toolbar-btn-group d-flex align-center">
+          <button
+            type="button"
+            class="toolbar-action-btn"
             @click="exec('removeFormat')"
           >
-            <v-icon size="16">
+            <v-icon size="17">
               mdi-format-clear
             </v-icon>
             <v-tooltip activator="parent" location="top" open-delay="300">
               {{ t('richtext.clear_format') }}
             </v-tooltip>
-          </v-btn>
-          <v-btn
-            icon
-            size="x-small"
-            variant="text"
-            color="error"
+          </button>
+          <button
+            type="button"
+            class="toolbar-action-btn btn-danger"
             @click="clearText"
           >
-            <v-icon size="16">
+            <v-icon size="17">
               mdi-delete-sweep-outline
             </v-icon>
-            <v-tooltip activator="parent" location="top" content-class="modern-glass-menu elevation-0 font-weight-medium text-white">
-              Apagar Tudo
+            <v-tooltip activator="parent" location="top" open-delay="300">
+              {{ t('actions.clear_all') || 'Apagar Tudo' }}
             </v-tooltip>
-          </v-btn>
+          </button>
         </div>
       </div>
     </div>
@@ -361,7 +339,79 @@ export default defineComponent({
 });
 </script>
 
-<style scoped>
+<!-- Unscoped styles for the dropdown menus teleported to overlay -->
+<style lang="scss">
+.editor-select-menu {
+  background: var(--card-bg, #202431) !important;
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.12)) !important;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.5) !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+  padding: 4px !important;
+
+  .v-list {
+    background: transparent !important;
+    padding: 0 !important;
+    max-height: 220px !important;
+    overflow-y: auto !important;
+
+    &::-webkit-scrollbar {
+      width: 5px;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: rgba(128, 128, 128, 0.25);
+      border-radius: 4px;
+    }
+    &::-webkit-scrollbar-thumb:hover {
+      background: rgba(128, 128, 128, 0.4);
+    }
+  }
+
+  .v-list-item {
+    border-radius: 8px !important;
+    min-height: 34px !important;
+    padding: 6px 12px !important;
+    margin: 2px 0 !important;
+    font-size: 0.84rem !important;
+    color: var(--sidebar-text-secondary, #94a3b8) !important;
+    transition: all 0.15s ease !important;
+
+    &:hover {
+      background: rgba(var(--v-theme-on-surface), 0.08) !important;
+      color: var(--sidebar-text, #ffffff) !important;
+    }
+
+    &--active {
+      background: rgba(0, 159, 227, 0.15) !important;
+      color: rgb(var(--v-theme-primary)) !important;
+      font-weight: 600 !important;
+    }
+  }
+}
+
+:root[data-theme="light"] .editor-select-menu,
+.v-theme--light .editor-select-menu {
+  background: #ffffff !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.15) !important;
+
+  .v-list-item {
+    color: #475569 !important;
+
+    &:hover {
+      background: #f1f5f9 !important;
+      color: #0f172a !important;
+    }
+
+    &--active {
+      background: rgba(0, 159, 227, 0.12) !important;
+      color: #0284c7 !important;
+    }
+  }
+}
+</style>
+
+<style scoped lang="scss">
 .rich-text-editor {
   background: transparent;
   display: flex;
@@ -369,32 +419,236 @@ export default defineComponent({
 }
 
 .editor-toolbar {
-  background: transparent;
+  background: rgba(var(--v-theme-on-surface), 0.02);
+  border-top: 1px solid var(--border-color, rgba(255, 255, 255, 0.06));
+  padding: 10px 12px 12px;
+  gap: 8px;
 }
 
 .editor-content {
-  color: var(--sidebar-text);
-  font-size: 1rem;
+  color: var(--sidebar-text, #ffffff);
+  font-size: 0.95rem;
+  line-height: 1.5;
   overflow-y: auto;
   outline: none;
   min-height: 100px;
   user-select: text !important;
   -webkit-user-select: text !important;
   cursor: text;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: rgba(128, 128, 128, 0.25);
+    border-radius: 4px;
+  }
 }
 
 .editor-content:empty:before {
   content: attr(placeholder);
-  color: var(--sidebar-text-secondary);
+  color: var(--sidebar-text-secondary, #94a3b8);
   pointer-events: none;
-  display: block; /* For Firefox */
+  display: block;
 }
 
-.toolbar-select :deep(.v-field__input) {
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
-  min-height: 32px !important;
-  font-size: 0.85rem !important;
-  font-weight: 500;
+// Selects
+:deep(.toolbar-select) {
+  .v-field {
+    border-radius: 8px !important;
+    background: rgba(var(--v-theme-on-surface), 0.04) !important;
+    transition: all 0.2s ease !important;
+    min-height: 32px !important;
+    height: 32px !important;
+  }
+
+  .v-field__outline {
+    --v-field-border-opacity: 0.08 !important;
+    color: var(--border-color, rgba(255, 255, 255, 0.12)) !important;
+  }
+
+  &:hover .v-field__outline {
+    --v-field-border-opacity: 0.35 !important;
+    color: rgba(var(--v-theme-primary), 0.6) !important;
+  }
+
+  &.v-input--focused .v-field__outline {
+    color: rgb(var(--v-theme-primary)) !important;
+  }
+
+  .v-field__input {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    padding-left: 10px !important;
+    padding-right: 4px !important;
+    min-height: 32px !important;
+    height: 32px !important;
+    display: flex !important;
+    align-items: center !important;
+    font-size: 0.82rem !important;
+    font-weight: 500 !important;
+    color: var(--sidebar-text, #ffffff) !important;
+    white-space: nowrap !important;
+  }
+
+  .v-field__append-inner {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    align-items: center !important;
+    padding-right: 6px !important;
+
+    .v-icon {
+      font-size: 16px !important;
+      opacity: 0.55 !important;
+      transition: opacity 0.2s ease;
+    }
+  }
+
+  &:hover .v-field__append-inner .v-icon {
+    opacity: 1 !important;
+  }
+}
+
+.size-select {
+  width: 125px !important;
+  flex: 0 0 125px !important;
+}
+
+// Color button
+.toolbar-color-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+  background: rgba(var(--v-theme-on-surface), 0.04);
+  color: var(--sidebar-text, #ffffff);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+
+  &:hover {
+    background: rgba(var(--v-theme-on-surface), 0.08);
+    border-color: rgba(var(--v-theme-primary), 0.5);
+  }
+
+  .color-letter {
+    font-size: 14px;
+    line-height: 1;
+  }
+
+  .color-bar {
+    height: 3px;
+    width: 14px;
+    margin-top: 2px;
+    border-radius: 1.5px;
+  }
+}
+
+// Button groups
+.toolbar-btn-group {
+  background: rgba(var(--v-theme-on-surface), 0.03);
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.07));
+  border-radius: 8px;
+  padding: 2px;
+  gap: 2px;
+}
+
+.toolbar-action-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--sidebar-text-secondary, #94a3b8);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.18s ease;
+
+  &:hover {
+    color: var(--sidebar-text, #ffffff);
+    background: rgba(var(--v-theme-on-surface), 0.08);
+  }
+
+  &.active {
+    color: rgb(var(--v-theme-primary));
+    background: rgba(0, 159, 227, 0.16);
+    font-weight: 600;
+  }
+
+  &.btn-danger {
+    &:hover {
+      color: rgb(var(--v-theme-error)) !important;
+      background: rgba(var(--v-theme-error), 0.12) !important;
+    }
+  }
+}
+
+// Light theme support
+:root[data-theme="light"],
+.v-theme--light {
+  .editor-content {
+    color: #1e293b;
+  }
+
+  .editor-toolbar {
+    background: #f8fafc;
+    border-top-color: rgba(0, 0, 0, 0.06);
+  }
+
+  :deep(.toolbar-select) {
+    .v-field {
+      background: #ffffff !important;
+    }
+
+    .v-field__outline {
+      color: rgba(0, 0, 0, 0.1) !important;
+    }
+
+    .v-field__input {
+      color: #1e293b !important;
+    }
+  }
+
+  .toolbar-color-btn {
+    background: #ffffff;
+    border-color: rgba(0, 0, 0, 0.1);
+    color: #1e293b;
+
+    &:hover {
+      background: #f1f5f9;
+      border-color: #009fe3;
+    }
+  }
+
+  .toolbar-btn-group {
+    background: #ffffff;
+    border-color: rgba(0, 0, 0, 0.08);
+  }
+
+  .toolbar-action-btn {
+    color: #64748b;
+
+    &:hover {
+      color: #0f172a;
+      background: rgba(0, 0, 0, 0.06);
+    }
+
+    &.active {
+      color: #0284c7;
+      background: rgba(0, 159, 227, 0.14);
+    }
+
+    &.btn-danger:hover {
+      color: rgb(var(--v-theme-error)) !important;
+      background: rgba(var(--v-theme-error), 0.1) !important;
+    }
+  }
 }
 </style>

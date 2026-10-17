@@ -1,25 +1,31 @@
 <template>
   <v-expand-transition>
     <div 
-      class="px-6 py-3 d-flex align-center flex-shrink-0 custom-liturgy-scroll" 
-      style="gap: 8px; overflow-x: auto; background: rgba(128, 128, 128, 0.1); border-bottom: 1px solid var(--border-color, rgba(0,0,0,0.05)); max-width: 100%;"
+      class="custom-liturgy-bar d-flex align-center flex-shrink-0" 
       @wheel.prevent="onWheelScroll"
     >
       <v-chip
         v-for="(liturgy, index) in customLiturgies"
         :key="index"
-        :color="selectedCustomIndex === index ? 'primary' : 'default'"
-        :variant="selectedCustomIndex === index ? 'flat' : 'elevated'"
-        class="font-weight-medium text-none pr-2 flex-shrink-0"
-        style="box-shadow: 0 2px 5px rgba(0,0,0,0.05);"
+        :color="selectedCustomIndex === index ? 'primary' : undefined"
+        variant="flat"
+        class="custom-liturgy-chip font-weight-medium text-none pr-2 flex-shrink-0"
+        :class="{ 'is-active': selectedCustomIndex === index }"
         @click="selectCustom(index)"
       >
-        {{ liturgy.name }}
+        <v-icon
+          start
+          size="16"
+          class="mr-1"
+          :color="selectedCustomIndex === index ? 'white' : 'var(--sidebar-text-secondary)'"
+        >
+          mdi-star-outline
+        </v-icon>
+        <span>{{ liturgy.name }}</span>
         <v-icon
           icon="mdi-close-circle"
-          size="18"
-          class="ml-2"
-          style="opacity: 0.6; cursor: pointer;"
+          size="16"
+          class="ml-2 remove-custom-btn"
           @click.stop="removeCustom(index)"
         />
       </v-chip>
@@ -27,8 +33,7 @@
         variant="tonal"
         color="primary"
         size="small"
-        rounded="lg"
-        class="text-none font-weight-bold ml-2 flex-shrink-0"
+        class="new-custom-btn text-none font-weight-bold ml-1 flex-shrink-0"
         prepend-icon="mdi-plus"
         @click="addNew"
       >
@@ -76,3 +81,60 @@ export default defineComponent({
   },
 });
 </script>
+
+<style lang="scss" scoped>
+.custom-liturgy-bar {
+  padding: 8px 24px;
+  gap: 8px;
+  overflow-x: auto;
+  background: rgba(var(--v-theme-on-surface), 0.02);
+  border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.06));
+  max-width: 100%;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.custom-liturgy-chip {
+  border-radius: 10px !important;
+  height: 32px !important;
+  letter-spacing: 0;
+  transition: all 0.2s ease;
+  background: rgba(var(--v-theme-on-surface), 0.05);
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.06));
+  color: var(--sidebar-text-secondary, #94a3b8);
+
+  &:not(.is-active):hover {
+    background: rgba(var(--v-theme-on-surface), 0.08);
+    color: var(--sidebar-text, #ffffff);
+    border-color: var(--border-color, rgba(255, 255, 255, 0.12));
+  }
+
+  &.is-active {
+    background: #009fe3 !important;
+    border-color: #009fe3 !important;
+    color: #ffffff !important;
+    box-shadow: 0 2px 8px rgba(0, 159, 227, 0.3);
+  }
+
+  .remove-custom-btn {
+    opacity: 0.5;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      opacity: 1;
+      color: #ef4444 !important;
+      transform: scale(1.15);
+    }
+  }
+}
+
+.new-custom-btn {
+  height: 32px;
+  border-radius: 10px;
+  letter-spacing: 0;
+}
+</style>

@@ -28,18 +28,19 @@
     "media": "Medios y Archivos",
     "link": "Enlace",
     "file": "Medios y Archivos",
-    "scheduled_item": "Ítem Programado"
+    "scheduled_item": "Ítem Programado",
+    "collection_short": "Colección"
   },
   "type_descriptions": {
-    "annotation": "Texto libre sin acción (ej: Oración, Doxología)",
+    "annotation": "Texto libre sin acción",
     "category": "Separador visual de sección",
-    "music": "Seleccione una música del Himnario o Colección",
-    "collection_item": "Canciones de colecciones o videos de YouTube",
-    "verse": "Seleccione un versículo bíblico",
-    "media": "Videos, audios, diapositivas PPTX, PDFs u otros archivos",
-    "link": "Agregue una URL para abrir en el navegador",
-    "file": "Videos, audios, diapositivas PPTX, PDFs u otros archivos",
-    "scheduled_item": "Seleccione una categoría de programación"
+    "music": "Himnarios y colecciones",
+    "collection_item": "YouTube y otras fuentes",
+    "verse": "Texto bíblico",
+    "media": "Videos, audios, diapositivas, PDFs",
+    "link": "URL para abrir en el navegador",
+    "file": "Videos, audios, diapositivas, PDFs",
+    "scheduled_item": "Seleccione un ítem de la agenda"
   },
   "fields": {
     "name": "Nombre",
@@ -51,7 +52,8 @@
     "book": "Libro",
     "chapter": "Capítulo",
     "verses": "Versículos",
-    "search_music": "Buscar música...",
+    "search_music": "Buscar música",
+    "search_music_placeholder": "Buscar aquí...",
     "click_to_browse": "Haga clic para buscar en la computadora",
     "select_media": "Seleccionar Medio",
     "verses_placeholder": "Ej: 1-5, 8",
@@ -65,6 +67,10 @@
     "select_collection": "Seleccionar Colección",
     "select_song": "Seleccionar Canción",
     "search_online_videos": "Buscar video online...",
+    "filter_by": "Filtrar búsqueda por:",
+    "filter_song_name": "Nombre de la canción",
+    "filter_album": "Álbum/Colección",
+    "filter_lyrics": "Letra de la canción",
     "no_custom_collections": "No se encontraron colecciones personalizadas",
     "no_custom_collections_hint": "Cree colecciones en el módulo Colecciones Personalizadas para agregarlas aquí."
   },
@@ -75,6 +81,8 @@
     "edit": "Editar",
     "delete": "Eliminar",
     "duplicate": "Duplicar",
+    "clear": "Limpiar",
+    "close": "Cerrar",
     "clear_all": "Limpiar todo",
     "reset_checks": "Desmarcar Todos",
     "project": "Proyectar",
