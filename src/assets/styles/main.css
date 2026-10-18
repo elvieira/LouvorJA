@@ -169,6 +169,77 @@ img, a {
 }
 
 /* ==========================================================================
+   Tooltips Globais Padronizados Louvor JA
+   ========================================================================== */
+.v-overlay.v-tooltip .v-overlay__content,
+.v-overlay-container .v-overlay.v-tooltip .v-overlay__content,
+.v-overlay-container .v-tooltip .v-overlay__content,
+.v-overlay-container .v-overlay--tooltip .v-overlay__content,
+.v-overlay.v-tooltip .modern-glass-menu,
+.v-overlay-container .v-tooltip .modern-glass-menu,
+.sync-tooltip {
+    border-radius: 8px !important;
+    font-size: 0.78rem !important;
+    font-weight: 600 !important;
+    padding: 6px 12px !important;
+    letter-spacing: 0.01em !important;
+    line-height: 1.2 !important;
+    backdrop-filter: blur(20px) saturate(160%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(160%) !important;
+    transition: all 0.15s ease !important;
+}
+
+/* Modo Escuro (Dark Mode) */
+.v-theme--dark.v-tooltip .v-overlay__content,
+.v-overlay.v-theme--dark.v-tooltip .v-overlay__content,
+.v-overlay-container .v-overlay.v-theme--dark.v-tooltip .v-overlay__content,
+.v-overlay-container .v-overlay.v-theme--dark .v-tooltip .v-overlay__content,
+.v-theme--dark.v-tooltip .modern-glass-menu,
+.v-overlay.v-theme--dark.v-tooltip .modern-glass-menu,
+.v-overlay-container .v-theme--dark.v-tooltip .modern-glass-menu,
+.v-overlay.v-theme--dark .sync-tooltip,
+.v-overlay-container .v-overlay.v-theme--dark .sync-tooltip,
+:root[data-theme="dark"] .sync-tooltip {
+    background: #1b202e !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(255, 255, 255, 0.14) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5) !important;
+}
+
+.v-theme--dark.v-tooltip .v-overlay__content *,
+.v-overlay.v-theme--dark.v-tooltip .v-overlay__content *,
+.v-overlay-container .v-overlay.v-theme--dark.v-tooltip .v-overlay__content *,
+.v-overlay.v-theme--dark .sync-tooltip *,
+.v-overlay-container .v-overlay.v-theme--dark .sync-tooltip * {
+    color: #ffffff !important;
+}
+
+/* Modo Claro (Light Mode) */
+.v-theme--light.v-tooltip .v-overlay__content,
+.v-overlay.v-theme--light.v-tooltip .v-overlay__content,
+.v-overlay-container .v-overlay.v-theme--light.v-tooltip .v-overlay__content,
+.v-overlay-container .v-overlay.v-theme--light .v-tooltip .v-overlay__content,
+.v-theme--light.v-tooltip .modern-glass-menu,
+.v-overlay.v-theme--light.v-tooltip .modern-glass-menu,
+.v-overlay-container .v-theme--light.v-tooltip .modern-glass-menu,
+.v-overlay.v-theme--light .sync-tooltip,
+.v-overlay-container .v-overlay.v-theme--light .sync-tooltip,
+:root[data-theme="light"] .sync-tooltip {
+    background: #ffffff !important;
+    color: #1e2230 !important;
+    border: 1px solid rgba(0, 0, 0, 0.12) !important;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.14) !important;
+}
+
+.v-theme--light.v-tooltip .v-overlay__content *,
+.v-overlay.v-theme--light.v-tooltip .v-overlay__content *,
+.v-overlay-container .v-overlay.v-theme--light.v-tooltip .v-overlay__content *,
+.v-overlay.v-theme--light .sync-tooltip *,
+.v-overlay-container .v-overlay.v-theme--light .sync-tooltip * {
+    color: #1e2230 !important;
+}
+
+/* ==========================================================================
    Modern Dropdown Menu / Select & Autocomplete Popup Menus
    ========================================================================== */
 .v-select__content,
