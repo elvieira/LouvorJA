@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { app } from "electron";
 
 // Define o nome oficial da aplicação para o menu do macOS e processos do sistema

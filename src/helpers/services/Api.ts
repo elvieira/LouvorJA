@@ -1,5 +1,14 @@
-export const API_PRIMARY = "https://api.louvorja.com.br";
-export const API_FALLBACK = "https://api.louvorja.workers.dev";
+export const API_PRIMARY = (() => {
+  try {
+    const dbUrl = import.meta.env.VITE_URL_DATABASE;
+    if (dbUrl) {
+      return new URL(dbUrl).origin;
+    }
+  } catch { /* ignore */ }
+  return "";
+})();
+
+export const API_FALLBACK = import.meta.env.VITE_URL_FALLBACK || "";
 
 /**
  * Executa uma requisição com timeout e fallback automático para a API secundária (Cloudflare Worker/R2).

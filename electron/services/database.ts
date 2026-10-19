@@ -4,26 +4,25 @@ import * as fs from "fs-extra";
 import AdmZip from "adm-zip";
 import DbExtractor, { updateSysConfig } from "./db-extractor";
 import { encryptData, decryptData } from "../utils/crypto";
-import { getFtpParams } from "../utils/ftp-client";
 import { SQLiteHelper } from "../utils/sqlite";
-import { getSysDbPath, sysConfigPath } from "../config/constants";
-import { API_FALLBACK } from "../utils/api-fallback";
-import * as ftp from "basic-ftp";
+import { getSysDbPath, sysConfigPath, mediaPath } from "../config/constants";
+import { URL_FILES, API_PRIMARY, API_FALLBACK, netFetchWithFallback } from "../utils/api-fallback";
 
-async function downloadBundleZip(
+async function downloadStreamToFile(
+  url: string,
   targetPath: string,
   onProgress?: (percent: number) => void,
+  defaultTotalBytes: number = 0,
 ): Promise<void> {
-  const url = `${API_FALLBACK}/db/bundle`;
-  const response = await net.fetch(url);
+  const response = await net.fetch(url, { redirect: "follow" });
   if (!response.ok) {
-    throw new Error(`Falha ao baixar bundle: HTTP ${response.status}`);
+    throw new Error(`Falha na requisição: HTTP ${response.status} para ${url}`);
   }
   const contentLength = parseInt(response.headers.get("content-length") || "0", 10);
-  const totalBytes = contentLength > 0 ? contentLength : 29480084;
+  const totalBytes = contentLength > 0 ? contentLength : defaultTotalBytes;
 
   if (!response.body) {
-    throw new Error("Resposta de bundle sem corpo");
+    throw new Error("Resposta sem corpo");
   }
 
   const reader = response.body.getReader();
@@ -414,8 +413,9 @@ export function registerDatabaseHandlers() {
   });
 
   ipcMain.handle("download-database", async (event, lang: string = "pt", force: boolean = false) => {
-    const dbPath = path.join(app.getPath("userData"), `database_${lang}.db`);
-    const bundlePath = path.join(app.getPath("userData"), `bundle_${lang}.zip`);
+    const langKey = (lang || "pt").toLowerCase();
+    const dbPath = path.join(app.getPath("userData"), `database_${langKey}.db`);
+    const bundlePath = path.join(app.getPath("userData"), `bundle_${langKey}.zip`);
 
     if (fs.existsSync(dbPath) && force) {
       try { 
@@ -433,131 +433,95 @@ export function registerDatabaseHandlers() {
       }
     }
 
-    let ftpSucceeded = false;
-    let ftpError: unknown = null;
-
+    // 1. Tenta obter a URL direta HTTPS para o banco SQLite a partir de /params?type=env
+    let dbDownloadUrl = `${URL_FILES}/config/${langKey}_database.db`;
     try {
-      const ftpParams = await getFtpParams(lang);
-      const langPrefix = (ftpParams["lang"] || lang).toLowerCase();
-      const remoteFilename = `${langPrefix}_database.db`;
-      const remotePath = `${(ftpParams["root"] || "/") + (ftpParams["root"]?.endsWith("/") ? "" : "/")}config/${remoteFilename}`;
-      const port = parseInt(ftpParams["port"] || "21");
-
-      const strategies = [
-        { name: "FTP", secure: false },
-        { name: "FTP (retry)", secure: false },
-        { name: "FTPS (TLS)", secure: true },
-      ];
-
-      for (let i = 0; i < strategies.length; i++) {
-        const strategy = strategies[i];
-        const client = new ftp.Client();
-        client.ftp.verbose = false;
-
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const transfer = require("basic-ftp/dist/transfer");
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (client as any).prepareTransfer = transfer.enterPassiveModeIPv4;
-
-        try {
-          console.log(`[download-database] Tentativa ${i + 1}/${strategies.length} via ${strategy.name}...`);
-
-          const accessOpts: ftp.AccessOptions = {
-            host: ftpParams["host"],
-            user: ftpParams["username"],
-            password: ftpParams["password"],
-            port,
-            secure: strategy.secure,
-            ...(strategy.secure ? { secureOptions: { rejectUnauthorized: false } } : {}),
-          };
-
-          await client.access(accessOpts);
-
-          if (client.ftp && client.ftp.socket) {
-            client.ftp.socket.setKeepAlive(true, 10000);
-            client.ftp.socket.setTimeout(120000);
-          }
-
-          let size = 0;
-          try {
-            size = await client.size(remotePath);
-          } catch (e: unknown) {
-            console.warn("Não foi possível obter o tamanho do arquivo via FTP:", (e as Error).message);
-          }
-
-          if (size > 0 && fs.existsSync(dbPath) && !force) {
-            const localStat = fs.statSync(dbPath);
-            if (localStat.size === size) {
-              console.log("Banco de dados local já existe e está completo. Pulando download.");
-              client.close();
-              return true;
-            }
-          }
-
-          client.trackProgress(info => {
-            if (size > 0) {
-              const percent = Math.floor((info.bytesOverall / size) * 100);
-              event.sender.send("download-db-progress", { progress: percent });
-            }
-          });
-
-          const tempPath = `${dbPath}.downloading`;
-          await client.downloadTo(tempPath, remotePath);
-          client.close();
-
-          if (fs.existsSync(dbPath)) {
-            fs.unlinkSync(dbPath);
-          }
-          fs.renameSync(tempPath, dbPath);
-
-          console.log(`[download-database] Download concluído com sucesso via ${strategy.name}`);
-          ftpSucceeded = true;
-          return true;
-
-        } catch (error: unknown) {
-          ftpError = error;
-          console.error(`[download-database] Falha via ${strategy.name}: ${(error as Error).message}`);
-          try { client.close(); } catch { console.error("FTP close error"); }
-
-          const tempPath = `${dbPath}.downloading`;
-          if (fs.existsSync(tempPath)) {
-            try { fs.unlinkSync(tempPath); } catch { console.error("Unlink error"); }
-          }
-
-          if (i < strategies.length - 1) {
-            const waitTime = 3000 * (i + 1);
-            console.log(`[download-database] Aguardando ${waitTime / 1000}s antes da próxima tentativa...`);
-            await new Promise(r => setTimeout(r, waitTime));
-          }
+      const envRes = await netFetchWithFallback("/params?type=env");
+      if (envRes.ok) {
+        const text = await envRes.text();
+        const paramKey = `https_db_${langKey}`;
+        const match = text.match(new RegExp(`^${paramKey}\\s*=\\s*(.+)$`, "m"));
+        if (match && match[1]) {
+          dbDownloadUrl = match[1].trim();
         }
       }
     } catch (e) {
-      ftpError = e;
-      console.warn("[download-database] FTP indisponível ou parâmetros não encontrados:", (e as Error).message);
+      console.warn("[download-database] Não foi possível consultar /params?type=env, usando URL padrão:", (e as Error).message);
     }
 
-    // Se o FTP falhou ou não pôde ser iniciado: Fallback via HTTPS (/db/bundle)
-    if (!ftpSucceeded) {
-      console.log("[download-database] Iniciando fallback via HTTPS (/db/bundle)...");
-      try {
-        const tempBundleDownloading = `${bundlePath}.downloading`;
-        await downloadBundleZip(tempBundleDownloading, (percent) => {
-          event.sender.send("download-db-progress", { progress: percent });
-        });
+    // 2. Download direto do arquivo SQLite via HTTPS (Cloudflare R2 / CDN)
+    const tempDbDownloading = `${dbPath}.downloading`;
+    if (fs.existsSync(tempDbDownloading)) {
+      try { fs.unlinkSync(tempDbDownloading); } catch { /* ignore */ }
+    }
 
-        if (fs.existsSync(bundlePath)) {
-          fs.unlinkSync(bundlePath);
-        }
-        fs.renameSync(tempBundleDownloading, bundlePath);
-        console.log("[download-database] Download do bundle de fallback concluído com sucesso!");
-        return true;
-      } catch (fallbackError) {
-        console.error("[download-database] Fallback via HTTPS também falhou:", fallbackError);
-        throw (fallbackError || ftpError);
+    try {
+      console.log(`[download-database] Baixando banco SQLite via HTTPS: ${dbDownloadUrl}...`);
+      await downloadStreamToFile(dbDownloadUrl, tempDbDownloading, (percent) => {
+        event.sender.send("download-db-progress", { progress: percent });
+      }, 99000000);
+
+      if (fs.existsSync(dbPath)) {
+        try { fs.unlinkSync(dbPath); } catch { /* ignore */ }
+      }
+      fs.renameSync(tempDbDownloading, dbPath);
+      console.log("[download-database] Download do banco de dados SQLite concluído com sucesso via HTTPS!");
+      return true;
+    } catch (dbError) {
+      console.warn(`[download-database] Falha no download do SQLite direto via HTTPS (${(dbError as Error).message}). Tentando fallback (/db/bundle)...`);
+      if (fs.existsSync(tempDbDownloading)) {
+        try { fs.unlinkSync(tempDbDownloading); } catch { /* ignore */ }
       }
     }
 
-    throw ftpError;
+    // 3. Fallback via HTTPS (/db/bundle): tenta primeiro na API primária e depois na API de fallback
+    const tempBundleDownloading = `${bundlePath}.downloading`;
+    if (fs.existsSync(tempBundleDownloading)) {
+      try { fs.unlinkSync(tempBundleDownloading); } catch { /* ignore */ }
+    }
+
+    const bundleUrls = [
+      `${API_PRIMARY}/db/bundle`,
+      `${API_FALLBACK}/db/bundle`,
+    ];
+
+    let bundleDownloaded = false;
+    let lastBundleError: unknown = null;
+
+    for (const bundleUrl of bundleUrls) {
+      try {
+        console.log(`[download-database] Tentando baixar bundle via HTTPS (${bundleUrl})...`);
+        if (fs.existsSync(tempBundleDownloading)) {
+          try { fs.unlinkSync(tempBundleDownloading); } catch { /* ignore */ }
+        }
+
+        await downloadStreamToFile(bundleUrl, tempBundleDownloading, (percent) => {
+          event.sender.send("download-db-progress", { progress: percent });
+        }, 30570479);
+
+        if (fs.existsSync(bundlePath)) {
+          try { fs.unlinkSync(bundlePath); } catch { /* ignore */ }
+        }
+        fs.renameSync(tempBundleDownloading, bundlePath);
+        console.log(`[download-database] Download do bundle concluído com sucesso via ${bundleUrl}!`);
+        bundleDownloaded = true;
+        break;
+      } catch (err) {
+        lastBundleError = err;
+        console.warn(`[download-database] Falha ao baixar bundle de ${bundleUrl} (${(err as Error).message}). Tentando próximo...`);
+      }
+    }
+
+    if (bundleDownloaded) {
+      return true;
+    }
+
+    if (fs.existsSync(tempBundleDownloading)) {
+      try { fs.unlinkSync(tempBundleDownloading); } catch { /* ignore */ }
+    }
+
+    console.error("[download-database] Falha ao baixar bundle em todos os endpoints:", lastBundleError);
+    throw lastBundleError;
   });
 
   ipcMain.handle("check-old-installation", async () => {
@@ -622,6 +586,189 @@ export function registerDatabaseHandlers() {
       return 0;
     } catch {
       return 0;
+    }
+  });
+
+  ipcMain.handle("get-albums-details", async (event, lang: string = "pt") => {
+    try {
+      const dbPath = path.join(app.getPath("userData"), `database_${lang}.db`);
+      if (!fs.existsSync(dbPath)) return {};
+
+      const sqlite = new SQLiteHelper(dbPath);
+      await sqlite.connect();
+
+      const query = `
+        WITH album_files AS (
+          SELECT am.id_album, m.id_file_music as id_file
+          FROM albums_musics am
+          JOIN musics m ON am.id_music = m.id_music
+          WHERE m.id_file_music IS NOT NULL
+          
+          UNION
+          
+          SELECT am.id_album, m.id_file_instrumental_music as id_file
+          FROM albums_musics am
+          JOIN musics m ON am.id_music = m.id_music
+          WHERE m.id_file_instrumental_music IS NOT NULL
+          
+          UNION
+          
+          SELECT am.id_album, m.id_file_image as id_file
+          FROM albums_musics am
+          JOIN musics m ON am.id_music = m.id_music
+          WHERE m.id_file_image IS NOT NULL
+          
+          UNION
+          
+          SELECT am.id_album, l.id_file_image as id_file
+          FROM albums_musics am
+          JOIN musics m ON am.id_music = m.id_music
+          JOIN lyrics l ON m.id_music = l.id_music
+          WHERE l.id_file_image IS NOT NULL
+
+          UNION
+
+          SELECT a.id_album, a.id_file_image as id_file
+          FROM albums a
+          WHERE a.id_file_image IS NOT NULL
+        )
+        SELECT af.id_album, SUM(f.size) as total_size
+        FROM album_files af
+        JOIN files f ON af.id_file = f.id_file
+        GROUP BY af.id_album
+      `;
+
+      const rows = sqlite.prepare(query).all() as { id_album: number; total_size: number }[];
+
+      let sysConfig: Record<string, unknown> = {};
+      if (fs.existsSync(sysConfigPath)) {
+        const configEncrypted = fs.readFileSync(sysConfigPath, "utf8");
+        const configDecrypted = decryptData(configEncrypted);
+        if (configDecrypted) sysConfig = JSON.parse(configDecrypted);
+      }
+      const downloadedManifest = (sysConfig["dla"] as (string | number)[]) || [];
+      const dlaDates = (sysConfig["dla_dates"] as Record<string, string>) || {};
+      let dlaDatesModified = false;
+
+      const sampleMusicRows = sqlite.prepare(`
+        SELECT am.id_album, fm.dir, fm.file_name
+        FROM albums_musics am
+        JOIN musics m ON am.id_music = m.id_music
+        JOIN files fm ON fm.id_file = COALESCE(m.id_file_music, m.id_file_instrumental_music)
+        GROUP BY am.id_album
+      `).all() as { id_album: number; dir: string; file_name: string }[];
+
+      const sampleMusicMap = new Map<number, { dir: string; file_name: string }>();
+      for (const row of sampleMusicRows) {
+        sampleMusicMap.set(row.id_album, { dir: row.dir, file_name: row.file_name });
+      }
+
+      sqlite.close();
+
+      const formatSize = (bytes: number): string => {
+        if (!bytes || bytes <= 0) return "---";
+        const k = 1024;
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        if (i >= 3) {
+          const gb = bytes / Math.pow(k, i);
+          return `${gb >= 10 ? gb.toFixed(0) : gb.toFixed(1)} GB`;
+        }
+        if (i === 2) {
+          const mb = Math.round(bytes / Math.pow(k, i));
+          return `${mb} MB`;
+        }
+        return `${Math.round(bytes / Math.pow(k, i))} KB`;
+      };
+
+      const result: Record<string, { sizeBytes: number; formattedSize: string; addedAt?: string; folderPath?: string }> = {};
+
+      const resolveFolderForAlbum = (sqliteId: number): string | undefined => {
+        const sample = sampleMusicMap.get(sqliteId);
+        if (sample && sample.dir) {
+          const relativeClean = sample.dir.replace(/^\//, "");
+          return path.join(mediaPath, relativeClean);
+        }
+        return undefined;
+      };
+
+      const resolveDateForAlbum = (albumKey: string | number, sqliteId: number): string | undefined => {
+        const keyStr = String(albumKey);
+        if (dlaDates[keyStr]) return dlaDates[keyStr];
+
+        const isDownloaded = downloadedManifest.some(d => String(d) === keyStr);
+        if (!isDownloaded) return undefined;
+
+        let dateStr: string | undefined;
+        const sample = sampleMusicMap.get(sqliteId);
+        if (sample && sample.dir) {
+          const relativeClean = sample.dir.replace(/^\//, "");
+          const filePath = sample.file_name ? path.join(mediaPath, relativeClean, sample.file_name) : "";
+          const dirPath = path.join(mediaPath, relativeClean);
+          if (filePath && fs.existsSync(filePath)) {
+            try {
+              const stat = fs.statSync(filePath);
+              const d = stat.birthtime && stat.birthtime.getFullYear() > 2000 ? stat.birthtime : stat.mtime;
+              dateStr = d.toLocaleDateString("pt-BR");
+            } catch {
+              // ignore
+            }
+          } else if (fs.existsSync(dirPath)) {
+            try {
+              const stat = fs.statSync(dirPath);
+              const d = stat.birthtime && stat.birthtime.getFullYear() > 2000 ? stat.birthtime : stat.mtime;
+              dateStr = d.toLocaleDateString("pt-BR");
+            } catch {
+              // ignore
+            }
+          }
+        }
+
+        if (!dateStr) {
+          dateStr = new Date().toLocaleDateString("pt-BR");
+        }
+
+        dlaDates[keyStr] = dateStr;
+        dlaDatesModified = true;
+        return dateStr;
+      };
+
+      for (const row of rows) {
+        const sizeBytes = Number(row.total_size) || 0;
+        const formattedSize = formatSize(sizeBytes);
+
+        if (row.id_album === 712) {
+          const addedAt = resolveDateForAlbum(`hymnal_${lang}`, 712) || resolveDateForAlbum("hymnal", 712);
+          const folderPath = resolveFolderForAlbum(712);
+          result["hymnal"] = { sizeBytes, formattedSize, addedAt, folderPath };
+          result[`hymnal_${lang}`] = { sizeBytes, formattedSize, addedAt, folderPath };
+        } else if (row.id_album === 629) {
+          const addedAt = resolveDateForAlbum(`hymnal_1996_${lang}`, 629) || resolveDateForAlbum("hymnal_1996", 629);
+          const folderPath = resolveFolderForAlbum(629);
+          result["hymnal_1996"] = { sizeBytes, formattedSize, addedAt, folderPath };
+          result[`hymnal_1996_${lang}`] = { sizeBytes, formattedSize, addedAt, folderPath };
+        } else if (row.id_album === 713) {
+          const addedAt = resolveDateForAlbum("hymnal_es", 713) || resolveDateForAlbum("hymnal", 713);
+          const folderPath = resolveFolderForAlbum(713);
+          result["hymnal_es"] = { sizeBytes, formattedSize, addedAt, folderPath };
+        } else {
+          const addedAt = resolveDateForAlbum(row.id_album, row.id_album);
+          const folderPath = resolveFolderForAlbum(row.id_album);
+          result[String(row.id_album)] = { sizeBytes, formattedSize, addedAt, folderPath };
+        }
+      }
+
+      if (dlaDatesModified) {
+        sysConfig["dla_dates"] = dlaDates;
+        const newEncrypted = encryptData(JSON.stringify(sysConfig));
+        if (newEncrypted) {
+          fs.writeFileSync(sysConfigPath, newEncrypted, "utf8");
+        }
+      }
+
+      return result;
+    } catch (error) {
+      console.error("Erro ao calcular detalhes dos álbuns:", error);
+      return {};
     }
   });
 }

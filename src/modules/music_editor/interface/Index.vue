@@ -1080,7 +1080,7 @@ interface PresentedSong {
 }
 
 const AUDIO_FILTERS = [
-  { name: "Áudio", extensions: ["mp3", "wav", "flac", "aac", "ogg", "wma", "m4a"] },
+  { name: "Áudio", extensions: ["mp3", "opus", "wav", "flac", "aac", "ogg", "wma", "m4a"] },
   { name: "Todos", extensions: ["*"] },
 ];
 

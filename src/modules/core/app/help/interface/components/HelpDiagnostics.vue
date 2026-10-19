@@ -399,13 +399,13 @@
                         </span>
                       </div>
                       <div class="d-flex justify-space-between py-1 border-bottom-subtle">
-                        <span style="color: var(--sidebar-text-secondary);">{{ $t('modules.help.diagnostics.labels.primary_api') }} (api.louvorja.com.br)</span>
+                        <span style="color: var(--sidebar-text-secondary);">{{ $t('modules.help.diagnostics.labels.primary_api') }}</span>
                         <span class="font-weight-medium" :class="diagnostics.network.primaryApiStatus === 'online' ? 'text-success' : 'text-warning'">
                           {{ diagnostics.network.primaryApiStatus === 'online' ? 'Disponível' : 'Indisponível' }}
                         </span>
                       </div>
                       <div class="d-flex justify-space-between py-1 border-bottom-subtle">
-                        <span style="color: var(--sidebar-text-secondary);">{{ $t('modules.help.diagnostics.labels.fallback_api') }} (workers.dev)</span>
+                        <span style="color: var(--sidebar-text-secondary);">{{ $t('modules.help.diagnostics.labels.fallback_api') }}</span>
                         <span class="font-weight-medium" :class="diagnostics.network.fallbackApiStatus === 'online' ? 'text-success' : 'text-warning'">
                           {{ diagnostics.network.fallbackApiStatus === 'online' ? 'Disponível' : 'Indisponível' }}
                         </span>

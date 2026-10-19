@@ -252,14 +252,15 @@ export default {
           });
         }
 
-        const relativeMusicPath = urlPath.replace(/^\/(musics|images|covers)\//, "");
+        const relativeMusicPath = urlPath.replace(/^https?:\/\/[^/]+\//i, "").replace(/^\/?(musics|images|covers)\//i, "");
         const localMusic = await window.electronAPI.checkMedia("music", relativeMusicPath);
         const missingMusic = !localMusic;
         
         const missingImages: { type: string; file: string }[] = [];
         for (const imgUrl of imagesToPreload) {
-          const type = imgUrl.startsWith("/covers/") ? "covers" : "slides";
-          const relImg = imgUrl.replace(/^\/(musics|images|covers)\//, "");
+          const cleanRel = imgUrl.replace(/^https?:\/\/[^/]+\//i, "");
+          const type = cleanRel.startsWith("covers/") || cleanRel.startsWith("/covers/") ? "covers" : "slides";
+          const relImg = cleanRel.replace(/^\/?(musics|images|covers)\//i, "");
           const localImg = await window.electronAPI.checkMedia(type, relImg);
           if (!localImg) {
             missingImages.push({ type, file: relImg });
@@ -1822,7 +1823,7 @@ export default {
       this.close(true);
     }
     const ext = rawPath.split(".").pop()?.toLowerCase() || "";
-    const isAudio = ["mp3", "wav", "flac", "aac", "ogg", "wma", "m4a"].includes(ext);
+    const isAudio = ["mp3", "opus", "wav", "flac", "aac", "ogg", "wma", "m4a"].includes(ext);
 
     $appdata.set("modules.external_media.filePath", rawPath);
     $appdata.set("modules.external_media.title", item.name);

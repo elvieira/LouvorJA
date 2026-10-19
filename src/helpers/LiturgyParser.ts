@@ -59,7 +59,7 @@ export function parseClassicLiturgy(iniContent: string): Record<string, Record<s
         case "arquivo": {
           const filePath = itemData.dir || itemData.param1 || "";
           const ext = filePath.split(".").pop()?.toLowerCase() || "";
-          const isMedia = ["mp4", "mkv", "avi", "mov", "wmv", "webm", "mp3", "wav", "flac", "aac", "ogg", "wma", "m4a"].includes(ext);
+          const isMedia = ["mp4", "mkv", "avi", "mov", "wmv", "webm", "mp3", "opus", "wav", "flac", "aac", "ogg", "wma", "m4a"].includes(ext);
           newType = (itemData.subtipo === "midia" || isMedia) ? "media" : "file";
           break;
         }

@@ -1387,7 +1387,7 @@ interface CustomCollection {
 }
 
 const MEDIA_FILTERS = [
-  { name: "Áudios, Vídeos e Arquivos LouvorJA", extensions: ["mp3", "wav", "flac", "aac", "ogg", "wma", "m4a", "mp4", "mkv", "avi", "mov", "wmv", "webm", "slja", "sja", "lja"] },
+  { name: "Áudios, Vídeos e Arquivos LouvorJA", extensions: ["mp3", "opus", "wav", "flac", "aac", "ogg", "wma", "m4a", "mp4", "mkv", "avi", "mov", "wmv", "webm", "slja", "sja", "lja"] },
   { name: "Todos", extensions: ["*"] },
 ];
 
@@ -1774,7 +1774,7 @@ export default defineComponent({
         (this as any).$media.close(true);
       }
       const ext = filePath.split(".").pop()?.toLowerCase() || "";
-      const isAudio = ["mp3", "wav", "flac", "aac", "ogg", "wma", "m4a"].includes(ext);
+      const isAudio = ["mp3", "opus", "wav", "flac", "aac", "ogg", "wma", "m4a"].includes(ext);
 
       appdata.set("modules.external_media.filePath", filePath);
       appdata.set("modules.external_media.title", item.name);

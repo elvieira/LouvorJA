@@ -2,6 +2,7 @@ import { app, protocol, net, BrowserWindow, screen, session } from "electron";
 import * as path from "path";
 import * as fs from "fs";
 import { isDev } from "../config/constants";
+import { URL_FILES, API_FALLBACK } from "../utils/api-fallback";
 import { createWindow, getMainWindow } from "./window";
 
 let pendingFilePathToOpen: string | null = null;
@@ -153,13 +154,39 @@ export function setupLifecycle(): void {
       let resolvedFilePath = path.join(mediaPath, fallbackPath);
 
       if (!fs.existsSync(resolvedFilePath) && fallbackPath.startsWith("/musics/")) {
-        const rest = fallbackPath.slice(8); // após /musics/
-        if (rest.startsWith("pt/")) {
-          const alt = path.join(mediaPath, "musics", rest.slice(3));
-          if (fs.existsSync(alt)) resolvedFilePath = alt;
+        const checkAudioExt = (p: string) => {
+          if (p.toLowerCase().endsWith(".opus")) {
+            const alt = p.replace(/\.opus$/i, ".mp3");
+            if (fs.existsSync(alt)) return alt;
+          } else if (p.toLowerCase().endsWith(".mp3")) {
+            const alt = p.replace(/\.mp3$/i, ".opus");
+            if (fs.existsSync(alt)) return alt;
+          }
+          return null;
+        };
+
+        const altExt = checkAudioExt(resolvedFilePath);
+        if (altExt) {
+          resolvedFilePath = altExt;
         } else {
-          const alt = path.join(mediaPath, "musics", "pt", rest);
-          if (fs.existsSync(alt)) resolvedFilePath = alt;
+          const rest = fallbackPath.slice(8); // após /musics/
+          if (rest.startsWith("pt/")) {
+            const alt = path.join(mediaPath, "musics", rest.slice(3));
+            if (fs.existsSync(alt)) {
+              resolvedFilePath = alt;
+            } else {
+              const altExtPt = checkAudioExt(alt);
+              if (altExtPt) resolvedFilePath = altExtPt;
+            }
+          } else {
+            const alt = path.join(mediaPath, "musics", "pt", rest);
+            if (fs.existsSync(alt)) {
+              resolvedFilePath = alt;
+            } else {
+              const altExtPt = checkAudioExt(alt);
+              if (altExtPt) resolvedFilePath = altExtPt;
+            }
+          }
         }
       }
 
@@ -170,28 +197,47 @@ export function setupLifecycle(): void {
           return callback({ error: -6 });
         }
         const cleanPath = fallbackPath.replace(/\\/g, "/");
-        const apiUrlPrimary = `https://api.louvorja.com.br/file${cleanPath}`;
-        const apiUrlFallback = `https://api.louvorja.workers.dev/file${cleanPath}`;
+        const cleanPathNoLead = cleanPath.startsWith("/") ? cleanPath.substring(1) : cleanPath;
+        const apiUrlPrimary = `${URL_FILES}/${cleanPathNoLead}`;
+        const apiUrlFallback = `${API_FALLBACK}/file/${cleanPathNoLead}`;
+
+        const isAudio = fallbackPath.startsWith("/musics/") && (fallbackPath.endsWith(".mp3") || fallbackPath.endsWith(".opus"));
+        const altExt = fallbackPath.endsWith(".mp3") ? ".opus" : ".mp3";
+        const altPathNoLead = isAudio ? cleanPathNoLead.replace(/\.(mp3|opus)$/i, altExt) : "";
 
         const fetchFromApi = async () => {
-          try {
-            const controller = new AbortController();
-            const timer = setTimeout(() => controller.abort(), 3500);
-            const res = await net.fetch(apiUrlPrimary, { signal: controller.signal });
-            clearTimeout(timer);
-            if (res.ok) return await res.arrayBuffer();
-          } catch {
-            // falha na primária
+          const urlsToTry: string[] = [apiUrlPrimary];
+          if (isAudio && altPathNoLead) {
+            urlsToTry.push(`${URL_FILES}/${altPathNoLead}`);
           }
-          const resFallback = await net.fetch(apiUrlFallback);
-          if (resFallback.ok) return await resFallback.arrayBuffer();
-          throw new Error("Ambas APIs de arquivo falharam");
+          urlsToTry.push(apiUrlFallback);
+          if (isAudio && altPathNoLead) {
+            urlsToTry.push(`${API_FALLBACK}/file/${altPathNoLead}`);
+          }
+
+          for (const u of urlsToTry) {
+            try {
+              const controller = new AbortController();
+              const timer = setTimeout(() => controller.abort(), 4000);
+              const res = await net.fetch(u, { signal: controller.signal });
+              clearTimeout(timer);
+              if (res.ok) {
+                const targetPath = (isAudio && u.includes(altPathNoLead)) 
+                  ? path.join(path.dirname(filePath), path.basename(altPathNoLead))
+                  : filePath;
+                return { buffer: await res.arrayBuffer(), finalPath: targetPath };
+              }
+            } catch {
+              // tenta próxima URL
+            }
+          }
+          throw new Error("Todas as tentativas de download falharam");
         };
 
-        fetchFromApi().then(buffer => {
-          fs.mkdirSync(path.dirname(filePath), { recursive: true });
-          fs.writeFileSync(filePath, Buffer.from(buffer));
-          callback({ path: filePath });
+        fetchFromApi().then(({ buffer, finalPath }) => {
+          fs.mkdirSync(path.dirname(finalPath), { recursive: true });
+          fs.writeFileSync(finalPath, Buffer.from(buffer));
+          callback({ path: finalPath });
         }).catch(err => {
           console.error("Fallback download error:", err);
           callback({ error: -6 }); 

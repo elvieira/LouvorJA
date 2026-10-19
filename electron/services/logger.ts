@@ -5,6 +5,7 @@ import * as os from "os";
 import * as si from "systeminformation";
 import { userDataPath, isDev, getSysDbPath, sysConfigPath } from "../config/constants";
 import { decryptData } from "../utils/crypto";
+import { API_PRIMARY, API_FALLBACK } from "../utils/api-fallback";
 
 export interface LogEntry {
   id: string;
@@ -431,8 +432,8 @@ export async function getSystemDiagnostics(): Promise<SystemDiagnostics> {
 
   // Teste de conectividade com APIs
   const [primaryApi, fallbackApi] = await Promise.all([
-    testEndpointStatus("https://api.louvorja.com.br/health"),
-    testEndpointStatus("https://api.louvorja.workers.dev/ping"),
+    testEndpointStatus(`${API_PRIMARY}/health`),
+    testEndpointStatus(`${API_FALLBACK}/ping`),
   ]);
 
   return {

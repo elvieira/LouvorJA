@@ -34,7 +34,7 @@ export function getLiturgyFileInfo(filePath?: string | null): LiturgyFileInfo {
   const ext = fileName.includes(".") ? fileName.split(".").pop()?.toLowerCase() || "" : "";
 
   // 1. Áudio
-  const audioExts = ["mp3", "wav", "flac", "aac", "ogg", "wma", "m4a"];
+  const audioExts = ["mp3", "opus", "wav", "flac", "aac", "ogg", "wma", "m4a"];
   if (audioExts.includes(ext)) {
     return {
       category: "audio",

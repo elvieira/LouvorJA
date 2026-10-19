@@ -614,7 +614,7 @@ export default defineComponent({
           title: "Selecionar Arquivo para Agendar",
           filters: [
             { name: "Todos os Arquivos e Mídias", extensions: ["*"] },
-            { name: "Mídias (Áudio / Vídeo)", extensions: ["mp4", "webm", "mkv", "avi", "mov", "wmv", "mp3", "wav", "flac", "aac", "ogg", "wma", "m4a"] },
+            { name: "Mídias (Áudio / Vídeo)", extensions: ["mp4", "webm", "mkv", "avi", "mov", "wmv", "mp3", "opus", "wav", "flac", "aac", "ogg", "wma", "m4a"] },
             { name: "Apresentações e Documentos", extensions: ["pptx", "ppt", "ppsx", "pps", "pdf", "key", "odp", "doc", "docx", "txt"] },
             { name: "Imagens", extensions: ["jpg", "png", "jpeg", "webp", "gif", "bmp", "svg"] },
           ],

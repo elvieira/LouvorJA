@@ -1544,7 +1544,7 @@ export default defineComponent({
           properties: ["openFile", "openDirectory"],
           filters: [
             { name: "Todos os Arquivos e Mídias", extensions: ["*"] },
-            { name: "Mídias (Áudio / Vídeo)", extensions: ["mp4", "mkv", "avi", "mov", "wmv", "webm", "mp3", "wav", "flac", "aac", "ogg", "wma", "m4a"] },
+            { name: "Mídias (Áudio / Vídeo)", extensions: ["mp4", "mkv", "avi", "mov", "wmv", "webm", "mp3", "opus", "wav", "flac", "aac", "ogg", "wma", "m4a"] },
             { name: "Apresentações e Documentos", extensions: ["pptx", "ppt", "ppsx", "pps", "pdf", "key", "odp", "doc", "docx", "txt"] },
             { name: "Músicas LouvorJA (.slja)", extensions: ["slja", "sja", "lja"] },
             { name: "Imagens", extensions: ["jpg", "jpeg", "png", "gif", "webp", "bmp", "svg"] },

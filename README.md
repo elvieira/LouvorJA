@@ -47,7 +47,7 @@ LouvorJA/
 │   ├── config/                # Configurações do Electron
 │   ├── core/                  # Lógica core (janela, tray, etc.)
 │   ├── ipc/                   # Handlers IPC (comunicação renderer ↔ main)
-│   ├── services/              # Serviços (FTP, banco de dados, atualização)
+│   ├── services/              # Serviços (mídia, banco de dados, atualização)
 │   ├── utils/                 # Utilitários (crypto, paths, etc.)
 │   └── tsconfig.json          # Config TypeScript do processo principal
 ├── src/                       # Código do renderer (TypeScript + Vue)

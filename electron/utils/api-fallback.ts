@@ -1,7 +1,19 @@
 import { net } from "electron";
 
-export const API_PRIMARY = "https://api.louvorja.com.br";
-export const API_FALLBACK = "https://api.louvorja.workers.dev";
+export const URL_FILES = process.env.VITE_URL_FILES || "";
+
+export const URL_DATABASE = process.env.VITE_URL_DATABASE || "";
+
+export const API_PRIMARY = (() => {
+  try {
+    if (URL_DATABASE) {
+      return new URL(URL_DATABASE).origin;
+    }
+  } catch { /* ignore */ }
+  return "";
+})();
+
+export const API_FALLBACK = process.env.VITE_URL_FALLBACK || "";
 
 /**
  * Executa uma requisição HTTP via Electron net.fetch com fallback automático
@@ -63,6 +75,8 @@ export async function netFetchWithFallback(
  */
 export function getMediaFileUrl(relativePath: string, useFallback: boolean = false): string {
   const cleanPath = relativePath.startsWith("/") ? relativePath.slice(1) : relativePath;
-  const base = useFallback ? API_FALLBACK : API_PRIMARY;
-  return `${base}/file/${cleanPath}`;
+  if (!useFallback) {
+    return `${URL_FILES}/${cleanPath}`;
+  }
+  return `${API_FALLBACK}/file/${cleanPath}`;
 }

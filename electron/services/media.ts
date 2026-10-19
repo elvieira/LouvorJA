@@ -2,8 +2,8 @@ import { ipcMain, net } from "electron";
 import * as path from "path";
 import * as fs from "fs-extra";
 import { coversPath, musicPath, slidesPath, avatarsPath, sysConfigPath } from "../config/constants";
-import { getFtpParams, useFtpFallback, setUseFtpFallback, resetFtpFallbackTimer, getOrCreateFtpClient, ftpMutex, forceCloseFtpClient } from "../utils/ftp-client";
 import { encryptData, decryptData } from "../utils/crypto";
+import { URL_FILES, API_FALLBACK } from "../utils/api-fallback";
 
 function registerDownloadedMedia(filename: string) {
   try {
@@ -49,75 +49,41 @@ function unregisterDownloadedMedia(filename: string) {
   }
 }
 
+function cleanRelativeMediaFilename(raw: string): string {
+  let decoded = raw;
+  try {
+    decoded = decodeURIComponent(raw);
+  } catch {
+    decoded = raw;
+  }
+  decoded = decoded.replace(/^https?:\/\/[^/]+\//i, "");
+  decoded = decoded.replace(/^local:\/\/media\//i, "");
+  decoded = decoded.replace(/^\/?(musics|images|covers|avatars)\//i, "");
+  return decoded;
+}
+
 function buildApiUrl(destFolderType: string, filename: string, useFallback: boolean = false): string {
   let urlFolder = "covers";
   if (destFolderType === "music") urlFolder = "musics";
   else if (destFolderType === "slides") urlFolder = "images";
 
-  const cleanFilename = filename.replace(/\\/g, "/");
-  const host = useFallback ? "https://api.louvorja.workers.dev" : "https://api.louvorja.com.br";
-  return `${host}/file/${urlFolder}/${encodeURIComponent(cleanFilename).replace(/%2F/g, "/")}`;
-}
-
-async function downloadMediaViaFtp(destFolderType: string, filename: string, filePath: string, retries = 2) {
-  const ftpParams = await getFtpParams();
-
-  let ftpFolder = "config/capas";
-  if (destFolderType === "music") ftpFolder = "config/musicas";
-  else if (destFolderType === "slides") ftpFolder = "config/imagens";
-
-  let cleanFilename = filename;
-  if (cleanFilename.startsWith("pt/") || cleanFilename.startsWith("es/")) {
-    cleanFilename = cleanFilename.substring(3);
+  const cleanFilename = cleanRelativeMediaFilename(filename).replace(/\\/g, "/");
+  const encodedParts = cleanFilename.split("/").map(part => encodeURIComponent(part)).join("/");
+  if (!useFallback) {
+    return `${URL_FILES}/${urlFolder}/${encodedParts}`;
   }
-
-  const root = ftpParams["root"] || "/";
-  const remotePath = `${root + (root.endsWith("/") ? "" : "/")}${ftpFolder}/${cleanFilename}`;
-
-  await ftpMutex.lock();
-  try {
-    for (let attempt = 0; attempt <= retries; attempt++) {
-      try {
-        const client = await getOrCreateFtpClient();
-        await client.downloadTo(filePath, remotePath);
-        return; 
-      } catch (_err: unknown) {
-        console.error(`[FTP] ERRO ao baixar ${remotePath}: ${(_err as Error).message}`);
-        forceCloseFtpClient();
-
-        if (attempt < retries) {
-          const waitTime = 2000 * (attempt + 1); 
-          console.warn(`[FTP] Tentativa ${attempt + 1} falhou para ${cleanFilename}, retentando em ${waitTime/1000}s...`);
-          await new Promise(r => setTimeout(r, waitTime));
-        } else {
-          throw _err; 
-        }
-      }
-    }
-  } finally {
-    ftpMutex.unlock();
-  }
+  return `${API_FALLBACK}/file/${urlFolder}/${encodedParts}`;
 }
 
 export function registerMediaHandlers() {
   ipcMain.handle("download-media", async (event, url: string, destFolderType: string, filename: string) => {
     try {
-      await getFtpParams().catch(e => console.warn("Não foi possível fazer pre-fetch das credenciais FTP:", e.message));
-
       let destFolder = coversPath;
       if (destFolderType === "music") destFolder = musicPath;
       else if (destFolderType === "slides") destFolder = slidesPath;
       else if (destFolderType === "avatars") destFolder = avatarsPath;
 
-      let decodedFilename = decodeURIComponent(filename);
-      if (destFolderType === "music" && decodedFilename.startsWith("/musics/")) {
-        decodedFilename = decodedFilename.substring(8); // remove /musics/
-      } else if (destFolderType === "slides" && decodedFilename.startsWith("/images/")) {
-        decodedFilename = decodedFilename.substring(8); // remove /images/
-      } else if (destFolderType === "avatars" && decodedFilename.startsWith("/avatars/")) {
-        decodedFilename = decodedFilename.substring(9); // remove /avatars/
-      }
-      
+      const decodedFilename = cleanRelativeMediaFilename(filename);
       const filePath = path.join(destFolder, decodedFilename);
       const fileDir = path.dirname(filePath);
 
@@ -134,59 +100,83 @@ export function registerMediaHandlers() {
         return true;
       }
 
-      if (useFtpFallback) {
-        resetFtpFallbackTimer();
-        try {
-          await downloadMediaViaFtp(destFolderType, decodedFilename, filePath);
-          if (destFolderType !== "covers") registerDownloadedMedia(decodedFilename);
-          return true;
-        } catch (_ftpError: unknown) {
-          console.error("[FTP] Erro no fallback FTP (direto):", (_ftpError as Error).message);
-          return false;
+      // Prepara lista de tentativas (URLs e nomes de arquivo de destino)
+      interface DownloadCandidate {
+        url: string;
+        targetFilename: string;
+      }
+
+      const candidates: DownloadCandidate[] = [];
+
+      // URL primária base
+      let primaryUrl = "";
+      if (url && (url.startsWith("http://") || url.startsWith("https://"))) {
+        primaryUrl = url;
+      } else {
+        primaryUrl = buildApiUrl(destFolderType, decodedFilename, false);
+      }
+      candidates.push({ url: primaryUrl, targetFilename: decodedFilename });
+
+      // Se for áudio, adiciona alternativa .opus <-> .mp3 para compatibilidade com CDN e DB legado
+      const isAudio = destFolderType === "music" || 
+                      decodedFilename.toLowerCase().endsWith(".mp3") || 
+                      decodedFilename.toLowerCase().endsWith(".opus");
+
+      if (isAudio) {
+        const isMp3 = decodedFilename.toLowerCase().endsWith(".mp3");
+        const altExt = isMp3 ? ".opus" : ".mp3";
+        const altFilename = decodedFilename.replace(/\.(mp3|opus)$/i, altExt);
+
+        let altPrimaryUrl = "";
+        if (primaryUrl.match(/\.(mp3|opus)(\?.*)?$/i)) {
+          altPrimaryUrl = primaryUrl.replace(/\.(mp3|opus)(\?.*)?$/i, `${altExt}$2`);
+        } else {
+          altPrimaryUrl = buildApiUrl(destFolderType, altFilename, false);
         }
+
+        candidates.push({ url: altPrimaryUrl, targetFilename: altFilename });
+        // Fallback Workers com extensão original e alternativa
+        candidates.push({ url: buildApiUrl(destFolderType, decodedFilename, true), targetFilename: decodedFilename });
+        candidates.push({ url: buildApiUrl(destFolderType, altFilename, true), targetFilename: altFilename });
+      } else {
+        // Fallback Workers para imagens e capas
+        candidates.push({ url: buildApiUrl(destFolderType, decodedFilename, true), targetFilename: decodedFilename });
       }
 
       let response;
-      try {
-        const apiUrl = buildApiUrl(destFolderType, decodedFilename, false);
-        response = await net.fetch(apiUrl);
-      } catch {
-        // Falha na primária
-      }
+      let matchedCandidate: DownloadCandidate | null = null;
 
-      if (response && response.status === 429) {
-        console.warn("[HTTP] Rate limit 429 atingido. Trocando para FTP para todos os downloads...");
-        setUseFtpFallback(true);
-        resetFtpFallbackTimer();
+      for (const candidate of candidates) {
         try {
-          await downloadMediaViaFtp(destFolderType, decodedFilename, filePath);
-          if (destFolderType !== "covers") registerDownloadedMedia(decodedFilename);
-          return true;
-        } catch (_ftpError: unknown) {
-          console.error("[FTP] Erro no fallback FTP após 429:", (_ftpError as Error).message);
-          return false;
-        }
-      }
-
-      // Se a primária falhou ou não deu ok, tenta a réplica Cloudflare Workers/R2
-      if (!response || !response.ok) {
-        try {
-          const fallbackUrl = buildApiUrl(destFolderType, decodedFilename, true);
-          const fallbackResponse = await net.fetch(fallbackUrl);
-          if (fallbackResponse && fallbackResponse.ok) {
-            response = fallbackResponse;
+          const res = await net.fetch(candidate.url);
+          if (res && res.ok) {
+            response = res;
+            matchedCandidate = candidate;
+            break;
           }
         } catch {
-          // Fallback também falhou
+          // Tenta próximo candidato
         }
       }
 
-      if (!response || !response.ok) return false;
+      if (!response || !response.ok || !matchedCandidate) return false;
+
+      const finalFilePath = path.join(destFolder, matchedCandidate.targetFilename);
+      const finalDir = path.dirname(finalFilePath);
+      if (!fs.existsSync(finalDir)) {
+        fs.mkdirSync(finalDir, { recursive: true });
+      }
 
       const arrayBuffer = await response.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
-      fs.writeFileSync(filePath, buffer);
-      if (destFolderType !== "covers") registerDownloadedMedia(decodedFilename);
+      fs.writeFileSync(finalFilePath, buffer);
+
+      if (destFolderType !== "covers") {
+        registerDownloadedMedia(matchedCandidate.targetFilename);
+        if (matchedCandidate.targetFilename !== decodedFilename) {
+          registerDownloadedMedia(decodedFilename);
+        }
+      }
       return true;
     } catch (_error: unknown) {
       console.error("[Download] Erro baixando mídia:", (_error as Error).message);
@@ -200,15 +190,9 @@ export function registerMediaHandlers() {
     else if (destFolderType === "slides") destFolder = slidesPath;
     else if (destFolderType === "avatars") destFolder = avatarsPath;
 
-    let decodedFilename = decodeURIComponent(filename);
-    if (destFolderType === "music" && decodedFilename.startsWith("/musics/")) {
-      decodedFilename = decodedFilename.substring(8);
-    } else if (destFolderType === "slides" && decodedFilename.startsWith("/images/")) {
-      decodedFilename = decodedFilename.substring(8);
-    } else if (destFolderType === "avatars" && decodedFilename.startsWith("/avatars/")) {
-      decodedFilename = decodedFilename.substring(9);
-    }
+    let decodedFilename = cleanRelativeMediaFilename(filename);
     let filePath = path.join(destFolder, decodedFilename);
+
     if (!fs.existsSync(filePath) && destFolderType === "music") {
       if (decodedFilename.startsWith("pt/")) {
         const alt = path.join(destFolder, decodedFilename.slice(3));
@@ -221,6 +205,40 @@ export function registerMediaHandlers() {
         if (fs.existsSync(alt)) {
           filePath = alt;
           decodedFilename = `pt/${decodedFilename}`;
+        }
+      }
+    }
+
+    // Compatibilidade reversa entre .opus e .mp3 caso ainda não tenha sido encontrado
+    if (!fs.existsSync(filePath) && destFolderType === "music") {
+      const checkExtAlt = (baseP: string, baseFn: string) => {
+        if (baseFn.toLowerCase().endsWith(".opus")) {
+          const altP = baseP.replace(/\.opus$/i, ".mp3");
+          if (fs.existsSync(altP)) return { p: altP, fn: baseFn.replace(/\.opus$/i, ".mp3") };
+        } else if (baseFn.toLowerCase().endsWith(".mp3")) {
+          const altP = baseP.replace(/\.mp3$/i, ".opus");
+          if (fs.existsSync(altP)) return { p: altP, fn: baseFn.replace(/\.mp3$/i, ".opus") };
+        }
+        return null;
+      };
+
+      const altRes = checkExtAlt(filePath, decodedFilename);
+      if (altRes) {
+        filePath = altRes.p;
+        decodedFilename = altRes.fn;
+      } else if (decodedFilename.startsWith("pt/")) {
+        const altPt = path.join(destFolder, decodedFilename.slice(3));
+        const altPtRes = checkExtAlt(altPt, decodedFilename.slice(3));
+        if (altPtRes) {
+          filePath = altPtRes.p;
+          decodedFilename = altPtRes.fn;
+        }
+      } else {
+        const altPt = path.join(destFolder, "pt", decodedFilename);
+        const altPtRes = checkExtAlt(altPt, `pt/${decodedFilename}`);
+        if (altPtRes) {
+          filePath = altPtRes.p;
+          decodedFilename = altPtRes.fn;
         }
       }
     }
@@ -239,20 +257,48 @@ export function registerMediaHandlers() {
     else if (destFolderType === "slides") destFolder = slidesPath;
     else if (destFolderType === "avatars") destFolder = avatarsPath;
 
-    let decodedFilename = decodeURIComponent(filename);
-    if (destFolderType === "music" && decodedFilename.startsWith("/musics/")) {
-      decodedFilename = decodedFilename.substring(8);
-    } else if (destFolderType === "slides" && decodedFilename.startsWith("/images/")) {
-      decodedFilename = decodedFilename.substring(8);
-    } else if (destFolderType === "avatars" && decodedFilename.startsWith("/avatars/")) {
-      decodedFilename = decodedFilename.substring(9);
+    let decodedFilename = cleanRelativeMediaFilename(filename);
+    let filePath = path.join(destFolder, decodedFilename);
+
+    if (!fs.existsSync(filePath) && destFolderType === "music") {
+      if (decodedFilename.startsWith("pt/")) {
+        const alt = path.join(destFolder, decodedFilename.slice(3));
+        if (fs.existsSync(alt)) {
+          filePath = alt;
+          decodedFilename = decodedFilename.slice(3);
+        }
+      } else {
+        const alt = path.join(destFolder, "pt", decodedFilename);
+        if (fs.existsSync(alt)) {
+          filePath = alt;
+          decodedFilename = `pt/${decodedFilename}`;
+        }
+      }
+
+      if (!fs.existsSync(filePath)) {
+        if (decodedFilename.toLowerCase().endsWith(".opus")) {
+          const alt = path.join(destFolder, decodedFilename.replace(/\.opus$/i, ".mp3"));
+          if (fs.existsSync(alt)) {
+            filePath = alt;
+            decodedFilename = decodedFilename.replace(/\.opus$/i, ".mp3");
+          }
+        } else if (decodedFilename.toLowerCase().endsWith(".mp3")) {
+          const alt = path.join(destFolder, decodedFilename.replace(/\.mp3$/i, ".opus"));
+          if (fs.existsSync(alt)) {
+            filePath = alt;
+            decodedFilename = decodedFilename.replace(/\.mp3$/i, ".opus");
+          }
+        }
+      }
     }
-    const filePath = path.join(destFolder, decodedFilename);
+
     if (fs.existsSync(filePath)) {
       try {
         fs.unlinkSync(filePath);
         if (destFolderType !== "covers" && destFolderType !== "avatars") {
           unregisterDownloadedMedia(decodedFilename);
+          unregisterDownloadedMedia(decodedFilename.replace(/\.opus$/i, ".mp3"));
+          unregisterDownloadedMedia(decodedFilename.replace(/\.mp3$/i, ".opus"));
         }
         return true;
       } catch (_e) {

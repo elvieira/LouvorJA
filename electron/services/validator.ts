@@ -77,9 +77,10 @@ export function registerValidatorHandlers() {
       const imageFiles = new Set<string>();
       
       for (const file of downloadedMedia) {
-        if (file.toLowerCase().endsWith(".mp3")) {
+        const lower = file.toLowerCase();
+        if (lower.endsWith(".mp3") || lower.endsWith(".opus")) {
           musicFiles.add(file);
-        } else if (file.toLowerCase().endsWith(".jpg") || file.toLowerCase().endsWith(".png")) {
+        } else if (lower.endsWith(".jpg") || lower.endsWith(".png")) {
           imageFiles.add(file);
         }
       }
@@ -111,8 +112,21 @@ export function registerValidatorHandlers() {
 
       const missingCovers = [...coverFiles].filter(x => x && !actualCovers.has(x));
       
-      // Validação baseada no fs.existsSync diretamente usando musicPath
-      const missingMusic = [...musicFiles].filter(x => x && !fs.existsSync(path.join(musicPath, x)));
+      // Validação baseada no fs.existsSync diretamente usando musicPath (com compatibilidade .opus/.mp3)
+      const missingMusic = [...musicFiles].filter(x => {
+        if (!x) return false;
+        const directPath = path.join(musicPath, x);
+        if (fs.existsSync(directPath)) return false;
+        // Compatibilidade reversa: se busca opus mas tem mp3, ou vice-versa
+        if (x.toLowerCase().endsWith(".opus")) {
+          const mp3Path = path.join(musicPath, x.replace(/\.opus$/i, ".mp3"));
+          if (fs.existsSync(mp3Path)) return false;
+        } else if (x.toLowerCase().endsWith(".mp3")) {
+          const opusPath = path.join(musicPath, x.replace(/\.mp3$/i, ".opus"));
+          if (fs.existsSync(opusPath)) return false;
+        }
+        return true;
+      });
       const missingImages = [...imageFiles].filter(x => x && !fs.existsSync(path.join(slidesPath, x)));
       
       const missingBins = [...binFiles].filter(x => x && !actualBins.has(x));
