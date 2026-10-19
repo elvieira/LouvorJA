@@ -77,9 +77,10 @@ interface ElectronAPI {
   openPath: (filePath: string) => Promise<void>
   clearAllData: () => Promise<void>
   clearSysData: (lang?: string) => Promise<void>
-  getAppDataSize: () => Promise<number>
+  getAppDataSize: () => Promise<number | { used: number; total: number }>
   getLocalDb: (filename: string, lang?: string) => Promise<unknown | null>
   getDatabaseVersion: (lang?: string) => Promise<number>
+  getAlbumsDetails?: (lang?: string) => Promise<Record<string, { sizeBytes: number; formattedSize: string; addedAt?: string; folderPath?: string }>>
   extractLocalDb: (lang?: string) => Promise<boolean>
   downloadDatabase: (lang?: string, force?: boolean) => Promise<unknown>
   checkDatabaseExists: (lang?: string) => Promise<boolean>

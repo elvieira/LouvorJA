@@ -11,10 +11,20 @@ export interface SyncAlbum {
   isHymnal: boolean;
   progressText?: string;
   cancelToken?: boolean;
+  categoryId?: string | number;
+  categoryName?: string;
+  trackCount?: number;
+  year?: string | number;
+  sizeBytes?: number;
+  formattedSize?: string;
+  addedAt?: string;
+  updatedAt?: string;
+  folderPath?: string;
 }
 
 export interface SyncCategory {
   id_category: number | string;
   name: string;
+  icon?: string;
   albums: SyncAlbum[];
 }

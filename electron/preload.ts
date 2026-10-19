@@ -36,6 +36,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
   downloadDatabase: (lang?: string, force?: boolean) => ipcRenderer.invoke("download-database", lang, force),
   checkDatabaseExists: (lang?: string) => ipcRenderer.invoke("check-database-exists", lang),
   getDatabaseVersion: (lang?: string) => ipcRenderer.invoke("get-database-version", lang),
+  getAlbumsDetails: (lang?: string) => ipcRenderer.invoke("get-albums-details", lang),
   checkOldInstallation: () => ipcRenderer.invoke("check-old-installation"),
   importOldInstallation: () => ipcRenderer.invoke("import-old-installation"),
   checkLegacyInstallation: () => ipcRenderer.invoke("check-legacy-installation"),

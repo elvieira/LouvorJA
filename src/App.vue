@@ -232,7 +232,7 @@ export default {
               await window.electronAPI.repairSysdata(missing.missingBins);
             }
             
-            // 2. Baixa mídias ausentes via HTTP(S) (com fallback FTP interno)
+            // 2. Baixa mídias ausentes via HTTPS (Cloudflare R2)
             if (missing.missingCovers.length > 0) {
               for (const file of missing.missingCovers) await window.electronAPI.downloadMedia("", "covers", file);
             }

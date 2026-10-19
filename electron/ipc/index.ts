@@ -1,5 +1,6 @@
 import { ipcMain, BrowserWindow, dialog, shell, app, screen, Display, net } from "electron";
 import * as fs from "fs-extra";
+import { statfsSync } from "fs";
 import * as path from "path";
 import AdmZip from "adm-zip";
 import { getSysDbPath, mediaPath, coversPath, musicPath, slidesPath, userDataPath, sysConfigPath } from "../config/constants";
@@ -272,15 +273,24 @@ export function registerIpcHandlers() {
     let totalSize = 0;
     try {
       if (!fs.existsSync(dirPath)) return 0;
-      const stats = await fs.stat(dirPath);
-      if (stats.isFile()) {
-        totalSize += stats.size;
-      } else if (stats.isDirectory()) {
-        const files = await fs.readdir(dirPath);
-        for (const file of files) {
-          totalSize += await getFolderSize(path.join(dirPath, file));
-        }
-      }
+      const entries = await fs.readdir(dirPath, { withFileTypes: true });
+      const sizes = await Promise.all(
+        entries.map(async (entry) => {
+          const fullPath = path.join(dirPath, entry.name);
+          if (entry.isDirectory()) {
+            return await getFolderSize(fullPath);
+          } else if (entry.isFile()) {
+            try {
+              const stat = await fs.stat(fullPath);
+              return stat.size;
+            } catch {
+              return 0;
+            }
+          }
+          return 0;
+        }),
+      );
+      totalSize = sizes.reduce((acc, s) => acc + s, 0);
     } catch (e) {
       console.error(e);
     }
@@ -290,9 +300,18 @@ export function registerIpcHandlers() {
   ipcMain.handle("get-app-data-size", async () => {
     try {
       const bytes = await getFolderSize(userDataPath);
-      return bytes;
+      let total = 0;
+      try {
+        if (typeof statfsSync === "function") {
+          const stats = statfsSync(userDataPath);
+          total = Number(stats.bsize) * Number(stats.blocks);
+        }
+      } catch {
+        // ignore
+      }
+      return { used: bytes, total, userDataPath };
     } catch {
-      return 0;
+      return { used: 0, total: 0, userDataPath };
     }
   });
 
