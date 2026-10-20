@@ -1,5 +1,10 @@
 <template>
-  <div v-if="isElectron && isMainApp" class="app-titlebar d-flex align-center" :style="{ background: 'var(--sidebar-bg)', color: 'var(--sidebar-text)' }">
+  <div
+    v-if="isElectron && isMainApp"
+    class="app-titlebar d-flex align-center"
+    :class="{ 'is-booting': isBooting }"
+    :style="isBooting ? {} : { background: 'var(--sidebar-bg)', color: 'var(--sidebar-text)' }"
+  >
     <!-- MAC VERSION -->
     <template v-if="isMac">
       <div class="mac-controls d-flex align-center h-100 titlebar-no-drag pl-4" :class="{ 'mac-unfocused': !isFocused }" style="z-index: 2;">
@@ -20,25 +25,25 @@
         </div>
       </div>
       
-      <div class="mac-title-center h-100 d-flex align-center justify-center">
+      <div v-if="!isBooting" class="mac-title-center h-100 d-flex align-center justify-center">
         <span class="text-caption font-weight-medium" style="opacity: 0.9; letter-spacing: 0.5px;">{{ $t('app.name') }}</span>
-        <span class="ml-2" style="font-size: 10px; opacity: 0.4; letter-spacing: 0.5px; font-weight: 500;">v{{ version }}</span>
       </div>
     </template>
 
     <!-- WINDOWS VERSION -->
     <template v-else>
       <div class="d-flex align-center titlebar-drag-area flex-grow-1 h-100 pl-3">
-        <img
-          src="/ico/favicon.svg"
-          width="16"
-          height="16"
-          class="mr-2"
-          style="opacity: 0.9;"
-          alt="Icone"
-        />
-        <span class="text-caption font-weight-medium" style="opacity: 0.9; letter-spacing: 0.5px;">{{ $t('app.name') }}</span>
-        <span class="ml-2" style="font-size: 10px; opacity: 0.4; letter-spacing: 0.5px; font-weight: 500;">v{{ version }}</span>
+        <template v-if="!isBooting">
+          <img
+            src="/ico/favicon.svg"
+            width="16"
+            height="16"
+            class="mr-2"
+            style="opacity: 0.9;"
+            alt="Icone"
+          />
+          <span class="text-caption font-weight-medium" style="opacity: 0.9; letter-spacing: 0.5px;">{{ $t('app.name') }}</span>
+        </template>
       </div>
       
       <div class="window-controls d-flex h-100 titlebar-no-drag">
@@ -66,7 +71,6 @@
 import { defineComponent } from "vue";
 import $appdata from "@/helpers/config/AppData";
 import $alert from "@/helpers/ui/Alert";
-import packageJson from "../../package.json";
 
 export default defineComponent({
   name: "AppTitlebar",
@@ -76,19 +80,17 @@ export default defineComponent({
       isElectron: false as boolean,
       isMac: false as boolean,
       isFocused: true as boolean,
-      db_version: 0 as number,
     };
   },
   computed: {
     isMainApp(): boolean {
       return this.$route.name !== "Popup" && this.$route.name !== "StageMonitor";
     },
-    version(): string {
-      return `${packageJson.version}.${this.db_version}`;
+    isBooting(): boolean {
+      return !!this.$appdata.get("system_first_boot_loading");
     },
   },
   async mounted() {
-    await this.loadDBVersion();
     this.isMac = navigator.userAgent.includes("Mac");
     
     window.addEventListener("focus", () => { this.isFocused = true; });
@@ -125,10 +127,6 @@ export default defineComponent({
     }
   },
   methods: {
-    async loadDBVersion() {
-      const config = await this.$database.get("config");
-      this.db_version = config?.version_number || 0;
-    },
     minimize() {
       if (this.isElectron && window.electronAPI) window.electronAPI.windowControl("minimize");
     },
@@ -155,6 +153,12 @@ export default defineComponent({
   z-index: 99999;
   user-select: none;
   -webkit-app-region: drag;
+  transition: background-color 0.3s ease;
+}
+
+.app-titlebar.is-booting {
+  background: transparent !important;
+  color: var(--sidebar-text) !important;
 }
 
 .titlebar-drag-area {

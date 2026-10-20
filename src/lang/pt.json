@@ -72,6 +72,7 @@
         "title_start": "Iniciando o Louvor JA",
         "subtitle": "Aguarde instantes enquanto organizamos tudo para você.",
         "retry_button": "Tentar Novamente",
+        "offline_button": "Continuar Offline",
         "status": {
             "starting": "Iniciando...",
             "view_mode": "Modo de visualização (fechando em 5s)...",
@@ -94,6 +95,22 @@
         "old_version": {
             "title": "Versão clássica detectada",
             "text": "Detectamos que você possui a versão clássica do Louvor JA instalada neste computador.<br><br>Gostaria de importar o banco de dados da versão clássica para a nova versão?<br><br>Isso agilizará o processo de inicialização. Fique tranquilo, isso não irá alterar, remover ou interferir no funcionamento da versão clássica instalada."
+        },
+        "tasks": {
+            "checking_files": "Verificando arquivos",
+            "loading_modules": "Carregando módulos",
+            "preparing_resources": "Preparando recursos",
+            "library_loaded": "Biblioteca local carregada",
+            "loading_templates": "Carregando templates",
+            "scheduled_items": "Inicializando itens agendados",
+            "finalizing": "Finalizando",
+            "modules_loaded": "Módulos carregados",
+            "data_updated": "Dados atualizados",
+            "interface_ready": "Interface preparada"
+        },
+        "database_card": {
+            "title": "Atualizando dados da biblioteca",
+            "subtitle": "Isso pode levar alguns instantes."
         }
     }
 }

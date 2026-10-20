@@ -72,6 +72,7 @@
         "title_start": "Iniciando Loor JA",
         "subtitle": "Espera un momento mientras organizamos todo para ti.",
         "retry_button": "Intentar Nuevamente",
+        "offline_button": "Continuar Sin Conexión",
         "status": {
             "starting": "Iniciando...",
             "view_mode": "Modo de visualización (cerrando en 5s)...",
@@ -94,6 +95,22 @@
         "old_version": {
             "title": "Versión clásica detectada",
             "text": "Detectamos que tienes la versión clásica de Loor JA instalada en esta computadora.<br><br>¿Te gustaría importar la base de datos de la versión clásica a la nueva versión?<br><br>Esto acelerará el proceso de inicialización. No te preocupes, esto no alterará, eliminará ni interferirá con el funcionamiento de la versión clásica instalada."
+        },
+        "tasks": {
+            "checking_files": "Verificando archivos",
+            "loading_modules": "Cargando módulos",
+            "preparing_resources": "Preparando recursos",
+            "library_loaded": "Biblioteca local cargada",
+            "loading_templates": "Cargando plantillas",
+            "scheduled_items": "Inicializando elementos programados",
+            "finalizing": "Finalizando",
+            "modules_loaded": "Módulos cargados",
+            "data_updated": "Datos actualizados",
+            "interface_ready": "Interfaz preparada"
+        },
+        "database_card": {
+            "title": "Actualizando datos de la biblioteca",
+            "subtitle": "Esto puede tomar unos instantes."
         }
     }
 }

@@ -28,9 +28,29 @@
           {{ $t('modules.help.app_desc') }}
         </p>
 
-        <!-- Version Pill -->
-        <div class="text-caption font-weight-bold" style="color: var(--sidebar-text-secondary); background: var(--main-bg); padding: 6px 16px; border-radius: 20px; box-shadow: inset 0 0 0 1px var(--border-color);">
-          {{ $t('modules.help.version', { version: appVersion }) }}
+        <!-- Version Pills -->
+        <div class="d-flex align-center justify-center flex-wrap" style="gap: 8px;">
+          <div class="text-caption font-weight-bold d-flex align-center" style="color: var(--sidebar-text-secondary); background: var(--main-bg); padding: 6px 14px; border-radius: 20px; box-shadow: inset 0 0 0 1px var(--border-color);">
+            <v-icon
+              size="14"
+              class="mr-2"
+              color="primary"
+            >
+              mdi-application-outline
+            </v-icon>
+            <span>{{ $t('modules.help.version', { version: appVersion }) }}</span>
+          </div>
+
+          <div v-if="dbVersion" class="text-caption font-weight-bold d-flex align-center" style="color: var(--sidebar-text-secondary); background: var(--main-bg); padding: 6px 14px; border-radius: 20px; box-shadow: inset 0 0 0 1px var(--border-color);">
+            <v-icon
+              size="14"
+              class="mr-2"
+              color="primary"
+            >
+              mdi-database-outline
+            </v-icon>
+            <span>{{ $t('modules.help.db_version', { version: dbVersion }) }}</span>
+          </div>
         </div>
       </v-card-text>
     </v-card>
@@ -105,5 +125,23 @@ export default defineComponent({
     },
   },
   emits: ["open-update", "open-manual", "open-support", "open-diagnostics"],
+  data() {
+    return {
+      dbVersion: 0 as number | string,
+    };
+  },
+  async mounted() {
+    await this.loadDBVersion();
+  },
+  methods: {
+    async loadDBVersion() {
+      try {
+        const config = await (this as any).$database?.get?.("config");
+        this.dbVersion = config?.data?.version_number || config?.version_number || config?.db_version || 0;
+      } catch (err) {
+        console.error("Erro ao carregar versão do banco de dados:", err);
+      }
+    },
+  },
 });
 </script>
