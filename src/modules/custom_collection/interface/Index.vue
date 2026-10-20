@@ -177,44 +177,25 @@
                       </p>
                     </div>
                     <div class="music-duration">
-                      {{ result.song.type === 'internal' ? $datetime.shortTime(songData(result.song)?.duration) : '' }}
+                      {{ result.song.type === 'internal' ? $datetime.shortTime(songData(result.song)?.duration) : (result.song.duration ? $datetime.shortTime(result.song.duration) : '') }}
                     </div>
                     <div class="music-actions d-flex align-center justify-end" @click.stop>
                       <LMusicMenuTable
                         v-if="result.song.type === 'internal'"
                         :id-music="result.song.id_music"
                         :has-instrumental-music="songData(result.song)?.has_instrumental_music"
+                        :item="result.song"
                       />
-                      <template v-else>
-                        <v-btn
-                          :disabled="!result.song.filePathAudio"
-                          variant="text"
-                          color="primary"
-                          density="compact"
-                          class="mx-1"
-                          icon
-                          @click="playExternalFile(result.song, 'audio')"
-                        >
-                          <v-icon>mdi-play-circle</v-icon>
-                          <v-tooltip activator="parent" location="top">
-                            Cantado
-                          </v-tooltip>
-                        </v-btn>
-                        <v-btn
-                          :disabled="!result.song.filePathInstrumental"
-                          variant="text"
-                          color="primary"
-                          density="compact"
-                          class="mx-1"
-                          icon
-                          @click="playExternalFile(result.song, 'instrumental')"
-                        >
-                          <v-icon>mdi-play-circle-outline</v-icon>
-                          <v-tooltip activator="parent" location="top">
-                            Playback
-                          </v-tooltip>
-                        </v-btn>
-                      </template>
+                      <LMusicMenuTable
+                        v-else
+                        :id-music="result.song.filePathAudio || result.song.id"
+                        :has-instrumental-music="Boolean(result.song.filePathInstrumental)"
+                        :item="{
+                          ...result.song,
+                          custom_collection_name: result.collection.name,
+                          is_external_song: true,
+                        }"
+                      />
                     </div>
                   </div>
                 </div>
@@ -367,13 +348,14 @@
                     </h4>
                   </div>
                   <div class="music-duration">
-                    {{ item.type === 'internal' ? $datetime.shortTime(songData(item)?.duration) : '' }}
+                    {{ item.type === 'internal' ? $datetime.shortTime(songData(item)?.duration) : (item.duration ? $datetime.shortTime(item.duration) : '') }}
                   </div>
                   <div class="music-actions d-flex align-center justify-end">
                     <LMusicMenuTable
                       v-if="item.type === 'internal'"
                       :id-music="item.id_music"
                       :has-instrumental-music="songData(item)?.has_instrumental_music"
+                      :item="item"
                     />
                     <template v-else>
                       <v-btn
@@ -427,6 +409,56 @@
                           Sem Áudio
                         </v-tooltip>
                       </v-btn>
+                      <!-- Fila para músicas externas -->
+                      <v-menu
+                        v-if="item.filePathAudio || item.filePathInstrumental"
+                        location="top center"
+                        :offset="8"
+                        open-on-hover
+                        :open-delay="120"
+                        :close-on-content-click="true"
+                        transition="slide-y-reverse-transition"
+                      >
+                        <template #activator="{ props: menuProps }">
+                          <v-btn
+                            v-bind="menuProps"
+                            variant="text"
+                            density="compact"
+                            class="mx-1"
+                            icon
+                            @click.stop
+                          >
+                            <v-icon>mdi-playlist-plus</v-icon>
+                            <v-tooltip
+                              activator="parent"
+                              location="top"
+                              open-delay="300"
+                              content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+                            >
+                              {{ $t('modules.media.queue.add_to_queue') || 'Adicionar à fila' }}
+                            </v-tooltip>
+                          </v-btn>
+                        </template>
+
+                        <div class="search-filter-popover" style="min-width: 170px;">
+                          <button
+                            v-if="item.filePathAudio"
+                            type="button"
+                            class="filter-item"
+                            @click.stop="addToQueueExternal(item, 'audio')"
+                          >
+                            <span class="filter-label">{{ $t('modules.media.general.sung') || 'Cantado' }}</span>
+                          </button>
+                          <button
+                            v-if="item.filePathInstrumental"
+                            type="button"
+                            class="filter-item"
+                            @click.stop="addToQueueExternal(item, 'instrumental')"
+                          >
+                            <span class="filter-label">{{ $t('modules.media.general.instrumental') || 'Playback' }}</span>
+                          </button>
+                        </div>
+                      </v-menu>
                     </template>
                     <v-menu
                       v-if="item.type === 'external' && !isFavorites(detailCollection)"
@@ -1375,6 +1407,7 @@ interface ExternalSong {
   name: string;
   filePathAudio: string | null;
   filePathInstrumental: string | null;
+  duration?: string;
 }
 type CollectionSong = InternalSong | ExternalSong;
 
@@ -1791,6 +1824,28 @@ export default defineComponent({
         volume: currentVolume,
       });
     },
+    addToQueueExternal(song: ExternalSong, mode: string) {
+      const rawPath = mode === "instrumental" && song.filePathInstrumental ? song.filePathInstrumental : song.filePathAudio;
+      (this as any).$media.addToQueue({
+        id_music: rawPath ? `slja:${rawPath}` : song.id,
+        mode,
+        name: song.name,
+        custom_collection_name: this.detailCollection?.name || "Coletânea Personalizada",
+        filePathAudio: song.filePathAudio,
+        filePathInstrumental: song.filePathInstrumental,
+        is_external_song: true,
+      });
+      import("@/helpers/ui/Snackbar").then(({ default: $snackbar }) => {
+        const modeLabel = mode === "instrumental" 
+          ? (this.t("playback") || "Playback") 
+          : (this.t("cantado") || "Cantado");
+        $snackbar.show({
+          text: `${(this as any).$t("modules.media.queue.added") || "Música adicionada à fila"} (${modeLabel})`,
+          color: "success",
+          timeout: 2000,
+        });
+      });
+    },
     async playSljaAsNativeSong(item: ExternalSong, filePath: string, mode: "audio" | "instrumental" | "no_audio") {
       const electronAPI = (window as any).electronAPI;
       if (!electronAPI?.readSljaZip) return;
@@ -1806,8 +1861,12 @@ export default defineComponent({
       const [firstSlide, ...remainingSlides] = data.slides;
 
       const lyric: Record<string, any> = {};
+      let estimatedDuration = 0;
       remainingSlides.forEach((s: any, index: number) => {
         const timeHms = secondsToHms(s.time);
+        if (typeof s.time === "number" && s.time > estimatedDuration) {
+          estimatedDuration = s.time;
+        }
         lyric[`s${index}`] = {
           lyric: formatLyricText(s.text),
           aux_lyric: formatLyricText(s.auxText),
@@ -1824,6 +1883,12 @@ export default defineComponent({
         };
       });
 
+      const durationStr = estimatedDuration > 0 ? (this as any).$datetime.shortTime(estimatedDuration) : "0:00";
+      if ((!item.duration || item.duration === "0:00") && durationStr !== "0:00") {
+        item.duration = durationStr;
+        this.saveCollections();
+      }
+
       const titleFromFirstSlide = firstSlide?.text?.trim();
       const externalData = {
         name: titleFromFirstSlide || data.name || item.name,
@@ -1832,8 +1897,8 @@ export default defineComponent({
         lyric,
         albums: [],
         categories: [],
-        duration: "0:00",
-        instrumental_duration: "0:00",
+        duration: durationStr,
+        instrumental_duration: durationStr,
         has_instrumental_music: !!data.instrumentalPath,
       };
 

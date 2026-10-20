@@ -155,7 +155,7 @@ const loadCustomMusics = (localMusicsList: any[] = []) => {
           id: `custom_ext_${col.id}_${song.id}`,
           id_music: `custom_ext_${col.id}_${song.id}`,
           name: song.name,
-          duration: 0,
+          duration: (song as any).duration || 0,
           has_instrumental_music: Boolean(song.filePathInstrumental),
           lyric: "",
           filePathAudio: song.filePathAudio,

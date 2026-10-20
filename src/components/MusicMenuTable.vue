@@ -72,9 +72,9 @@
         <button
           type="button"
           class="filter-item"
-          :disabled="!hasInstrumentalMusic"
-          :class="{ 'is-disabled': !hasInstrumentalMusic }"
-          @click.stop="hasInstrumentalMusic ? addToQueue('instrumental') : null"
+          :disabled="!hasInstrumental"
+          :class="{ 'is-disabled': !hasInstrumental }"
+          @click.stop="hasInstrumental ? addToQueue('instrumental') : null"
         >
           <span class="filter-label">{{ $t('modules.media.general.instrumental') || 'Playback' }}</span>
         </button>
@@ -146,6 +146,7 @@ const props = withDefaults(defineProps<{
   color?: string;
   compact?: boolean;
   item?: any;
+  musicData?: any;
   pulseLyric?: boolean;
   searchQuery?: string;
 }>(), {
@@ -154,6 +155,7 @@ const props = withDefaults(defineProps<{
   color: "",
   compact: false,
   item: null,
+  musicData: null,
   pulseLyric: false,
   searchQuery: "",
 });
@@ -166,11 +168,99 @@ const media = useMedia();
 
 const queueMenuOpen = ref(false);
 
+const activeItem = computed(() => props.item || props.musicData || null);
+
+const isSljaFile = (filePath: string): boolean => {
+  return /\.(slja|sja|lja)$/i.test(filePath || "");
+};
+
+const externalSongData = computed(() => {
+  const item = activeItem.value;
+  const idStr = String(props.idMusic || item?.id_music || "");
+  const isNumeric = /^\d+$/.test(idStr) && Number(idStr) > 0;
+
+  if (item?.filePathAudio || item?.is_external_song) {
+    return {
+      filePathAudio: item.filePathAudio || (idStr.startsWith("slja:") ? idStr.slice(5) : ""),
+      filePathInstrumental: item.filePathInstrumental || null,
+      name: item.name || "",
+      custom_collection_name: item.custom_collection_name || item.album_name || item.subtitle || "",
+    };
+  }
+
+  if (isNumeric) return null;
+
+  if (idStr.startsWith("slja:")) {
+    return {
+      filePathAudio: idStr.slice(5),
+      filePathInstrumental: null,
+      name: item?.name || "",
+      custom_collection_name: item?.album_name || item?.custom_collection_name || "",
+    };
+  }
+
+  const collections = store?.getters?.getData?.("user_data.modules.custom_collection.list") || [];
+  for (const col of collections) {
+    const found = (col.songs || []).find((s: any) =>
+      s.id === idStr ||
+      s.filePathAudio === idStr ||
+      s.name === item?.name ||
+      `custom_ext_${col.id}_${s.id}` === idStr,
+    );
+    if (found) {
+      return {
+        filePathAudio: found.filePathAudio || (isSljaFile(found.filePathInstrumental) ? found.filePathInstrumental : ""),
+        filePathInstrumental: found.filePathInstrumental || null,
+        name: found.name || item?.name || "",
+        custom_collection_name: col.name || item?.album_name || "",
+      };
+    }
+  }
+
+  if (idStr.includes("/") || idStr.includes("\\")) {
+    return {
+      filePathAudio: idStr,
+      filePathInstrumental: null,
+      name: item?.name || "",
+      custom_collection_name: item?.album_name || "",
+    };
+  }
+
+  return null;
+});
+
+const isExternalSong = computed(() => {
+  return Boolean(
+    activeItem.value?.is_external_song ||
+      (typeof props.idMusic === "string" && (props.idMusic.startsWith("slja:") || props.idMusic.startsWith("custom_ext_"))) ||
+      (typeof activeItem.value?.id_music === "string" && (activeItem.value?.id_music.startsWith("slja:") || activeItem.value?.id_music.startsWith("custom_ext_"))) ||
+      activeItem.value?.filePathAudio ||
+      externalSongData.value !== null,
+  );
+});
+
+const externalAudioPath = computed(() => {
+  if (externalSongData.value?.filePathAudio) return externalSongData.value.filePathAudio;
+  if (activeItem.value?.filePathAudio) return activeItem.value.filePathAudio;
+  const id = typeof props.idMusic === "string" ? props.idMusic : (activeItem.value?.id_music || "");
+  if (typeof id === "string" && id.startsWith("slja:")) {
+    return id.slice("slja:".length);
+  }
+  return "";
+});
+
+const hasInstrumental = computed(() => {
+  return Boolean(
+    props.hasInstrumentalMusic ||
+      activeItem.value?.filePathInstrumental ||
+      externalSongData.value?.filePathInstrumental,
+  );
+});
+
 const canFavorite = computed(() => {
   const numId = Number(props.idMusic);
   const isNum = !isNaN(numId) && numId > 0;
-  const isExt = Boolean(props.item?.is_external_song && props.item?.filePathAudio);
-  return isNum || isExt;
+  return isNum || (isExternalSong.value && Boolean(externalAudioPath.value || props.idMusic));
 });
 
 const isFavorite = computed(() => {
@@ -183,8 +273,9 @@ const isFavorite = computed(() => {
     return fav.songs.some((s: any) => s.type === "internal" && Number(s.id_music) === numId);
   }
 
-  if (props.item?.is_external_song && props.item?.filePathAudio) {
-    return fav.songs.some((s: any) => s.type === "external" && s.filePathAudio === props.item.filePathAudio);
+  const extPath = externalAudioPath.value;
+  if (extPath) {
+    return fav.songs.some((s: any) => s.type === "external" && (s.filePathAudio === extPath || s.id_music === props.idMusic));
   }
 
   return false;
@@ -199,7 +290,7 @@ const favoriteRemoveTooltip = computed(() => {
 });
 
 const toggleFavorite = () => {
-  const added = toggleFavoriteSong(props.idMusic, props.item);
+  const added = toggleFavoriteSong(props.idMusic, activeItem.value);
   import("@/helpers/ui/Snackbar").then(({ default: $snackbar }) => {
     $snackbar.show({
       text: added
@@ -213,14 +304,32 @@ const toggleFavorite = () => {
 };
 
 const canQueue = computed(() => {
-  if (props.item?.is_online_collection) return false;
-  if (props.item?.is_external_song) return false;
+  if (activeItem.value?.is_online_collection) return false;
+  if (isExternalSong.value) {
+    return Boolean(externalAudioPath.value);
+  }
   const numId = Number(props.idMusic);
   return !isNaN(numId) && numId > 0;
 });
 
 const addToQueue = (mode: string) => {
-  media.addToQueue({ id_music: Number(props.idMusic), mode });
+  if (isExternalSong.value) {
+    const rawPath = externalAudioPath.value;
+    const name = activeItem.value?.name || externalSongData.value?.name || "";
+    const colName = activeItem.value?.custom_collection_name || activeItem.value?.album_name || externalSongData.value?.custom_collection_name || "";
+    media.addToQueue({
+      id_music: props.idMusic || (rawPath ? `slja:${rawPath}` : ""),
+      mode,
+      name,
+      custom_collection_name: colName,
+      filePathAudio: rawPath,
+      filePathInstrumental: activeItem.value?.filePathInstrumental || externalSongData.value?.filePathInstrumental || null,
+      url_image: activeItem.value?.url_image || null,
+      is_external_song: true,
+    });
+  } else {
+    media.addToQueue({ id_music: Number(props.idMusic), mode });
+  }
   queueMenuOpen.value = false;
   import("@/helpers/ui/Snackbar").then(({ default: $snackbar }) => {
     const modeLabel = mode === "instrumental" 
@@ -235,12 +344,8 @@ const addToQueue = (mode: string) => {
   emit("action", "queue");
 };
 
-const isSljaFile = (filePath: string): boolean => {
-  return /\.(slja|sja|lja)$/i.test(filePath || "");
-};
-
 const buttons = computed(() => {
-  const item = props.item;
+  const item = activeItem.value;
 
   // 1. Coletânea Online (YouTube)
   if (item?.is_online_collection) {
@@ -290,33 +395,53 @@ const buttons = computed(() => {
   }
 
   // 2. Coletânea Personalizada (Arquivo Externo)
-  if (item?.is_external_song) {
-    const isSlja = isSljaFile(item.filePathAudio);
+  if (isExternalSong.value) {
+    const rawPath = externalAudioPath.value;
+    const isSlja = isSljaFile(rawPath);
+    const itemData = {
+      ...activeItem.value,
+      filePathAudio: rawPath,
+      filePathInstrumental: activeItem.value?.filePathInstrumental || externalSongData.value?.filePathInstrumental || null,
+      name: activeItem.value?.name || externalSongData.value?.name || "",
+      custom_collection_name: activeItem.value?.custom_collection_name || externalSongData.value?.custom_collection_name || "",
+    };
     return [
       {
         tooltip: "Cantado",
-        disabled: !item.filePathAudio,
+        disabled: !rawPath,
         icon: "mdi-play-circle",
         click: () => {
-          (media as any).playExternalFile(item, "audio");
+          if (isSlja) {
+            (media as any).playExternalSlja(rawPath, "audio");
+          } else {
+            (media as any).playExternalFile(itemData, "audio");
+          }
           emit("action", "play");
         },
       },
       {
-        tooltip: item.filePathInstrumental ? "Playback" : "Playback indisponível",
-        disabled: !item.filePathInstrumental,
+        tooltip: hasInstrumental.value ? "Playback" : "Playback indisponível",
+        disabled: !hasInstrumental.value,
         icon: "mdi-play-circle-outline",
         click: () => {
-          (media as any).playExternalFile(item, "instrumental");
+          if (isSlja) {
+            (media as any).playExternalSlja(rawPath, "instrumental");
+          } else {
+            (media as any).playExternalFile(itemData, "instrumental");
+          }
           emit("action", "play");
         },
       },
       {
         tooltip: "Sem Áudio",
-        disabled: !item.filePathAudio,
+        disabled: !rawPath,
         icon: "mdi-monitor",
         click: () => {
-          (media as any).playExternalFile(item, "no_audio");
+          if (isSlja) {
+            (media as any).playExternalSlja(rawPath, "no_audio");
+          } else {
+            (media as any).playExternalFile(itemData, "no_audio");
+          }
           emit("action", "view");
         },
       },
@@ -328,7 +453,7 @@ const buttons = computed(() => {
         class: (isSlja && props.pulseLyric) ? "pulse-lyric-btn" : "",
         click: () => {
           if (isSlja) {
-            (media as any).playExternalSlja(item.filePathAudio, "no_audio");
+            (media as any).playExternalSlja(rawPath, "no_audio");
             emit("action", "lyric");
           }
         },

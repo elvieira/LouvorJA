@@ -554,6 +554,14 @@ export default defineComponent({
       if (el) {
         this.duration = el.duration;
         this.$appdata.set("modules.external_media.config.duration", this.duration);
+        if (this.duration > 0 && !isNaN(this.duration) && isFinite(this.duration)) {
+          const formatted = (this as any).$datetime.shortTime(this.duration);
+          const raw = this.$appdata.get("modules.external_media.filePath");
+          if (raw) {
+            (this as any).$history.updateSongDuration(`ext:${raw}`, formatted, true);
+            (this as any).$history.updateSongDuration(raw, formatted, true);
+          }
+        }
       }
     },
 

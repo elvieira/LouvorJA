@@ -251,7 +251,7 @@
         </div>
       </div>
 
-      <div v-if="searchQuery || shouldShowHistory" class="content-main">
+      <div v-if="searchQuery || shouldShowHistory" class="content-main" :class="{ 'expanded-mode': showAllTopSongs && !searchQuery }">
         <div v-if="searchQuery" class="dashboard-section music-section h-100 d-flex flex-column" style="min-height: 0;">
           <div class="section-header">
             <h2 class="section-title">
@@ -337,85 +337,91 @@
 
         <template v-else-if="shouldShowHistory && !searchQuery">
           <!-- Seção: Coletâneas Recentes -->
-          <div class="dashboard-section collections-section">
-            <div class="section-header">
-              <h2 class="section-title">
-                {{ t("recent_collections") }}
-              </h2>
-              <button
-                type="button"
-                class="section-see-all-btn"
-                @click="openAllCollections"
-              >
-                <span>{{ t("see_all") }}</span>
-                <v-icon size="16">
-                  mdi-arrow-right
-                </v-icon>
-              </button>
-            </div>
-            <div 
-              v-if="displayCollections.length > 0" 
-              ref="collectionsGrid"
-              class="collections-grid"
-              @wheel="handleCollectionsScroll"
-            >
-              <div 
-                v-for="collection in displayCollections" 
-                :key="collection.id"
-                class="collection-card"
-                @click="openCollection(collection)"
-              >
-                <div class="card-image">
-                  <v-img 
-                    v-if="getCollectionImage(collection)" 
-                    :src="getCollectionImage(collection)" 
-                    cover 
-                    class="card-cover-img"
-                  />
-                  <v-icon
-                    v-else
-                    size="48"
-                    color="var(--ds-accent)"
-                  >
-                    {{ collection.icon || 'mdi-music-box-multiple' }}
+          <v-expand-transition>
+            <div v-if="!showAllTopSongs" class="dashboard-section collections-section">
+              <div class="section-header">
+                <h2 class="section-title">
+                  {{ t("recent_collections") }}
+                </h2>
+                <button
+                  type="button"
+                  class="section-see-all-btn"
+                  @click="openAllCollections"
+                >
+                  <span>{{ t("see_all") }}</span>
+                  <v-icon size="16">
+                    mdi-arrow-right
                   </v-icon>
-                </div>
-                <div class="card-content">
-                  <h3 class="card-title" :title="getCollectionName(collection)">
-                    {{ getCollectionName(collection) }}
-                  </h3>
-                  <p v-if="collection.songCount" class="card-stats">
-                    {{ collection.songCount }} {{ t("songs") }}
-                  </p>
+                </button>
+              </div>
+              <div 
+                v-if="displayCollections.length > 0" 
+                ref="collectionsGrid"
+                class="collections-grid"
+                @wheel="handleCollectionsScroll"
+              >
+                <div 
+                  v-for="collection in displayCollections" 
+                  :key="collection.id"
+                  class="collection-card"
+                  @click="openCollection(collection)"
+                >
+                  <div class="card-image">
+                    <v-img 
+                      v-if="getCollectionImage(collection)" 
+                      :src="getCollectionImage(collection)" 
+                      cover 
+                      class="card-cover-img"
+                    />
+                    <v-icon
+                      v-else
+                      size="48"
+                      color="var(--ds-accent)"
+                    >
+                      {{ collection.icon || 'mdi-music-box-multiple' }}
+                    </v-icon>
+                  </div>
+                  <div class="card-content">
+                    <h3 class="card-title" :title="getCollectionName(collection)">
+                      {{ getCollectionName(collection) }}
+                    </h3>
+                    <p v-if="collection.songCount" class="card-stats">
+                      {{ collection.songCount }} {{ t("songs") }}
+                    </p>
+                  </div>
                 </div>
               </div>
+              <div v-else class="empty-state collections-empty">
+                <v-icon size="48" color="var(--ds-text-secondary)">
+                  mdi-music-box-multiple-outline
+                </v-icon>
+                <p>{{ t("no_collections_played") }}</p>
+              </div>
             </div>
-            <div v-else class="empty-state collections-empty">
-              <v-icon size="48" color="var(--ds-text-secondary)">
-                mdi-music-box-multiple-outline
-              </v-icon>
-              <p>{{ t("no_collections_played") }}</p>
-            </div>
-          </div>
+          </v-expand-transition>
 
           <!-- Seção: Músicas Mais Tocadas -->
-          <div class="dashboard-section music-section">
+          <div 
+            class="dashboard-section music-section"
+            :class="{ 'expanded-music-section': showAllTopSongs }"
+          >
             <div class="section-header">
               <h2 class="section-title">
                 {{ t("top_songs") }}
               </h2>
               <button
+                v-if="hasMoreTopSongs || showAllTopSongs"
                 type="button"
                 class="section-see-all-btn"
-                @click="openAllSongs"
+                @click="toggleTopSongsLimit"
               >
-                <span>{{ t("see_all") }}</span>
+                <span>{{ showAllTopSongs ? t("see_less") : t("see_more") }}</span>
                 <v-icon size="16">
-                  mdi-arrow-right
+                  {{ showAllTopSongs ? 'mdi-chevron-up' : 'mdi-chevron-down' }}
                 </v-icon>
               </button>
             </div>
-            <div class="music-list">
+            <div class="music-list flex-grow-1 d-flex flex-column" style="min-height: 0;">
               <div class="music-list-container">
                 <div 
                   v-for="(song, index) in topSongs" 
@@ -523,6 +529,7 @@ export default defineComponent({
     manifest,
     dynamicCollectionInfo: {} as Record<string, any>,
     show_home_history: true,
+    showAllTopSongs: false,
     hymnalImg,
     hymnal1996Img,
   }),
@@ -573,8 +580,14 @@ export default defineComponent({
       });
     },
     
+    allTopSongs(): any[] {
+      return (this as any).$history.getTopSongs(50);
+    },
     topSongs(): any[] {
-      return (this as any).$history.getTopSongs(20);
+      return this.showAllTopSongs ? this.allTopSongs : this.allTopSongs.slice(0, 20);
+    },
+    hasMoreTopSongs(): boolean {
+      return this.allTopSongs.length > 20;
     },
     
     compact(): boolean {
@@ -638,6 +651,7 @@ export default defineComponent({
     this.fetchCollectionInfo();
     const setting = this.$userdata.get("show_home_history");
     this.show_home_history = setting !== false;
+    this.resolveMissingDurations();
   },
   methods: {
     /* METHODS OBRIGATÓRIOS - INÍCIO */
@@ -818,9 +832,44 @@ export default defineComponent({
         return;
       }
       if (!song.id_music) return;
-      if (typeof song.id_music === "string" && song.id_music.startsWith("slja:")) {
-        this.$media.playExternalSlja(song.id_music.slice("slja:".length));
+      const idStr = String(song.id_music);
+      if (idStr.startsWith("slja:")) {
+        this.$media.playExternalSlja(idStr.slice("slja:".length));
         return;
+      }
+      if (isNaN(Number(idStr))) {
+        const customCollections = this.$userdata.get("modules.custom_collection.list") || [];
+        for (const col of customCollections) {
+          const found = (col.songs || []).find((s: any) =>
+            s.id === idStr ||
+            s.filePathAudio === idStr ||
+            s.name === song.name ||
+            `custom_ext_${col.id}_${s.id}` === idStr,
+          );
+          if (found) {
+            const rawPath = found.filePathAudio || found.filePathInstrumental;
+            if (rawPath && /\.(slja|sja|lja)$/i.test(rawPath)) {
+              this.$media.playExternalSlja(rawPath);
+            } else {
+              (this.$media as any).playExternalFile({
+                ...found,
+                custom_collection_name: col.name,
+              }, "audio");
+            }
+            return;
+          }
+        }
+        if (idStr.includes("/") || idStr.includes("\\")) {
+          if (/\.(slja|sja|lja)$/i.test(idStr)) {
+            this.$media.playExternalSlja(idStr);
+          } else {
+            (this.$media as any).playExternalFile({
+              name: song.name,
+              filePathAudio: idStr,
+            }, "audio");
+          }
+          return;
+        }
       }
       this.$media.open({ id_music: Number(song.id_music), mode: "audio" });
     },
@@ -882,8 +931,193 @@ export default defineComponent({
       this.$modules.open("collections");
     },
 
-    openAllSongs() {
-      this.$modules.open("musics");
+    toggleTopSongsLimit() {
+      this.showAllTopSongs = !this.showAllTopSongs;
+      if (this.showAllTopSongs) {
+        this.resolveMissingDurations();
+        this.$nextTick(() => {
+          const content = this.$el.querySelector(".content-main");
+          if (content) {
+            content.scrollTop = 0;
+          }
+        });
+      }
+    },
+
+    toLocalFileUrl(rawPath: string | null): string {
+      if (!rawPath) return "";
+      const normalized = rawPath.replace(/\\/g, "/");
+      const prefix = normalized.startsWith("/") ? "local://app" : "local://app/";
+      return `${prefix}${normalized}`;
+    },
+
+    probeAudioDuration(url: string): Promise<number> {
+      if (!url) return Promise.resolve(0);
+      return new Promise((resolve) => {
+        const audio = new Audio();
+        let resolved = false;
+        const cleanup = () => {
+          if (resolved) return;
+          resolved = true;
+          audio.removeEventListener("loadedmetadata", onLoaded);
+          audio.removeEventListener("error", onError);
+          audio.src = "";
+        };
+        const onLoaded = () => {
+          const dur = audio.duration;
+          cleanup();
+          resolve(isFinite(dur) && dur > 0 ? dur : 0);
+        };
+        const onError = () => {
+          cleanup();
+          resolve(0);
+        };
+        audio.addEventListener("loadedmetadata", onLoaded);
+        audio.addEventListener("error", onError);
+        audio.preload = "metadata";
+        audio.src = url;
+        setTimeout(() => {
+          cleanup();
+          resolve(0);
+        }, 3000);
+      });
+    },
+
+    async resolveMissingDurations() {
+      const songs = this.allTopSongs || [];
+      const missing = songs.filter(
+        (s: any) =>
+          !s.duration ||
+          s.duration === "0:00" ||
+          s.duration === "00:00" ||
+          (s.duration.includes(":00") && s.duration !== "0:00" && (s.duration.split(":").map(Number)[0] || 0) >= 60),
+      );
+      if (missing.length === 0) return;
+
+      const electronAPI = (window as any).electronAPI;
+      const customCollections = this.$userdata.get("modules.custom_collection.list") || [];
+
+      for (const song of missing) {
+        try {
+          let durationSeconds = 0;
+          const idStr = String(song.id_music || "");
+
+          // 1. Música interna (ID numérico)
+          if (/^\d+$/.test(idStr) && Number(idStr) > 0) {
+            const musicData = await this.$database.get(`music_${idStr}`);
+            if (musicData && musicData.duration) {
+              durationSeconds = this.$datetime.toNumber(musicData.duration);
+            }
+          }
+
+          // 2. Arquivo .slja (slja:/caminho/arquivo.slja)
+          if (idStr.startsWith("slja:")) {
+            const filePath = idStr.slice("slja:".length);
+            if (electronAPI?.readSljaZip) {
+              const sljaData = await electronAPI.readSljaZip(filePath);
+              if (sljaData) {
+                let maxSlideTime = 0;
+                if (Array.isArray(sljaData.slides)) {
+                  for (const slide of sljaData.slides) {
+                    if (typeof slide.time === "number" && slide.time > maxSlideTime) {
+                      maxSlideTime = slide.time;
+                    }
+                  }
+                }
+                const audioPath = sljaData.audioPath || sljaData.instrumentalPath;
+                if (audioPath) {
+                  durationSeconds = await this.probeAudioDuration(this.toLocalFileUrl(audioPath));
+                }
+                if (!durationSeconds && maxSlideTime > 0) {
+                  durationSeconds = maxSlideTime;
+                }
+              }
+            }
+          }
+
+          // 3. Músicas de Coletânea Personalizada
+          if (!durationSeconds) {
+            for (const col of customCollections) {
+              const found = (col.songs || []).find(
+                (s: any) =>
+                  s.id === idStr ||
+                  s.filePathAudio === idStr ||
+                  s.name === song.name ||
+                  `custom_ext_${col.id}_${s.id}` === idStr,
+              );
+              if (found) {
+                if (found.duration && found.duration !== "0:00" && found.duration !== "00:00") {
+                  durationSeconds = this.$datetime.toNumber(found.duration);
+                }
+                if (!durationSeconds) {
+                  const audioPath = found.filePathAudio || found.filePathInstrumental;
+                  if (audioPath) {
+                    if (/\.(slja|sja|lja)$/i.test(audioPath) && electronAPI?.readSljaZip) {
+                      const sljaData = await electronAPI.readSljaZip(audioPath);
+                      if (sljaData) {
+                        let maxSlideTime = 0;
+                        if (Array.isArray(sljaData.slides)) {
+                          for (const slide of sljaData.slides) {
+                            if (typeof slide.time === "number" && slide.time > maxSlideTime) {
+                              maxSlideTime = slide.time;
+                            }
+                          }
+                        }
+                        const extractedAudio = sljaData.audioPath || sljaData.instrumentalPath;
+                        if (extractedAudio) {
+                          durationSeconds = await this.probeAudioDuration(this.toLocalFileUrl(extractedAudio));
+                        }
+                        if (!durationSeconds && maxSlideTime > 0) {
+                          durationSeconds = maxSlideTime;
+                        }
+                      }
+                    } else {
+                      durationSeconds = await this.probeAudioDuration(this.toLocalFileUrl(audioPath));
+                    }
+                  }
+                }
+                break;
+              }
+            }
+          }
+
+          // 4. Se id_music aponta diretamente para arquivo
+          if (!durationSeconds && (idStr.includes("/") || idStr.includes("\\") || idStr.startsWith("ext:"))) {
+            const cleanPath = idStr.replace(/^(slja:|ext:)/, "");
+            if (/\.(slja|sja|lja)$/i.test(cleanPath) && electronAPI?.readSljaZip) {
+              const sljaData = await electronAPI.readSljaZip(cleanPath);
+              if (sljaData) {
+                let maxSlideTime = 0;
+                if (Array.isArray(sljaData.slides)) {
+                  for (const slide of sljaData.slides) {
+                    if (typeof slide.time === "number" && slide.time > maxSlideTime) {
+                      maxSlideTime = slide.time;
+                    }
+                  }
+                }
+                const extractedAudio = sljaData.audioPath || sljaData.instrumentalPath;
+                if (extractedAudio) {
+                  durationSeconds = await this.probeAudioDuration(this.toLocalFileUrl(extractedAudio));
+                }
+                if (!durationSeconds && maxSlideTime > 0) {
+                  durationSeconds = maxSlideTime;
+                }
+              }
+            } else {
+              durationSeconds = await this.probeAudioDuration(this.toLocalFileUrl(cleanPath));
+            }
+          }
+
+          if (durationSeconds > 0) {
+            const formatted = this.$datetime.shortTime(durationSeconds);
+            if (formatted && formatted !== "0:00" && formatted !== "00:00") {
+              this.$history.updateSongDuration(song.id_music, formatted, true);
+            }
+          }
+        } catch (e) {
+          // segue para a próxima música
+        }
+      }
     },
   },
 });
@@ -1065,6 +1299,10 @@ export default defineComponent({
   overflow-x: hidden;
   display: flex;
   flex-direction: column;
+
+  &.expanded-mode {
+    overflow-y: hidden;
+  }
 }
 
 .dashboard-section {
@@ -1075,7 +1313,6 @@ export default defineComponent({
   &.collections-section {
     flex-shrink: 0;
     position: relative;
-    min-height: 200px;
   }
   
   &.music-section {
@@ -1083,6 +1320,11 @@ export default defineComponent({
     min-height: 0;
     display: flex;
     flex-direction: column;
+
+    &.expanded-music-section {
+      height: 100%;
+      margin-bottom: 0 !important;
+    }
   }
   
   .section-header {

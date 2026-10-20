@@ -7,6 +7,8 @@
     "no_songs_played": "Nenhuma música tocada ainda. Abra uma coletânea e toque uma música!",
     "no_collections_played": "Nenhuma coletânea acessada. Toque uma música para registrá-la aqui!",
     "see_all": "Ver todas",
+    "see_more": "Ver mais",
+    "see_less": "Ver menos",
     "search_results": "Resultados da Pesquisa",
     "filter_search_by": "Filtrar pesquisa por:",
     "filter_name": "Nome da música",

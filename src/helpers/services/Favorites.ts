@@ -42,8 +42,9 @@ export function isFavoriteSong(idMusic: number | string | undefined, item?: any)
     return fav.songs.some((s: any) => s.type === "internal" && Number(s.id_music) === numId);
   }
 
-  if (item?.is_external_song && item?.filePathAudio) {
-    return fav.songs.some((s: any) => s.type === "external" && s.filePathAudio === item.filePathAudio);
+  const rawPath = item?.filePathAudio || (typeof idMusic === "string" && idMusic.startsWith("slja:") ? idMusic.slice(5) : "");
+  if (rawPath) {
+    return fav.songs.some((s: any) => s.type === "external" && (s.filePathAudio === rawPath || s.filePathAudio === item?.filePathAudio));
   }
 
   return false;
@@ -69,6 +70,8 @@ export function toggleFavoriteSong(idMusic: number | string | undefined, item?: 
   const numId = Number(idMusic);
   let isNowFavorite = false;
 
+  const rawPath = item?.filePathAudio || (typeof idMusic === "string" && idMusic.startsWith("slja:") ? idMusic.slice(5) : "");
+
   if (!isNaN(numId) && numId > 0) {
     const existingIndex = fav.songs.findIndex((s: any) => s.type === "internal" && Number(s.id_music) === numId);
     if (existingIndex >= 0) {
@@ -82,8 +85,8 @@ export function toggleFavoriteSong(idMusic: number | string | undefined, item?: 
       });
       isNowFavorite = true;
     }
-  } else if (item?.is_external_song && item?.filePathAudio) {
-    const existingIndex = fav.songs.findIndex((s: any) => s.type === "external" && s.filePathAudio === item.filePathAudio);
+  } else if (rawPath) {
+    const existingIndex = fav.songs.findIndex((s: any) => s.type === "external" && (s.filePathAudio === rawPath || s.filePathAudio === item?.filePathAudio));
     if (existingIndex >= 0) {
       fav.songs.splice(existingIndex, 1);
       isNowFavorite = false;
@@ -91,9 +94,9 @@ export function toggleFavoriteSong(idMusic: number | string | undefined, item?: 
       fav.songs.push({
         id: crypto.randomUUID(),
         type: "external",
-        name: item.name || "Música",
-        filePathAudio: item.filePathAudio,
-        filePathInstrumental: item.filePathInstrumental || null,
+        name: item?.name || "Música",
+        filePathAudio: rawPath,
+        filePathInstrumental: item?.filePathInstrumental || null,
       });
       isNowFavorite = true;
     }

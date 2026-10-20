@@ -448,7 +448,7 @@ export default {
   // Reproduz um arquivo .slja local a partir do seu caminho, reconstruindo os dados
   // externos necessários. Usado por telas que só têm o id_music (ex.: "Músicas mais tocadas"),
   // sem acesso ao item original da Coletânea Personalizada.
-  async playExternalSlja(filePath: string, mode: "audio" | "instrumental" | "no_audio" = "audio") {
+  async playExternalSlja(filePath: string, mode: "audio" | "instrumental" | "no_audio" = "audio", options: any = {}) {
     const electronAPI = window.electronAPI as any;
     if (!electronAPI?.readSljaZip) return false;
     const data = await electronAPI.readSljaZip(filePath);
@@ -479,8 +479,12 @@ export default {
 
     const [firstSlide, ...remainingSlides] = data.slides;
     const lyric: Record<string, any> = {};
+    let estimatedDuration = 0;
     remainingSlides.forEach((s: any, index: number) => {
       const timeHms = secondsToHms(s.time);
+      if (typeof s.time === "number" && s.time > estimatedDuration) {
+        estimatedDuration = s.time;
+      }
       lyric[`s${index}`] = {
         lyric: escapeHtml(s.text),
         aux_lyric: escapeHtml(s.auxText),
@@ -497,6 +501,7 @@ export default {
       };
     });
 
+    const durationStr = estimatedDuration > 0 ? $datetime.shortTime(estimatedDuration) : "0:00";
     const titleFromFirstSlide = firstSlide?.text?.trim();
     const externalData = {
       name: titleFromFirstSlide || data.name,
@@ -505,8 +510,8 @@ export default {
       lyric,
       albums: [],
       categories: [],
-      duration: "0:00",
-      instrumental_duration: "0:00",
+      duration: durationStr,
+      instrumental_duration: durationStr,
       has_instrumental_music: !!data.instrumentalPath,
     };
 
@@ -520,6 +525,9 @@ export default {
       externalData,
       externalAudioUrl: data.audioPath ? toLocalFileUrl(data.audioPath) : null,
       externalInstrumentalUrl: data.instrumentalPath ? toLocalFileUrl(data.instrumentalPath) : null,
+      startPaused: options?.startPaused,
+      minimized: options?.minimized,
+      fromQueue: options?.fromQueue,
     });
 
     if (playMode === "audio" || playMode === "instrumental") {
@@ -772,6 +780,17 @@ export default {
       audioB.load();
     } catch {
       // Ignora erro ao recarregar
+    }
+    if (typeof document !== "undefined") {
+      document.querySelectorAll("audio").forEach((a) => {
+        try {
+          if (!a.id || a.id.startsWith("__audio_")) {
+            a.pause();
+          }
+        } catch {
+          // Ignora erro ao pausar elemento de áudio adicional
+        }
+      });
     }
     $appdata.set("modules.media.config.is_paused", true);
   },
@@ -1288,6 +1307,16 @@ export default {
     $appdata.set("modules.media.config.duration", duration);
     $appdata.set("modules.media.config.progress", progress);
 
+    const isBadDurationDb = !duration_db || duration_db === "00:00" || duration_db === "0:00" || (duration_db.includes(":00") && duration_db !== "0:00" && (duration_db.split(":").map(Number)[0] || 0) >= 60);
+    if (duration > 0 && isBadDurationDb) {
+      const formatted = $datetime.shortTime(duration);
+      $appdata.set("modules.media.data.duration", formatted);
+      const currentId = $appdata.get("modules.media.id_music");
+      if (currentId) {
+        $history.updateSongDuration(currentId, formatted, true);
+      }
+    }
+
     if (!$appdata.get("modules.media.config.lazy")) {
       buffered = 100;
     } else {
@@ -1398,7 +1427,21 @@ export default {
       el.setAttribute("preload", "auto");
       el.volume = this.getVolume() / 100;
       document.body.appendChild(el);
-
+      el.addEventListener("loadedmetadata", () => {
+        const currentActive = $appdata.get("modules.media.config.active_audio") || "a";
+        if (el?.id === `__audio_${currentActive}`) {
+          const dur = el.duration;
+          if (dur && !isNaN(dur) && isFinite(dur) && dur > 0) {
+            const formatted = $datetime.shortTime(dur);
+            const currentId = $appdata.get("modules.media.id_music");
+            if (currentId) {
+              $history.updateSongDuration(currentId, formatted, true);
+            }
+            $appdata.set("modules.media.config.duration", dur);
+            $appdata.set("modules.media.data.duration", formatted);
+          }
+        }
+      });
       el.addEventListener("timeupdate", () => {
         const currentActive = $appdata.get("modules.media.config.active_audio") || "a";
         if (el?.id === `__audio_${currentActive}`) {
@@ -1528,10 +1571,57 @@ export default {
       this.playFromQueue(startIndex);
     }
   },
-  async addToQueue(item: { id_music: number, mode: string }) {
+  async addToQueue(item: { id_music: number | string; mode: string; [key: string]: any }) {
     this.initQueue();
     const queue = $appdata.get("modules.media.queue");
     
+    const isExternal = Boolean(
+      item.is_external_song ||
+      (typeof item.id_music === "string" && (item.id_music.startsWith("slja:") || item.id_music.startsWith("ext:") || item.id_music.startsWith("custom_ext_"))) ||
+      item.filePathAudio,
+    );
+
+    if (isExternal) {
+      const rawFilePath = item.filePathAudio || (typeof item.id_music === "string" && item.id_music.startsWith("slja:") ? item.id_music.slice(5) : "");
+      const queueItem = {
+        id_music: item.id_music || (rawFilePath ? `slja:${rawFilePath}` : "custom_external"),
+        mode: item.mode || "audio",
+        name: item.name || "Música Personalizada",
+        subtitle: item.custom_collection_name || item.subtitle || "Música Personalizada",
+        url_image: item.url_image || null,
+        id_album: null,
+        is_external_song: true,
+        filePathAudio: rawFilePath,
+        filePathInstrumental: item.filePathInstrumental || null,
+      };
+
+      queue.items.push(queueItem);
+      $appdata.set("modules.media.queue", queue);
+      $snackbar.show({ text: "modules.media.queue.added", color: "success", timeout: 3000 });
+
+      if (!$appdata.get("modules.media.id_music")) {
+        if (typeof queueItem.id_music === "string" && queueItem.id_music.startsWith("slja:")) {
+          this.playExternalSlja(queueItem.id_music.slice(5), queueItem.mode as any, {
+            startPaused: true,
+            minimized: true,
+            fromQueue: true,
+          });
+        } else if (queueItem.filePathAudio) {
+          if (/\.(slja|sja|lja)$/i.test(queueItem.filePathAudio)) {
+            this.playExternalSlja(queueItem.filePathAudio, queueItem.mode as any, {
+              startPaused: true,
+              minimized: true,
+              fromQueue: true,
+            });
+          } else {
+            this.playExternalFile(queueItem, queueItem.mode as any);
+          }
+        }
+        $appdata.set("modules.media.queue_highlight", true);
+      }
+      return;
+    }
+
     const data: any = await $database.get(`music_${item.id_music}`);
     
     if (data) {
@@ -1788,7 +1878,22 @@ export default {
 
       $appdata.set("modules.media.queue", queue);
       const item = queue.items[index];
-      this.open({ id_music: item.id_music, mode: item.mode, id_album: item.id_album, fromQueue: true });
+      const isExternal = Boolean(
+        item.is_external_song ||
+        (typeof item.id_music === "string" && (item.id_music.startsWith("slja:") || item.id_music.startsWith("ext:") || item.id_music.startsWith("custom_ext_"))) ||
+        item.filePathAudio,
+      );
+
+      if (isExternal) {
+        const filePath = item.filePathAudio || (typeof item.id_music === "string" && item.id_music.startsWith("slja:") ? item.id_music.slice(5) : "");
+        if (filePath && /\.(slja|sja|lja)$/i.test(filePath)) {
+          this.playExternalSlja(filePath, item.mode, { fromQueue: true });
+        } else {
+          this.playExternalFile(item, item.mode);
+        }
+      } else {
+        this.open({ id_music: item.id_music, mode: item.mode, id_album: item.id_album, fromQueue: true });
+      }
     }
   },
   playOnlineVideo(video: { id: string; name: string; channelName?: string; image?: string; isMuted?: boolean }) {
@@ -1838,6 +1943,13 @@ export default {
       progress: 0,
       duration: 0,
       volume: mode === "no_audio" ? 0 : currentVol,
+    });
+
+    $history.addSongPlay({
+      id_music: (item as any).id_music || `ext:${rawPath}`,
+      name: item.name,
+      album_name: item.custom_collection_name || "",
+      duration: (item as any).duration || "0:00",
     });
   },
 };
