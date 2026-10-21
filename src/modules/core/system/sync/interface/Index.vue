@@ -289,11 +289,22 @@
                 rounded="lg"
                 color="primary"
                 hide-details
-                clearable
                 prepend-inner-icon="mdi-magnify"
                 class="standard-text-input flex-grow-1"
                 style="min-width: 0;"
-              />
+              >
+                <template #append-inner>
+                  <v-btn
+                    v-if="searchQuery"
+                    icon="mdi-close"
+                    size="x-small"
+                    variant="text"
+                    class="clear-search-btn"
+                    title="Limpar pesquisa"
+                    @click="searchQuery = ''"
+                  />
+                </template>
+              </v-text-field>
 
               <!-- Filtro de Estado (Mesmo tamanho que o filtro de ordem) -->
               <v-select
@@ -308,7 +319,6 @@
                 hide-details
                 class="standard-text-input filter-select-fixed flex-shrink-0"
                 :menu-props="{ contentClass: 'compact-filter-menu', transition: 'fade-transition', offset: 4 }"
-                :list-props="{ style: 'background: var(--card-bg, #30364a); border-radius: 12px; border: 1px solid var(--border-color, rgba(150, 150, 150, 0.2)); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); padding: 6px 0;' }"
               >
                 <template #selection="{ item }">
                   <span class="text-body-2 font-weight-medium text-truncate">{{ item.title }}</span>
@@ -348,7 +358,6 @@
                 hide-details
                 class="standard-text-input filter-select-fixed flex-shrink-0"
                 :menu-props="{ contentClass: 'compact-filter-menu', transition: 'fade-transition', offset: 4 }"
-                :list-props="{ style: 'background: var(--card-bg, #30364a); border-radius: 12px; border: 1px solid var(--border-color, rgba(150, 150, 150, 0.2)); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); padding: 6px 0;' }"
               >
                 <template #selection="{ item }">
                   <span class="text-body-2 font-weight-medium text-truncate">{{ item.title }}</span>
@@ -469,26 +478,28 @@
                 </div>
 
                 <!-- Estado Vazio -->
-                <div v-else-if="!loadingList && filteredAlbums.length === 0" class="d-flex flex-column align-center justify-center py-12 text-center">
-                  <v-icon
-                    size="56"
-                    color="var(--sidebar-text-secondary)"
-                    class="mb-3"
-                    style="opacity: 0.35;"
-                  >
-                    mdi-music-box-multiple-outline
-                  </v-icon>
-                  <span class="text-subtitle-1 font-weight-bold mb-1" style="color: var(--sidebar-text);">
+                <div v-else-if="!loadingList && filteredAlbums.length === 0" class="d-flex flex-column align-center justify-center py-12 text-center h-100">
+                  <div class="empty-icon-circle mb-3">
+                    <v-icon
+                      size="34"
+                      color="primary"
+                    >
+                      mdi-music-box-multiple-outline
+                    </v-icon>
+                  </div>
+                  <h3 class="text-subtitle-1 font-weight-bold mb-1" style="color: var(--sidebar-text);">
                     {{ $t('modules.sync.no_results') }}
-                  </span>
-                  <span class="text-caption mb-4" style="color: var(--sidebar-text-secondary); max-width: 320px;">
+                  </h3>
+                  <p class="text-caption mb-4" style="color: var(--sidebar-text-secondary); max-width: 320px;">
                     Nenhuma coletânea corresponde à categoria ou busca selecionada.
-                  </span>
+                  </p>
                   <v-btn
                     variant="tonal"
-                    size="small"
+                    color="primary"
                     rounded="lg"
-                    class="text-none font-weight-bold"
+                    height="36"
+                    prepend-icon="mdi-filter-remove-outline"
+                    class="text-none font-weight-medium px-4"
                     @click="clearFilters"
                   >
                     {{ $t('modules.sync.clear_filters') }}
@@ -2121,6 +2132,17 @@ export default defineComponent({
   letter-spacing: 0.02em;
 }
 
+.empty-icon-circle {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  background: rgba(0, 155, 226, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+}
+
 /* Scrollbar Oficial Louvor JA */
 .sync-scroll-area::-webkit-scrollbar {
   width: 8px;
@@ -2250,6 +2272,11 @@ export default defineComponent({
   background: rgba(0, 0, 0, 0.04);
 }
 
+:root[data-theme="light"] .empty-icon-circle,
+.v-theme--light .empty-icon-circle {
+  background: rgba(0, 155, 226, 0.08);
+}
+
 :root[data-theme="light"] .detail-action-btn-secondary,
 .v-theme--light .detail-action-btn-secondary {
   background: rgba(0, 0, 0, 0.05) !important;
@@ -2300,6 +2327,9 @@ export default defineComponent({
 
   .v-list {
     background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
     padding: 0 !important;
     max-height: 220px !important;
     overflow-y: auto !important;

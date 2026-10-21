@@ -13,54 +13,35 @@
         @close="module.show = false"
       >
         <div class="d-flex align-center" style="gap: 10px;">
-          <v-menu location="bottom end" transition="slide-y-transition">
+          <v-menu location="bottom end" :offset="8" transition="slide-y-transition">
             <template #activator="{ props }">
               <v-btn
-                variant="tonal"
-                color="secondary"
                 v-bind="props"
-                prepend-icon="mdi-swap-vertical"
-                class="rounded-lg text-body-2 font-weight-medium px-4 header-action-btn"
-                height="38"
+                elevation="0"
+                density="compact"
+                class="rounded-lg font-weight-medium px-3 header-action-btn header-subtle-btn"
+                height="32"
                 style="text-transform: none; letter-spacing: normal;"
               >
                 Importar / Exportar
               </v-btn>
             </template>
-            <v-card class="elevation-4 rounded-xl overflow-hidden header-dropdown-menu" style="border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08)); min-width: 170px;">
-              <v-list class="py-1.5" bg-color="var(--card-bg)">
-                <v-list-item 
-                  class="mx-1.5 rounded-lg mb-1 menu-item-action" 
-                  style="min-height: 38px;"
-                  @click="importLiturgy"
-                >
-                  <div class="d-flex align-center">
-                    <v-icon 
-                      icon="mdi-import" 
-                      size="18" 
-                      class="mr-3" 
-                      color="primary" 
-                    />
-                    <span class="text-body-2 font-weight-medium">Importar</span>
-                  </div>
-                </v-list-item>
-                <v-list-item 
-                  class="mx-1.5 rounded-lg mb-0 menu-item-action" 
-                  style="min-height: 38px;"
-                  @click="exportLiturgy"
-                >
-                  <div class="d-flex align-center">
-                    <v-icon 
-                      icon="mdi-export" 
-                      size="18" 
-                      class="mr-3" 
-                      color="secondary" 
-                    />
-                    <span class="text-body-2 font-weight-medium">Exportar</span>
-                  </div>
-                </v-list-item>
-              </v-list>
-            </v-card>
+            <div class="header-dropdown-menu">
+              <button
+                type="button"
+                class="filter-item"
+                @click="importLiturgy"
+              >
+                <span class="filter-label">Importar</span>
+              </button>
+              <button
+                type="button"
+                class="filter-item"
+                @click="exportLiturgy"
+              >
+                <span class="filter-label">Exportar</span>
+              </button>
+            </div>
           </v-menu>
 
           <v-btn
@@ -1593,17 +1574,93 @@ export default defineComponent({
   }
 }
 
-.menu-item-action {
-  cursor: pointer;
-  transition: background 0.15s ease;
+.header-subtle-btn {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.15)) !important;
+  color: var(--sidebar-text, #f7f8fc) !important;
+  font-size: 0.8125rem !important;
+  box-shadow: none !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
 
   &:hover {
-    background: rgba(var(--v-theme-on-surface), 0.06);
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-color: rgba(255, 255, 255, 0.28) !important;
+    color: #ffffff !important;
+    box-shadow: none !important;
+  }
+}
+
+:root[data-theme="light"] .header-subtle-btn,
+.v-theme--light .header-subtle-btn {
+  background: rgba(0, 0, 0, 0.03) !important;
+  border: 1px solid rgba(0, 0, 0, 0.14) !important;
+  color: #334155 !important;
+  box-shadow: none !important;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.06) !important;
+    border-color: rgba(0, 0, 0, 0.24) !important;
+    color: #0f172a !important;
+    box-shadow: none !important;
   }
 }
 </style>
 
 <style lang="scss">
+.header-dropdown-menu {
+  min-width: 150px;
+  background: var(--ds-surface, #30364a) !important;
+  border: 1px solid var(--ds-border, #43495b) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.28) !important;
+  padding: 6px !important;
+  user-select: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  .filter-item {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 8px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    background: transparent;
+    border: none;
+    color: var(--ds-text-primary, #f7f8fc);
+    text-align: left;
+    outline: none;
+
+    &:hover {
+      background: var(--ds-accent-hover, rgba(0, 155, 226, 0.08));
+      color: var(--accent-blue, #009fe3);
+    }
+
+    .filter-label {
+      font-size: 13px;
+      font-weight: 500;
+    }
+  }
+}
+
+:root[data-theme="light"] .header-dropdown-menu,
+.v-theme--light .header-dropdown-menu {
+  background: #ffffff !important;
+  border: 1px solid var(--ds-border, #e2e8f0) !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
+
+  .filter-item {
+    color: var(--ds-text-primary, #334155);
+
+    &:hover {
+      background: rgba(0, 155, 226, 0.08);
+      color: var(--ds-accent, #008fd0);
+    }
+  }
+}
+
 .liturgy-dialog-wrapper {
   transform: translateX(calc(var(--sidebar-width, 280px) / 2));
   max-width: calc(100vw - var(--sidebar-width, 280px) - 48px) !important;

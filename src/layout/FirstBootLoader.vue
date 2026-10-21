@@ -182,7 +182,7 @@
             </p>
 
             <!-- Status & Percentage Header (only when not in error) -->
-            <div v-if="!hasError" class="status-meta d-flex justify-space-between align-center mb-2 px-1">
+            <div v-if="!hasError" class="status-meta d-flex justify-space-between align-center mb-2">
               <span class="status-text font-weight-medium">{{ statusText }}</span>
               <span v-if="!isIndeterminate && progress > 0" class="progress-percent font-weight-bold">{{ progress }}%</span>
             </div>
@@ -377,8 +377,8 @@ export default defineComponent({
     window.addEventListener("show-boot-screen", this.handleManualShow);
 
     setTimeout(async () => {
-      this.showContent = true;
       await this.checkFirstBoot();
+      this.showContent = true;
     }, 1000);
   },
   unmounted() {
@@ -418,33 +418,22 @@ export default defineComponent({
         ];
         setTimeout(() => {
           this.progress = 78;
-          this.statusText = this.$t("first_boot.status.downloading_db");
-          this.tasks = [];
-          this.detailCard = {
-            icon: "mdi-database",
-            title: this.$t("first_boot.database_card.title"),
-            subtitle: this.$t("first_boot.database_card.subtitle"),
-          };
+          this.tasks[1].status = "completed";
+          this.tasks[2].status = "running";
           setTimeout(() => {
-            this.progress = 92;
-            this.statusText = this.$t("first_boot.status.complete");
-            this.detailCard = null;
-            this.tasks = [
-              { id: "modules", label: this.$t("first_boot.tasks.modules_loaded"), status: "completed" },
-              { id: "data", label: this.$t("first_boot.tasks.data_updated"), status: "completed" },
-              { id: "interface", label: this.$t("first_boot.tasks.interface_ready"), status: "completed" },
-            ];
+            this.progress = 100;
+            this.tasks[2].status = "completed";
             setTimeout(() => {
               this.isOpen = false;
-            }, 3000);
-          }, 2000);
-        }, 2000);
+            }, 1500);
+          }, 1500);
+        }, 1500);
       }, 1000);
     },
     async retrySync() {
       this.hasError = false;
       this.progress = 0;
-      this.statusText = this.$t("first_boot.status.retrying");
+      this.statusText = this.$t("first_boot.status.preparing_env");
       await this.runFirstBootSync();
     },
     async checkFirstBoot() {
@@ -461,6 +450,7 @@ export default defineComponent({
       const isComplete: any = await window.electronAPI.getLocalDb(`sfbc_${currentLang}`);
       if (!isComplete || !isComplete.complete) {
         this.isFirstBoot = true;
+        this.statusText = this.$t("first_boot.status.preparing_env");
         
         // Limpa os arquivos essenciais do sistema antes de baixar o novo
         if (window.electronAPI.clearSysData) {
@@ -498,7 +488,6 @@ export default defineComponent({
               : true;
             this.tasks[0].status = hasDb ? "completed" : "failed";
             this.tasks[1].status = "running";
-            this.statusText = this.$t("first_boot.tasks.loading_modules");
           } else if (step === 11) {
             // Etapa 2: Módulos e preferências do usuário
             if (this.$userdata && this.$userdata.load) {
@@ -506,7 +495,6 @@ export default defineComponent({
             }
             this.tasks[1].status = "completed";
             this.tasks[2].status = "running";
-            this.statusText = this.$t("first_boot.tasks.preparing_resources");
           } else if (step >= 17) {
             // Etapa 3: Interface e recursos concluídos
             if (this.bootInterval) {
@@ -515,7 +503,6 @@ export default defineComponent({
             }
             this.tasks[2].status = "completed";
             this.progress = 100;
-            this.statusText = this.$t("first_boot.status.complete");
 
             setTimeout(() => {
               this.isOpen = false;
@@ -529,6 +516,7 @@ export default defineComponent({
     async selectLanguage(lang: string) {
       this.selectedLang = lang;
       this.showWelcomeScreen = false;
+      this.showContent = true;
       this.$i18n.locale = lang;
       window.sessionStorage.setItem("pending_language", lang);
       await this.runFirstBootSync();
@@ -579,9 +567,13 @@ export default defineComponent({
       try {
         if (window.electronAPI) {
           this.progress = 0;
-          this.statusText = this.$t("first_boot.status.preparing");
-          this.tasks = [];
+          this.statusText = this.$t("first_boot.status.preparing_env");
           this.detailCard = null;
+          this.tasks = [
+            { id: "database", label: this.$t("first_boot.tasks.downloading_db"), status: "running" },
+            { id: "extract", label: this.$t("first_boot.tasks.extracting_data"), status: "pending" },
+            { id: "resources", label: this.$t("first_boot.tasks.preparing_resources"), status: "pending" },
+          ];
           
           window.electronAPI.onExtractProgress((data: any) => {
             this.progress = data.progress;
@@ -592,15 +584,6 @@ export default defineComponent({
               this.progress = data.progress;
             });
           }
-          this.statusText = this.$t("first_boot.status.downloading_db");
-          this.detailCard = {
-            icon: "mdi-database",
-            title: this.$t("first_boot.database_card.title"),
-            subtitle: this.$t("first_boot.database_card.subtitle"),
-          };
-          this.tasks = [];
-
-          this.progress = 0;
           
           let shouldDownloadDb = true;
           if (window.electronAPI.checkOldInstallation) {
@@ -618,12 +601,14 @@ export default defineComponent({
               });
               
               if (wantsToImport) {
-                this.statusText = this.$t("first_boot.status.importing_old");
+                if (this.tasks[0]) {
+                  this.tasks[0].label = this.$t("first_boot.tasks.importing_old");
+                }
                 const imported = await window.electronAPI.importOldInstallation();
                 if (imported) {
                   shouldDownloadDb = false;
-                } else {
-                  this.statusText = this.$t("first_boot.status.import_failed");
+                } else if (this.tasks[0]) {
+                  this.tasks[0].label = this.$t("first_boot.tasks.downloading_db");
                 }
               }
             }
@@ -639,15 +624,15 @@ export default defineComponent({
               throw new Error(this.$t("first_boot.errors.db_download_fail"));
             }
           }
-            
-          this.statusText = this.$t("first_boot.status.extracting");
+
+          if (this.tasks[0]) {
+            this.tasks[0].status = "completed";
+          }
+          if (this.tasks[1]) {
+            this.tasks[1].status = "running";
+          }
           this.progress = 0;
-          this.detailCard = {
-            icon: "mdi-archive-arrow-down-outline",
-            title: this.$t("first_boot.status.extracting"),
-            subtitle: this.$t("first_boot.database_card.subtitle"),
-          };
-          
+            
           try {
             const currentLang = this.$i18n.locale || "pt";
             success = await window.electronAPI.extractLocalDb(currentLang);
@@ -656,14 +641,15 @@ export default defineComponent({
           }
 
           if (success) {
+            if (this.tasks[1]) {
+              this.tasks[1].status = "completed";
+            }
+            if (this.tasks[2]) {
+              this.tasks[2].status = "running";
+            }
+            this.progress = 0;
+
             if (window.electronAPI.validateInstallation) {
-              this.statusText = "Baixando capas dos álbuns...";
-              this.progress = 0;
-              this.detailCard = {
-                icon: "mdi-image-multiple-outline",
-                title: "Baixando capas dos álbuns",
-                subtitle: this.$t("first_boot.database_card.subtitle"),
-              };
               const currentLang = this.$i18n.locale || "pt";
               const missing = await window.electronAPI.validateInstallation(currentLang);
               if (missing && missing.missingCovers.length > 0) {
@@ -684,13 +670,10 @@ export default defineComponent({
               console.warn("Falha no download inicial dos avatares:", err);
             }
 
+            if (this.tasks[2]) {
+              this.tasks[2].status = "completed";
+            }
             this.progress = 100;
-            this.detailCard = null;
-            this.tasks = [
-              { id: "modules", label: this.$t("first_boot.tasks.modules_loaded"), status: "completed" },
-              { id: "data", label: this.$t("first_boot.tasks.data_updated"), status: "completed" },
-              { id: "interface", label: this.$t("first_boot.tasks.interface_ready"), status: "completed" },
-            ];
             const finalLang = this.$i18n.locale || "pt";
             await window.electronAPI.saveLocalDb(`sfbc_${finalLang}`, { complete: true, date: new Date().toISOString() });
             
@@ -700,15 +683,13 @@ export default defineComponent({
               window.sessionStorage.removeItem("pending_language");
             }
             
-            this.statusText = this.$t("first_boot.status.complete");
-            
             setTimeout(() => {
               this.isOpen = false;
               this.$appdata.set("system_first_boot_loading", false);
               this.$emit("boot-complete");
               // Auto-reload the app so all pre-loaded modules (like sync) detect the new images
               window.location.reload();
-            }, 250);
+            }, 300);
             return;
           }
           
@@ -735,7 +716,12 @@ export default defineComponent({
     async continueOffline() {
       this.hasError = false;
       this.progress = 100;
-      this.statusText = this.$t("first_boot.status.complete");
+      this.statusText = this.$t("first_boot.status.preparing_env");
+      if (this.tasks && this.tasks.length > 0) {
+        this.tasks.forEach((t) => {
+          t.status = "completed";
+        });
+      }
       const currentLang = this.$i18n.locale || "pt";
       if (window.electronAPI) {
         await window.electronAPI.saveLocalDb(`sfbc_${currentLang}`, {
