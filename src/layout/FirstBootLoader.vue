@@ -306,18 +306,58 @@
           </div>
         </transition>
       </div>
+
+      <!-- Welcome Screen Window Footer (Fixed at the bottom of the window) -->
+      <transition name="fade-transition">
+        <div
+          v-if="showWelcomeScreen"
+          class="welcome-legal-footer text-center"
+        >
+          <p class="legal-notice-line mb-1">
+            Ao continuar, você concorda com os
+            <button
+              type="button"
+              class="legal-link-btn"
+              @click.stop="openLegalModal('terms', 'pt')"
+            >
+              Termos de Uso e Privacidade
+            </button>
+          </p>
+          <p class="legal-notice-line mb-0">
+            Al continuar, aceptas los
+            <button
+              type="button"
+              class="legal-link-btn"
+              @click.stop="openLegalModal('terms', 'es')"
+            >
+              Términos de Uso y Privacidad
+            </button>
+          </p>
+        </div>
+      </transition>
     </div>
   </transition>
+
+  <!-- Legal Terms & Privacy Modal -->
+  <LegalModal
+    v-model="isLegalModalOpen"
+    :initial-tab="legalModalTab"
+    :default-locale="legalModalLocale"
+  />
 </template>
 
 <script lang="ts">
 import { defineComponent } from "vue";
+import LegalModal from "@/components/LegalModal.vue";
 import $path from "@/helpers/utils/Path";
 import $alert from "@/helpers/ui/Alert";
 import { fetchWithFallback } from "@/helpers/services/Api";
 
 export default defineComponent({
   name: "FirstBootLoader",
+  components: {
+    LegalModal,
+  },
   emits: ["boot-complete"],
   data() {
     return {
@@ -336,6 +376,9 @@ export default defineComponent({
       canContinueOffline: false as boolean,
       bootInterval: null as any,
       overrideTheme: null as null | "light" | "dark",
+      isLegalModalOpen: false as boolean,
+      legalModalTab: "terms" as "terms" | "privacy" | "copyright",
+      legalModalLocale: "pt" as "pt" | "es",
     };
   },
   computed: {
@@ -512,6 +555,11 @@ export default defineComponent({
           }
         }, 100);
       }
+    },
+    openLegalModal(tab: "terms" | "privacy" | "copyright" = "terms", locale: "pt" | "es" = "pt") {
+      this.legalModalTab = tab;
+      this.legalModalLocale = locale;
+      this.isLegalModalOpen = true;
     },
     async selectLanguage(lang: string) {
       this.selectedLang = lang;
@@ -1086,6 +1134,42 @@ export default defineComponent({
   font-size: 1rem;
   font-weight: 600;
   transition: color 0.2s ease;
+}
+
+/* Welcome Legal Footer (Bottom of the window) */
+.welcome-legal-footer {
+  position: absolute;
+  bottom: 24px;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  padding: 0 24px;
+  pointer-events: auto;
+
+  .legal-notice-line {
+    font-size: 0.76rem;
+    color: var(--boot-text-secondary);
+    line-height: 1.5;
+    opacity: 0.85;
+  }
+
+  .legal-link-btn {
+    border: none;
+    background: transparent;
+    color: var(--boot-accent);
+    font-size: 0.76rem;
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+    padding: 0 2px;
+    transition: all 0.2s ease;
+
+    &:hover {
+      opacity: 0.95;
+      filter: brightness(1.2);
+    }
+  }
 }
 
 /* Loader Screen */

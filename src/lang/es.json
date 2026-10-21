@@ -71,6 +71,8 @@
         "title_prepare": "Preparando Loor JA",
         "title_start": "Iniciando Loor JA",
         "subtitle": "Espera un momento mientras organizamos todo para ti.",
+        "legal_notice": "Al continuar, aceptas los",
+        "legal_link": "Términos de Uso y Privacidad",
         "retry_button": "Intentar Nuevamente",
         "offline_button": "Continuar Sin Conexión",
         "status": {

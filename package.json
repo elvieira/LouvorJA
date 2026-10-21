@@ -7,7 +7,7 @@
     "email": "elvieiradev@gmail.com"
   },
   "private": true,
-  "license": "MIT",
+  "license": "SEE LICENSE IN README.md",
   "main": "dist-electron/main.js",
   "scripts": {
     "version:major": "npm version major",

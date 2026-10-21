@@ -102,21 +102,41 @@
           :subtitle="$t('modules.help.diagnostics_desc')"
           :button-text="$t('modules.help.diagnostics_btn')"
           button-color="primary"
+          class="mb-8"
           @action="$emit('open-diagnostics')"
+        />
+
+        <v-divider class="mb-8" style="opacity: 0.1;" />
+
+        <SettingsActionRow
+          icon="mdi-scale-balance"
+          icon-color="primary"
+          :title="$t('modules.help.legal_title')"
+          :subtitle="$t('modules.help.legal_desc')"
+          :button-text="$t('modules.help.legal_btn')"
+          button-color="primary"
+          @action="isLegalModalOpen = true"
         />
       </v-card-text>
     </v-card>
+
+    <!-- Legal Terms & Privacy Modal -->
+    <LegalModal
+      v-model="isLegalModalOpen"
+    />
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from "vue";
 import SettingsActionRow from "@/components/SettingsActionRow.vue";
+import LegalModal from "@/components/LegalModal.vue";
 
 export default defineComponent({
   name: "HelpAbout",
   components: {
     SettingsActionRow,
+    LegalModal,
   },
   props: {
     appVersion: {
@@ -124,10 +144,11 @@ export default defineComponent({
       required: true,
     },
   },
-  emits: ["open-update", "open-manual", "open-support", "open-diagnostics"],
+  emits: ["open-update", "open-manual", "open-support", "open-diagnostics", "open-legal"],
   data() {
     return {
       dbVersion: 0 as number | string,
+      isLegalModalOpen: false as boolean,
     };
   },
   async mounted() {
