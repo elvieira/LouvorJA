@@ -118,6 +118,8 @@ interface ElectronAPI {
   checkForUpdates: () => Promise<unknown>
   downloadUpdate: () => Promise<void>
   quitAndInstall: () => Promise<void>
+  getAppReleases?: (fromVersion?: string, toVersion?: string) => Promise<Array<{ version: string; publishedAt?: string; title?: string; notes: string }>>
+  getAppVersion?: () => Promise<string>
   onUpdateAvailable: (callback: (info: unknown) => void) => void
   onUpdateNotAvailable: (callback: (info: unknown) => void) => void
   onUpdateDownloadProgress: (callback: (progress: unknown) => void) => void

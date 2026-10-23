@@ -398,8 +398,8 @@ export default defineComponent({
       else if (clean.startsWith("app://")) clean = clean.replace("app://", "");
       else if (clean.startsWith("module:")) clean = clean.replace("module:", "");
 
-      if (clean.includes("db_update")) return "Atualizar Banco";
-      if (clean.startsWith("sync")) return "Abrir Atualizações";
+      if (clean.includes("db_update") || clean.includes("update")) return "Abrir Atualizações";
+      if (clean.startsWith("sync")) return "Biblioteca Local";
       if (clean.startsWith("bible")) return "Abrir Bíblia";
       if (clean.startsWith("hymnal_1996")) return "Abrir Hinário 1996";
       if (clean.startsWith("hymnal")) return "Abrir Hinário";
@@ -439,7 +439,9 @@ export default defineComponent({
         paramsObj = item.action_params as Record<string, any>;
       }
 
-      if (moduleId === "sync") {
+      if (clean.includes("db_update") || (moduleId === "sync" && (paramsObj?.view === "db_update" || subView === "db_update"))) {
+        moduleId = "update";
+      } else if (moduleId === "sync") {
         const view = paramsObj?.view || subView || "library";
         $appdata.set("modules.sync.view", view);
       } else if (moduleId === "help") {

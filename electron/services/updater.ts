@@ -1,24 +1,124 @@
-import { ipcMain, BrowserWindow } from "electron";
+import { ipcMain, BrowserWindow, app, net } from "electron";
 import { autoUpdater, UpdateCheckResult } from "electron-updater";
 
 autoUpdater.autoDownload = false;
 autoUpdater.autoInstallOnAppQuit = true;
+autoUpdater.fullChangelog = true;
+
+export interface AppReleaseInfo {
+  version: string;
+  publishedAt?: string;
+  title?: string;
+  notes: string;
+}
 
 function parseSemver(v: string): number[] {
   const clean = v.replace(/^v/, "").split("-")[0];
   return clean.split(".").map((part) => parseInt(part, 10) || 0);
 }
 
-function isVersionGreater(v1: string, v2: string): boolean {
+export function compareSemver(v1: string, v2: string): number {
   const p1 = parseSemver(v1);
   const p2 = parseSemver(v2);
   for (let i = 0; i < Math.max(p1.length, p2.length); i++) {
     const num1 = p1[i] || 0;
     const num2 = p2[i] || 0;
-    if (num1 > num2) return true;
-    if (num1 < num2) return false;
+    if (num1 > num2) return 1;
+    if (num1 < num2) return -1;
   }
-  return false;
+  return 0;
+}
+
+function isVersionGreater(v1: string, v2: string): boolean {
+  return compareSemver(v1, v2) > 0;
+}
+
+export async function fetchReleasesFromGitHub(
+  fromVersion?: string,
+  toVersion?: string,
+): Promise<AppReleaseInfo[]> {
+  const repos = [
+    { owner: "louvorja", repo: "flute-app" },
+    { owner: "elvieira", repo: "LouvorJA" },
+  ];
+
+  const allReleasesMap = new Map<string, AppReleaseInfo>();
+
+  for (const { owner, repo } of repos) {
+    try {
+      const url = `https://api.github.com/repos/${owner}/${repo}/releases?per_page=30`;
+      const res = await net.fetch(url, {
+        headers: {
+          "User-Agent": "LouvorJA-App",
+          Accept: "application/vnd.github.v3+json",
+        },
+      });
+
+      if (!res.ok) {
+        continue;
+      }
+
+      const list = (await res.json()) as Array<Record<string, unknown>>;
+      if (!Array.isArray(list)) continue;
+
+      for (const item of list) {
+        if (item.draft) continue;
+        const rawTag = String(item.tag_name || "").replace(/^v/, "").trim();
+        if (!rawTag) continue;
+
+        if (fromVersion && compareSemver(rawTag, fromVersion) <= 0) {
+          continue;
+        }
+
+        if (toVersion && compareSemver(rawTag, toVersion) > 0) {
+          continue;
+        }
+
+        if (!allReleasesMap.has(rawTag)) {
+          allReleasesMap.set(rawTag, {
+            version: rawTag,
+            publishedAt: item.published_at ? String(item.published_at) : undefined,
+            title: item.name ? String(item.name) : `v${rawTag}`,
+            notes: item.body ? String(item.body) : "",
+          });
+        }
+      }
+    } catch (e) {
+      console.warn(`[Updater] Não foi possível buscar releases de ${owner}/${repo}:`, (e as Error).message);
+    }
+  }
+
+  return Array.from(allReleasesMap.values()).sort((a, b) => compareSemver(b.version, a.version));
+}
+
+async function buildReleasesList(
+  currentVer: string,
+  targetVer: string,
+  rawReleaseNotes?: unknown,
+  releaseDate?: string,
+  releaseName?: string | null,
+): Promise<AppReleaseInfo[]> {
+  let releases = await fetchReleasesFromGitHub(currentVer, targetVer);
+  if (releases.length === 0 && rawReleaseNotes) {
+    if (Array.isArray(rawReleaseNotes)) {
+      releases = rawReleaseNotes.map((item: Record<string, unknown>) => ({
+        version: String(item.version || ""),
+        publishedAt: releaseDate,
+        title: `v${item.version}`,
+        notes: (item.note as string) || "",
+      }));
+    } else if (typeof rawReleaseNotes === "string") {
+      releases = [
+        {
+          version: targetVer,
+          publishedAt: releaseDate,
+          title: releaseName || `v${targetVer}`,
+          notes: rawReleaseNotes,
+        },
+      ];
+    }
+  }
+  return releases;
 }
 
 const notifyWindows = (channel: string, data: unknown) => {
@@ -109,10 +209,22 @@ async function doCheckForUpdatesMultiRepo(): Promise<UpdateCheckResult | null> {
     // Avalia o resultado final
     if (winningResult && winningResult.isUpdateAvailable) {
       console.log("[Updater] Atualização disponível encontrada:", winningResult.updateInfo.version);
+      const currentVer = app.getVersion();
+      const targetVer = winningResult.updateInfo.version;
+      const releases = await buildReleasesList(
+        currentVer,
+        targetVer,
+        winningResult.updateInfo.releaseNotes,
+        winningResult.updateInfo.releaseDate,
+        winningResult.updateInfo.releaseName,
+      );
+
       notifyWindows("update-available", {
-        version: winningResult.updateInfo.version,
+        version: targetVer,
+        currentVersion: currentVer,
         releaseDate: winningResult.updateInfo.releaseDate,
         releaseNotes: winningResult.updateInfo.releaseNotes,
+        releases,
       });
       return winningResult;
     }
@@ -123,6 +235,7 @@ async function doCheckForUpdatesMultiRepo(): Promise<UpdateCheckResult | null> {
       console.log("[Updater] Nenhuma atualização disponível. Versão atual é a mais recente:", versionInfo);
       notifyWindows("update-not-available", {
         version: versionInfo,
+        currentVersion: app.getVersion(),
       });
       return winningResult || louvorResult || fluteResult;
     }
@@ -137,8 +250,50 @@ async function doCheckForUpdatesMultiRepo(): Promise<UpdateCheckResult | null> {
       throw finalError;
     }
 
-    // Caso de dev mode (quando checkForUpdates retorna null porque app não está empacotado)
-    console.log("[Updater] Modo de desenvolvimento ou nenhum resultado retornado.");
+    // Se estiver em modo de desenvolvimento (!app.isPackaged), o electron-updater não verifica por padrão.
+    // Consultamos diretamente as releases do GitHub para detectar atualizações reais e alimentar a interface:
+    if (!app.isPackaged) {
+      console.log("[Updater] Modo de desenvolvimento: buscando releases reais no GitHub...");
+      const currentVer = app.getVersion();
+      const releases = await fetchReleasesFromGitHub(currentVer);
+
+      if (releases.length > 0 && compareSemver(releases[0].version, currentVer) > 0) {
+        const latest = releases[0];
+        const targetVer = latest.version;
+        console.log(`[Updater] [Dev] Atualização encontrada no GitHub: ${currentVer} -> ${targetVer}`);
+
+        notifyWindows("update-available", {
+          version: targetVer,
+          currentVersion: currentVer,
+          releaseDate: latest.publishedAt || new Date().toISOString(),
+          releaseNotes: latest.notes || "",
+          releases,
+        });
+
+        return {
+          isUpdateAvailable: true,
+          updateInfo: {
+            version: targetVer,
+            releaseDate: latest.publishedAt || new Date().toISOString(),
+            releaseNotes: latest.notes || "",
+          },
+        } as unknown as UpdateCheckResult;
+      } 
+      console.log(`[Updater] [Dev] Nenhuma versão superior a ${currentVer} encontrada no GitHub.`);
+      notifyWindows("update-not-available", {
+        version: currentVer,
+        currentVersion: currentVer,
+      });
+      return {
+        isUpdateAvailable: false,
+        updateInfo: {
+          version: currentVer,
+        },
+      } as unknown as UpdateCheckResult;
+      
+    }
+
+    console.log("[Updater] Nenhum resultado retornado.");
     return null;
   } finally {
     isCheckingMultiRepo = false;
@@ -146,13 +301,25 @@ async function doCheckForUpdatesMultiRepo(): Promise<UpdateCheckResult | null> {
 }
 
 export function setupUpdater() {
-  autoUpdater.on("update-available", (info) => {
+  autoUpdater.on("update-available", async (info) => {
     console.log("Update available:", info.version);
     if (!isCheckingMultiRepo) {
+      const currentVer = app.getVersion();
+      const targetVer = info.version;
+      const releases = await buildReleasesList(
+        currentVer,
+        targetVer,
+        info.releaseNotes,
+        info.releaseDate,
+        info.releaseName,
+      );
+
       notifyWindows("update-available", {
-        version: info.version,
+        version: targetVer,
+        currentVersion: currentVer,
         releaseDate: info.releaseDate,
         releaseNotes: info.releaseNotes,
+        releases,
       });
     }
   });
@@ -162,6 +329,7 @@ export function setupUpdater() {
     if (!isCheckingMultiRepo) {
       notifyWindows("update-not-available", {
         version: info.version,
+        currentVersion: app.getVersion(),
       });
     }
   });
@@ -179,6 +347,7 @@ export function setupUpdater() {
     console.log("Update downloaded:", info.version);
     notifyWindows("update-downloaded", {
       version: info.version,
+      currentVersion: app.getVersion(),
     });
   });
 
@@ -212,6 +381,23 @@ export function registerUpdaterHandlers() {
 
   ipcMain.handle("download-update", async () => {
     try {
+      if (!app.isPackaged) {
+        console.log("[Updater] Modo dev: simulando download de atualização para teste de UI...");
+        for (let p = 15; p <= 100; p += 20) {
+          await new Promise((r) => setTimeout(r, 400));
+          notifyWindows("update-download-progress", {
+            percent: Math.min(p, 100),
+            bytesPerSecond: 2.5 * 1024 * 1024,
+            transferred: (Math.min(p, 100) / 100) * 50000000,
+            total: 50000000,
+          });
+        }
+        notifyWindows("update-downloaded", {
+          version: "dev-update",
+          currentVersion: app.getVersion(),
+        });
+        return true;
+      }
       await autoUpdater.downloadUpdate();
       return true;
     } catch (error: unknown) {
@@ -222,6 +408,25 @@ export function registerUpdaterHandlers() {
 
   ipcMain.handle("quit-and-install", () => {
     (global as unknown as Record<string, boolean>).isQuitting = true;
+    if (!app.isPackaged) {
+      console.log("[Updater] Modo dev: quit-and-install acionado.");
+      return;
+    }
     autoUpdater.quitAndInstall(true, true);
   });
+
+  ipcMain.handle("get-app-releases", async (_event, fromVersion?: string, toVersion?: string) => {
+    try {
+      const current = fromVersion || app.getVersion();
+      return await fetchReleasesFromGitHub(current, toVersion);
+    } catch (err: unknown) {
+      console.error("[Updater] Erro ao buscar releases:", (err as Error).message);
+      return [];
+    }
+  });
+
+  ipcMain.handle("get-app-version", () => {
+    return app.getVersion();
+  });
 }
+

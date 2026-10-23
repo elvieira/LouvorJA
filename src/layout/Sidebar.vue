@@ -134,15 +134,15 @@
     </nav>
 
     <div class="sidebar-footer">
-      <div v-if="isDesktop" class="nav-item" :class="{ active: currentModule === 'sync' && syncView !== 'db_update' }">
+      <div v-if="isDesktop" class="nav-item" :class="{ active: currentModule === 'sync' }">
         <a href="#" class="nav-link" @click.prevent="openLocalLibrary">
           <v-icon 
             class="nav-icon" 
-            :color="currentModule === 'sync' && syncView !== 'db_update' ? '' : 'primary'"
+            :color="currentModule === 'sync' ? '' : 'primary'"
           >
             mdi-library
           </v-icon>
-          <span class="nav-text font-weight-bold" :style="{ color: currentModule === 'sync' && syncView !== 'db_update' ? '' : 'var(--accent-blue)' }">{{ $t("sidebar.local_library") }}</span>
+          <span class="nav-text font-weight-bold" :style="{ color: currentModule === 'sync' ? '' : 'var(--accent-blue)' }">{{ $t("sidebar.local_library") }}</span>
           
           <div 
             v-if="isDownloading"
@@ -151,13 +151,13 @@
           >
             <v-icon 
               class="mdi-spin" 
-              :color="currentModule === 'sync' && syncView !== 'db_update' ? '' : 'primary'"
+              :color="currentModule === 'sync' ? '' : 'primary'"
               style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"
             >
               mdi-loading
             </v-icon>
             <v-icon 
-              :color="currentModule === 'sync' && syncView !== 'db_update' ? '' : 'primary'"
+              :color="currentModule === 'sync' ? '' : 'primary'"
               size="12"
               style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); margin: 0;"
             >
@@ -167,27 +167,14 @@
         </a>
       </div>
       
-      <div v-if="['available', 'downloading', 'ready'].includes(updateStatus)" class="nav-item update-item" :class="{ 'pulse-animation': updateStatus === 'available' }">
+      <div v-if="hasAnyUpdateAvailable" class="nav-item update-item" :class="{ 'pulse-animation': (updateStatus === 'available' || dbUpdateAvailable) && currentModule !== 'update', active: currentModule === 'update' }">
         <a 
           href="#" 
           class="nav-link" 
-          style="background: rgba(0, 151, 215, 0.1); border-radius: 8px;"
           @click.prevent="openUpdateModule"
         >
-          <v-icon class="nav-icon" color="primary">mdi-cloud-download</v-icon>
-          <span class="nav-text font-weight-bold" style="color: var(--accent-blue);">{{ $t("sidebar.update_available") }}</span>
-        </a>
-      </div>
-      
-      <div v-if="dbUpdateAvailable" class="nav-item update-item" :class="{ 'pulse-animation': true, active: currentModule === 'sync' && syncView === 'db_update' }">
-        <a 
-          href="#" 
-          class="nav-link" 
-          style="background: rgba(var(--v-theme-primary), 0.1); border-radius: 8px;"
-          @click.prevent="openDbUpdate"
-        >
-          <v-icon class="nav-icon" :color="currentModule === 'sync' && syncView === 'db_update' ? '' : 'primary'">mdi-database-refresh</v-icon>
-          <span class="nav-text font-weight-bold" :style="{ color: currentModule === 'sync' && syncView === 'db_update' ? '' : 'var(--accent-blue)' }">Atualização Disponível</span>
+          <v-icon class="nav-icon">{{ updateIcon }}</v-icon>
+          <span class="nav-text font-weight-bold">{{ $t("sidebar.update_available") }}</span>
         </a>
       </div>
       
@@ -310,6 +297,21 @@ export default defineComponent({
     },
     dbUpdateAvailable(): boolean {
       return (this as any).$appdata.get("modules.sync.db_update_available") === true;
+    },
+    isAppUpdateAvailable(): boolean {
+      return ["available", "downloading", "ready"].includes(this.updateStatus);
+    },
+    hasAnyUpdateAvailable(): boolean {
+      return this.isAppUpdateAvailable || this.dbUpdateAvailable;
+    },
+    updateIcon(): string {
+      if (this.isAppUpdateAvailable && this.dbUpdateAvailable) {
+        return "mdi-sync";
+      }
+      if (this.dbUpdateAvailable) {
+        return "mdi-database-refresh";
+      }
+      return "mdi-cloud-download";
     },
     isMobile(): boolean {
       return this.windowWidth <= 1024;
@@ -497,8 +499,7 @@ export default defineComponent({
       this.openModule("sync");
     },
     openDbUpdate() {
-      (this as any).$appdata.set("modules.sync.view", "db_update");
-      this.openModule("sync");
+      this.openUpdateModule();
     },
     toggleSubmenu(submenu: string) {
       const isCurrentlyOpen = this.submenuOpen[submenu];
@@ -874,6 +875,35 @@ export default defineComponent({
 
         .nav-icon {
           color: white;
+        }
+      }
+    }
+
+    &.update-item {
+      &:not(.active) {
+        .nav-link {
+          background: rgba(0, 151, 215, 0.1);
+          border-radius: var(--border-radius);
+
+          .nav-icon,
+          .nav-text {
+            color: var(--accent-blue);
+          }
+        }
+      }
+
+      &.active {
+        background: var(--sidebar-active);
+        border-radius: var(--border-radius);
+
+        .nav-link {
+          background: transparent;
+          color: #ffffff !important;
+
+          .nav-icon,
+          .nav-text {
+            color: #ffffff !important;
+          }
         }
       }
     }
