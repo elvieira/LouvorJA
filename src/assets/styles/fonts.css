@@ -1,4 +1,11 @@
 @font-face {
+  font-family: "Montserrat";
+  src: url("../fonts/montserrat.ttf") format("truetype");
+  font-weight: 100 900;
+  font-style: normal;
+}
+
+@font-face {
   font-family: "DINCondensedBold";
   src: url("../fonts/din-condensed-bold.ttf") format("truetype");
   font-weight: bold;

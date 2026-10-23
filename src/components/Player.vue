@@ -1,40 +1,51 @@
 <template>
   <div 
     ref="playerContainer"
-    :class="location === 'footer' ? 'footer-player-bar d-flex align-center w-100 px-4 py-2' : (location === 'fullscreen' ? 'fullscreen-player-bar d-flex align-center px-6 py-2 w-100' : 'modern-pill-player d-flex align-center px-6 py-2 mx-auto')"
+    :class="[
+      location === 'footer' 
+        ? 'footer-player-bar d-flex align-center w-100 px-5 py-2' 
+        : (location === 'fullscreen' 
+          ? 'fullscreen-player-bar d-flex align-center px-6 py-2 w-100' 
+          : 'modern-pill-player d-flex align-center px-4 py-2 mx-auto'),
+      { 'light-theme': location === 'footer' && !isDark }
+    ]"
   >
-    <div v-if="playerWidth >= 880" class="player-info d-flex align-center mr-6" :style="location === 'footer' ? 'max-width: 320px; min-width: 200px;' : 'max-width: 280px; min-width: 150px;'">
-      <div class="d-flex flex-column mr-2 text-truncate" style="min-width: 0; flex: 1;">
+    <!-- 2. Área Esquerda: Informações da Música e Favorito (Estilo Spotify) -->
+    <div
+      v-if="showSongInfo"
+      class="player-left-section d-flex align-center flex-shrink-0"
+      :class="location === 'footer' ? 'mr-6' : 'mr-3'"
+      :style="location === 'footer' ? 'max-width: 280px; min-width: 0;' : 'max-width: 190px; min-width: 120px;'"
+    >
+      <div class="player-info d-flex flex-column text-truncate mr-3" style="min-width: 0;">
         <span
-          class="text-subtitle-2 font-weight-bold text-truncate"
+          class="player-song-title text-truncate font-weight-bold"
           :class="defaultTextClass"
-          style="line-height: 1.2;"
           :title="media.config.title"
         >
-          {{ media.config.title }}
+          {{ media.config.title || 'Louvor JA' }}
         </span>
         <span
-          class="text-caption text-truncate"
+          class="player-song-subtitle text-truncate cursor-pointer"
           :class="secondaryTextClass"
-          style="line-height: 1.2; cursor: pointer;"
           :title="media.config.subtitle"
           @click="maximize"
         >
-          {{ media.config.subtitle }}
+          {{ media.config.subtitle || 'Reproduzindo' }}
         </span>
       </div>
 
-      <!-- Favorite button in Player -->
+      <!-- Botão de Favorito (Apenas no Rodapé) -->
       <v-btn
-        v-if="currentPlayingIdMusic"
+        v-if="currentPlayingIdMusic && location === 'footer'"
         icon
         variant="text"
-        :color="isPlayerFavorite ? '#e91e63' : defaultTextColor"
-        size="small"
-        class="ml-1"
+        size="x-small"
+        :color="isPlayerFavorite ? '#f43f5e' : defaultTextColor"
+        class="player-fav-btn flex-shrink-0"
         @click="toggleFavoritePlayer"
       >
-        <v-icon size="20">
+        <v-icon size="19">
           {{ isPlayerFavorite ? 'mdi-heart' : 'mdi-heart-outline' }}
         </v-icon>
         <v-tooltip
@@ -48,16 +59,20 @@
       </v-btn>
     </div>
 
-    <div class="d-flex align-center mr-6">
+    <!-- 4. Controles Principais de Reprodução -->
+    <div class="d-flex align-center flex-shrink-0 mr-2">
+      <!-- Anterior -->
       <v-btn
         icon
         variant="text"
         :color="defaultTextColor"
-        size="small"
+        size="x-small"
         class="mx-1"
         @click="prev"
       >
-        <v-icon>mdi-skip-previous</v-icon>
+        <v-icon size="20">
+          mdi-skip-previous
+        </v-icon>
         <v-tooltip
           activator="parent"
           location="top"
@@ -67,15 +82,21 @@
           Anterior
         </v-tooltip>
       </v-btn>
-      <v-btn
-        icon
-        variant="text"
-        :color="defaultTextColor"
-        size="large"
-        class="mx-1 play-btn"
+
+      <!-- Play / Pause Circular Branco Sólido -->
+      <button
+        type="button"
+        class="play-pill-btn mx-1"
+        :title="media.config.is_paused ? 'Reproduzir' : 'Pausar'"
         @click="play"
       >
-        <v-icon>{{ media.config.is_paused ? 'mdi-play-circle' : 'mdi-pause-circle' }}</v-icon>
+        <v-icon
+          size="20"
+          color="#0b1120"
+          :style="{ marginLeft: media.config.is_paused ? '2px' : '0' }"
+        >
+          {{ media.config.is_paused ? 'mdi-play' : 'mdi-pause' }}
+        </v-icon>
         <v-tooltip
           activator="parent"
           location="top"
@@ -84,16 +105,20 @@
         >
           {{ media.config.is_paused ? 'Reproduzir' : 'Pausar' }}
         </v-tooltip>
-      </v-btn>
+      </button>
+
+      <!-- Próxima -->
       <v-btn
         icon
         variant="text"
         :color="defaultTextColor"
-        size="small"
+        size="x-small"
         class="mx-1"
         @click="next"
       >
-        <v-icon>mdi-skip-next</v-icon>
+        <v-icon size="20">
+          mdi-skip-next
+        </v-icon>
         <v-tooltip
           activator="parent"
           location="top"
@@ -103,15 +128,19 @@
           Próxima
         </v-tooltip>
       </v-btn>
+
+      <!-- Repetir -->
       <v-btn
         icon
         variant="text"
         :color="loopIconColor"
-        size="small"
+        size="x-small"
         class="mx-1"
         @click="toggleLoop"
       >
-        <v-icon>{{ loopIcon }}</v-icon>
+        <v-icon size="18">
+          {{ loopIcon }}
+        </v-icon>
         <v-tooltip
           activator="parent"
           location="top"
@@ -121,15 +150,19 @@
           {{ loopTooltip }}
         </v-tooltip>
       </v-btn>
+
+      <!-- Aleatório / Shuffle -->
       <v-btn
         icon
         variant="text"
         :color="shuffleIconColor"
-        size="small"
+        size="x-small"
         class="mx-1"
         @click="toggleShuffle"
       >
-        <v-icon>mdi-shuffle</v-icon>
+        <v-icon size="18">
+          mdi-shuffle
+        </v-icon>
         <v-tooltip
           activator="parent"
           location="top"
@@ -141,87 +174,102 @@
       </v-btn>
     </div>
 
-    <div v-if="media.config.audio" class="player-timeline-wrapper d-flex align-center flex-grow-1 mr-6" style="min-width: 150px;">
-      <span class="text-caption mr-3 font-weight-medium" :class="location === 'window' || location === 'fullscreen' ? 'text-white' : secondaryTextClass" style="opacity: 0.8;">{{ $datetime.shortTime(media.config.current_time) }}</span>
-      <v-progress-linear
-        v-model="media.config.progress"
-        clickable
-        :indeterminate="media.loading"
-        :height="4"
-        :stream="!media.loading"
-        :buffer-value="media.config.buffered"
-        :color="location === 'footer' ? 'var(--accent-blue)' : 'white'"
-        :bg-opacity="0.3"
-        rounded
-        class="flex-grow-1 timeline-slider"
-        @click="changeProgress"
+    <!-- 5. Barra de Progresso / Linha do Tempo -->
+    <div
+      v-if="media.config.audio"
+      class="player-timeline-wrapper d-flex align-center flex-grow-1 mx-2"
+      :style="timelineWrapperStyle"
+    >
+      <span
+        class="text-caption mr-2 font-weight-medium player-time-label"
+        :class="location === 'window' || location === 'fullscreen' ? 'text-white' : secondaryTextClass"
+        style="opacity: 0.75; font-size: 11px !important; min-width: 32px; text-align: right;"
+      >
+        {{ $datetime.shortTime(media.config.current_time) }}
+      </span>
+
+      <v-slider
+        v-model="displayProgress"
+        min="0"
+        max="100"
+        step="0.1"
+        hide-details
+        color="var(--accent-blue)"
+        track-fill-color="var(--accent-blue)"
+        thumb-size="12"
+        class="timeline-slider flex-grow-1"
+        @start="onSeekStart"
+        @end="onSeekEnd"
       />
-      <span class="text-caption ml-3 font-weight-medium" :class="location === 'window' || location === 'fullscreen' ? 'text-white' : secondaryTextClass" style="opacity: 0.8;">{{ $datetime.shortTime(media.config.duration) }}</span>
+
+      <span
+        class="text-caption ml-2 font-weight-medium player-time-label"
+        :class="location === 'window' || location === 'fullscreen' ? 'text-white' : secondaryTextClass"
+        style="opacity: 0.75; font-size: 11px !important; min-width: 32px;"
+      >
+        {{ $datetime.shortTime(media.config.duration) }}
+      </span>
     </div>
 
-    <div v-if="media.config.audio" class="d-flex align-center">
-      <v-menu
-        location="top center"
-        :close-on-content-click="false"
-        open-on-hover
-        :open-delay="50"
-        :attach="location === 'fullscreen'"
+    <!-- 6. Ações do Lado Direito -->
+    <div class="d-flex align-center flex-shrink-0 ml-auto">
+      <!-- Volume com Expansão no Hover (Inline) -->
+      <div
+        v-if="media.config.audio"
+        class="player-volume-group d-flex align-center mx-1 flex-shrink-0"
+        :class="{ 'is-dragging': isVolumeDragging }"
       >
-        <template #activator="{ props: activatorProps }">
-          <v-btn
-            :icon="volume_icon"
-            variant="text"
-            :color="defaultTextColor"
-            size="small"
-            v-bind="activatorProps"
-            class="mx-1 volume-btn"
-            @click="toogleVolume"
-          />
-        </template>
-        <v-card 
-          class="py-2 px-4 rounded-lg d-flex align-center" 
-          :class="location === 'footer' ? 'elevation-3' : 'modern-glass-menu elevation-0'"
-          :color="location === 'footer' && !isDark ? '#f4f5f7' : ''" 
-          :theme="location === 'footer' && !isDark ? 'light' : 'dark'" 
-          min-width="130" 
-          height="40"
-          style="overflow: hidden;"
+        <v-btn
+          :icon="volume_icon"
+          variant="text"
+          :color="defaultTextColor"
+          size="x-small"
+          class="volume-btn"
+          @click="toogleVolume"
         >
+          <v-icon size="19">
+            {{ volume_icon }}
+          </v-icon>
+        </v-btn>
+
+        <div class="volume-slider-expandable">
           <v-slider
             v-model="media.config.volume"
-            :color="location === 'footer' ? 'var(--accent-blue)' : 'white'"
-            track-color="grey"
-            hide-details
-            thumb-size="12"
-            step="1"
             min="0"
             max="100"
-            class="ma-0 pa-0 w-100"
-            @update:model-value="changeVolume"
+            step="0.1"
+            hide-details
+            color="var(--accent-blue)"
+            track-fill-color="var(--accent-blue)"
+            thumb-size="10"
+            class="volume-slider"
+            @start="isVolumeDragging = true"
+            @end="onVolumeChangeEnd"
+            @update:model-value="onVolumeInput"
           />
-        </v-card>
-      </v-menu>
-    </div>
-
-    <div class="d-flex align-center">
-      <v-menu v-if="location !== 'fullscreen' && playerWidth >= 880" :close-on-content-click="true">
+        </div>
+      </div>
+      <!-- Tipo de Áudio (Cantado / Instrumental) -->
+      <v-menu v-if="location !== 'fullscreen' && (playerWidth >= 650 || location === 'footer')" :close-on-content-click="true">
         <template #activator="{ props: activatorProps }">
           <v-btn
             variant="text"
-            size="small"
-            :color="mode.color && mode.color !== 'white' ? mode.color : defaultTextColor"
+            size="x-small"
+            :color="mode.color && mode.color !== 'white' ? 'var(--accent-blue)' : defaultTextColor"
             v-bind="activatorProps"
             icon
             class="mx-1"
           >
-            <v-icon>{{ mode.tray_icon }}</v-icon>
+            <v-icon size="19">
+              {{ mode.tray_icon }}
+            </v-icon>
             <v-tooltip
               activator="parent"
               location="top"
               open-delay="300"
               content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
             >
-              Tipo de Áudio
+              Tipo de Áudio: {{ mode.title }}
             </v-tooltip>
           </v-btn>
         </template>
@@ -257,19 +305,19 @@
         </v-card>
       </v-menu>
 
-
-
-
+      <!-- Expandir / Maximizar (Apenas no Rodapé) -->
       <v-btn
         v-if="location === 'footer' && !showMiniPlayer"
         variant="text"
-        size="small"
+        size="x-small"
         icon
         :color="defaultTextColor"
         class="mx-1"
-        @click="maximize()"
+        @click="maximize"
       >
-        <v-icon>mdi-arrow-expand-all</v-icon>
+        <v-icon size="19">
+          mdi-arrow-expand-all
+        </v-icon>
         <v-tooltip
           activator="parent"
           location="top"
@@ -280,16 +328,19 @@
         </v-tooltip>
       </v-btn>
 
+      <!-- Abrir Fila (Apenas no Rodapé) -->
       <v-btn
         v-if="location === 'footer' && queueCount > 0 && !isQueueOpen"
         variant="text"
-        size="small"
+        size="x-small"
         icon
         :color="defaultTextColor"
         class="mx-1"
         @click="openQueue"
       >
-        <v-icon>mdi-playlist-play</v-icon>
+        <v-icon size="19">
+          mdi-playlist-play
+        </v-icon>
         <v-tooltip
           activator="parent"
           location="top"
@@ -300,16 +351,19 @@
         </v-tooltip>
       </v-btn>
 
+      <!-- Salvar Fila (Apenas no Rodapé quando aberta) -->
       <v-btn
         v-if="location === 'footer' && queueCount > 0 && isQueueOpen"
         variant="text"
-        size="small"
+        size="x-small"
         icon
         :color="defaultTextColor"
         class="mx-1"
         @click="openSaveQueueDialog"
       >
-        <v-icon>mdi-content-save-outline</v-icon>
+        <v-icon size="19">
+          mdi-content-save-outline
+        </v-icon>
         <v-tooltip
           activator="parent"
           location="top"
@@ -320,16 +374,19 @@
         </v-tooltip>
       </v-btn>
 
+      <!-- Fechar (Apenas no Rodapé) -->
       <v-btn
         v-if="location === 'footer'"
         variant="text"
-        size="small"
+        size="x-small"
         icon
         :color="defaultTextColor"
         class="mx-1"
-        @click="close()"
+        @click="close"
       >
-        <v-icon>mdi-close</v-icon>
+        <v-icon size="19">
+          mdi-close
+        </v-icon>
         <v-tooltip
           activator="parent"
           location="top"
@@ -340,16 +397,19 @@
         </v-tooltip>
       </v-btn>
 
+      <!-- Tela Cheia (Fullscreen e Janela) -->
       <v-btn
         v-if="location === 'fullscreen'"
         variant="text"
-        size="small"
+        size="x-small"
         icon
         color="white"
         class="mx-1"
         @click="fullscreen(false)"
       >
-        <v-icon>mdi-fullscreen-exit</v-icon>
+        <v-icon size="19">
+          mdi-fullscreen-exit
+        </v-icon>
         <v-tooltip
           activator="parent"
           location="top"
@@ -362,13 +422,15 @@
       <v-btn
         v-else-if="location === 'window'"
         variant="text"
-        size="small"
+        size="x-small"
         icon
         color="white"
         class="mx-1"
         @click="fullscreen()"
       >
-        <v-icon>mdi-fullscreen</v-icon>
+        <v-icon size="19">
+          mdi-fullscreen
+        </v-icon>
         <v-tooltip
           activator="parent"
           location="top"
@@ -379,16 +441,19 @@
         </v-tooltip>
       </v-btn>
 
+      <!-- Lista de Slides (Apenas na Janela) -->
       <v-btn 
         v-if="location === 'window'"
         variant="text" 
-        size="small" 
+        size="x-small" 
         icon 
         :color="isPlaylistOpen ? 'var(--accent-blue)' : 'white'" 
         class="ml-2" 
         @click="togglePlaylist" 
       >
-        <v-icon>mdi-format-list-bulleted</v-icon>
+        <v-icon size="19">
+          mdi-format-list-bulleted
+        </v-icon>
         <v-tooltip
           activator="parent"
           location="top"
@@ -532,6 +597,20 @@ const playerWidth = ref(0);
 const playerContainer = ref<HTMLElement | null>(null);
 let resizeObserver: ResizeObserver | null = null;
 
+const showSongInfo = computed(() => {
+  return playerWidth.value >= 1000;
+});
+
+const timelineWrapperStyle = computed(() => {
+  if (props.location === "footer") {
+    return "min-width: 100px; max-width: 100%; flex-shrink: 1;";
+  }
+  if (playerWidth.value < 1000) {
+    return "min-width: 160px; max-width: 320px;";
+  }
+  return "min-width: 240px; max-width: 480px;";
+});
+
 const isDark = computed(() => theme.name.value === "dark");
 
 const defaultTextColor = computed(() => {
@@ -561,11 +640,34 @@ const showMiniPlayer = computed(() => appdata.get("modules.media.show_mini_playe
 const has_instrumental_music = computed(() => !!media.value.data.url_instrumental_music);
 
 const isPlaylistOpen = computed(() => appdata.get("modules.media.show_playlist") || false);
-const queueCount = computed(() => (appdata.get("modules.media.queue")?.items || []).length);
 const isQueueOpen = computed(() => appdata.get("modules.media.show_queue") === true);
+const queueCount = computed(() => (appdata.get("modules.media.queue")?.items || []).length);
 
 const openQueue = () => {
   appdata.set("modules.media.show_queue", true);
+};
+
+const isSeeking = ref(false);
+const seekProgress = ref(0);
+
+const displayProgress = computed({
+  get: () => (isSeeking.value ? seekProgress.value : (media.value?.config?.progress || 0)),
+  set: (val: number) => {
+    seekProgress.value = val;
+  },
+});
+
+const onSeekStart = () => {
+  isSeeking.value = true;
+  seekProgress.value = media.value?.config?.progress || 0;
+};
+
+const onSeekEnd = (val?: number) => {
+  const targetVal = typeof val === "number" ? val : displayProgress.value;
+  isSeeking.value = false;
+  const dur = media.value?.config?.duration || 0;
+  const time = (dur * targetVal) / 100;
+  mediaHelper.goToTime(time);
 };
 
 const loopMode = computed(() => appdata.get("modules.media.config.loop") || "none");
@@ -715,13 +817,28 @@ const close = () => {
   }
   mediaHelper.close();
 };
-const changeProgress = () => {
-  const time = (media.value.config.duration * media.value.config.progress) / 100;
-  mediaHelper.goToTime(time);
-};
 const fullscreen = (value = true) => mediaHelper.fullscreen(value);
 const toogleVolume = () => mediaHelper.toogleVolume();
-const changeVolume = () => mediaHelper.setVolume(media.value.config.volume);
+const isVolumeDragging = ref(false);
+
+const onVolumeInput = (val: number) => {
+  const clamped = Math.max(0, Math.min(100, Math.round(val)));
+  if (media.value?.config) {
+    media.value.config.volume = clamped;
+  }
+  const audio = mediaHelper.getElement();
+  if (audio) audio.volume = clamped / 100;
+  const audioA = document.getElementById("__audio_a") as HTMLAudioElement | null;
+  const audioB = document.getElementById("__audio_b") as HTMLAudioElement | null;
+  if (audioA) audioA.volume = clamped / 100;
+  if (audioB) audioB.volume = clamped / 100;
+};
+
+const onVolumeChangeEnd = (val?: number) => {
+  isVolumeDragging.value = false;
+  const finalVal = typeof val === "number" ? val : (media.value?.config?.volume ?? 100);
+  mediaHelper.setVolume(finalVal);
+};
 const togglePlaylist = () => {
   const currentState = appdata.get("modules.media.show_playlist") || false;
   appdata.set("modules.media.show_playlist", !currentState);
@@ -797,7 +914,26 @@ const toggleFavoritePlayer = () => {
   });
 };
 
+const updatePlayerWidth = () => {
+  if (props.location === "window") {
+    const vCard = playerContainer.value?.closest(".v-card");
+    if (vCard) {
+      playerWidth.value = vCard.clientWidth;
+      return;
+    }
+  } else if (props.location === "fullscreen") {
+    playerWidth.value = window.innerWidth;
+    return;
+  }
+  if (playerContainer.value) {
+    playerWidth.value = playerContainer.value.clientWidth;
+  }
+};
+
 onMounted(() => {
+  updatePlayerWidth();
+  window.addEventListener("resize", updatePlayerWidth);
+
   resizeObserver = new ResizeObserver(entries => {
     for (const entry of entries) {
       playerWidth.value = entry.contentRect.width;
@@ -821,6 +957,7 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
+  window.removeEventListener("resize", updatePlayerWidth);
   if (resizeObserver) {
     resizeObserver.disconnect();
   }
@@ -829,26 +966,28 @@ onBeforeUnmount(() => {
 
 <style lang="scss">
 .modern-pill-player {
-  background: rgba(15, 15, 20, 0.45) !important;
-  backdrop-filter: blur(28px) saturate(160%);
-  -webkit-backdrop-filter: blur(28px) saturate(160%);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(14, 23, 42, 0.72) !important;
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 9999px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.12);
   min-height: 60px;
+  height: 60px;
   width: auto !important;
   display: inline-flex !important;
   align-items: center;
   position: relative;
   overflow: visible;
+  transition: all 0.25s ease;
 }
 
 .fullscreen-player-bar {
-  background: rgba(15, 15, 20, 0.8) !important;
-  backdrop-filter: blur(28px) saturate(160%);
-  -webkit-backdrop-filter: blur(28px) saturate(160%);
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 -4px 32px rgba(0, 0, 0, 0.5);
+  background: rgba(10, 16, 26, 0.88) !important;
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 -8px 36px rgba(0, 0, 0, 0.6);
   min-height: 64px;
   width: 100% !important;
   display: flex !important;
@@ -857,56 +996,174 @@ onBeforeUnmount(() => {
   overflow: visible;
 }
 
-.modern-glass-menu {
-  background: rgba(15, 15, 20, 0.45) !important;
-  backdrop-filter: blur(28px) saturate(160%);
-  -webkit-backdrop-filter: blur(28px) saturate(160%);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-}
-
 .footer-player-bar {
   background: var(--card-bg) !important;
   border-top: 1px solid var(--border-color);
   width: 100%;
   min-height: 64px;
+  overflow: hidden;
+  box-sizing: border-box;
+  transition: background-color 0.25s ease;
+
+  &.light-theme {
+    background: #ffffff !important;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+  }
 }
 
-.discreet-badge .v-badge__badge {
-  background-color: rgba(150, 150, 150, 0.25) !important;
-  color: inherit !important;
-  font-size: 9px !important;
-  min-width: 16px !important;
-  height: 16px !important;
-  padding: 0 4px !important;
+.player-left-section {
+  min-width: 0;
+
+  .player-info {
+    min-width: 0;
+  }
 }
 
-.play-btn {
-  transform: scale(1.1);
-  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-  
+.player-timeline-wrapper {
+  min-width: 0;
+}
+
+.player-song-title {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+
+.player-song-subtitle {
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+.play-pill-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.18s ease;
+  flex-shrink: 0;
+
   &:hover {
-    transform: scale(1.25);
+    transform: scale(1.08);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
   }
   &:active {
-    transform: scale(1);
+    transform: scale(0.96);
   }
 }
 
 .timeline-slider {
-  transition: height 0.2s ease;
-  cursor: pointer;
-  
-  &:hover {
-    height: 6px !important;
+  .v-slider-thumb,
+  .v-slider-track__fill {
+    transition: none !important;
   }
+
+  .v-slider-track__background {
+    opacity: 1 !important;
+    background-color: rgba(255, 255, 255, 0.18) !important;
+    height: 5px !important;
+    border-radius: 9999px !important;
+  }
+  .v-slider-track__fill {
+    background-color: var(--accent-blue, #0ea5e9) !important;
+    height: 5px !important;
+    border-radius: 9999px !important;
+  }
+  .v-slider-thumb__surface {
+    background-color: #ffffff !important;
+    box-shadow: 0 0 10px rgba(14, 165, 233, 0.8), 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+  }
+}
+
+.player-volume-group {
+  display: flex;
+  align-items: center;
+  position: relative;
+
+  .volume-slider-expandable {
+    width: 0;
+    max-width: 0;
+    opacity: 0;
+    overflow: hidden;
+    margin-left: 0;
+    padding: 0;
+    transition: width 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+                max-width 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+                opacity 0.22s ease,
+                margin 0.25s ease;
+    display: flex;
+    align-items: center;
+    pointer-events: none;
+  }
+
+  &:hover .volume-slider-expandable,
+  &.is-dragging .volume-slider-expandable {
+    width: 100px;
+    max-width: 100px;
+    opacity: 1;
+    margin-left: 2px;
+    margin-right: 4px;
+    padding: 0 4px;
+    pointer-events: auto;
+  }
+
+  .volume-slider {
+    width: 80px;
+    min-width: 80px;
+    margin-inline: 6px !important;
+
+    .v-slider-thumb,
+    .v-slider-track__fill {
+      transition: none !important;
+    }
+
+    .v-slider-track__background {
+      opacity: 1 !important;
+      background-color: rgba(255, 255, 255, 0.18) !important;
+      height: 4px !important;
+      border-radius: 9999px !important;
+    }
+    .v-slider-track__fill {
+      background-color: var(--accent-blue, #0ea5e9) !important;
+      height: 4px !important;
+      border-radius: 9999px !important;
+    }
+    .v-slider-thumb__surface {
+      background-color: #ffffff !important;
+      box-shadow: 0 0 8px rgba(14, 165, 233, 0.8), 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+    }
+  }
+}
+
+.light-theme {
+  .timeline-slider,
+  .volume-slider {
+    .v-slider-track__background {
+      background-color: rgba(0, 0, 0, 0.12) !important;
+    }
+  }
+}
+
+.modern-glass-menu {
+  background: rgba(15, 23, 42, 0.78) !important;
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
 }
 
 .volume-btn, .v-btn {
   transition: all 0.2s ease;
   &:hover {
     opacity: 0.8;
-    background: rgba(255,255,255,0.05);
+    background: rgba(255, 255, 255, 0.05);
   }
 }
 

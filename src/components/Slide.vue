@@ -71,7 +71,7 @@
               class="slide-lyric-card"
               :style="style_text(currentSlide)"
             >
-              <div class="slide-lyric-content w-100 text-center" v-html="currentSlide.text" />
+              <div class="slide-lyric-content w-100 text-center" v-html="formatLyricText(currentSlide.text)" />
             </div>
             <!-- eslint-enable vue/no-v-html -->
           </div>
@@ -88,7 +88,7 @@
       <div
         v-for="(item, idx) in slidesToMeasure"
         :key="idx"
-        ref="measureItems"
+        :ref="(el) => { if (el) measureItems[idx] = el }"
         :style="measureItemStyle(item)"
       >
         <div v-html="getMeasureText(item)" />
@@ -246,7 +246,7 @@ const measureTextWidth = (
   text: string,
   fontSizePx: number,
   fontWeight: string = "900",
-  fontFamily: string = "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+  fontFamily: string = "'Montserrat', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
 ): number => {
   if (typeof document === "undefined") return 0;
   if (!measureCanvas) {
@@ -294,6 +294,75 @@ const formatCoverTitle = (text?: string): string => {
   }
   return text;
 };
+
+const formatLyricText = (text?: string): string => {
+  if (!text) return "";
+  if (!text.includes("<br>") && text.includes("\n")) {
+    return text.replace(/[\r\n]+/g, "<br>");
+  }
+  return text;
+};
+
+const currentSlideScale = computed(() => {
+  const slide = currentSlide.value;
+  if (!slide || slide.cover || !hasText(slide.text)) return 1;
+
+  const rawText = formatLyricText(slide.text);
+  const rawLines = rawText.split(/<br\s*\/?>|\r?\n/gi);
+  const cleanLines = rawLines
+    .map((l: string) => l.replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").trim())
+    .filter((l: string) => l.length > 0);
+
+  if (cleanLines.length === 0) return 1;
+
+  const dims = getStableDims();
+  const currentW = width.value > 0 ? width.value : dims.w;
+  const currentH = height.value > 0 ? height.value : dims.h;
+
+  const outerPad = fontSizePc(4) * 2;
+  const usableW = Math.max(100, currentW - outerPad);
+  const usableH = Math.max(100, currentH - outerPad);
+
+  // O card ocupa no máximo 92% da largura e 84% da altura utilizável
+  const maxCardW = usableW * 0.92;
+  const maxCardH = usableH * 0.84;
+
+  // Usa as dimensões do container fixo da música se calculado, ou o limite máximo como base
+  const cardW = fixedCardWidth.value > 0 ? fixedCardWidth.value : maxCardW;
+  const cardH = fixedCardHeight.value > 0 ? fixedCardHeight.value : maxCardH;
+
+  // Paddings internos do card
+  const padH = fontSizePc(6) * 2;
+  const padV = fontSizePc(4.5) * 2;
+
+  const availableTextW = Math.max(50, cardW - padH);
+  const availableTextH = Math.max(50, cardH - padV);
+
+  const baseSizeMultiplier = customTextFormat.value ? customFontSize.value / 100 : 1;
+  const baseFontSize = fontSizePc((props.text_size_pc ?? 15) * 1.14) * baseSizeMultiplier;
+  const fontWeight = customTextFormat.value ? (customFontWeight.value || "700") : "700";
+
+  let maxLineWidth = 0;
+  for (const line of cleanLines) {
+    const w = measureTextWidth(line, baseFontSize, fontWeight);
+    if (w > maxLineWidth) maxLineWidth = w;
+  }
+
+  let scaleW = 1;
+  if (maxLineWidth > availableTextW && availableTextW > 0) {
+    scaleW = availableTextW / maxLineWidth;
+  }
+
+  // Altura total das linhas (line-height: 1.4)
+  const estimatedTextH = cleanLines.length * baseFontSize * 1.4;
+  let scaleH = 1;
+  if (estimatedTextH > availableTextH && availableTextH > 0) {
+    scaleH = availableTextH / estimatedTextH;
+  }
+
+  const scale = Math.min(1, scaleW, scaleH);
+  return Math.max(0.40, scale);
+});
 
 const hexToRgba = (hex: string, alpha: number) => {
   const clean = hex.replace("#", "");
@@ -377,47 +446,18 @@ const style_bg = (slide: any) => {
 };
 
 const style_cover_container = (_slide: any): any => {
-  const isBgRemoved = customBg.value && removeTextBg.value;
-
   const widthStyle = shouldWrapTitle.value ? "fit-content" : "max-content";
-
-  if (isBgRemoved) {
-    return {
-      width: widthStyle,
-      maxWidth: "100%",
-      boxSizing: "border-box" as const,
-      padding: `${fontSizePc(4)}px ${fontSizePc(6)}px`,
-      backgroundColor: "transparent",
-      border: "none",
-      backdropFilter: "none",
-      WebkitBackdropFilter: "none",
-      boxShadow: "none",
-    };
-  }
-
-  const hasTextBg = !customTextFormat.value || customTextBgIntensity.value > 0;
-  const bgColor = customTextFormat.value
-    ? hexToRgba(customTextBgColor.value, customTextBgIntensity.value / 100)
-    : "rgba(10, 16, 26, 0.45)";
-  const hasBorder = !customTextFormat.value || customTextBgBorder.value;
-  const borderStyle = hasBorder
-    ? "1px solid rgba(255, 255, 255, 0.18)"
-    : "none";
-
   return {
     position: "relative" as const,
     width: widthStyle,
     maxWidth: "100%",
     boxSizing: "border-box" as const,
-    padding: `${fontSizePc(4)}px ${fontSizePc(8)}px`,
-    borderRadius: `${Math.max(4, Math.round(fontSizePc(4.5)))}px`,
-    backgroundColor: hasTextBg ? bgColor : "transparent",
-    border: borderStyle,
-    backdropFilter: hasTextBg ? "blur(16px)" : "none",
-    WebkitBackdropFilter: hasTextBg ? "blur(16px)" : "none",
-    boxShadow: hasTextBg
-      ? "0 25px 60px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.15)"
-      : "none",
+    padding: "0",
+    backgroundColor: "transparent",
+    border: "none",
+    backdropFilter: "none",
+    WebkitBackdropFilter: "none",
+    boxShadow: "none",
   };
 };
 
@@ -430,27 +470,28 @@ const formatCoverSubtitle = (text: string): string => {
 };
 
 const style_subtitle_whisker = computed(() => {
-  const whiskerWidth = Math.max(6, fontSizePc(8));
+  const whiskerWidth = Math.max(16, fontSizePc(6.5));
   return {
     display: "inline-block",
     width: `${whiskerWidth}px`,
     height: "1px",
-    backgroundColor: "rgba(255, 255, 255, 0.38)",
+    backgroundColor: "rgba(255, 255, 255, 0.45)",
     flexShrink: 0,
   };
 });
 
 const style_subtitle_text = computed(() => {
-  const baseSize = customTextFormat.value ? (4.1 * customFontSize.value) / 100 : 4.1;
-  const textColor = "rgba(255, 255, 255, 0.88)";
+  const baseSize = customTextFormat.value ? (5.2 * customFontSize.value) / 100 : 5.2;
+  const textColor = "#FFFFFF";
   return {
-    margin: `0 ${fontSizePc(1.8)}px`,
+    margin: `0 ${Math.max(14, Math.round(fontSizePc(3)))}px`,
+    fontFamily: "'Montserrat', sans-serif",
     fontSize: `${fontSizePc(baseSize)}px`,
     fontWeight: "600",
     color: textColor,
-    letterSpacing: "0.14em",
+    letterSpacing: "0.22em",
     textTransform: "uppercase" as const,
-    textShadow: "0 1px 4px rgba(0, 0, 0, 0.8)",
+    textShadow: "0 1px 3px rgba(0, 0, 0, 0.5)",
     lineHeight: "1",
     whiteSpace: "nowrap" as const,
   };
@@ -467,9 +508,9 @@ const style_cover_subtitle = (_slide: any): any => {
       maxWidth: "90%",
       backgroundColor: "transparent",
       border: "none",
-      borderRadius: "0px",
-      padding: `${fontSizePc(0.85)}px ${fontSizePc(3)}px`,
-      marginTop: `${fontSizePc(1)}px`,
+      borderRadius: "9999px",
+      padding: `${fontSizePc(1.6)}px ${fontSizePc(5)}px`,
+      marginTop: `${fontSizePc(3.5)}px`,
       backdropFilter: "none",
       WebkitBackdropFilter: "none",
       boxShadow: "none",
@@ -478,16 +519,11 @@ const style_cover_subtitle = (_slide: any): any => {
   }
 
   const hasTextBg = !customTextFormat.value || customTextBgIntensity.value > 0;
-  const intensity = customTextFormat.value ? customTextBgIntensity.value / 100 : 0.45;
-  const topColor = customTextFormat.value
-    ? hexToRgba(customTextBgColor.value, intensity * 0.45)
-    : "rgba(10, 16, 26, 0.20)";
-  const bottomColor = customTextFormat.value
-    ? hexToRgba(customTextBgColor.value, Math.min(1, intensity * 0.85 + 0.05))
-    : "rgba(6, 10, 18, 0.38)";
-  const bgGradient = `linear-gradient(180deg, ${topColor} 0%, ${bottomColor} 100%)`;
+  const bgColor = customTextFormat.value
+    ? hexToRgba(customTextBgColor.value, customTextBgIntensity.value / 100)
+    : "rgba(23, 38, 59, 0.65)";
   const hasBorder = !customTextFormat.value || customTextBgBorder.value;
-  const borderCol = "rgba(255, 255, 255, 0.18)";
+  const borderCol = "rgba(255, 255, 255, 0.22)";
 
   return {
     position: "relative" as const,
@@ -495,40 +531,35 @@ const style_cover_subtitle = (_slide: any): any => {
     alignItems: "center",
     justifyContent: "center",
     maxWidth: "90%",
-    background: hasTextBg ? bgGradient : "transparent",
-    borderLeft: hasBorder ? `1px solid ${borderCol}` : "none",
-    borderRight: hasBorder ? `1px solid ${borderCol}` : "none",
-    borderBottom: hasBorder ? `1px solid ${borderCol}` : "none",
-    borderTop: hasBorder ? `1px solid ${borderCol}` : "none",
-    borderBottomLeftRadius: `${Math.max(2, Math.round(fontSizePc(2.2)))}px`,
-    borderBottomRightRadius: `${Math.max(2, Math.round(fontSizePc(2.2)))}px`,
-    borderTopLeftRadius: "0px",
-    borderTopRightRadius: "0px",
-    padding: `${fontSizePc(0.85)}px ${fontSizePc(3.6)}px`,
-    marginTop: "-1px",
+    backgroundColor: hasTextBg ? bgColor : "transparent",
+    border: hasBorder ? `1px solid ${borderCol}` : "none",
+    borderRadius: "9999px",
+    padding: `${Math.max(8, Math.round(fontSizePc(2)))}px ${Math.max(26, Math.round(fontSizePc(6)))}px`,
+    marginTop: `${Math.max(22, Math.round(fontSizePc(4.5)))}px`,
     zIndex: 2,
-    backdropFilter: hasTextBg ? "blur(16px)" : "none",
-    WebkitBackdropFilter: hasTextBg ? "blur(16px)" : "none",
+    backdropFilter: hasTextBg ? "blur(14px)" : "none",
+    WebkitBackdropFilter: hasTextBg ? "blur(14px)" : "none",
     boxShadow: hasTextBg
-      ? "0 8px 20px rgba(0, 0, 0, 0.32)"
+      ? "0 10px 24px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.12)"
       : "none",
     whiteSpace: "nowrap" as const,
   };
 };
 
 const style_cover_title = (_slide: any): any => {
-  const baseColor = "#f6c32a";
-  const baseSize = customTextFormat.value ? (21 * customFontSize.value) / 100 : 21;
+  const baseColor = "#f5af19";
+  const baseSize = customTextFormat.value ? (22 * customFontSize.value) / 100 : 22;
   const fontWeight = customFontWeight.value ? customFontWeight.value : "900";
   return {
     width: shouldWrapTitle.value ? "100%" : "max-content",
     maxWidth: "100%",
     boxSizing: "border-box" as const,
+    fontFamily: "'Montserrat', sans-serif",
     fontSize: `${fontSizePc(baseSize)}px`,
     color: baseColor,
     fontWeight,
     textTransform: "uppercase" as const,
-    letterSpacing: "0.01em",
+    letterSpacing: "0.02em",
     textAlign: "center" as const,
     lineHeight: "1.15",
     margin: "0",
@@ -537,7 +568,7 @@ const style_cover_title = (_slide: any): any => {
     textWrap: "balance" as const,
     overflowWrap: "break-word" as const,
     wordBreak: "normal" as const,
-    textShadow: "0 4px 20px rgba(0, 0, 0, 0.8), 0 2px 6px rgba(0, 0, 0, 0.6)",
+    textShadow: "0 6px 18px rgba(0, 0, 0, 0.35), 0 2px 4px rgba(0, 0, 0, 0.28)",
   };
 };
 
@@ -585,23 +616,49 @@ const getMeasureText = (item: any): string => {
   return raw;
 };
 
-const measureItemStyle = (_item: any): any => {
+const measureItemStyle = (item: any): any => {
   const sizeMultiplier = customTextFormat.value ? customFontSize.value / 100 : 1;
-  const borderSize = Math.max(2, fontSizePc(0.4));
+  const borderSize = 1;
+  const dims = getStableDims();
+  const currentW = width.value > 0 ? width.value : dims.w;
+  const baseFontSize = fontSizePc((props.text_size_pc ?? 15) * 1.14) * sizeMultiplier;
+  const fontWeight = customTextFormat.value ? (customFontWeight.value || "700") : "700";
+
+  const rawText = formatLyricText(item?.lyric || item?.text || "");
+  const rawLines = rawText.split(/<br\s*\/?>|\r?\n/gi);
+  const cleanLines = rawLines
+    .map((l: string) => l.replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").trim())
+    .filter((l: string) => l.length > 0);
+
+  const outerPad = fontSizePc(4) * 2;
+  const usableW = Math.max(100, currentW - outerPad);
+  const availableTextW = Math.max(50, (usableW * 0.92) - (fontSizePc(6) * 2));
+
+  let maxLineWidth = 0;
+  for (const line of cleanLines) {
+    const w = measureTextWidth(line, baseFontSize, fontWeight);
+    if (w > maxLineWidth) maxLineWidth = w;
+  }
+
+  let scale = 1;
+  if (maxLineWidth > availableTextW && availableTextW > 0) {
+    scale = Math.max(0.40, availableTextW / maxLineWidth);
+  }
+
   return {
     display: "inline-block",
     boxSizing: "border-box" as const,
-    padding: `${fontSizePc(5)}px ${fontSizePc(8)}px`,
+    padding: `${fontSizePc(4.5) * Math.max(0.65, scale)}px ${fontSizePc(6.5) * Math.max(0.65, scale)}px`,
     border: `${borderSize}px solid transparent`,
-    fontSize: `${fontSizePc(props.text_size_pc ?? 15) * sizeMultiplier}px`,
-    fontWeight: customTextFormat.value ? customFontWeight.value : "700",
+    fontSize: `${baseFontSize * scale}px`,
+    fontWeight,
     letterSpacing: "0.03em",
     lineHeight: "1.4",
     textTransform: "uppercase" as const,
     textAlign: "center" as const,
     whiteSpace: "normal" as const,
     wordBreak: "break-word" as const,
-    maxWidth: width.value > 0 ? `${Math.floor(width.value * 0.9)}px` : "90vw",
+    maxWidth: `${Math.floor(usableW * 0.92)}px`,
   };
 };
 
@@ -616,9 +673,69 @@ const calculateMaxCardSize = () => {
     return;
   }
 
+  const dims = getStableDims();
+  const currentW = width.value > 0 ? width.value : dims.w;
+  const currentH = height.value > 0 ? height.value : dims.h;
+
+  const outerPad = fontSizePc(4) * 2;
+  const usableW = Math.max(100, currentW - outerPad);
+  const usableH = Math.max(100, currentH - outerPad);
+
+  const maxAllowedCardW = Math.floor(usableW * 0.92);
+  const maxAllowedCardH = Math.floor(usableH * 0.84);
+
+  const padH = fontSizePc(6) * 2;
+  const padV = fontSizePc(4.5) * 2;
+  const availableTextW = Math.max(50, maxAllowedCardW - padH);
+  const availableTextH = Math.max(50, maxAllowedCardH - padV);
+
+  const baseMultiplier = customTextFormat.value ? customFontSize.value / 100 : 1;
+  const baseFontSize = fontSizePc((props.text_size_pc ?? 15) * 1.14) * baseMultiplier;
+  const fontWeight = customTextFormat.value ? (customFontWeight.value || "700") : "700";
+
   let maxW = 0;
   let maxH = 0;
 
+  // 1. Mede analiticamente cada slide da música para encontrar a largura e altura do maior slide
+  slidesToMeasure.value.forEach((item: any) => {
+    const rawText = formatLyricText(item?.lyric || item?.text || "");
+    const rawLines = rawText.split(/<br\s*\/?>|\r?\n/gi);
+    const cleanLines = rawLines
+      .map((l: string) => l.replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").trim())
+      .filter((l: string) => l.length > 0);
+
+    if (cleanLines.length === 0) return;
+
+    let maxLineW = 0;
+    for (const line of cleanLines) {
+      const w = measureTextWidth(line, baseFontSize, fontWeight);
+      if (w > maxLineW) maxLineW = w;
+    }
+
+    let scaleW = 1;
+    if (maxLineW > availableTextW && availableTextW > 0) {
+      scaleW = availableTextW / maxLineW;
+    }
+
+    const estimatedTextH = cleanLines.length * baseFontSize * 1.4;
+    let scaleH = 1;
+    if (estimatedTextH > availableTextH && availableTextH > 0) {
+      scaleH = availableTextH / estimatedTextH;
+    }
+
+    const itemScale = Math.max(0.40, Math.min(1, scaleW, scaleH));
+
+    const itemPadH = Math.max(16, Math.round(fontSizePc(6.5) * Math.max(0.65, itemScale))) * 2;
+    const itemPadV = Math.max(8, Math.round(fontSizePc(4.5) * Math.max(0.65, itemScale))) * 2;
+
+    const itemW = Math.ceil(maxLineW * itemScale) + itemPadH;
+    const itemH = Math.ceil(cleanLines.length * baseFontSize * itemScale * 1.4) + itemPadV;
+
+    if (itemW > maxW) maxW = itemW;
+    if (itemH > maxH) maxH = itemH;
+  });
+
+  // 2. Se os elementos DOM no container de medição medirem algo a mais, considera também
   if (measureItems.value && measureItems.value.length > 0) {
     measureItems.value.forEach((domEl: any) => {
       const el = domEl?.$el || domEl;
@@ -631,28 +748,41 @@ const calculateMaxCardSize = () => {
   }
 
   if (maxW > 0 && maxH > 0) {
-    fixedCardWidth.value = Math.ceil(maxW) + 4;
-    fixedCardHeight.value = Math.ceil(maxH);
+    fixedCardWidth.value = Math.min(Math.ceil(maxW) + 4, maxAllowedCardW);
+    fixedCardHeight.value = Math.min(Math.ceil(maxH), maxAllowedCardH);
   }
 };
 
 const style_text = (_slide: any): any => { 
   const isBgRemoved = customBg.value && removeTextBg.value;
 
-  const fixedDims: any = {};
+  const scale = currentSlideScale.value;
+  const cardRadius = `${Math.max(18, Math.round(fontSizePc(6.5) * Math.max(0.7, scale)))}px`;
+
+  const padV = Math.max(8, Math.round(fontSizePc(4.5) * Math.max(0.65, scale)));
+  const padH = Math.max(16, Math.round(fontSizePc(6.5) * Math.max(0.65, scale)));
+
+  const baseMultiplier = customTextFormat.value ? customFontSize.value / 100 : 1;
+  const finalFontSize = fontSizePc((props.text_size_pc ?? 15) * 1.14) * baseMultiplier * scale;
+
+  const fixedDims: any = {
+    maxWidth: "92%",
+    maxHeight: "84%",
+    boxSizing: "border-box" as const,
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: cardRadius,
+    padding: `${padV}px ${padH}px`,
+  };
+
   if (fixedCardWidth.value > 0) {
     fixedDims.width = `${fixedCardWidth.value}px`;
   }
   if (fixedCardHeight.value > 0) {
     fixedDims.height = `${fixedCardHeight.value}px`;
   }
-  fixedDims.maxWidth = "90%";
-  fixedDims.maxHeight = "82%";
-  fixedDims.boxSizing = "border-box";
-  fixedDims.display = "flex";
-  fixedDims.flexDirection = "column";
-  fixedDims.alignItems = "center";
-  fixedDims.justifyContent = "center";
 
   if (isBgRemoved) {
     const bgStyles = {
@@ -664,16 +794,14 @@ const style_text = (_slide: any): any => {
     };
 
     if (customTextFormat.value) {
-      const sizeMultiplier = customFontSize.value / 100;
       return {
         ...bgStyles,
         ...fixedDims,
-        padding: `${fontSizePc(5)}px ${fontSizePc(8)}px`,
         textAlign: "center" as const,
         textTransform: "uppercase",
-        fontSize: `${fontSizePc(props.text_size_pc ?? 15) * sizeMultiplier}px`,
+        fontSize: `${finalFontSize}px`,
         color: props.text_color ?? (repeat.value ? "#f6c32a" : customFontColor.value),
-        fontWeight: customFontWeight.value,
+        fontWeight: customFontWeight.value || "700",
         letterSpacing: "0.03em",
         lineHeight: "1.4",
         textShadow: "0px 2px 10px rgba(0, 0, 0, 0.8)",
@@ -683,10 +811,9 @@ const style_text = (_slide: any): any => {
     return {
       ...bgStyles,
       ...fixedDims,
-      padding: `${fontSizePc(5)}px ${fontSizePc(8)}px`,
       textAlign: "center" as const,
       textTransform: "uppercase",
-      fontSize: `${fontSizePc(props.text_size_pc ?? 15)}px`,
+      fontSize: `${finalFontSize}px`,
       color: props.text_color ?? (repeat.value ? "#f6c32a" : "#ffffff"),
       fontWeight: "700",
       letterSpacing: "0.03em",
@@ -695,42 +822,40 @@ const style_text = (_slide: any): any => {
   }
 
   if (customTextFormat.value) {
-    const sizeMultiplier = customFontSize.value / 100;
     const hasTextBg = customTextBgIntensity.value > 0;
     return {
       ...fixedDims,
       backgroundColor: hasTextBg ? hexToRgba(customTextBgColor.value, customTextBgIntensity.value / 100) : "transparent",
-      border: hasTextBg && customTextBgBorder.value ? `${Math.max(2, fontSizePc(0.4))}px solid rgba(255, 255, 255, 0.85)` : "none",
-      padding: `${fontSizePc(5)}px ${fontSizePc(8)}px`,
-      backdropFilter: hasTextBg ? "blur(8px)" : "none",
-      WebkitBackdropFilter: hasTextBg ? "blur(8px)" : "none",
-      boxShadow: hasTextBg ? "0px 10px 30px rgba(0, 0, 0, 0.4)" : "none",
+      border: hasTextBg && customTextBgBorder.value ? "1px solid rgba(255, 255, 255, 0.2)" : "none",
+      backdropFilter: hasTextBg ? "blur(12px)" : "none",
+      WebkitBackdropFilter: hasTextBg ? "blur(12px)" : "none",
+      boxShadow: hasTextBg ? "0 10px 30px rgba(0, 0, 0, 0.3)" : "none",
       textAlign: "center" as const,
       textTransform: "uppercase",
-      fontSize: `${fontSizePc(props.text_size_pc ?? 15) * sizeMultiplier}px`,
+      fontSize: `${finalFontSize}px`,
       color: props.text_color ?? (repeat.value ? "#f6c32a" : customFontColor.value),
-      fontWeight: customFontWeight.value,
+      fontWeight: customFontWeight.value || "700",
       letterSpacing: "0.03em",
       lineHeight: "1.4",
       textShadow: "0px 2px 10px rgba(0, 0, 0, 0.8)",
     };
   }
 
+  // Padrão clean com cantos levemente arredondados
   return {
     ...fixedDims,
-    backgroundColor: "rgba(0, 0, 0, 0.25)",
-    border: `${Math.max(2, fontSizePc(0.4))}px solid rgba(255, 255, 255, 0.85)`,
-    padding: `${fontSizePc(5)}px ${fontSizePc(8)}px`,
+    backgroundColor: "rgba(10, 16, 26, 0.52)",
+    border: "1px solid rgba(255, 255, 255, 0.18)",
     textAlign: "center" as const,
     textTransform: "uppercase",
-    fontSize: `${fontSizePc(props.text_size_pc ?? 15)}px`,
+    fontSize: `${finalFontSize}px`,
     color: props.text_color ?? (repeat.value ? "#f6c32a" : "#ffffff"),
     fontWeight: "700",
     letterSpacing: "0.03em",
     lineHeight: "1.4",
-    backdropFilter: "blur(8px)",
-    WebkitBackdropFilter: "blur(8px)",
-    boxShadow: "0px 10px 30px rgba(0, 0, 0, 0.4)",
+    backdropFilter: "blur(12px)",
+    WebkitBackdropFilter: "blur(12px)",
+    boxShadow: "0 10px 30px rgba(0, 0, 0, 0.35)",
   };
 };
 
@@ -912,5 +1037,16 @@ onUnmounted(() => {
 .fade-blackout-enter-from,
 .fade-blackout-leave-to {
   opacity: 0;
+}
+
+.slide-lyric-card {
+  transition: all 0.25s ease-out;
+}
+
+.slide-lyric-content {
+  white-space: normal;
+  word-break: normal;
+  overflow-wrap: break-word;
+  text-wrap: balance;
 }
 </style>

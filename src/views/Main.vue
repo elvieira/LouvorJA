@@ -63,18 +63,27 @@
                 </v-tooltip>
               </v-btn>
             </div>
-            <div class="position-relative w-100 bg-black mini-player-content" style="height: 180px; z-index: 1;">
-              <LSlide
+            <div class="position-relative w-100 bg-black mini-player-content" style="height: 180px; width: 320px; overflow: hidden; z-index: 1;">
+              <div
                 v-if="slide"
-                :slide_number="config.slide_index"
-                :cover="slide.cover == true"
-                :text="slide.lyric"
-                :aux_text="slide.aux_lyric"
-                :image="slide.url_image ? $path.file(slide.url_image) : null"
-                :image_position="slide.image_position"
-                :all_slides="slides"
-                class="w-100 h-100"
-              />
+                style="width: 1280px; height: 720px; transform: scale(0.25); transform-origin: top left; pointer-events: none;"
+              >
+                <LSlide
+                  :slide_number="config.slide_index"
+                  :cover="slide.cover == true"
+                  :text="slide.lyric"
+                  :aux_text="slide.aux_lyric"
+                  :image="slide.url_image ? $path.file(slide.url_image) : null"
+                  :image_position="slide.image_position"
+                  :text_size_pc="slide.fontSize"
+                  :text_color="slide.fontColor"
+                  :aux_text_size_pc="slide.auxFontSize"
+                  :aux_text_color="slide.auxFontColor"
+                  :all_slides="slides"
+                  :reference_size="{ width: 1280, height: 720 }"
+                  class="w-100 h-100"
+                />
+              </div>
               <div v-else class="w-100 h-100 d-flex align-center justify-center text-grey">
                 Sem mídia
               </div>
@@ -892,6 +901,7 @@ main {
   z-index: 1000;
   border-radius: 8px;
   overflow: hidden;
+  clip-path: inset(0 round 8px);
   box-shadow: 0 10px 30px rgba(0,0,0,0.5);
   border: 1px solid rgba(255,255,255,0.1);
   cursor: grab;
