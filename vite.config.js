@@ -30,6 +30,15 @@ export default defineConfig(({ mode }) => {
         main: {
           entry: "electron/main.ts",
           vite: {
+            define: {
+              "process.env.VITE_URL_FILES": JSON.stringify(env.VITE_URL_FILES || ""),
+              "process.env.VITE_URL_DATABASE": JSON.stringify(env.VITE_URL_DATABASE || ""),
+              "process.env.VITE_URL_FALLBACK": JSON.stringify(env.VITE_URL_FALLBACK || ""),
+              "process.env.VITE_API_TOKEN": JSON.stringify(env.VITE_API_TOKEN || ""),
+              "process.env.VITE_CLOUD_ENDPOINT": JSON.stringify(env.VITE_CLOUD_ENDPOINT || ""),
+              "process.env.VITE_CLOUD_TOKEN": JSON.stringify(env.VITE_CLOUD_TOKEN || ""),
+              "process.env.VITE_APP_SIGNATURE": JSON.stringify(env.VITE_APP_SIGNATURE || ""),
+            },
             build: {
               rollupOptions: {
                 external: ["sql.js"],
@@ -99,6 +108,13 @@ export default defineConfig(({ mode }) => {
       }),
     ],
     define: {
+      "process.env.VITE_URL_FILES": JSON.stringify(env.VITE_URL_FILES || ""),
+      "process.env.VITE_URL_DATABASE": JSON.stringify(env.VITE_URL_DATABASE || ""),
+      "process.env.VITE_URL_FALLBACK": JSON.stringify(env.VITE_URL_FALLBACK || ""),
+      "process.env.VITE_API_TOKEN": JSON.stringify(env.VITE_API_TOKEN || ""),
+      "process.env.VITE_CLOUD_ENDPOINT": JSON.stringify(env.VITE_CLOUD_ENDPOINT || ""),
+      "process.env.VITE_CLOUD_TOKEN": JSON.stringify(env.VITE_CLOUD_TOKEN || ""),
+      "process.env.VITE_APP_SIGNATURE": JSON.stringify(env.VITE_APP_SIGNATURE || ""),
       "process.env": {},
       __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: "true",
     },

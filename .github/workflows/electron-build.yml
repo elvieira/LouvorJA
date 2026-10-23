@@ -54,9 +54,23 @@ jobs:
           echo "VITE_APP_MODE=production" >> .env.production
           echo "VITE_URL_FILES=${{ secrets.VITE_URL_FILES }}" >> .env.production
           echo "VITE_URL_DATABASE=${{ secrets.VITE_URL_DATABASE }}" >> .env.production
+          echo "VITE_URL_FALLBACK=${{ secrets.VITE_URL_FALLBACK }}" >> .env.production
           echo "VITE_API_TOKEN=${{ secrets.VITE_API_TOKEN }}" >> .env.production
+          echo "VITE_CLOUD_ENDPOINT=${{ secrets.VITE_CLOUD_ENDPOINT }}" >> .env.production
+          echo "VITE_CLOUD_TOKEN=${{ secrets.VITE_CLOUD_TOKEN }}" >> .env.production
+          echo "VITE_APP_SIGNATURE=${{ secrets.VITE_APP_SIGNATURE }}" >> .env.production
 
       - name: Build Vite
+        env:
+          NODE_ENV: production
+          VITE_APP_MODE: production
+          VITE_URL_FILES: ${{ secrets.VITE_URL_FILES }}
+          VITE_URL_DATABASE: ${{ secrets.VITE_URL_DATABASE }}
+          VITE_URL_FALLBACK: ${{ secrets.VITE_URL_FALLBACK }}
+          VITE_API_TOKEN: ${{ secrets.VITE_API_TOKEN }}
+          VITE_CLOUD_ENDPOINT: ${{ secrets.VITE_CLOUD_ENDPOINT }}
+          VITE_CLOUD_TOKEN: ${{ secrets.VITE_CLOUD_TOKEN }}
+          VITE_APP_SIGNATURE: ${{ secrets.VITE_APP_SIGNATURE }}
         run: npx vite build --base=./
 
       - name: Configure Publish Repository for CI
