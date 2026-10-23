@@ -26,12 +26,16 @@ export default createVuetify({
         dark: false,
         colors: {
           primary: "#0097d7",
+          background: "#f1f5f9",
+          surface: "#ffffff",
         },
       },
       dark: {
         dark: true,
         colors: {
           primary: "#0097d7",
+          background: "#111c30",
+          surface: "#1a2a44",
         },
       },
     },

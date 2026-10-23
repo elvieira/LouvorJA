@@ -600,7 +600,8 @@ export default defineComponent({
   top: 32px;
   z-index: 9999;
   overflow: hidden;
-  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.06);
+  border-right: 1px solid var(--sidebar-border);
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
   &.is-collapsed {
