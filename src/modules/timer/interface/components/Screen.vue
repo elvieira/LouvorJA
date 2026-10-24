@@ -121,7 +121,7 @@
             >
               <!-- Texto Personalizado Vinculado Acima -->
               <div
-                v-if="effectiveCultCustomText && (config.cultCustomTextPosition === 'above' || (!config.cultCustomTextPosition && config.customTextPosition !== 'below' && config.customTextPosition !== 'custom'))"
+                v-if="effectiveCultCustomText && (config.cultCustomTextPosition === 'above' || (!config.cultCustomTextPosition && config.customTextPosition !== 'below' && config.customTextPosition !== 'custom' && config.customTextPosition !== 'free'))"
                 class="custom-timer-title font-weight-bold mb-1"
                 :style="cultTogetherCustomTextStyle"
               >
@@ -157,7 +157,7 @@
 
             <!-- Texto Personalizado Livre no Culto -->
             <div
-              v-if="effectiveCultCustomText && (config.cultCustomTextPosition === 'custom' || (!config.cultCustomTextPosition && (config.customTextPosition === 'custom' || config.customTextPosition === 'free')))"
+              v-if="effectiveCultCustomText && (config.cultCustomTextPosition === 'custom' || config.cultCustomTextPosition === 'free' || (!config.cultCustomTextPosition && (config.customTextPosition === 'custom' || config.customTextPosition === 'free')))"
               class="custom-timer-title font-weight-bold"
               :style="cultTextStyle"
             >

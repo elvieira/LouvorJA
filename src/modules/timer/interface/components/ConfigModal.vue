@@ -860,11 +860,22 @@
                   />
                 </div>
 
-                <!-- Se Individual: Seletor de Alvo -->
-                <div v-if="localConfig.cultPosMode === 'individual'" class="settings-section mb-5">
-                  <div class="text-caption font-weight-bold mb-2" style="color: var(--sidebar-text);">
-                    {{ t('pos_adjusting') }}
+                <!-- Se Individual OU se Texto Livre: Seletor de Alvo -->
+                <div
+                  v-if="localConfig.cultPosMode === 'individual' || (effectivePreviewCultCustomText && isCultTextFree)"
+                  class="settings-section mb-5"
+                >
+                  <div class="d-flex align-center mb-1">
+                    <v-icon size="18" color="primary" class="mr-2">
+                      mdi-target
+                    </v-icon>
+                    <span class="text-subtitle-2 font-weight-bold section-title">
+                      {{ t('drag_target') || 'Alvo de Ajuste' }}
+                    </span>
                   </div>
+                  <p class="text-caption mb-3" style="color: var(--sidebar-text-secondary);">
+                    {{ t('pos_adjusting') }}
+                  </p>
                   <PillSwitch
                     v-model="cultActivePosTarget"
                     block
@@ -875,9 +886,14 @@
                 <!-- Grade 9 Pontos Culto -->
                 <div class="settings-section mb-5">
                   <div class="d-flex align-center justify-space-between mb-2">
-                    <span class="text-subtitle-2 font-weight-bold section-title">
-                      Alinhamento Rápido
-                    </span>
+                    <div class="d-flex align-center">
+                      <v-icon size="18" color="primary" class="mr-2">
+                        mdi-grid
+                      </v-icon>
+                      <span class="text-subtitle-2 font-weight-bold section-title">
+                        Alinhamento Rápido
+                      </span>
+                    </div>
                     <v-btn
                       variant="tonal"
                       color="primary"
@@ -891,7 +907,12 @@
                   </div>
                   <div class="w-100 my-2">
                     <PositionAlignmentPicker
-                      v-if="localConfig.cultPosMode === 'together'"
+                      v-if="cultActivePosTarget === 'text' && (localConfig.cultPosMode === 'individual' || isCultTextFree)"
+                      v-model:x="localConfig.cultTextX"
+                      v-model:y="localConfig.cultTextY"
+                    />
+                    <PositionAlignmentPicker
+                      v-else-if="localConfig.cultPosMode === 'together'"
                       v-model:x="localConfig.cultPosX"
                       v-model:y="localConfig.cultPosY"
                     />
@@ -899,11 +920,6 @@
                       v-else-if="cultActivePosTarget === 'clock'"
                       v-model:x="localConfig.cultClockX"
                       v-model:y="localConfig.cultClockY"
-                    />
-                    <PositionAlignmentPicker
-                      v-else-if="cultActivePosTarget === 'text'"
-                      v-model:x="localConfig.cultTextX"
-                      v-model:y="localConfig.cultTextY"
                     />
                     <PositionAlignmentPicker
                       v-else
@@ -1294,15 +1310,27 @@
 
               <!-- Modo Escola Sabatina -->
               <template v-else>
+                <!-- Texto Livre / Independente (quando livre no modo Juntos ou em modo Individual) -->
+                <div
+                  v-if="effectivePreviewCultCustomText && (isCultTextFree || localConfig.cultPosMode === 'individual')"
+                  class="position-absolute font-weight-bold preview-interactive-element"
+                  :class="{ 'preview-selected-element': cultActivePosTarget === 'text' }"
+                  :style="previewCultIndividualTextStyle"
+                  @pointerdown.stop="selectAndDragCult('text', $event)"
+                >
+                  {{ effectivePreviewCultCustomText }}
+                </div>
+
                 <!-- Escola Sabatina: Elementos Juntos -->
                 <div
                   v-if="localConfig.cultPosMode === 'together'"
-                  class="position-absolute d-flex flex-column preview-interactive-element preview-selected-element"
+                  class="position-absolute d-flex flex-column preview-interactive-element"
+                  :class="{ 'preview-selected-element': !isCultTextFree || cultActivePosTarget !== 'text' }"
                   :style="previewCultTogetherStyle"
                   @pointerdown.stop="startDragCultTogether"
                 >
                   <div
-                    v-if="effectivePreviewCultCustomText && (localConfig.cultCustomTextPosition === 'above' || !localConfig.cultCustomTextPosition)"
+                    v-if="effectivePreviewCultCustomText && !isCultTextFree && (localConfig.cultCustomTextPosition === 'above' || !localConfig.cultCustomTextPosition)"
                     class="font-weight-bold mb-1"
                     :style="previewCultTitleStyle"
                   >
@@ -1322,7 +1350,7 @@
                     {{ previewAlert ? '-02:15' : '14:32' }}
                   </div>
                   <div
-                    v-if="effectivePreviewCultCustomText && localConfig.cultCustomTextPosition === 'below'"
+                    v-if="effectivePreviewCultCustomText && !isCultTextFree && localConfig.cultCustomTextPosition === 'below'"
                     class="font-weight-bold mt-1"
                     :style="previewCultTitleStyle"
                   >
@@ -1330,7 +1358,7 @@
                   </div>
                 </div>
 
-                <!-- Escola Sabatina: Individual -->
+                <!-- Escola Sabatina: Individual (Relógio e Cronômetro) -->
                 <template v-else>
                   <div
                     v-if="localConfig.cultAlwaysShowClock"
@@ -1348,15 +1376,6 @@
                     @pointerdown.stop="selectAndDragCult('timer', $event)"
                   >
                     {{ previewAlert ? '-02:15' : '14:32' }}
-                  </div>
-                  <div
-                    v-if="effectivePreviewCultCustomText"
-                    class="position-absolute font-weight-bold preview-interactive-element"
-                    :class="{ 'preview-selected-element': cultActivePosTarget === 'text' }"
-                    :style="previewCultIndividualTextStyle"
-                    @pointerdown.stop="selectAndDragCult('text', $event)"
-                  >
-                    {{ effectivePreviewCultCustomText }}
                   </div>
                 </template>
               </template>
@@ -1672,13 +1691,23 @@ export default defineComponent({
     effectivePreviewCultCustomText(): string {
       return this.localConfig.cultCustomText || "";
     },
+    isCultTextFree(): boolean {
+      const pos = this.localConfig.cultCustomTextPosition || this.localConfig.customTextPosition;
+      return pos === "custom" || pos === "free";
+    },
     cultTargetItems(): any[] {
+      if (this.localConfig.cultPosMode === "together") {
+        return [
+          { value: "timer", label: this.t("pos_mode_together") || "Mover Juntos", icon: "mdi-vector-combine" },
+          { value: "text", label: this.t("pos_target_text") || "Texto", icon: "mdi-format-title" },
+        ];
+      }
       const items = [
-        { value: "timer", label: this.t("pos_target_timer"), icon: "mdi-timer-outline" },
-        { value: "clock", label: this.t("pos_target_clock"), icon: "mdi-clock-outline" },
+        { value: "timer", label: this.t("pos_target_timer") || "Cronômetro", icon: "mdi-timer-outline" },
+        { value: "clock", label: this.t("pos_target_clock") || "Hora Atual", icon: "mdi-clock-outline" },
       ];
       if (this.effectivePreviewCultCustomText) {
-        items.push({ value: "text", label: this.t("pos_target_text"), icon: "mdi-format-title" });
+        items.push({ value: "text", label: this.t("pos_target_text") || "Texto", icon: "mdi-format-title" });
       }
       return items;
     },
@@ -1689,15 +1718,19 @@ export default defineComponent({
       ];
     },
     currentCultTargetX(): number {
+      if (this.cultActivePosTarget === "text" && (this.localConfig.cultPosMode === "individual" || this.isCultTextFree)) {
+        return this.localConfig.cultTextX ?? 50;
+      }
       if (this.localConfig.cultPosMode === "together") return this.localConfig.cultPosX ?? 50;
       if (this.cultActivePosTarget === "clock") return this.localConfig.cultClockX ?? 50;
-      if (this.cultActivePosTarget === "text") return this.localConfig.cultTextX ?? 50;
       return this.localConfig.cultTimerX ?? 50;
     },
     currentCultTargetY(): number {
+      if (this.cultActivePosTarget === "text" && (this.localConfig.cultPosMode === "individual" || this.isCultTextFree)) {
+        return this.localConfig.cultTextY ?? 15;
+      }
       if (this.localConfig.cultPosMode === "together") return this.localConfig.cultPosY ?? 50;
       if (this.cultActivePosTarget === "clock") return this.localConfig.cultClockY ?? 35;
-      if (this.cultActivePosTarget === "text") return this.localConfig.cultTextY ?? 15;
       return this.localConfig.cultTimerY ?? 60;
     },
     previewBoxContainerStyle(): Record<string, string> {
@@ -1855,6 +1888,18 @@ export default defineComponent({
         if (this.initialTab) {
           this.activeProfile = this.initialTab === "cult" ? "cult" : "general";
         }
+      }
+    },
+    "localConfig.cultCustomTextPosition"(val: string) {
+      if (val === "custom" || val === "free") {
+        this.cultActivePosTarget = "text";
+      } else if (this.cultActivePosTarget === "text" && this.localConfig.cultPosMode === "together") {
+        this.cultActivePosTarget = "timer";
+      }
+    },
+    "localConfig.cultPosMode"(val: string) {
+      if (val === "together" && !this.isCultTextFree) {
+        this.cultActivePosTarget = "timer";
       }
     },
   },
@@ -2015,31 +2060,41 @@ export default defineComponent({
       this.showResetConfirm = false;
     },
     centerCurrentCultTarget() {
-      if (this.localConfig.cultPosMode === "together") {
+      if (this.cultActivePosTarget === "text" && (this.localConfig.cultPosMode === "individual" || this.isCultTextFree)) {
+        this.localConfig.cultTextX = 50;
+        this.localConfig.cultTextY = 15;
+      } else if (this.localConfig.cultPosMode === "together") {
         this.localConfig.cultPosX = 50;
         this.localConfig.cultPosY = 50;
       } else if (this.cultActivePosTarget === "clock") {
         this.localConfig.cultClockX = 50;
         this.localConfig.cultClockY = 35;
-      } else if (this.cultActivePosTarget === "text") {
-        this.localConfig.cultTextX = 50;
-        this.localConfig.cultTextY = 15;
       } else {
         this.localConfig.cultTimerX = 50;
         this.localConfig.cultTimerY = 60;
       }
     },
     setCultTargetX(val: number) {
-      if (this.localConfig.cultPosMode === "together") this.localConfig.cultPosX = val;
-      else if (this.cultActivePosTarget === "clock") this.localConfig.cultClockX = val;
-      else if (this.cultActivePosTarget === "text") this.localConfig.cultTextX = val;
-      else this.localConfig.cultTimerX = val;
+      if (this.cultActivePosTarget === "text" && (this.localConfig.cultPosMode === "individual" || this.isCultTextFree)) {
+        this.localConfig.cultTextX = val;
+      } else if (this.localConfig.cultPosMode === "together") {
+        this.localConfig.cultPosX = val;
+      } else if (this.cultActivePosTarget === "clock") {
+        this.localConfig.cultClockX = val;
+      } else {
+        this.localConfig.cultTimerX = val;
+      }
     },
     setCultTargetY(val: number) {
-      if (this.localConfig.cultPosMode === "together") this.localConfig.cultPosY = val;
-      else if (this.cultActivePosTarget === "clock") this.localConfig.cultClockY = val;
-      else if (this.cultActivePosTarget === "text") this.localConfig.cultTextY = val;
-      else this.localConfig.cultTimerY = val;
+      if (this.cultActivePosTarget === "text" && (this.localConfig.cultPosMode === "individual" || this.isCultTextFree)) {
+        this.localConfig.cultTextY = val;
+      } else if (this.localConfig.cultPosMode === "together") {
+        this.localConfig.cultPosY = val;
+      } else if (this.cultActivePosTarget === "clock") {
+        this.localConfig.cultClockY = val;
+      } else {
+        this.localConfig.cultTimerY = val;
+      }
     },
     centerCurrentGeneralTarget() {
       if (
@@ -2058,7 +2113,11 @@ export default defineComponent({
       if (this.activeProfile === "general") {
         this.selectAndDragStandard(this.generalActivePosTarget || "timer", e);
       } else if (this.localConfig.cultPosMode === "together") {
-        this.startDragCultTogether(e);
+        if (this.cultActivePosTarget === "text" && this.isCultTextFree) {
+          this.selectAndDragCult("text", e);
+        } else {
+          this.startDragCultTogether(e);
+        }
       } else {
         this.selectAndDragCult(this.cultActivePosTarget || "timer", e);
       }
@@ -2104,6 +2163,7 @@ export default defineComponent({
       this.selectAndDragStandard(this.generalActivePosTarget || "timer", e);
     },
     startDragCultTogether(e: PointerEvent) {
+      this.cultActivePosTarget = "timer";
       const el = (this.$refs.previewBoxRef || e.currentTarget) as HTMLElement;
       if (!el) return;
       const rect = el.getBoundingClientRect();
