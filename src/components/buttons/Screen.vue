@@ -41,6 +41,8 @@ const props = withDefaults(defineProps<{
 }>(), {
   size: "small",
   variant: "text",
+  color: undefined,
+  iconSize: undefined,
 });
 
 const resolvedIconSize = computed(() => {
