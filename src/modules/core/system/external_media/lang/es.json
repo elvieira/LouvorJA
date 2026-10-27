@@ -12,6 +12,13 @@
     "projecting": "Proyectando en la pantalla externa...",
     "exit_fullscreen": "Salir de pantalla completa",
     "video": "Video",
-    "audio": "Audio"
+    "audio": "Audio",
+    "rewind_10": "Retroceder 10s",
+    "forward_10": "Adelantar 10s",
+    "playback_rate": "Velocidad",
+    "normal_speed": "Normal",
+    "mute": "Silenciar",
+    "unmute": "Activar sonido",
+    "project": "Proyectar"
   }
 }

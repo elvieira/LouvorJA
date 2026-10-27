@@ -1,5 +1,6 @@
 {
     "title": "Videos Online",
+    "subtitle": "Mira colecciones, himnarios y otros contenidos directamente en la aplicación.",
     "back": "Volver",
     "retry": "Intentar de nuevo",
     "load_error": "No se pudo cargar. Verifica tu conexión a internet.",
@@ -7,5 +8,24 @@
     "empty_playlists": "Ninguna playlist encontrada en ese canal.",
     "empty_videos": "Ningún video encontrado en esa playlist.",
     "search_placeholder": "Buscar colección...",
-    "no_results": "Ningún resultado encontrado para esa búsqueda."
+    "search_channels": "Buscar colección...",
+    "search_playlists": "Buscar playlist...",
+    "search_videos": "Buscar en este especial...",
+    "no_results": "Ningún resultado encontrado para esa búsqueda.",
+    "play_all": "Reproducir Todos",
+    "view_grid": "Cuadrícula",
+    "view_list": "Lista",
+    "sort_default": "Orden predeterminado",
+    "sort_az": "Nombre (A-Z)",
+    "sort_za": "Nombre (Z-A)",
+    "sort_by": "Ordenar por",
+    "videos_count": "{0} videos",
+    "playlists_count": "{0} playlists",
+    "channel_badge": "Colección",
+    "playlist_badge": "Playlist",
+    "play": "Reproducir",
+    "project": "Proyectar",
+    "now_playing": "Reproduciendo ahora",
+    "clear_search": "Limpiar búsqueda",
+    "category_all": "Todas"
 }

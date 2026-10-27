@@ -1,5 +1,6 @@
 {
     "title": "Vídeos Online",
+    "subtitle": "Assista a coletâneas, hinários e outros conteúdos diretamente no aplicativo.",
     "back": "Voltar",
     "retry": "Tentar novamente",
     "load_error": "Não foi possível carregar. Verifique sua conexão com a internet.",
@@ -7,5 +8,24 @@
     "empty_playlists": "Nenhuma playlist encontrada nesse canal.",
     "empty_videos": "Nenhum vídeo encontrado nessa playlist.",
     "search_placeholder": "Buscar coletânea...",
-    "no_results": "Nenhum resultado encontrado para essa busca."
+    "search_channels": "Buscar coletânea...",
+    "search_playlists": "Buscar playlist...",
+    "search_videos": "Buscar neste especial...",
+    "no_results": "Nenhum resultado encontrado para essa busca.",
+    "play_all": "Reproduzir Todos",
+    "view_grid": "Grade",
+    "view_list": "Lista",
+    "sort_default": "Ordem padrão",
+    "sort_az": "Nome (A-Z)",
+    "sort_za": "Nome (Z-A)",
+    "sort_by": "Ordenar por",
+    "videos_count": "{0} vídeos",
+    "playlists_count": "{0} playlists",
+    "channel_badge": "Coletânea",
+    "playlist_badge": "Playlist",
+    "play": "Reproduzir",
+    "project": "Projetar",
+    "now_playing": "Reproduzindo agora",
+    "clear_search": "Limpar pesquisa",
+    "category_all": "Todas"
 }

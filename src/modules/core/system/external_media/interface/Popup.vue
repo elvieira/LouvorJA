@@ -74,6 +74,9 @@ export default defineComponent({
     forceSyncTime(): number {
       return this.$appdata.get("modules.external_media.config.force_sync_time");
     },
+    playbackRate(): number {
+      return this.$appdata.get("modules.external_media.config.playback_rate") || 1;
+    },
   },
   watch: {
     rawFilePath() {
@@ -95,6 +98,12 @@ export default defineComponent({
         this.youtubePlayer.pauseVideo();
       } else {
         this.youtubePlayer.playVideo();
+      }
+    },
+    playbackRate(val: number) {
+      if (!this.isYoutube || !this.youtubePlayer || !this.youtubeReady) return;
+      if (typeof this.youtubePlayer.setPlaybackRate === "function") {
+        this.youtubePlayer.setPlaybackRate(val);
       }
     },
     currentTime(val: number) {
@@ -285,6 +294,9 @@ export default defineComponent({
             this.disableYoutubeCaptions();
             if (this.currentTime > 0) {
               this.youtubePlayer.seekTo(this.currentTime, true);
+            }
+            if (this.playbackRate && this.playbackRate !== 1 && typeof this.youtubePlayer.setPlaybackRate === "function") {
+              this.youtubePlayer.setPlaybackRate(this.playbackRate);
             }
             if (this.isPaused) {
               this.youtubePlayer.pauseVideo();

@@ -3,19 +3,24 @@
     v-if="!is_mobile"
     :variant="variant"
     :size="size"
-    :active="is_popup_opened"
+    :color="is_selected ? 'var(--accent-blue)' : color"
     icon
-    :class="{ 'rotate-icon': is_selected }"
+    :class="[
+      'screen-projection-btn',
+      { 'is-projecting': is_selected }
+    ]"
     @click="popup()"
   >
-    <v-icon>mdi-presentation-play</v-icon>
+    <v-icon :size="resolvedIconSize">
+      mdi-presentation-play
+    </v-icon>
     <v-tooltip
       activator="parent"
       location="top"
       open-delay="300"
       content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
     >
-      Projetar
+      {{ is_selected ? 'Projetando' : 'Projetar' }}
     </v-tooltip>
   </v-btn>
 </template>
@@ -31,9 +36,18 @@ const props = withDefaults(defineProps<{
   module: string;
   size?: string;
   variant?: "flat" | "text" | "elevated" | "tonal" | "outlined" | "plain";
+  color?: string;
+  iconSize?: number | string;
 }>(), {
   size: "small",
   variant: "text",
+});
+
+const resolvedIconSize = computed(() => {
+  if (props.iconSize) return props.iconSize;
+  if (props.size === "x-small") return 19;
+  if (props.size === "small") return 21;
+  return 24;
 });
 
 const emit = defineEmits(["fullscreen"]);
@@ -144,8 +158,17 @@ defineExpose({
 </script>
 
 <style scoped>
-.rotate-icon {
-  transform: rotate(180deg);
-  transition: transform 0.3s ease;
+.screen-projection-btn {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 50% !important;
+}
+
+.screen-projection-btn.is-projecting {
+  color: var(--accent-blue, #009FE3) !important;
+  background: rgba(0, 159, 227, 0.14) !important;
+}
+
+.screen-projection-btn.is-projecting:hover {
+  background: rgba(0, 159, 227, 0.24) !important;
 }
 </style>

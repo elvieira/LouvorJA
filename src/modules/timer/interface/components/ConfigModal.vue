@@ -1551,7 +1551,7 @@ export default defineComponent({
       customText: "",
       customTextSizePc: 8,
       customTextColor: "#ffffff",
-      customTextPosition: "above",
+      customTextPosition: "above" as "above" | "below" | "free" | "custom",
       customTextX: 50,
       customTextY: 20,
       visualAlert: true,
@@ -1582,7 +1582,7 @@ export default defineComponent({
       cultCustomText: "",
       cultCustomTextColor: "#ffffff",
       cultCustomTextSizePc: 8,
-      cultCustomTextPosition: "above" as "above" | "below" | "custom",
+      cultCustomTextPosition: "above" as "above" | "below" | "free" | "custom",
     },
     defaultConfig: {
       fontColor: "#ffffff",
@@ -1594,7 +1594,7 @@ export default defineComponent({
       customText: "",
       customTextSizePc: 8,
       customTextColor: "#ffffff",
-      customTextPosition: "above",
+      customTextPosition: "above" as "above" | "below" | "free" | "custom",
       customTextX: 50,
       customTextY: 20,
       visualAlert: true,
@@ -1625,7 +1625,7 @@ export default defineComponent({
       cultCustomText: "",
       cultCustomTextColor: "#ffffff",
       cultCustomTextSizePc: 8,
-      cultCustomTextPosition: "above" as "above" | "below" | "custom",
+      cultCustomTextPosition: "above" as "above" | "below" | "free" | "custom",
     },
     initialConfig: null as any,
   }),
@@ -1692,7 +1692,7 @@ export default defineComponent({
       return this.localConfig.cultCustomText || "";
     },
     isCultTextFree(): boolean {
-      const pos = this.localConfig.cultCustomTextPosition || this.localConfig.customTextPosition;
+      const pos = (this.localConfig.cultCustomTextPosition || this.localConfig.customTextPosition) as string;
       return pos === "custom" || pos === "free";
     },
     cultTargetItems(): any[] {

@@ -1,21 +1,29 @@
 <template>
   <v-slide-y-reverse-transition>
     <div v-if="module?.show" class="module-full-page online-collection-module d-flex flex-column">
-      <ModuleHeader :title="headerTitle" icon="mdi-web">
+      <!-- Cabeçalho Principal -->
+      <ModuleHeader
+        :title="headerTitle"
+        :subtitle="headerSubtitle"
+        :icon="headerIcon"
+        :image="headerImage"
+      >
         <template #prefix>
           <v-btn
             v-if="view !== 'channels'"
             icon
             variant="text"
             size="small"
-            style="margin-right: 16px; color: var(--sidebar-text-secondary);"
+            class="header-back-btn mr-3"
             @click="goBack"
           >
-            <v-icon>mdi-arrow-left</v-icon>
+            <v-icon size="22">
+              mdi-arrow-left
+            </v-icon>
             <v-tooltip
               activator="parent"
               location="bottom"
-              open-delay="300"
+              open-delay="250"
               content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
             >
               {{ t('back') }}
@@ -23,137 +31,276 @@
           </v-btn>
         </template>
 
-        <div v-if="view === 'channels'" class="search-bar ml-4 d-flex align-center" style="max-width: 420px; flex: 1;">
-          <v-text-field
-            v-model="search"
-            :placeholder="t('search_placeholder')"
-            prepend-inner-icon="mdi-magnify"
-            variant="solo"
-            density="comfortable"
-            hide-details
-            rounded="xl"
-          >
-            <template #append-inner>
-              <v-btn
-                v-if="search"
-                icon="mdi-close"
-                size="x-small"
-                variant="text"
-                class="clear-search-btn mr-1"
-                title="Limpar pesquisa"
-                @click="search = ''"
-              />
-            </template>
-          </v-text-field>
+        <!-- Ações no topo direito do Header -->
+        <div class="header-actions-row d-flex align-center">
+          <!-- Campo de Pesquisa -->
+          <div class="search-bar">
+            <v-text-field
+              v-model="search"
+              :placeholder="searchPlaceholder"
+              prepend-inner-icon="mdi-magnify"
+              variant="solo"
+              density="comfortable"
+              hide-details
+              rounded="xl"
+            >
+              <template #append-inner>
+                <v-btn
+                  v-if="search"
+                  icon="mdi-close"
+                  size="x-small"
+                  variant="text"
+                  class="clear-search-btn"
+                  :title="t('clear_search')"
+                  @click="search = ''"
+                />
+              </template>
+            </v-text-field>
+          </div>
+
+          <!-- Alternador de visualização Grade / Lista (em Canais e Playlists) -->
+          <div v-if="view !== 'videos' && !isGlobalSearch" class="view-mode-toggle d-flex align-center ml-3">
+            <button
+              type="button"
+              class="view-toggle-btn"
+              :class="{ active: viewMode === 'list' }"
+              :title="t('view_list')"
+              @click="setViewMode('list')"
+            >
+              <v-icon size="18">
+                mdi-format-list-bulleted
+              </v-icon>
+            </button>
+            <button
+              type="button"
+              class="view-toggle-btn"
+              :class="{ active: viewMode === 'grid' }"
+              :title="t('view_grid')"
+              @click="setViewMode('grid')"
+            >
+              <v-icon size="18">
+                mdi-view-grid
+              </v-icon>
+            </button>
+          </div>
         </div>
       </ModuleHeader>
 
-      <div class="content-main flex-grow-1" style="overflow-y: auto; overflow-x: hidden; padding-top: 16px;">
-        <template v-if="isSearching">
-          <div v-if="searchLoading" class="d-flex flex-column align-center justify-center" style="height: 100%;">
-            <v-progress-circular indeterminate color="primary" size="48" />
+      <!-- Conteúdo Principal -->
+      <div class="content-main flex-grow-1" style="overflow-y: auto; overflow-x: hidden;">
+        <!-- ESTADO: Busca Global em Andamento -->
+        <template v-if="isGlobalSearch">
+          <div v-if="searchLoading" class="d-flex flex-column align-center justify-center py-16" style="height: 100%;">
+            <v-progress-circular indeterminate color="primary" size="44" />
           </div>
 
-          <div v-else-if="searchResults.length === 0" class="d-flex flex-column align-center justify-center" style="height: 100%;">
-            <v-icon size="64" color="grey-lighten-1" class="mb-4">
+          <!-- Busca Global sem resultados -->
+          <div
+            v-else-if="filteredGlobalChannels.length === 0 && searchResults.length === 0"
+            class="d-flex flex-column align-center justify-center py-16"
+            style="height: 100%;"
+          >
+            <v-icon
+              size="56"
+              color="grey-lighten-1"
+              class="mb-3"
+              style="opacity: 0.5;"
+            >
               mdi-magnify
             </v-icon>
-            <p class="text-center" style="color: var(--sidebar-text-secondary); max-width: 360px;">
+            <p
+              class="text-center mb-4"
+              style="color: var(--sidebar-text-secondary); max-width: 360px;"
+            >
               {{ t('no_results') }}
             </p>
+            <v-btn
+              variant="text"
+              color="primary"
+              class="text-none"
+              @click="search = ''"
+            >
+              {{ t('clear_search') }}
+            </v-btn>
           </div>
 
-          <div v-else class="online-list-wrap">
-            <div
-              v-for="(video, index) in searchResults"
-              :key="video.id"
-              class="online-list-item"
-              @click="playVideo(video, video.channelName)"
-            >
-              <div class="online-list-number">
-                {{ index + 1 }}
+          <!-- Resultados da Busca Global -->
+          <div v-else class="search-results-container py-3">
+            <!-- Canais que coincidem com a busca -->
+            <div v-if="filteredGlobalChannels.length > 0" class="mb-6">
+              <h4 class="section-subtitle-label px-6 mb-3">
+                {{ t('channel_badge') }}
+              </h4>
+              <div v-if="viewMode === 'grid'" class="online-grid-wrap">
+                <CollectionCard
+                  v-for="item in filteredGlobalChannels"
+                  :key="item.id"
+                  :title="item.name"
+                  :subtitle="t('channel_badge')"
+                  :image="item.image"
+                  @click="selectChannel(item)"
+                />
               </div>
-              <div class="online-list-thumb">
-                <img :src="video.image" loading="lazy" />
-                <v-icon class="online-play-icon" size="24">
-                  mdi-play-circle
-                </v-icon>
+              <div v-else class="online-list-wrap px-4">
+                <CollectionListRow
+                  v-for="item in filteredGlobalChannels"
+                  :key="item.id"
+                  :title="item.name"
+                  :subtitle="t('channel_badge')"
+                  :image="item.image"
+                  @click="selectChannel(item)"
+                />
               </div>
-              <div class="online-list-title">
-                {{ video.name }}
+            </div>
+
+            <!-- Vídeos que coincidem com a busca -->
+            <div v-if="searchResults.length > 0">
+              <h4 class="section-subtitle-label px-6 mb-3">
+                {{ t('videos_count', [searchResults.length]) }}
+              </h4>
+              <div class="online-list-wrap px-4">
+                <OnlineVideoRow
+                  v-for="(video, index) in searchResults"
+                  :key="video.id"
+                  :index="index + 1"
+                  :video="video"
+                  :subtitle="formatVideoSubtitle(video)"
+                  :is-playing="currentPlayingVideoId === video.id"
+                  @play="playVideo(video, formatVideoSubtitle(video))"
+                />
               </div>
             </div>
           </div>
         </template>
 
+        <!-- ESTADO NORMAL: Navegação regular por Canais / Playlists / Vídeos -->
         <template v-else>
-          <div v-if="loading" class="d-flex flex-column align-center justify-center" style="height: 100%;">
-            <v-progress-circular indeterminate color="primary" size="48" />
+          <!-- Carregando (Skeletons) -->
+          <div v-if="loading" class="py-4">
+            <div v-if="viewMode === 'grid' && view !== 'videos'" class="online-grid-wrap">
+              <div v-for="n in 8" :key="n" class="online-card-skeleton">
+                <div class="skeleton-thumb-16-9" />
+                <div class="pa-3">
+                  <div class="skeleton-line-title mb-2" />
+                  <div class="skeleton-line-sub" />
+                </div>
+              </div>
+            </div>
+            <div v-else class="online-list-wrap px-4">
+              <div v-for="n in 8" :key="n" class="skeleton-row-item d-flex align-center py-2 px-3 mb-2">
+                <div class="skeleton-row-thumb mr-4" />
+                <div class="flex-grow-1">
+                  <div class="skeleton-line-title mb-2" style="width: 60%;" />
+                  <div class="skeleton-line-sub" style="width: 35%;" />
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div v-else-if="error" class="d-flex flex-column align-center justify-center" style="height: 100%;">
-            <v-icon size="48" color="error" class="mb-3">
+          <!-- Erro de Conexão -->
+          <div v-else-if="error" class="d-flex flex-column align-center justify-center py-16" style="height: 100%;">
+            <v-icon size="56" color="error" class="mb-3">
               mdi-alert-circle-outline
             </v-icon>
-            <p class="mb-4 text-center" style="color: var(--sidebar-text-secondary); max-width: 360px;">
+            <p class="mb-4 text-center" style="color: var(--sidebar-text-secondary); max-width: 380px;">
               {{ error }}
             </p>
             <v-btn
               color="primary"
               variant="tonal"
-              class="text-none"
+              rounded="lg"
+              class="text-none font-weight-medium"
               @click="reload"
             >
+              <v-icon start size="18">
+                mdi-refresh
+              </v-icon>
               {{ t('retry') }}
             </v-btn>
           </div>
 
-          <div v-else-if="currentItems.length === 0" class="d-flex flex-column align-center justify-center" style="height: 100%;">
-            <v-icon size="64" color="grey-lighten-1" class="mb-4">
+          <!-- Nenhum item disponível -->
+          <div
+            v-else-if="currentItemsCount === 0"
+            class="d-flex flex-column align-center justify-center py-16"
+            style="height: 100%;"
+          >
+            <v-icon
+              size="64"
+              color="grey-lighten-1"
+              class="mb-4"
+              style="opacity: 0.5;"
+            >
               mdi-youtube
             </v-icon>
-            <p class="text-center" style="color: var(--sidebar-text-secondary); max-width: 360px;">
+            <p
+              class="text-center"
+              style="color: var(--sidebar-text-secondary); max-width: 360px;"
+            >
               {{ emptyText }}
             </p>
           </div>
 
-          <div v-else-if="view === 'videos'" class="online-list-wrap">
-            <div
-              v-for="(item, index) in currentItems"
-              :key="item.id"
-              class="online-list-item"
-              @click="selectItem(item)"
-            >
-              <div class="online-list-number">
-                {{ index + 1 }}
-              </div>
-              <div class="online-list-thumb">
-                <img :src="item.image" loading="lazy" />
-                <v-icon class="online-play-icon" size="24">
-                  mdi-play-circle
-                </v-icon>
-              </div>
-              <div class="online-list-title">
-                {{ item.name }}
-              </div>
-            </div>
+          <!-- TELA C: Lista de Vídeos -->
+          <div v-else-if="view === 'videos'" class="online-list-wrap px-4 py-2">
+            <OnlineVideoRow
+              v-for="(video, index) in filteredVideos"
+              :key="video.id"
+              :index="index + 1"
+              :video="video"
+              :subtitle="selectedPlaylist?.name + (selectedChannel ? ' | ' + selectedChannel.name : '')"
+              :is-playing="currentPlayingVideoId === video.id"
+              @play="playVideo(video, selectedPlaylist?.name)"
+            />
           </div>
 
-          <div v-else class="online-grid-wrap">
-            <div
-              v-for="item in currentItems"
-              :key="item.id"
-              class="online-card"
-              @click="selectItem(item)"
-            >
-              <div class="online-card-image">
-                <img :src="item.image" loading="lazy" />
-              </div>
-              <div class="online-card-title">
-                {{ item.name }}
-              </div>
+          <!-- TELA B: Playlists do Canal (Grade / Lista) -->
+          <template v-else-if="view === 'playlists'">
+            <div v-if="viewMode === 'grid'" class="online-grid-wrap">
+              <CollectionCard
+                v-for="item in filteredPlaylists"
+                :key="item.id"
+                :title="item.name"
+                :subtitle="selectedChannel?.name"
+                :image="item.image"
+                @click="selectPlaylist(item)"
+              />
             </div>
-          </div>
+            <div v-else class="online-list-wrap px-4 py-2">
+              <CollectionListRow
+                v-for="item in filteredPlaylists"
+                :key="item.id"
+                :title="item.name"
+                :subtitle="selectedChannel?.name"
+                :image="item.image"
+                @click="selectPlaylist(item)"
+              />
+            </div>
+          </template>
+
+          <!-- TELA A: Catálogo de Canais (Grade / Lista) -->
+          <template v-else>
+            <div v-if="viewMode === 'grid'" class="online-grid-wrap">
+              <CollectionCard
+                v-for="item in filteredChannels"
+                :key="item.id"
+                :title="item.name"
+                :subtitle="t('channel_badge')"
+                :image="item.image"
+                @click="selectChannel(item)"
+              />
+            </div>
+            <div v-else class="online-list-wrap px-4 py-2">
+              <CollectionListRow
+                v-for="item in filteredChannels"
+                :key="item.id"
+                :title="item.name"
+                :subtitle="t('channel_badge')"
+                :image="item.image"
+                @click="selectChannel(item)"
+              />
+            </div>
+          </template>
         </template>
       </div>
     </div>
@@ -164,22 +311,31 @@
 import { defineComponent } from "vue";
 import manifest from "../manifest";
 import ModuleHeader from "@/components/ModuleHeader.vue";
-import OnlineCollections, { OnlineChannel, OnlinePlaylist, OnlineVideo } from "@/helpers/services/OnlineCollections";
+import CollectionCard from "./components/CollectionCard.vue";
+import CollectionListRow from "./components/CollectionListRow.vue";
+import OnlineVideoRow from "./components/OnlineVideoRow.vue";
+import OnlineCollections, {
+  OnlineChannel,
+  OnlinePlaylist,
+  OnlineVideo,
+  SearchableOnlineVideo,
+} from "@/helpers/services/OnlineCollections";
 
 type OnlineView = "channels" | "playlists" | "videos";
-type OnlineItem = OnlineChannel | OnlinePlaylist | OnlineVideo;
-interface SearchableVideo extends OnlineVideo {
-  channelName: string;
-}
+type ViewMode = "grid" | "list";
 
 export default defineComponent({
   name: "OnlineCollectionModule",
   components: {
     ModuleHeader,
+    CollectionCard,
+    CollectionListRow,
+    OnlineVideoRow,
   },
   data() {
     return {
       view: "channels" as OnlineView,
+      viewMode: (typeof localStorage !== "undefined" && localStorage.getItem("louvorja_online_view_mode") === "list" ? "list" : "grid") as ViewMode,
       channels: [] as OnlineChannel[],
       playlists: [] as OnlinePlaylist[],
       videos: [] as OnlineVideo[],
@@ -188,7 +344,7 @@ export default defineComponent({
       loading: false,
       error: "",
       search: "",
-      allVideos: [] as SearchableVideo[],
+      allVideos: [] as SearchableOnlineVideo[],
       allVideosLoaded: false,
       searchLoading: false,
     };
@@ -209,23 +365,83 @@ export default defineComponent({
       if (this.view === "videos") return this.selectedPlaylist?.name || this.t("title");
       return this.t("title");
     },
-    currentItems(): OnlineItem[] {
-      if (this.view === "channels") return this.channels;
-      if (this.view === "playlists") return this.playlists;
-      return this.videos;
+    headerSubtitle(): string {
+      if (this.view === "channels") {
+        return this.t("subtitle");
+      }
+      if (this.view === "playlists") {
+        return this.t("playlists_count", [this.filteredPlaylists.length]);
+      }
+      return `${this.filteredVideos.length} vídeos • ${this.selectedChannel?.name || ""}`;
     },
-    isSearching(): boolean {
+    headerIcon(): string | undefined {
+      if (this.view === "channels") return "mdi-web";
+      return undefined;
+    },
+    headerImage(): string | undefined {
+      if (this.view === "playlists") return this.selectedChannel?.image || undefined;
+      if (this.view === "videos") return this.selectedPlaylist?.image || undefined;
+      return undefined;
+    },
+    searchPlaceholder(): string {
+      if (this.view === "playlists") return this.t("search_playlists");
+      if (this.view === "videos") return this.t("search_videos");
+      return this.t("search_channels");
+    },
+    isGlobalSearch(): boolean {
       return this.view === "channels" && (this.search || "").trim().length > 0;
     },
-    searchResults(): SearchableVideo[] {
+    filteredChannels(): OnlineChannel[] {
+      const query = (this.search || "").trim().toLowerCase();
+      if (query && this.view === "channels") {
+        return this.channels.filter((c) => c.name.toLowerCase().includes(query));
+      }
+      return this.channels;
+    },
+    filteredGlobalChannels(): OnlineChannel[] {
       const query = (this.search || "").trim().toLowerCase();
       if (!query) return [];
-      return this.allVideos.filter((video) => video.name.toLowerCase().includes(query));
+      return this.channels.filter((c) => c.name.toLowerCase().includes(query));
+    },
+    filteredPlaylists(): OnlinePlaylist[] {
+      const query = (this.search || "").trim().toLowerCase();
+      if (query && this.view === "playlists") {
+        return this.playlists.filter((p) => p.name.toLowerCase().includes(query));
+      }
+      return this.playlists;
+    },
+    filteredVideos(): OnlineVideo[] {
+      let list = this.videos.slice();
+      const query = (this.search || "").trim().toLowerCase();
+      if (query && this.view === "videos") {
+        list = list.filter((v) => v.name.toLowerCase().includes(query));
+      }
+      return list.sort((a, b) => a.position - b.position);
+    },
+    searchResults(): SearchableOnlineVideo[] {
+      const query = (this.search || "").trim().toLowerCase();
+      if (!query) return [];
+      return this.allVideos.filter((video) =>
+        video.name.toLowerCase().includes(query) ||
+        (video.channelName && video.channelName.toLowerCase().includes(query)),
+      );
+    },
+    currentItemsCount(): number {
+      if (this.view === "channels") return this.filteredChannels.length;
+      if (this.view === "playlists") return this.filteredPlaylists.length;
+      return this.filteredVideos.length;
     },
     emptyText(): string {
       if (this.view === "channels") return this.t("empty_channels");
       if (this.view === "playlists") return this.t("empty_playlists");
       return this.t("empty_videos");
+    },
+    currentPlayingVideoId(): string {
+      const path = (this as any).$appdata?.get?.("modules.external_media.filePath") || "";
+      if (typeof path === "string" && path.startsWith("youtube:")) {
+        return path.replace("youtube:", "");
+      }
+      return "";
     },
   },
   watch: {
@@ -255,6 +471,20 @@ export default defineComponent({
 
     locale(): string {
       return (this as any).$i18n?.locale || "pt";
+    },
+    setViewMode(mode: ViewMode) {
+      this.viewMode = mode;
+      try {
+        localStorage.setItem("louvorja_online_view_mode", mode);
+      } catch {
+        // ignore
+      }
+    },
+    formatVideoSubtitle(video: SearchableOnlineVideo): string {
+      if (video.channelName && video.playlistName) {
+        return `${video.playlistName} • ${video.channelName}`;
+      }
+      return video.channelName || video.playlistName || "";
     },
     async loadChannels() {
       this.loading = true;
@@ -289,26 +519,24 @@ export default defineComponent({
         this.loading = false;
       }
     },
-    selectItem(item: OnlineItem) {
-      if (this.view === "channels") {
-        this.selectedChannel = item as OnlineChannel;
-        this.view = "playlists";
-        this.search = "";
-        this.loadPlaylists(item as OnlineChannel);
-      } else if (this.view === "playlists") {
-        this.selectedPlaylist = item as OnlinePlaylist;
-        this.view = "videos";
-        this.search = "";
-        this.loadVideos(item as OnlinePlaylist);
-      } else {
-        this.playVideo(item as OnlineVideo);
-      }
+    selectChannel(channel: OnlineChannel) {
+      this.selectedChannel = channel;
+      this.view = "playlists";
+      this.search = "";
+      this.loadPlaylists(channel);
+    },
+    selectPlaylist(playlist: OnlinePlaylist) {
+      this.selectedPlaylist = playlist;
+      this.view = "videos";
+      this.search = "";
+      this.loadVideos(playlist);
     },
     goBack() {
       this.search = "";
       if (this.view === "videos") {
         this.view = "playlists";
         this.videos = [];
+        this.selectedPlaylist = null;
       } else if (this.view === "playlists") {
         this.view = "channels";
         this.playlists = [];
@@ -324,15 +552,20 @@ export default defineComponent({
         this.loadVideos(this.selectedPlaylist);
       }
     },
-    playVideo(video: OnlineVideo, subtitle?: string) {
+    playVideo(video: OnlineVideo | SearchableOnlineVideo, subtitle?: string) {
       const appdata = (this as any).$appdata;
       appdata.set("modules.external_media.filePath", `youtube:${video.id}`);
       appdata.set("modules.external_media.title", video.name);
-      appdata.set("modules.external_media.subtitle", subtitle || this.selectedChannel?.name || this.t("title"));
+      appdata.set(
+        "modules.external_media.subtitle",
+        subtitle || (video as any).playlistName || this.selectedPlaylist?.name || this.selectedChannel?.name || this.t("title"),
+      );
       appdata.set("modules.external_media.image", video.image);
       appdata.set("modules.external_media.minimized", false);
       appdata.set("modules.external_media.show", true);
-      const currentVolume = appdata.get("modules.external_media.config.volume") ?? ((this as any).$userdata?.get?.("modules.external_media.volume") ?? 100);
+      const currentVolume =
+        appdata.get("modules.external_media.config.volume") ??
+        ((this as any).$userdata?.get?.("modules.external_media.volume") ?? 100);
       appdata.set("modules.external_media.config", {
         is_paused: true,
         current_time: 0,
@@ -345,21 +578,10 @@ export default defineComponent({
       this.searchLoading = true;
       try {
         const lang = this.locale();
-        const channels = this.channels.length > 0 ? this.channels : await OnlineCollections.getChannels(lang);
-        const allVideos: SearchableVideo[] = [];
-        for (const channel of channels) {
-          const playlists = await OnlineCollections.getPlaylists(channel.id, lang);
-          for (const playlist of playlists) {
-            const videos = await OnlineCollections.getVideos(playlist.id, lang);
-            for (const video of videos) {
-              allVideos.push({ ...video, channelName: channel.name });
-            }
-          }
-        }
-        this.allVideos = allVideos;
+        this.allVideos = await OnlineCollections.getAllVideos(lang);
         this.allVideosLoaded = true;
       } catch {
-        // Silencioso: se a busca completa falhar, simplesmente não há resultados.
+        // Silencioso se a indexação falhar
       } finally {
         this.searchLoading = false;
       }
@@ -370,76 +592,115 @@ export default defineComponent({
 
 <style lang="scss">
 .online-collection-module {
+  .header-back-btn {
+    color: var(--sidebar-text-secondary) !important;
+    transition: all 0.2s ease !important;
+
+    &:hover {
+      color: var(--sidebar-text) !important;
+      background: var(--sidebar-hover) !important;
+    }
+  }
+
+  .header-actions-row {
+    flex-wrap: nowrap;
+    gap: 12px;
+    margin-left: 28px;
+  }
+
   .search-bar {
+    width: 320px;
+    max-width: 100%;
+
     .v-field {
-      background: var(--ds-surface, var(--card-bg)) !important;
+      background: var(--ds-surface, var(--card-bg, #1a2638)) !important;
       box-shadow: none !important;
-      border: 1px solid var(--ds-border, #43495b) !important;
+      border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08)) !important;
       transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
       border-radius: 26px !important;
-      
+
       .v-field__input {
-        padding: 10px 16px !important;
-        font-size: 14px !important;
-        color: var(--ds-text-primary, var(--sidebar-text)) !important;
+        padding: 9px 16px !important;
+        font-size: 13.5px !important;
+        color: var(--sidebar-text) !important;
 
         &::placeholder {
-          color: var(--ds-text-secondary, var(--sidebar-text-secondary)) !important;
+          color: var(--sidebar-text-secondary) !important;
           opacity: 0.8 !important;
         }
       }
-      
+
       .v-field__prepend-inner {
-        padding-left: 16px !important;
-        
+        padding-left: 14px !important;
+
         .v-icon {
-          color: var(--ds-text-secondary, #a0a6b5) !important;
-          opacity: 0.9 !important;
-          transition: color 0.2s ease !important;
+          color: var(--sidebar-text-secondary) !important;
+          opacity: 0.85 !important;
         }
       }
-      
+
       &:hover {
-        border-color: rgba(0, 155, 226, 0.45) !important;
+        border-color: rgba(0, 159, 227, 0.45) !important;
       }
-      
+
       &.v-field--focused {
-        border-color: var(--ds-accent, #009be2) !important;
-        background: var(--ds-surface, var(--card-bg)) !important;
-        box-shadow: 0 0 0 3px rgba(0, 155, 226, 0.15) !important;
+        border-color: var(--accent-blue, #009FE3) !important;
+        box-shadow: 0 0 0 3px rgba(0, 159, 227, 0.15) !important;
 
         .v-field__prepend-inner .v-icon {
-          color: var(--ds-accent, #009be2) !important;
+          color: var(--accent-blue, #009FE3) !important;
           opacity: 1 !important;
         }
       }
     }
 
     .clear-search-btn {
-      color: var(--ds-text-secondary, #a0a6b5) !important;
+      color: var(--sidebar-text-secondary) !important;
       border-radius: 50% !important;
-      transition: all 0.15s ease !important;
 
       &:hover {
-        color: var(--ds-text-primary, #f7f8fc) !important;
-        background: var(--ds-accent-hover, rgba(0, 155, 226, 0.1)) !important;
+        color: var(--sidebar-text) !important;
+        background: rgba(0, 159, 227, 0.12) !important;
       }
     }
+  }
 
-    .filter-search-btn {
-      color: var(--ds-text-secondary, #a0a6b5) !important;
-      border-radius: 50% !important;
-      transition: all 0.15s ease !important;
+  .view-mode-toggle {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+    border-radius: 10px;
+    padding: 3px;
+    gap: 3px;
 
-      &:hover, &.filter-active {
-        color: var(--ds-accent, #009be2) !important;
-        background: var(--ds-accent-hover, rgba(0, 155, 226, 0.1)) !important;
+    .view-toggle-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      border: none;
+      color: var(--sidebar-text-secondary);
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:hover {
+        color: var(--sidebar-text);
+        background: rgba(255, 255, 255, 0.06);
+      }
+
+      &.active {
+        background: var(--accent-blue, #009FE3);
+        color: #ffffff;
+        box-shadow: 0 2px 8px rgba(0, 159, 227, 0.35);
       }
     }
   }
 
   .content-main {
-    /* Scrollbar oficial do Louvor JA */
+    padding-top: 12px;
+
     &::-webkit-scrollbar {
       width: 8px;
       height: 8px;
@@ -459,199 +720,148 @@ export default defineComponent({
 
   .online-grid-wrap {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 24px;
-    padding: 8px 16px 24px 16px;
-  }
-
-  .online-card {
-    width: 100%;
-    min-width: 0;
-    background: var(--ds-surface, #232733);
-    border: 1px solid var(--ds-border, #43495b);
-    border-radius: 16px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    transition: transform 0.25s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.25s cubic-bezier(0.2, 0, 0, 1), border-color 0.25s ease;
-    cursor: pointer;
-    overflow: hidden;
-
-    &:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.25);
-      border-color: var(--ds-accent, #009FE3);
-
-      .online-card-image img {
-        transform: scale(1.04);
-      }
-
-      .online-play-icon {
-        opacity: 1;
-        transform: translate(-50%, -50%) scale(1.1);
-      }
-    }
-
-    .online-card-image {
-      width: 100%;
-      aspect-ratio: 1 / 1;
-      background: linear-gradient(135deg, var(--accent-blue, #009FE3) 0%, var(--accent-blue-dark, #0077b6) 100%);
-      position: relative;
-      overflow: hidden;
-
-      img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        transition: transform 0.35s ease;
-      }
-
-      .online-play-icon {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%) scale(1);
-        color: white;
-        opacity: 0;
-        transition: all 0.25s ease;
-        filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.6));
-      }
-    }
-
-    .online-card-title {
-      padding: 16px 18px;
-      font-size: 15px;
-      font-weight: 600;
-      color: var(--sidebar-text);
-      line-height: 1.3;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 20px;
+    padding: 8px 24px 32px 24px;
   }
 
   .online-list-wrap {
     display: flex;
     flex-direction: column;
-    padding: 0;
     width: 100%;
   }
 
-  .online-list-item {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    padding: 12px 24px;
-    background: transparent;
-    border-bottom: 1px solid var(--border-color);
-    box-shadow: none;
-    transition: var(--transition);
-    cursor: pointer;
+  .section-subtitle-label {
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--sidebar-text-secondary);
+    margin: 0;
+  }
 
-    &:last-child {
-      border-bottom: none;
-    }
+  /* Skeletons */
+  .online-card-skeleton {
+    border-radius: 16px;
+    background: var(--card-bg, #1a2638);
+    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+    overflow: hidden;
 
-    &:hover {
-      background: var(--sidebar-hover) !important;
-
-      .online-list-thumb img {
-        transform: scale(1.04);
-      }
-
-      .online-play-icon {
-        opacity: 1;
-        transform: translate(-50%, -50%) scale(1.1);
-      }
-    }
-
-    .online-list-number {
-      font-size: 15px;
-      font-weight: 700;
-      line-height: 1;
-      color: var(--accent-blue, #009FE3);
-      min-width: 44px;
-      width: 44px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      margin-right: 14px;
-      flex-shrink: 0;
-    }
-
-    .online-list-thumb {
-      position: relative;
-      flex-shrink: 0;
-      width: 104px;
+    .skeleton-thumb-16-9 {
+      width: 100%;
       aspect-ratio: 16 / 9;
-      background: linear-gradient(135deg, var(--accent-blue, #009FE3) 0%, var(--accent-blue-dark, #0077b6) 100%);
-      border-radius: 8px;
-      overflow: hidden;
-
-      img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        transition: transform 0.25s ease;
-      }
-
-      .online-play-icon {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%) scale(1);
-        color: white;
-        opacity: 0;
-        transition: all 0.25s ease;
-        filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.5));
-      }
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0.04) 25%, rgba(255, 255, 255, 0.08) 50%, rgba(255, 255, 255, 0.04) 75%);
+      background-size: 200% 100%;
+      animation: skeleton-pulse 1.6s ease-in-out infinite;
     }
 
-    .online-list-title {
-      flex: 1;
-      min-width: 0;
-      font-size: 15px;
-      font-weight: 500;
-      color: var(--sidebar-text);
-      line-height: 1.3;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
+    .skeleton-line-title {
+      height: 14px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.08);
+      width: 80%;
+      animation: skeleton-pulse 1.6s ease-in-out infinite;
+    }
+
+    .skeleton-line-sub {
+      height: 11px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.05);
+      width: 45%;
+      animation: skeleton-pulse 1.6s ease-in-out infinite;
+    }
+  }
+
+  .skeleton-row-item {
+    border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.05));
+
+    .skeleton-row-thumb {
+      width: 110px;
+      aspect-ratio: 16 / 9;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.06);
+      animation: skeleton-pulse 1.6s ease-in-out infinite;
+    }
+
+    .skeleton-line-title {
+      height: 14px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.08);
+      animation: skeleton-pulse 1.6s ease-in-out infinite;
+    }
+
+    .skeleton-line-sub {
+      height: 11px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.05);
+      animation: skeleton-pulse 1.6s ease-in-out infinite;
     }
   }
 }
 
-// Suporte ao tema claro
+@keyframes skeleton-pulse {
+  0% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.6;
+  }
+}
+
+/* Suporte ao Tema Claro */
 :root[data-theme="light"],
 .v-theme--light {
   .online-collection-module {
-    .online-card {
-      background: #FFFFFF;
-      border-color: var(--ds-border, #DEE4EC);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    .search-bar .v-field {
+      background: #f1f5f9 !important;
+      border-color: rgba(0, 0, 0, 0.1) !important;
 
-      .online-card-title {
-        color: var(--ds-text-primary, #30333A);
+      .v-field__input {
+        color: #1e293b !important;
+        &::placeholder {
+          color: #64748b !important;
+        }
       }
 
-      &:hover {
-        border-color: var(--ds-accent, #008FD0);
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      .v-field__prepend-inner .v-icon {
+        color: #64748b !important;
       }
     }
 
-    .online-list-item {
-      border-bottom-color: rgba(0, 0, 0, 0.06);
+    .view-mode-toggle {
+      background: #e2e8f0;
+      border-color: rgba(0, 0, 0, 0.08);
 
-      &:hover {
-        background: rgba(0, 155, 226, 0.06) !important;
+      .view-toggle-btn {
+        color: #64748b;
+
+        &:hover {
+          color: #1e293b;
+          background: rgba(0, 0, 0, 0.04);
+        }
+
+        &.active {
+          background: var(--accent-blue, #008FD0);
+          color: #ffffff;
+        }
       }
+    }
 
-      .online-list-title {
-        color: var(--ds-text-primary, #30333A);
+    .online-card-skeleton {
+      background: #ffffff;
+      border-color: rgba(0, 0, 0, 0.08);
+
+      .skeleton-thumb-16-9 {
+        background: #e2e8f0;
+      }
+      .skeleton-line-title {
+        background: #cbd5e1;
+      }
+      .skeleton-line-sub {
+        background: #e2e8f0;
       }
     }
   }

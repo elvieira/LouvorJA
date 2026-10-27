@@ -131,15 +131,21 @@
               <!-- Fullscreen controls overlay -->
               <FullscreenControls
                 v-if="isFullscreen"
+                :title="mediaTitle"
+                :subtitle="mediaSubtitle"
                 :is-paused="isPaused"
                 :current-time="currentTime"
                 :duration="duration"
                 :progress="progress"
                 :volume="volume"
+                :playback-rate="playbackRate"
                 @toggle-play="togglePlay"
                 @seek="seekFromProgressVal"
+                @rewind="rewind"
+                @fast-forward="fastForward"
                 @toggle-mute="toggleMute"
                 @update:volume="setVolume"
+                @update:playback-rate="setPlaybackRate"
                 @exit-fullscreen="isFullscreen = false"
               />
             </div>
@@ -157,11 +163,15 @@
           :duration="duration"
           :progress="progress"
           :volume="volume"
+          :playback-rate="playbackRate"
           :pill-width="pillWidth"
           @toggle-play="togglePlay"
           @seek="seekFromProgressVal"
+          @rewind="rewind"
+          @fast-forward="fastForward"
           @toggle-mute="toggleMute"
           @update:volume="setVolume"
+          @update:playback-rate="setPlaybackRate"
           @enter-fullscreen="isFullscreen = true"
         />
       </div>
@@ -193,6 +203,7 @@ export default defineComponent({
     progress: 0,
     volume: 100,
     savedVolume: 100,
+    playbackRate: 1,
     isFullscreen: false,
     pillWidth: 800,
     pillResizeObserver: null as ResizeObserver | null,
@@ -275,6 +286,12 @@ export default defineComponent({
         }
       } else if (req.action === "set_volume") {
         this.setVolume(req.value);
+      } else if (req.action === "rewind") {
+        this.rewind(req.value || 10);
+      } else if (req.action === "fast_forward") {
+        this.fastForward(req.value || 10);
+      } else if (req.action === "set_playback_rate") {
+        this.setPlaybackRate(req.value || 1);
       } else if (req.action === "minimize") {
         this.minimizeMedia();
       } else if (req.action === "close") {
@@ -371,8 +388,9 @@ export default defineComponent({
 
     setupPillObserver() {
       this.$nextTick(() => {
-        const el = this.$el?.querySelector?.(".modern-pill-player");
+        const el = this.$el?.querySelector?.(".media-container") || this.$el?.querySelector?.(".v-card") || this.$el;
         if (el && !this.pillResizeObserver) {
+          this.pillWidth = el.clientWidth || 800;
           this.pillResizeObserver = new ResizeObserver(entries => {
             for (const entry of entries) {
               this.pillWidth = entry.contentRect.width;
@@ -554,6 +572,9 @@ export default defineComponent({
       if (el) {
         this.duration = el.duration;
         this.$appdata.set("modules.external_media.config.duration", this.duration);
+        if (this.playbackRate && this.playbackRate !== 1) {
+          el.playbackRate = this.playbackRate;
+        }
         if (this.duration > 0 && !isNaN(this.duration) && isFinite(this.duration)) {
           const formatted = (this as any).$datetime.shortTime(this.duration);
           const raw = this.$appdata.get("modules.external_media.filePath");
@@ -591,16 +612,45 @@ export default defineComponent({
     seekFromProgressVal(val: number) {
       if (!this.duration) return;
       const time = (this.duration * val) / 100;
+      this.seekTime(time);
+    },
+
+    seekTime(targetSeconds: number) {
+      const dur = this.duration || (this.isYoutube ? this.youtubePlayer?.getDuration?.() : 0) || 0;
+      const target = Math.max(0, dur > 0 ? Math.min(targetSeconds, dur) : targetSeconds);
       if (this.isYoutube) {
-        if (this.youtubePlayer) this.youtubePlayer.seekTo(time, true);
+        if (this.youtubePlayer) this.youtubePlayer.seekTo(target, true);
       } else {
         const el = this.getMediaEl();
-        if (!el) return;
-        el.currentTime = time;
+        if (el) el.currentTime = target;
       }
-      this.currentTime = time;
-      this.$appdata.set("modules.external_media.config.current_time", time);
-      this.$appdata.set("modules.external_media.config.force_sync_time", time);
+      this.currentTime = target;
+      if (dur > 0) {
+        this.progress = (target / dur) * 100;
+      }
+      this.$appdata.set("modules.external_media.config.current_time", target);
+      this.$appdata.set("modules.external_media.config.progress", this.progress);
+      this.$appdata.set("modules.external_media.config.force_sync_time", target);
+    },
+
+    rewind(seconds = 10) {
+      this.seekTime(this.currentTime - seconds);
+    },
+
+    fastForward(seconds = 10) {
+      this.seekTime(this.currentTime + seconds);
+    },
+
+    setPlaybackRate(rate: number) {
+      this.playbackRate = rate;
+      this.$appdata.set("modules.external_media.config.playback_rate", rate);
+      if (this.isYoutube && this.youtubePlayer && typeof this.youtubePlayer.setPlaybackRate === "function") {
+        this.youtubePlayer.setPlaybackRate(rate);
+      }
+      const el = this.getMediaEl();
+      if (el) {
+        el.playbackRate = rate;
+      }
     },
 
     setVolume(val: number) {
@@ -761,6 +811,9 @@ export default defineComponent({
       if (!this.youtubePlayer) return;
       this.youtubePlayer.setVolume(this.volume);
       this.disableYoutubeCaptions();
+      if (this.playbackRate && this.playbackRate !== 1 && typeof this.youtubePlayer.setPlaybackRate === "function") {
+        this.youtubePlayer.setPlaybackRate(this.playbackRate);
+      }
       if (!this.userPaused) {
         this.youtubePlayer.playVideo();
       }
