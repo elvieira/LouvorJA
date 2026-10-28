@@ -1,82 +1,97 @@
 <template>
   <v-slide-y-reverse-transition>
-    <div v-if="module?.show" class="module-full-page dashboard-home d-flex flex-column">
-      <div class="search-header-container" :class="(searchQuery || shouldShowHistory) ? 'search-header d-flex align-center w-100' : 'hero-search-header d-flex flex-column align-center justify-center'" :style="(searchQuery || shouldShowHistory) ? 'position: relative;' : 'flex: 1; position: relative; padding: 32px; transition: all 0.5s ease;'">
-        <div :style="(searchQuery || shouldShowHistory) ? 'flex: 1; display: flex; align-items: center;' : 'position: absolute; top: 24px; left: 32px;'">
-          <MenuToggleButton style="margin: 0;" @toggle-sidebar="toggleSidebar" />
-        </div>
+    <div v-if="module?.show" class="module-full-page dashboard-home">
+      <!-- Botão Menu Lateral (Mobile/Compact) -->
+      <div class="home-header-action-left">
+        <MenuToggleButton style="margin: 0;" @toggle-sidebar="toggleSidebar" />
+      </div>
 
-        <div v-if="!searchQuery && !shouldShowHistory" style="position: absolute; top: 24px; right: 32px; z-index: 5;">
-          <button
-            type="button"
-            class="notification-bell-btn"
-            :class="{
-              'pulse-urgent': hasUrgentNotifications,
-              'pulse-high': !hasUrgentNotifications && hasHighNotifications,
-              'pulse-animation': !hasUrgentNotifications && !hasHighNotifications && hasUnreadNotifications,
-            }"
-            title="Notificações & Novidades"
-            @click="openNotifications"
+      <!-- Botão Notificações & Novidades (Top-Right) -->
+      <div class="home-header-action-right">
+        <button
+          type="button"
+          class="notification-bell-btn"
+          :class="{
+            'pulse-urgent': hasUrgentNotifications,
+            'pulse-high': !hasUrgentNotifications && hasHighNotifications,
+            'pulse-animation': !hasUrgentNotifications && !hasHighNotifications && hasUnreadNotifications,
+          }"
+          title="Notificações & Novidades"
+          @click="openNotifications"
+        >
+          <v-icon
+            size="22"
+            :color="
+              hasUrgentNotifications
+                ? 'error'
+                : hasHighNotifications
+                  ? 'warning'
+                  : hasUnreadNotifications
+                    ? 'primary'
+                    : 'var(--sidebar-text)'
+            "
           >
-            <v-icon
-              size="22"
-              :color="
-                hasUrgentNotifications
-                  ? 'error'
-                  : hasHighNotifications
-                    ? 'warning'
-                    : hasUnreadNotifications
-                      ? 'primary'
-                      : 'var(--sidebar-text)'
-              "
-            >
-              {{
-                hasUrgentNotifications
-                  ? 'mdi-bell-alert'
-                  : hasHighNotifications
-                    ? 'mdi-bell-alert-outline'
-                    : hasUnreadNotifications
-                      ? 'mdi-bell'
-                      : 'mdi-bell-outline'
-              }}
-            </v-icon>
-            <span 
-              v-if="hasUnreadNotifications" 
-              class="home-unread-badge"
-              :class="{
-                'badge-urgent': hasUrgentNotifications,
-                'badge-high': !hasUrgentNotifications && hasHighNotifications,
-              }"
-            >
-              {{ unreadNotificationsCount }}
-            </span>
-            <v-tooltip
-              activator="parent"
-              location="bottom"
-              open-delay="300"
-              content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
-            >
-              {{
-                hasUrgentNotifications
-                  ? `${unreadNotificationsCount} ${unreadNotificationsCount === 1 ? 'notificação urgente' : 'notificações (urgente)'}`
-                  : hasHighNotifications
-                    ? `${unreadNotificationsCount} ${unreadNotificationsCount === 1 ? 'notificação de alta prioridade' : 'notificações (alta prioridade)'}`
-                    : hasUnreadNotifications
-                      ? `${unreadNotificationsCount} ${unreadNotificationsCount === 1 ? 'nova notificação' : 'novas notificações'}`
-                      : 'Notificações'
-              }}
-            </v-tooltip>
-          </button>
-        </div>
-        
-        <div v-if="!searchQuery && !shouldShowHistory" class="hero-content d-flex flex-column align-center w-100">
+            {{
+              hasUrgentNotifications
+                ? 'mdi-bell-alert'
+                : hasHighNotifications
+                  ? 'mdi-bell-alert-outline'
+                  : hasUnreadNotifications
+                    ? 'mdi-bell'
+                    : 'mdi-bell-outline'
+            }}
+          </v-icon>
+          <span 
+            v-if="hasUnreadNotifications" 
+            class="home-unread-badge"
+            :class="{
+              'badge-urgent': hasUrgentNotifications,
+              'badge-high': !hasUrgentNotifications && hasHighNotifications,
+            }"
+          >
+            {{ unreadNotificationsCount }}
+          </span>
+          <v-tooltip
+            activator="parent"
+            location="bottom"
+            open-delay="300"
+            content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+          >
+            {{
+              hasUrgentNotifications
+                ? `${unreadNotificationsCount} ${unreadNotificationsCount === 1 ? 'notificação urgente' : 'notificações (urgente)'}`
+                : hasHighNotifications
+                  ? `${unreadNotificationsCount} ${unreadNotificationsCount === 1 ? 'notificação de alta prioridade' : 'notificações (alta prioridade)'}`
+                  : hasUnreadNotifications
+                    ? `${unreadNotificationsCount} ${unreadNotificationsCount === 1 ? 'nova notificação' : 'novas notificações'}`
+                    : 'Notificações'
+            }}
+          </v-tooltip>
+        </button>
+      </div>
+
+      <!-- Header / Hero de Pesquisa com animação fluida -->
+      <div
+        class="search-header-container"
+        :class="{
+          'is-hero-center': isHeroMode,
+          'is-top-mode': !isHeroMode,
+        }"
+      >
+        <!-- Hero Brand: Logo + Título "O que vamos cantar?" -->
+        <div
+          v-if="!shouldShowHistory"
+          class="hero-brand"
+          :class="{ 'is-collapsed': !isHeroMode }"
+        >
           <img src="/ico/favicon.svg" alt="LouvorJA" class="hero-logo" />
           <h1 class="hero-title mb-6">
             {{ t("what_shall_we_sing") }}
           </h1>
         </div>
-        
-        <div class="search-bar" :style="(searchQuery || shouldShowHistory) ? 'flex: 2; display: flex; justify-content: center; transition: all 0.5s ease;' : 'width: 100%; max-width: 650px; transition: all 0.5s ease;'">
+
+        <!-- Barra de Pesquisa com largura constante e estável -->
+        <div class="search-bar">
           <v-text-field
             ref="searchInput"
             v-model="searchQuery"
@@ -86,7 +101,6 @@
             density="comfortable"
             hide-details
             rounded="xl"
-            :style="(searchQuery || shouldShowHistory) ? 'width: 100%; max-width: 600px;' : 'width: 100%;'"
             class="search-input-hero"
             @keydown.enter="playFirstResult"
           >
@@ -186,294 +200,234 @@
             </template>
           </v-text-field>
         </div>
-
-        <div v-if="(searchQuery || shouldShowHistory)" style="flex: 1; display: flex; justify-content: flex-end; align-items: center; padding-right: 16px;">
-          <button
-            type="button"
-            class="notification-bell-btn"
-            :class="{
-              'pulse-urgent': hasUrgentNotifications,
-              'pulse-high': !hasUrgentNotifications && hasHighNotifications,
-              'pulse-animation': !hasUrgentNotifications && !hasHighNotifications && hasUnreadNotifications,
-            }"
-            title="Notificações & Novidades"
-            @click="openNotifications"
-          >
-            <v-icon
-              size="22"
-              :color="
-                hasUrgentNotifications
-                  ? 'error'
-                  : hasHighNotifications
-                    ? 'warning'
-                    : hasUnreadNotifications
-                      ? 'primary'
-                      : 'var(--sidebar-text)'
-              "
-            >
-              {{
-                hasUrgentNotifications
-                  ? 'mdi-bell-alert'
-                  : hasHighNotifications
-                    ? 'mdi-bell-alert-outline'
-                    : hasUnreadNotifications
-                      ? 'mdi-bell'
-                      : 'mdi-bell-outline'
-              }}
-            </v-icon>
-            <span 
-              v-if="hasUnreadNotifications" 
-              class="home-unread-badge"
-              :class="{
-                'badge-urgent': hasUrgentNotifications,
-                'badge-high': !hasUrgentNotifications && hasHighNotifications,
-              }"
-            >
-              {{ unreadNotificationsCount }}
-            </span>
-            <v-tooltip
-              activator="parent"
-              location="bottom"
-              open-delay="300"
-              content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
-            >
-              {{
-                hasUrgentNotifications
-                  ? `${unreadNotificationsCount} ${unreadNotificationsCount === 1 ? 'notificação urgente' : 'notificações (urgente)'}`
-                  : hasHighNotifications
-                    ? `${unreadNotificationsCount} ${unreadNotificationsCount === 1 ? 'notificação de alta prioridade' : 'notificações (alta prioridade)'}`
-                    : hasUnreadNotifications
-                      ? `${unreadNotificationsCount} ${unreadNotificationsCount === 1 ? 'nova notificação' : 'novas notificações'}`
-                      : 'Notificações'
-              }}
-            </v-tooltip>
-          </button>
-        </div>
       </div>
 
-      <div v-if="searchQuery || shouldShowHistory" class="content-main" :class="{ 'expanded-mode': showAllTopSongs && !searchQuery }">
-        <div v-if="searchQuery" class="dashboard-section music-section h-100 d-flex flex-column" style="min-height: 0;">
-          <div class="section-header">
-            <h2 class="section-title">
-              {{ t("search_results") }}
-            </h2>
-            <span v-if="searchData && searchData.data && !searchData.loading" class="text-caption font-weight-medium" style="color: var(--ds-text-secondary);">
-              {{ searchData.data.length }} {{ t("songs") }}
-            </span>
+      <!-- Área de Conteúdo (Resultados ou Histórico) com transição de esmaecimento -->
+      <transition name="search-results-fade" @after-leave="onSearchResultsLeave">
+        <div v-if="appliedSearchQuery || shouldShowHistory" class="content-main" :class="{ 'expanded-mode': showAllTopSongs && !appliedSearchQuery }">
+          <div v-if="appliedSearchQuery" class="dashboard-section music-section h-100 d-flex flex-column" style="min-height: 0;">
+            <div class="section-header">
+              <h2 class="section-title">
+                {{ t("search_results") }}
+              </h2>
+              <span v-if="searchData && searchData.data && !searchData.loading" class="text-caption font-weight-medium" style="color: var(--ds-text-secondary);">
+                {{ searchData.data.length }} {{ t("songs") }}
+              </span>
+            </div>
+            <div class="music-list flex-grow-1 d-flex flex-column" style="min-height: 0;">
+              <LTable
+                v-model="searchData"
+                :search="appliedSearchQuery"
+                :searchable-fields="searchableFields"
+                sort-by="name"
+                :file="`${$i18n.locale}_musics`"
+                class="flex-grow-1 d-flex flex-column"
+                style="background: transparent; min-height: 0;"
+                hide-loading
+              >
+                <div v-if="searchData.loading === false && searchData.data && searchData.data.length === 0" class="empty-state d-flex flex-column align-center justify-center w-100" style="padding: 64px 24px;">
+                  <v-icon size="52" color="var(--ds-text-secondary)" class="mb-3">
+                    mdi-magnify
+                  </v-icon>
+                  <p style="color: var(--ds-text-primary); font-size: 15px; font-weight: 600; margin-bottom: 4px;">
+                    {{ t("no_musics_found") }}
+                  </p>
+                </div>
+                <tbody v-else class="music-list-container">
+                  <tr 
+                    v-for="item in searchData.data" 
+                    :key="item.id || item.id_music"
+                    class="music-item search-result-item w-100"
+                    :class="{ 'is-playing': isSongPlaying(item) }"
+                    style="cursor: pointer;"
+                    @click="playSong(item)"
+                  >
+                    <td class="music-number-cell">
+                      <span v-if="getHymnalTrack(item)" class="hymnal-track-number">
+                        {{ getHymnalTrack(item) }}
+                      </span>
+                    </td>
+                    <td class="music-play-cell">
+                      <button 
+                        type="button" 
+                        class="music-play-btn"
+                        :title="isSongPlaying(item) ? 'Em reprodução' : 'Reproduzir música'"
+                        @click.stop="playSong(item)"
+                      >
+                        <v-icon size="18">
+                          {{ isSongPlaying(item) ? 'mdi-volume-high' : 'mdi-play' }}
+                        </v-icon>
+                      </button>
+                    </td>
+                    <td class="music-info flex-grow-1">
+                      <h4 class="music-title">
+                        {{ item.name }}
+                      </h4>
+                      <p class="music-artist">
+                        {{ item.subtitle || (item.albums ? item.albums.map((a: any) => a.name).join(', ') : '') }}
+                      </p>
+                    </td>
+                    <td class="music-duration">
+                      {{ item.duration ? $datetime.shortTime(item.duration) : '' }}
+                    </td>
+                    <td class="music-actions-cell">
+                      <div class="music-actions d-flex align-center justify-end pr-4" @click.stop>
+                        <LMusicMenuTable
+                          :id-music="item.id_music"
+                          :has-instrumental-music="item.has_instrumental_music"
+                          :item="item"
+                          :pulse-lyric="searchFilters.includes('lyric')"
+                          :search-query="appliedSearchQuery"
+                          :compact="true"
+                        />
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </LTable>
+            </div>
           </div>
-          <div class="music-list flex-grow-1 d-flex flex-column" style="min-height: 0;">
-            <LTable
-              v-model="searchData"
-              :search="searchQuery"
-              :searchable-fields="searchableFields"
-              sort-by="name"
-              :file="`${$i18n.locale}_musics`"
-              class="flex-grow-1 d-flex flex-column"
-              style="background: transparent; min-height: 0;"
-              hide-loading
-            >
-              <div v-if="searchData.loading === false && searchData.data && searchData.data.length === 0" class="empty-state d-flex flex-column align-center justify-center w-100" style="padding: 64px 24px;">
-                <v-icon size="52" color="var(--ds-text-secondary)" class="mb-3">
-                  mdi-magnify
-                </v-icon>
-                <p style="color: var(--ds-text-primary); font-size: 15px; font-weight: 600; margin-bottom: 4px;">
-                  {{ t("no_musics_found") }}
-                </p>
-              </div>
-              <tbody v-else class="music-list-container">
-                <tr 
-                  v-for="item in searchData.data" 
-                  :key="item.id || item.id_music"
-                  class="music-item search-result-item w-100"
-                  :class="{ 'is-playing': isSongPlaying(item) }"
-                  style="cursor: pointer;"
-                  @click="playSong(item)"
-                >
-                  <td class="music-number-cell">
-                    <span v-if="getHymnalTrack(item)" class="hymnal-track-number">
-                      {{ getHymnalTrack(item) }}
-                    </span>
-                  </td>
-                  <td class="music-play-cell">
-                    <button 
-                      type="button" 
-                      class="music-play-btn"
-                      :title="isSongPlaying(item) ? 'Em reprodução' : 'Reproduzir música'"
-                      @click.stop="playSong(item)"
-                    >
-                      <v-icon size="18">
-                        {{ isSongPlaying(item) ? 'mdi-volume-high' : 'mdi-play' }}
-                      </v-icon>
-                    </button>
-                  </td>
-                  <td class="music-info flex-grow-1">
-                    <h4 class="music-title">
-                      {{ item.name }}
-                    </h4>
-                    <p class="music-artist">
-                      {{ item.subtitle || (item.albums ? item.albums.map((a: any) => a.name).join(', ') : '') }}
-                    </p>
-                  </td>
-                  <td class="music-duration">
-                    {{ item.duration ? $datetime.shortTime(item.duration) : '' }}
-                  </td>
-                  <td class="music-actions-cell">
-                    <div class="music-actions d-flex align-center justify-end pr-4" @click.stop>
-                      <LMusicMenuTable
-                        :id-music="item.id_music"
-                        :has-instrumental-music="item.has_instrumental_music"
-                        :item="item"
-                        :pulse-lyric="searchFilters.includes('lyric')"
-                        :search-query="searchQuery"
-                        :compact="true"
-                      />
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </LTable>
-          </div>
-        </div>
 
-        <template v-else-if="shouldShowHistory && !searchQuery">
-          <!-- Seção: Coletâneas Recentes -->
-          <v-expand-transition>
-            <div v-if="!showAllTopSongs" class="dashboard-section collections-section">
+          <template v-else-if="shouldShowHistory && !appliedSearchQuery">
+            <!-- Seção: Coletâneas Recentes -->
+            <v-expand-transition>
+              <div v-if="!showAllTopSongs" class="dashboard-section collections-section">
+                <div class="section-header">
+                  <h2 class="section-title">
+                    {{ t("recent_collections") }}
+                  </h2>
+                  <button
+                    type="button"
+                    class="section-see-all-btn"
+                    @click="openAllCollections"
+                  >
+                    <span>{{ t("see_all") }}</span>
+                    <v-icon size="16">
+                      mdi-arrow-right
+                    </v-icon>
+                  </button>
+                </div>
+                <div 
+                  v-if="displayCollections.length > 0" 
+                  ref="collectionsGrid"
+                  class="collections-grid"
+                  @wheel="handleCollectionsScroll"
+                >
+                  <div 
+                    v-for="collection in displayCollections" 
+                    :key="collection.id"
+                    class="collection-card"
+                    @click="openCollection(collection)"
+                  >
+                    <div class="card-image">
+                      <v-img 
+                        v-if="getCollectionImage(collection)" 
+                        :src="getCollectionImage(collection)" 
+                        cover 
+                        class="card-cover-img"
+                      />
+                      <v-icon
+                        v-else
+                        size="48"
+                        color="var(--ds-accent)"
+                      >
+                        {{ collection.icon || 'mdi-music-box-multiple' }}
+                      </v-icon>
+                    </div>
+                    <div class="card-content">
+                      <h3 class="card-title" :title="getCollectionName(collection)">
+                        {{ getCollectionName(collection) }}
+                      </h3>
+                      <p v-if="collection.songCount" class="card-stats">
+                        {{ collection.songCount }} {{ t("songs") }}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div v-else class="empty-state collections-empty">
+                  <v-icon size="48" color="var(--ds-text-secondary)">
+                    mdi-music-box-multiple-outline
+                  </v-icon>
+                  <p>{{ t("no_collections_played") }}</p>
+                </div>
+              </div>
+            </v-expand-transition>
+
+            <!-- Seção: Músicas Mais Tocadas -->
+            <div 
+              class="dashboard-section music-section"
+              :class="{ 'expanded-music-section': showAllTopSongs }"
+            >
               <div class="section-header">
                 <h2 class="section-title">
-                  {{ t("recent_collections") }}
+                  {{ t("top_songs") }}
                 </h2>
                 <button
+                  v-if="hasMoreTopSongs || showAllTopSongs"
                   type="button"
                   class="section-see-all-btn"
-                  @click="openAllCollections"
+                  @click="toggleTopSongsLimit"
                 >
-                  <span>{{ t("see_all") }}</span>
+                  <span>{{ showAllTopSongs ? t("see_less") : t("see_more") }}</span>
                   <v-icon size="16">
-                    mdi-arrow-right
+                    {{ showAllTopSongs ? 'mdi-chevron-up' : 'mdi-chevron-down' }}
                   </v-icon>
                 </button>
               </div>
-              <div 
-                v-if="displayCollections.length > 0" 
-                ref="collectionsGrid"
-                class="collections-grid"
-                @wheel="handleCollectionsScroll"
-              >
-                <div 
-                  v-for="collection in displayCollections" 
-                  :key="collection.id"
-                  class="collection-card"
-                  @click="openCollection(collection)"
-                >
-                  <div class="card-image">
-                    <v-img 
-                      v-if="getCollectionImage(collection)" 
-                      :src="getCollectionImage(collection)" 
-                      cover 
-                      class="card-cover-img"
-                    />
-                    <v-icon
-                      v-else
-                      size="48"
-                      color="var(--ds-accent)"
-                    >
-                      {{ collection.icon || 'mdi-music-box-multiple' }}
-                    </v-icon>
-                  </div>
-                  <div class="card-content">
-                    <h3 class="card-title" :title="getCollectionName(collection)">
-                      {{ getCollectionName(collection) }}
-                    </h3>
-                    <p v-if="collection.songCount" class="card-stats">
-                      {{ collection.songCount }} {{ t("songs") }}
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <div v-else class="empty-state collections-empty">
-                <v-icon size="48" color="var(--ds-text-secondary)">
-                  mdi-music-box-multiple-outline
-                </v-icon>
-                <p>{{ t("no_collections_played") }}</p>
-              </div>
-            </div>
-          </v-expand-transition>
-
-          <!-- Seção: Músicas Mais Tocadas -->
-          <div 
-            class="dashboard-section music-section"
-            :class="{ 'expanded-music-section': showAllTopSongs }"
-          >
-            <div class="section-header">
-              <h2 class="section-title">
-                {{ t("top_songs") }}
-              </h2>
-              <button
-                v-if="hasMoreTopSongs || showAllTopSongs"
-                type="button"
-                class="section-see-all-btn"
-                @click="toggleTopSongsLimit"
-              >
-                <span>{{ showAllTopSongs ? t("see_less") : t("see_more") }}</span>
-                <v-icon size="16">
-                  {{ showAllTopSongs ? 'mdi-chevron-up' : 'mdi-chevron-down' }}
-                </v-icon>
-              </button>
-            </div>
-            <div class="music-list flex-grow-1 d-flex flex-column" style="min-height: 0;">
-              <div class="music-list-container">
-                <div 
-                  v-for="(song, index) in topSongs" 
-                  :key="song.id_music || index"
-                  class="music-item"
-                  :class="{ 'is-playing': isSongPlaying(song) }"
-                  @click="playSong(song)"
-                >
-                  <div class="music-number">
-                    {{ index + 1 }}
-                  </div>
-                  <button 
-                    type="button" 
-                    class="music-play-btn"
-                    :title="isSongPlaying(song) ? 'Em reprodução' : 'Reproduzir música'"
-                    @click.stop="playSong(song)"
+              <div class="music-list flex-grow-1 d-flex flex-column" style="min-height: 0;">
+                <div class="music-list-container">
+                  <div 
+                    v-for="(song, index) in topSongs" 
+                    :key="song.id_music || index"
+                    class="music-item"
+                    :class="{ 'is-playing': isSongPlaying(song) }"
+                    @click="playSong(song)"
                   >
-                    <v-icon size="18">
-                      {{ isSongPlaying(song) ? 'mdi-volume-high' : 'mdi-play' }}
+                    <div class="music-number">
+                      {{ index + 1 }}
+                    </div>
+                    <button 
+                      type="button" 
+                      class="music-play-btn"
+                      :title="isSongPlaying(song) ? 'Em reprodução' : 'Reproduzir música'"
+                      @click.stop="playSong(song)"
+                    >
+                      <v-icon size="18">
+                        {{ isSongPlaying(song) ? 'mdi-volume-high' : 'mdi-play' }}
+                      </v-icon>
+                    </button>
+                    <div class="music-info">
+                      <h4 class="music-title">
+                        {{ song.name }}
+                      </h4>
+                      <p class="music-artist">
+                        {{ song.album_name }}
+                      </p>
+                    </div>
+                    <div class="music-duration">
+                      {{ $datetime.shortTime(song.duration) }}
+                    </div>
+                    <div class="music-actions" @click.stop>
+                      <LMusicMenuTable
+                        :id-music="song.id_music"
+                        :has-instrumental-music="Boolean(song.has_instrumental_music)"
+                        :item="song"
+                        :compact="true"
+                      />
+                    </div>
+                  </div>
+                  <div v-if="topSongs.length === 0" class="empty-state">
+                    <v-icon size="48" color="var(--ds-text-secondary)">
+                      mdi-music-note-off
                     </v-icon>
-                  </button>
-                  <div class="music-info">
-                    <h4 class="music-title">
-                      {{ song.name }}
-                    </h4>
-                    <p class="music-artist">
-                      {{ song.album_name }}
-                    </p>
+                    <p>{{ t("no_songs_played") }}</p>
                   </div>
-                  <div class="music-duration">
-                    {{ $datetime.shortTime(song.duration) }}
-                  </div>
-                  <div class="music-actions" @click.stop>
-                    <LMusicMenuTable
-                      :id-music="song.id_music"
-                      :has-instrumental-music="Boolean(song.has_instrumental_music)"
-                      :item="song"
-                      :compact="true"
-                    />
-                  </div>
-                </div>
-                <div v-if="topSongs.length === 0" class="empty-state">
-                  <v-icon size="48" color="var(--ds-text-secondary)">
-                    mdi-music-note-off
-                  </v-icon>
-                  <p>{{ t("no_songs_played") }}</p>
                 </div>
               </div>
             </div>
-          </div>
-        </template>
-      </div>
+          </template>
+        </div>
+      </transition>
     </div>
   </v-slide-y-reverse-transition>
 </template>
@@ -525,7 +479,12 @@ export default defineComponent({
   },
   data: () => ({
     searchQuery: "",
-    searchData: { data: [], loading: true } as any,
+    appliedSearchQuery: "",
+    searchTimer: null as any,
+    leaveSearchTimer: null as any,
+    heroAnimationEndTime: 0,
+    isLeavingSearch: false,
+    searchData: { data: [], loading: false } as any,
     manifest,
     dynamicCollectionInfo: {} as Record<string, any>,
     show_home_history: true,
@@ -564,6 +523,13 @@ export default defineComponent({
 
     shouldShowHistory(): boolean {
       return this.show_home_history && (this.displayCollections.length > 0 || this.topSongs.length > 0);
+    },
+
+    isHeroMode(): boolean {
+      if (this.shouldShowHistory) return false;
+      if (this.searchQuery) return false;
+      if (this.isLeavingSearch) return false;
+      return true;
     },
     
     displayCollections(): any[] {
@@ -621,15 +587,64 @@ export default defineComponent({
       immediate: true,
     },
     searchQuery(newVal: string) {
+      if (this.searchTimer) {
+        clearTimeout(this.searchTimer);
+        this.searchTimer = null;
+      }
+
       if (!newVal) {
+        const hadResults = !!this.appliedSearchQuery;
+        this.appliedSearchQuery = "";
+        this.heroAnimationEndTime = 0;
+        this.searchData.loading = false;
+
+        if (hadResults && !this.shouldShowHistory) {
+          this.isLeavingSearch = true;
+          if (this.leaveSearchTimer) {
+            clearTimeout(this.leaveSearchTimer);
+          }
+          this.leaveSearchTimer = setTimeout(() => {
+            this.isLeavingSearch = false;
+            this.leaveSearchTimer = null;
+          }, 200);
+        } else {
+          this.isLeavingSearch = false;
+        }
+
         this.$nextTick(() => {
           if (this.$refs.searchInput) {
             (this.$refs.searchInput as any).focus();
           }
         });
-      } else {
-        this.searchData.loading = true;
+        return;
       }
+
+      if (this.leaveSearchTimer) {
+        clearTimeout(this.leaveSearchTimer);
+        this.leaveSearchTimer = null;
+      }
+      this.isLeavingSearch = false;
+      this.searchData.loading = true;
+
+      // Se viemos do modo Hero (barra no centro), aguardamos a animação da barra subir (~350ms)
+      // para que o processamento pesado de pesquisa não engasgue a animação visual.
+      // Se a barra já estiver no topo, usamos um debounce ágil (~180ms).
+      let delay = 180;
+      if (!this.shouldShowHistory && !this.appliedSearchQuery) {
+        if (!this.heroAnimationEndTime) {
+          this.heroAnimationEndTime = Date.now() + 350;
+        }
+        const remaining = this.heroAnimationEndTime - Date.now();
+        delay = Math.max(180, remaining);
+      } else {
+        this.heroAnimationEndTime = 0;
+      }
+
+      this.searchTimer = setTimeout(() => {
+        this.appliedSearchQuery = this.searchQuery;
+        this.searchTimer = null;
+        this.heroAnimationEndTime = 0;
+      }, delay);
     },
     "module.show": {
       handler(newVal: boolean) {
@@ -642,6 +657,17 @@ export default defineComponent({
               (this.$refs.searchInput as any).focus();
             }
           });
+        } else {
+          if (this.searchTimer) {
+            clearTimeout(this.searchTimer);
+            this.searchTimer = null;
+          }
+          if (this.leaveSearchTimer) {
+            clearTimeout(this.leaveSearchTimer);
+            this.leaveSearchTimer = null;
+          }
+          this.isLeavingSearch = false;
+          this.heroAnimationEndTime = 0;
         }
       },
       immediate: true,
@@ -652,6 +678,16 @@ export default defineComponent({
     const setting = this.$userdata.get("show_home_history");
     this.show_home_history = setting !== false;
     this.resolveMissingDurations();
+  },
+  beforeUnmount() {
+    if (this.searchTimer) {
+      clearTimeout(this.searchTimer);
+      this.searchTimer = null;
+    }
+    if (this.leaveSearchTimer) {
+      clearTimeout(this.leaveSearchTimer);
+      this.leaveSearchTimer = null;
+    }
   },
   methods: {
     /* METHODS OBRIGATÓRIOS - INÍCIO */
@@ -879,6 +915,18 @@ export default defineComponent({
     },
     
     playFirstResult() {
+      if (this.searchTimer) {
+        clearTimeout(this.searchTimer);
+        this.searchTimer = null;
+        this.appliedSearchQuery = this.searchQuery;
+        this.heroAnimationEndTime = 0;
+        this.$nextTick(() => {
+          if (this.searchData && this.searchData.data && this.searchData.data.length > 0) {
+            this.playSong(this.searchData.data[0]);
+          }
+        });
+        return;
+      }
       if (this.searchData && this.searchData.data && this.searchData.data.length > 0) {
         this.playSong(this.searchData.data[0]);
       }
@@ -913,8 +961,38 @@ export default defineComponent({
       this.$userdata.set("search_filters", updated);
     },
 
+    onSearchResultsLeave() {
+      if (this.leaveSearchTimer) {
+        clearTimeout(this.leaveSearchTimer);
+        this.leaveSearchTimer = null;
+      }
+      this.isLeavingSearch = false;
+    },
+
     clearSearch() {
+      if (this.searchTimer) {
+        clearTimeout(this.searchTimer);
+        this.searchTimer = null;
+      }
+      this.heroAnimationEndTime = 0;
+      const hadResults = !!this.appliedSearchQuery;
       this.searchQuery = "";
+      this.appliedSearchQuery = "";
+      this.searchData.loading = false;
+
+      if (hadResults && !this.shouldShowHistory) {
+        this.isLeavingSearch = true;
+        if (this.leaveSearchTimer) {
+          clearTimeout(this.leaveSearchTimer);
+        }
+        this.leaveSearchTimer = setTimeout(() => {
+          this.isLeavingSearch = false;
+          this.leaveSearchTimer = null;
+        }, 200);
+      } else {
+        this.isLeavingSearch = false;
+      }
+
       this.$nextTick(() => {
         if (this.$refs.searchInput) {
           (this.$refs.searchInput as any).focus();
@@ -1129,18 +1207,73 @@ export default defineComponent({
   height: 100%;
   display: flex;
   flex-direction: column;
+  position: relative;
+  overflow: hidden;
 }
 
-.search-header {
-  background: transparent;
-  padding: 24px 32px 10px 32px;
+.home-header-action-left {
+  position: absolute;
+  top: 24px;
+  left: 32px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
 }
 
-.hero-search-header {
-  background: transparent;
+.home-header-action-right {
+  position: absolute;
+  top: 24px;
+  right: 32px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+}
 
-  .hero-content {
-    animation: fadeIn 0.4s ease;
+.search-header-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  box-sizing: border-box;
+  padding: 24px 80px 10px 80px;
+  transition: padding 0.42s cubic-bezier(0.25, 1, 0.5, 1);
+  will-change: padding;
+  flex-shrink: 0;
+
+  &.is-hero-center {
+    padding-top: max(24px, calc(45vh - 170px));
+    padding-bottom: 32px;
+  }
+
+  &.is-top-mode {
+    padding-top: 24px;
+    padding-bottom: 10px;
+  }
+}
+
+.hero-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-height: 220px;
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  margin-bottom: 24px;
+  transition: opacity 0.28s cubic-bezier(0.25, 1, 0.5, 1),
+              transform 0.4s cubic-bezier(0.25, 1, 0.5, 1),
+              max-height 0.42s cubic-bezier(0.25, 1, 0.5, 1),
+              margin-bottom 0.42s cubic-bezier(0.25, 1, 0.5, 1);
+  overflow: hidden;
+  will-change: transform, opacity, max-height;
+
+  &.is-collapsed {
+    opacity: 0;
+    max-height: 0;
+    margin-bottom: 0;
+    transform: translateY(-20px) scale(0.92);
+    pointer-events: none;
   }
 
   .hero-logo {
@@ -1155,10 +1288,23 @@ export default defineComponent({
     font-weight: 700;
     color: var(--ds-text-primary);
     letter-spacing: -0.5px;
+    margin: 0;
+    text-align: center;
   }
 }
 
 .dashboard-home .search-bar {
+  width: 100%;
+  max-width: 620px;
+  display: flex;
+  justify-content: center;
+  box-sizing: border-box;
+
+  .v-text-field {
+    width: 100% !important;
+    max-width: 620px !important;
+  }
+
   .v-field {
     background: var(--ds-surface, var(--card-bg)) !important;
     box-shadow: none !important;
@@ -1303,6 +1449,26 @@ export default defineComponent({
   &.expanded-mode {
     overflow-y: hidden;
   }
+}
+
+/* Transição suave para os resultados de busca */
+.search-results-fade-enter-active {
+  transition: opacity 0.35s cubic-bezier(0.25, 1, 0.5, 1), transform 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.search-results-fade-leave-active {
+  transition: opacity 0.18s cubic-bezier(0.4, 0, 1, 1), transform 0.18s cubic-bezier(0.4, 0, 1, 1);
+  pointer-events: none;
+}
+
+.search-results-fade-enter-from {
+  opacity: 0;
+  transform: translateY(14px);
+}
+
+.search-results-fade-leave-to {
+  opacity: 0;
+  transform: translateY(6px);
 }
 
 .dashboard-section {
@@ -1761,9 +1927,27 @@ export default defineComponent({
 }
 
 @media (max-width: 1024px) {  
-  .search-header {
-    padding: 16px 20px 8px 20px;
-    justify-content: flex-start;
+  .home-header-action-left {
+    top: 16px;
+    left: 20px;
+  }
+  .home-header-action-right {
+    top: 16px;
+    right: 20px;
+  }
+
+  .search-header-container {
+    padding-left: 64px;
+    padding-right: 64px;
+
+    &.is-hero-center {
+      padding-top: max(20px, calc(42vh - 150px));
+    }
+
+    &.is-top-mode {
+      padding-top: 16px;
+      padding-bottom: 8px;
+    }
     
     .search-bar {
       max-width: 100%;
@@ -1785,8 +1969,27 @@ export default defineComponent({
 }
 
 @media (max-width: 768px) {  
-  .search-header {
-    padding: 12px 16px 6px 16px;
+  .home-header-action-left {
+    top: 12px;
+    left: 16px;
+  }
+  .home-header-action-right {
+    top: 12px;
+    right: 16px;
+  }
+
+  .search-header-container {
+    padding-left: 56px;
+    padding-right: 56px;
+
+    &.is-hero-center {
+      padding-top: max(16px, calc(38vh - 130px));
+    }
+
+    &.is-top-mode {
+      padding-top: 12px;
+      padding-bottom: 6px;
+    }
     
     .search-bar .v-field {
       border-radius: 20px !important;
@@ -1808,8 +2011,9 @@ export default defineComponent({
 }
 
 @media (max-height: 820px) {
-  .search-header {
-    padding: 14px 24px 8px 24px;
+  .search-header-container.is-top-mode {
+    padding-top: 14px;
+    padding-bottom: 8px;
   }
 
   .content-main {
@@ -1830,8 +2034,9 @@ export default defineComponent({
 }
 
 @media (max-height: 720px) {
-  .search-header {
-    padding: 10px 20px 4px 20px;
+  .search-header-container.is-top-mode {
+    padding-top: 10px;
+    padding-bottom: 4px;
   }
 
   .content-main {
