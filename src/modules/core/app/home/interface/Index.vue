@@ -314,11 +314,11 @@
                       {{ item.subtitle || (item.albums ? item.albums.map((a: any) => a.name).join(', ') : '') }}
                     </p>
                   </td>
-                  <td class="music-duration pr-4">
+                  <td class="music-duration">
                     {{ item.duration ? $datetime.shortTime(item.duration) : '' }}
                   </td>
-                  <td>
-                    <div class="music-actions d-flex justify-end pr-4" @click.stop>
+                  <td class="music-actions-cell">
+                    <div class="music-actions d-flex align-center justify-end pr-4" @click.stop>
                       <LMusicMenuTable
                         :id-music="item.id_music"
                         :has-instrumental-music="item.has_instrumental_music"
@@ -1606,6 +1606,11 @@ export default defineComponent({
 
     td {
       border-bottom: none !important;
+      padding: 0 !important;
+      height: 100% !important;
+      display: flex !important;
+      align-items: center !important;
+      background: transparent !important;
     }
 
     .music-number-cell {
@@ -1653,6 +1658,49 @@ export default defineComponent({
 
     .music-info {
       padding-left: 8px !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: center !important;
+      align-items: flex-start !important;
+      text-align: left !important;
+      height: 100% !important;
+
+      .music-title,
+      .music-artist {
+        text-align: left !important;
+        width: 100%;
+      }
+    }
+
+    .music-duration {
+      height: 100% !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      padding: 0 16px 0 0 !important;
+      margin: 0 !important;
+      font-size: 13px;
+      color: var(--ds-text-secondary, var(--sidebar-text-secondary));
+      font-variant-numeric: tabular-nums;
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+
+    .music-actions-cell {
+      height: 100% !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: flex-end !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      flex-shrink: 0;
+
+      .music-actions {
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+      }
     }
   }
   
