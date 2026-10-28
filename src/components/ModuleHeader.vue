@@ -1,6 +1,6 @@
 <template>
   <div class="search-header flex-shrink-0" style="padding-top: 24px; padding-left: 24px; padding-right: 24px; padding-bottom: 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: nowrap; gap: 32px;">
-    <div class="d-flex align-center min-w-0" style="flex: 1 1 auto; min-width: 0;">
+    <div class="d-flex align-center min-w-0" style="flex: 0 1 auto; min-width: 0; max-width: 60%;">
       <MenuToggleButton style="margin-right: 16px; flex-shrink: 0;" @toggle-sidebar="toggleSidebar" />
       
       <slot name="prefix" />
@@ -35,7 +35,7 @@
       <slot name="title-actions" />
     </div>
     
-    <div class="module-header-actions d-flex align-center justify-end flex-shrink-0" style="overflow: visible;">
+    <div class="module-header-actions d-flex align-center justify-end" style="flex: 1 1 auto; min-width: 0; max-width: 100%; overflow: visible;">
       <slot />
     </div>
   </div>

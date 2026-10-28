@@ -1293,7 +1293,7 @@ export default defineComponent({
   }
 }
 
-.dashboard-home .search-bar {
+.dashboard-home .search-header-container .search-bar {
   width: 100%;
   max-width: 620px;
   display: flex;

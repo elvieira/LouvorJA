@@ -8,7 +8,6 @@
     >
       <ModuleHeader 
         :title="t('title')" 
-        :subtitle="t('description')"
         icon="mdi-hands-pray"
         @close="module.show = false"
       >

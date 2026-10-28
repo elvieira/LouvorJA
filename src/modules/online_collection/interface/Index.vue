@@ -4,7 +4,6 @@
       <!-- Cabeçalho Principal -->
       <ModuleHeader
         :title="headerTitle"
-        :subtitle="headerSubtitle"
         :icon="headerIcon"
         :image="headerImage"
       >
@@ -31,58 +30,55 @@
           </v-btn>
         </template>
 
-        <!-- Ações no topo direito do Header -->
-        <div class="header-actions-row d-flex align-center">
-          <!-- Campo de Pesquisa -->
-          <div class="search-bar">
-            <v-text-field
-              v-model="search"
-              :placeholder="searchPlaceholder"
-              prepend-inner-icon="mdi-magnify"
-              variant="solo"
-              density="comfortable"
-              hide-details
-              rounded="xl"
-            >
-              <template #append-inner>
-                <v-btn
-                  v-if="search"
-                  icon="mdi-close"
-                  size="x-small"
-                  variant="text"
-                  class="clear-search-btn"
-                  :title="t('clear_search')"
-                  @click="search = ''"
-                />
-              </template>
-            </v-text-field>
-          </div>
+        <!-- Campo de Pesquisa -->
+        <div class="search-bar mr-4 d-flex align-center" style="max-width: 400px; flex: 1;">
+          <v-text-field
+            v-model="search"
+            :placeholder="searchPlaceholder"
+            prepend-inner-icon="mdi-magnify"
+            variant="solo"
+            density="comfortable"
+            hide-details
+            rounded="xl"
+          >
+            <template #append-inner>
+              <v-btn
+                v-if="search"
+                icon="mdi-close"
+                size="x-small"
+                variant="text"
+                class="clear-search-btn mr-1"
+                :title="t('clear_search')"
+                @click="search = ''"
+              />
+            </template>
+          </v-text-field>
+        </div>
 
-          <!-- Alternador de visualização Grade / Lista (em Canais e Playlists) -->
-          <div v-if="view !== 'videos' && !isGlobalSearch" class="view-mode-toggle d-flex align-center ml-3">
-            <button
-              type="button"
-              class="view-toggle-btn"
-              :class="{ active: viewMode === 'list' }"
-              :title="t('view_list')"
-              @click="setViewMode('list')"
-            >
-              <v-icon size="18">
-                mdi-format-list-bulleted
-              </v-icon>
-            </button>
-            <button
-              type="button"
-              class="view-toggle-btn"
-              :class="{ active: viewMode === 'grid' }"
-              :title="t('view_grid')"
-              @click="setViewMode('grid')"
-            >
-              <v-icon size="18">
-                mdi-view-grid
-              </v-icon>
-            </button>
-          </div>
+        <!-- Alternador de visualização Grade / Lista (em Canais e Playlists) -->
+        <div v-if="view !== 'videos' && !isGlobalSearch" class="view-mode-toggle d-flex align-center flex-shrink-0">
+          <button
+            type="button"
+            class="view-toggle-btn"
+            :class="{ active: viewMode === 'list' }"
+            :title="t('view_list')"
+            @click="setViewMode('list')"
+          >
+            <v-icon size="18">
+              mdi-format-list-bulleted
+            </v-icon>
+          </button>
+          <button
+            type="button"
+            class="view-toggle-btn"
+            :class="{ active: viewMode === 'grid' }"
+            :title="t('view_grid')"
+            @click="setViewMode('grid')"
+          >
+            <v-icon size="18">
+              mdi-view-grid
+            </v-icon>
+          </button>
         </div>
       </ModuleHeader>
 
@@ -602,69 +598,6 @@ export default defineComponent({
     }
   }
 
-  .header-actions-row {
-    flex-wrap: nowrap;
-    gap: 12px;
-    margin-left: 28px;
-  }
-
-  .search-bar {
-    width: 320px;
-    max-width: 100%;
-
-    .v-field {
-      background: var(--ds-surface, var(--card-bg, #1a2638)) !important;
-      box-shadow: none !important;
-      border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08)) !important;
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
-      border-radius: 26px !important;
-
-      .v-field__input {
-        padding: 9px 16px !important;
-        font-size: 13.5px !important;
-        color: var(--sidebar-text) !important;
-
-        &::placeholder {
-          color: var(--sidebar-text-secondary) !important;
-          opacity: 0.8 !important;
-        }
-      }
-
-      .v-field__prepend-inner {
-        padding-left: 14px !important;
-
-        .v-icon {
-          color: var(--sidebar-text-secondary) !important;
-          opacity: 0.85 !important;
-        }
-      }
-
-      &:hover {
-        border-color: rgba(0, 159, 227, 0.45) !important;
-      }
-
-      &.v-field--focused {
-        border-color: var(--accent-blue, #009FE3) !important;
-        box-shadow: 0 0 0 3px rgba(0, 159, 227, 0.15) !important;
-
-        .v-field__prepend-inner .v-icon {
-          color: var(--accent-blue, #009FE3) !important;
-          opacity: 1 !important;
-        }
-      }
-    }
-
-    .clear-search-btn {
-      color: var(--sidebar-text-secondary) !important;
-      border-radius: 50% !important;
-
-      &:hover {
-        color: var(--sidebar-text) !important;
-        background: rgba(0, 159, 227, 0.12) !important;
-      }
-    }
-  }
-
   .view-mode-toggle {
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
@@ -815,22 +748,6 @@ export default defineComponent({
 :root[data-theme="light"],
 .v-theme--light {
   .online-collection-module {
-    .search-bar .v-field {
-      background: #f1f5f9 !important;
-      border-color: rgba(0, 0, 0, 0.1) !important;
-
-      .v-field__input {
-        color: #1e293b !important;
-        &::placeholder {
-          color: #64748b !important;
-        }
-      }
-
-      .v-field__prepend-inner .v-icon {
-        color: #64748b !important;
-      }
-    }
-
     .view-mode-toggle {
       background: #e2e8f0;
       border-color: rgba(0, 0, 0, 0.08);
