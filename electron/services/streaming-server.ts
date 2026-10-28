@@ -207,7 +207,7 @@ class StreamingServerService {
         const err = error as NodeJS.ErrnoException;
         if (err && err.code === "EADDRINUSE") {
           const customError: NodeJS.ErrnoException = new Error(
-            `A porta ${this.currentConfig.port} já está em uso por outro aplicativo no computador. Altere a porta para ${this.currentConfig.port === 7070 ? 7071 : this.currentConfig.port + 1} nas configurações.`,
+            `A porta ${this.currentConfig.port} já está em uso por outro programa no computador. Altere a porta para ${this.currentConfig.port === 7070 ? 7071 : this.currentConfig.port + 1} nas configurações.`,
           );
           customError.code = "EADDRINUSE";
           return reject(customError);

@@ -8,7 +8,7 @@ const manifest: ModuleManifest = {
   id: "help",
   name: "Ajuda e sobre",
   version: "1.0.0",
-  description: "Informações sobre o aplicativo e ajuda.",
+  description: "Informações sobre o programa e ajuda.",
   author: "elvieira",
   category: null,
   icon: "mdi-help-circle",

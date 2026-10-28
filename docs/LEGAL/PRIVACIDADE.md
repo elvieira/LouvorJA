@@ -9,7 +9,7 @@
 
 ## 1. Nosso Compromisso com a sua Privacidade
 
-O aplicativo **Louvor JA** foi projetado com respeito absoluto à privacidade de seus usuários, operadores de som e membros da igreja.
+O programa **Louvor JA** foi projetado com respeito absoluto à privacidade de seus usuários, operadores de som e membros da igreja.
 
 **Nós NÃO coletamos dados pessoais identificáveis.**  
 O Louvor JA não exige cadastro de conta, não solicita endereço de e-mail, nome completo, CPF, número de telefone, senhas nem informações financeiras.
@@ -24,7 +24,7 @@ Para garantir a estabilidade do programa, corrigir eventuais falhas (bugs) e com
 Quando o recurso de telemetria está habilitado, o Software transmite exclusivamente os seguintes parâmetros técnicos:
 
 1. **Identificador Anônimo de Instalação (`installation_id`)**: Um código aleatório (UUID v4) gerado localmente na primeira execução da máquina. Este código é puramente técnico e não está associado a nenhuma pessoa física ou jurídica.
-2. **Identificador de Sessão (`session_id`)**: Código temporário que identifica a execução atual do aplicativo.
+2. **Identificador de Sessão (`session_id`)**: Código temporário que identifica a execução atual do programa.
 3. **Informações do Ambiente Operacional**:
    - Plataforma e Nome do Sistema Operacional (ex: Windows, macOS, Linux);
    - Arquitetura do processador (ex: x64, arm64);

@@ -10,7 +10,7 @@
 
 ## 1. Aceitação dos Termos
 
-Ao baixar, instalar, executar ou utilizar o aplicativo **Louvor JA** ("Software"), você ("Usuário" ou "Comunidade Religiosa") declara ter lido, compreendido e concordado integralmente com estes Termos de Uso e Licença de Usuário Final ("EULA"), bem como com a nossa Política de Privacidade.
+Ao baixar, instalar, executar ou utilizar o programa **Louvor JA** ("Software"), você ("Usuário" ou "Comunidade Religiosa") declara ter lido, compreendido e concordado integralmente com estes Termos de Uso e Licença de Usuário Final ("EULA"), bem como com a nossa Política de Privacidade.
 
 Caso não concorde com qualquer uma das disposições aqui estabelecidas, você não deve instalar nem utilizar o Software.
 
@@ -38,8 +38,8 @@ O Usuário concorda expressamente em **NÃO**:
 ## 4. Conteúdos de Terceiros e Uso Religioso
 
 1. O Software é uma ferramenta de apoio litúrgico para exibição de letras de hinos, partituras, áudios e textos bíblicos.
-2. O Licenciante **não reivindica propriedade** sobre letras de hinos, áudios musicais, traduções bíblicas ou materiais de terceiros exibidos através do aplicativo.
-3. O uso de tais conteúdos no aplicativo está fundamentado na **exceção litúrgica e religiosa sem fins lucrativos** prevista no Artigo 46, inciso XI da Lei Federal nº 9.610/1998 (Lei de Direitos Autorais do Brasil) e no Artigo 5º, inciso VI da Constituição Federal.
+2. O Licenciante **não reivindica propriedade** sobre letras de hinos, áudios musicais, traduções bíblicas ou materiais de terceiros exibidos através do programa.
+3. O uso de tais conteúdos no programa está fundamentado na **exceção litúrgica e religiosa sem fins lucrativos** prevista no Artigo 46, inciso XI da Lei Federal nº 9.610/1998 (Lei de Direitos Autorais do Brasil) e no Artigo 5º, inciso VI da Constituição Federal.
 4. Para maiores detalhes sobre a disciplina de direitos autorais, consulte o documento específico de Direitos Autorais (`DIREITOS_AUTORAIS.md`).
 
 ---

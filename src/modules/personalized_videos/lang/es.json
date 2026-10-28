@@ -7,7 +7,7 @@
     "playlist_link": "Enlace de la Lista de Reproducción",
     "playlist_link_placeholder": "Pega el enlace de la lista de reproducción de YouTube...",
     "duplicate_playlist": "Esa lista de reproducción ya fue agregada.",
-    "playlist_desktop_only": "Esta función solo está disponible en la aplicación de escritorio.",
+    "playlist_desktop_only": "Esta función solo está disponible en el programa de escritorio.",
     "playlist_fetch_error": "No se pudo cargar esa lista. Verifica el enlace e intenta de nuevo.",
     "empty_albums_title": "Ninguna lista agregada todavía",
     "empty_albums_desc": "Pega el enlace de una lista de reproducción de YouTube arriba para importar todos sus videos.",

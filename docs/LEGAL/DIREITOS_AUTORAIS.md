@@ -9,7 +9,7 @@
 
 ## 1. Escopo e Propósito
 
-O **Louvor JA** é uma plataforma tecnológica de apoio a cerimônias religiosas e comunitárias sem fins lucrativos. O aplicativo viabiliza a sincronização, reprodução e projeção multimídia de:
+O **Louvor JA** é uma plataforma tecnológica de apoio a cerimônias religiosas e comunitárias sem fins lucrativos. O programa viabiliza a sincronização, reprodução e projeção multimídia de:
 
 1. Letras de hinos e canções religiosas (obras literárias e musicais);
 2. Áudios de apoio e playbacks (fonogramas);

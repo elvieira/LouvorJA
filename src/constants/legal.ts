@@ -47,7 +47,7 @@ export const LEGAL_DOCS: Record<"pt" | "es", LegalDocumentLocale> = {
           {
             id: "acceptance",
             title: "1. Aceitação dos Termos",
-            text: "Ao instalar, acessar ou utilizar o aplicativo Louvor JA (versão Flute), você concorda integralmente com estes Termos de Uso e Licença de Usuário Final. Caso não concorde com qualquer cláusula, não utilize o aplicativo.",
+            text: "Ao instalar, acessar ou utilizar o programa Louvor JA (versão Flute), você concorda integralmente com estes Termos de Uso e Licença de Usuário Final. Caso não concorde com qualquer cláusula, não utilize o programa.",
           },
           {
             id: "license_model",
@@ -64,7 +64,7 @@ export const LEGAL_DOCS: Record<"pt" | "es", LegalDocumentLocale> = {
             title: "3. Restrições e Uso Aceitável",
             text: "É estritamente proibido:",
             bullets: [
-              "Comercializar, cobrar pelo software ou revender pacotes com o instalador do aplicativo;",
+              "Comercializar, cobrar pelo software ou revender pacotes com o instalador do programa;",
               "Distribuir versões adulteradas ou empacotadas com anúncios ou malware fora dos canais oficiais;",
               "Remover avisos de direitos autorais ou créditos dos desenvolvedores;",
               "Utilizar o programa para fins ilícitos ou em desconformidade com a legislação aplicável.",
@@ -125,7 +125,7 @@ export const LEGAL_DOCS: Record<"pt" | "es", LegalDocumentLocale> = {
           {
             id: "third_party_content",
             title: "1. Titularidade das Obras Litúrgicas",
-            text: "O Louvor JA atua como organizador e reprodutor de mídias para apoio aos cultos. As letras de hinos, partituras, áudios e traduções bíblicas pertencem aos seus respectivos autores, compositores e editoras (como CPB, Sociedades Bíblicas e gravadoras). O aplicativo não reivindica propriedade sobre essas obras.",
+            text: "O Louvor JA atua como organizador e reprodutor de mídias para apoio aos cultos. As letras de hinos, partituras, áudios e traduções bíblicas pertencem aos seus respectivos autores, compositores e editoras (como CPB, Sociedades Bíblicas e gravadoras). O programa não reivindica propriedade sobre essas obras.",
           },
           {
             id: "legal_exception",
@@ -139,7 +139,7 @@ export const LEGAL_DOCS: Record<"pt" | "es", LegalDocumentLocale> = {
           {
             id: "broadcasts",
             title: "3. Transmissões Online (YouTube / Redes Sociais)",
-            text: "Em caso de transmissão do culto pela internet, a igreja local deve observar as diretrizes de direitos autorais das plataformas hospedeiras (como Content ID do YouTube), sobre as quais o aplicativo não possui ingerência.",
+            text: "Em caso de transmissão do culto pela internet, a igreja local deve observar as diretrizes de direitos autorais das plataformas hospedeiras (como Content ID do YouTube), sobre as quais o programa não possui ingerência.",
           },
           {
             id: "contact_legal",
@@ -166,7 +166,7 @@ export const LEGAL_DOCS: Record<"pt" | "es", LegalDocumentLocale> = {
           {
             id: "acceptance",
             title: "1. Aceptación de los Términos",
-            text: "Al instalar, acceder o utilizar la aplicación Louvor JA (versión Flute), usted acepta plenamente estos Términos de Uso y Licencia de Usuario Final. Si no está de acuerdo con alguna cláusula, no utilice la aplicación.",
+            text: "Al instalar, acceder o utilizar el programa Louvor JA (versión Flute), usted acepta plenamente estos Términos de Uso y Licencia de Usuario Final. Si no está de acuerdo con alguna cláusula, no utilice el programa.",
           },
           {
             id: "license_model",
@@ -183,7 +183,7 @@ export const LEGAL_DOCS: Record<"pt" | "es", LegalDocumentLocale> = {
             title: "3. Restricciones y Uso Aceptable",
             text: "Queda estrictamente prohibido:",
             bullets: [
-              "Comercializar, cobrar por el software o revender paquetes con el instalador de la aplicación;",
+              "Comercializar, cobrar por el software o revender paquetes con el instalador del programa;",
               "Distribuir versiones adulteradas o con publicidad fuera de los canales oficiales;",
               "Eliminar avisos de derechos de autor o créditos;",
               "Utilizar el programa para fines ilícitos o en desacuerdo con la legislación aplicable.",
@@ -217,7 +217,7 @@ export const LEGAL_DOCS: Record<"pt" | "es", LegalDocumentLocale> = {
             text: "Para garantizar la estabilidad del software e identificar errores técnicos con agilidad, cuando está habilitada, la telemetría transmite parámetros técnicos y anónimos:",
             bullets: [
               "Identificador de instalación anónimo (UUID generado aleatoriamente en la máquina, sin vínculo a personas);",
-              "Información del sistema: versión del SO, arquitectura (x64/arm64), versión de la app e idioma;",
+              "Información del sistema: versión del SO, arquitectura (x64/arm64), versión del programa e idioma;",
               "Hardware de proyección: cantidad de monitores y resolución de pantalla (para optimizar la compatibilidad multipantalla);",
               "Métricas litúrgicas agregadas: himnos reproducidos, diapositivas mostradas, tiempo de reproducción y causa de detención;",
               "Informes técnicos de error (crash logs anónimos) para corrección proactiva de fallas.",
@@ -244,7 +244,7 @@ export const LEGAL_DOCS: Record<"pt" | "es", LegalDocumentLocale> = {
           {
             id: "third_party_content",
             title: "1. Titularidad de los Contenidos Litúrgicos",
-            text: "Louvor JA actúa como organizador y reproductor de medios para cultos. Las letras de himnos, partituras, audios y traducciones bíblicas pertenecen a sus respectivos autores y editoriales religiosas. La aplicación no reclama propiedad sobre tales obras.",
+            text: "Louvor JA actúa como organizador y reproductor de medios para cultos. Las letras de himnos, partituras, audios y traducciones bíblicas pertenecen a sus respectivos autores y editoriales religiosas. El programa no reclama propiedad sobre tales obras.",
           },
           {
             id: "legal_exception",

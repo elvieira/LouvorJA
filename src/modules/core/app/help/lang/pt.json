@@ -50,7 +50,7 @@
       "settings": "Configurações"
     },
     "intro": {
-      "p1": "Bem-vindo ao <strong>Louvor JA</strong>! Este aplicativo foi construído para tornar o momento de louvor mais dinâmico, rápido e confiável, reunindo tudo o que você precisa em um único lugar.",
+      "p1": "Bem-vindo ao <strong>Louvor JA</strong>! Este programa foi construído para tornar o momento de louvor mais dinâmico, rápido e confiável, reunindo tudo o que você precisa em um único lugar.",
       "p2": "Com o Louvor JA, você tem acesso aos hinários completos (1996 e 2022), uma ampla biblioteca de músicas de diversos álbuns e coletâneas, integração com a Bíblia Sagrada, e ferramentas poderosas para organização da liturgia do culto. Tudo isso podendo ser transmitido não apenas para a tela da igreja, mas também diretamente para o seu software de transmissão (como OBS ou VMIX).",
       "p3": "Neste manual de uso, detalhamos como aproveitar ao máximo cada funcionalidade do programa. Utilize o menu lateral para navegar entre os tópicos ou a barra de pesquisa superior para ir direto ao que procura.",
       "modules_overview_title": "Principais Módulos do Sistema",
@@ -68,7 +68,7 @@
       "mod_custom_title": "Coletânea Personalizada",
       "mod_custom_desc": "Criação de coletâneas próprias da igreja, adição de arquivos do computador e acesso ao Editor de Música.",
       "player_preview_title": "Exemplo visual: Barra de Controle e Player Inferior",
-      "player_preview_desc": "Sempre presente no rodapé do aplicativo para comandar a reprodução e áudio a partir de qualquer tela:",
+      "player_preview_desc": "Sempre presente no rodapé do programa para comandar a reprodução e áudio a partir de qualquer tela:",
       "player_mock_title": "Nós Te Adoramos",
       "player_mock_subtitle": "17 - Hinário Adventista 1996",
       "player_legend_info": "Identificação da faixa atual",
@@ -78,7 +78,7 @@
       "tip_desc": "Se você está começando agora, recomendamos que explore primeiro a aba de <strong>Músicas e Hinos</strong> para entender como buscar e projetar o conteúdo básico, e em seguida confira a <strong>Liturgia</strong> para aprender a organizar o seu programa!"
     },
     "shortcuts": {
-      "intro": "Agilize o uso do aplicativo utilizando as teclas de atalho mapeadas. Abaixo, você confere as combinações disponíveis para cada módulo do sistema.",
+      "intro": "Agilize o uso do programa utilizando as teclas de atalho mapeadas. Abaixo, você confere as combinações disponíveis para cada módulo do sistema.",
       "or": "ou",
       "os_platform_note": "A tecla Ctrl é utilizada no Windows e Linux, enquanto no macOS utiliza-se a tecla Command (⌘).",
       "os_badge_mac": "Exibindo atalhos para macOS (tecla Command ⌘). No Windows utilize Ctrl.",
@@ -335,7 +335,7 @@
       "preview_notes_sample_line4": "Tema do Sermão: 'A Promessa da Graça Redentora'"
     },
     "custom_collection": {
-      "intro": "O módulo <strong>Coletânea Personalizada</strong> permite criar suas próprias pastas temáticas de músicas, organizando arquivos locais do computador ou agrupando canções já presentes no acervo oficial do aplicativo.",
+      "intro": "O módulo <strong>Coletânea Personalizada</strong> permite criar suas próprias pastas temáticas de músicas, organizando arquivos locais do computador ou agrupando canções já presentes no acervo oficial do programa.",
       "create_title": "Criação de Coletâneas",
       "create_p1": "O assistente de nova coletânea guia a montagem em duas etapas simples:",
       "step_1_title": "<strong>Passo 1 (Nome e Imagem de Capa):</strong>",
@@ -529,7 +529,7 @@
     "sync": {
       "intro": "O Louvor JA foi desenvolvido sob a filosofia <strong>Off-line First</strong>, garantindo máxima estabilidade e total independência de conexão com a internet durante os cultos. A <strong>Biblioteca Local</strong> é o painel central onde você gerencia as coletâneas baixadas no seu computador, acompanha o consumo de espaço em disco e atualiza o banco de dados oficial.",
       "access_title": "Acesso e Indicador de Download",
-      "access_desc": "Você pode abrir a Biblioteca Local a qualquer momento clicando no botão <strong>\"Biblioteca Local\"</strong> no rodapé da barra lateral esquerda. Quando houver algum download de mídia em andamento, o ícone da barra lateral exibe uma <strong>animação giratória com seta</strong>, permitindo acompanhar que o aplicativo está recebendo arquivos em segundo plano.",
+      "access_desc": "Você pode abrir a Biblioteca Local a qualquer momento clicando no botão <strong>\"Biblioteca Local\"</strong> no rodapé da barra lateral esquerda. Quando houver algum download de mídia em andamento, o ícone da barra lateral exibe uma <strong>animação giratória com seta</strong>, permitindo acompanhar que o programa está recebendo arquivos em segundo plano.",
       "storage_title": "Monitoramento de Espaço em Disco",
       "storage_desc": "No topo do módulo, o programa exibe o tamanho total de armazenamento ocupado por todas as músicas, capas e mídias no computador (ex: <em>\"Ocupando 1.2 GB no disco\"</em>), facilitando o gerenciamento do espaço do seu dispositivo.",
       "collections_title": "Download e Gerenciamento de Coletâneas",
@@ -544,7 +544,7 @@
       "batch_all_downloaded": "<strong>Todas Baixadas:</strong> Quando todo o acervo estiver completo no disco, o botão passa a exibir um selo verde de confirmação.",
       "batch_cancel_all": "<strong>Cancelar Todas:</strong> Interrompe a fila de downloads ativos imediatamente caso necessário.",
       "db_update_title": "Atualização do Banco de Dados",
-      "db_update_desc": "O aplicativo compara automaticamente a versão local do banco de dados com a versão do servidor:",
+      "db_update_desc": "O programa compara automaticamente a versão local do banco de dados com a versão do servidor:",
       "db_version_check": "Exibe a versão atual instalada no computador e a versão remota disponível (ex: <em>Atual: v3 / Nova: v4</em>).",
       "db_update_btn": "Clique em <strong>\"Atualizar Banco de Dados\"</strong> para sincronizar instantaneamente novas canções cadastradas, novos hinários, versões bíblicas e correções de letras sem afetar suas preferências pessoais.",
       "import_legacy_title": "Importação do Louvor JA Clássico",
@@ -554,7 +554,7 @@
       "preview_sync_legacy_title": "Exemplo Visual: Assistente de Importação do Louvor JA Clássico"
     },
     "settings": {
-      "title": "Configurações do Aplicativo",
+      "title": "Configurações do Programa",
       "p1": "A tela de Configurações permite personalizar o comportamento e a aparência do Louvor JA. Acesse-a através do módulo inferior na barra lateral.",
       "appearance": "<strong>Aparência & Temas:</strong> Ajuste o tema visual (claro/escuro) e as cores de destaque da interface.",
       "projection_monitor": "<strong>Telas & Monitores:</strong> Defina quais telas serão utilizadas para projetar as letras/vídeos e configure monitores de retorno para o palco.",
@@ -569,7 +569,7 @@
       "interactive_text_p": "O recurso de Texto Interativo permitirá criar textos editáveis para serem projetados em tempo real (como avisos urgentes ou placas de carro). Atualmente este recurso está em desenvolvimento para uma futura atualização."
     },
     "online_collection": {
-      "intro": "A <strong>Coletânea Online</strong> amplia o acervo do Louvor JA conectando o aplicativo ao rico universo de louvores disponíveis na web e no YouTube. O módulo é dividido em duas frentes complementares: <strong>Vídeos Online</strong> (com canais e seleções oficiais de ministérios de louvor adventistas) e <strong>Vídeos Personalizados</strong> (onde você adiciona seus próprios links e playlists favoritas para tocar e projetar no culto).",
+      "intro": "A <strong>Coletânea Online</strong> amplia o acervo do Louvor JA conectando o programa ao rico universo de louvores disponíveis na web e no YouTube. O módulo é dividido em duas frentes complementares: <strong>Vídeos Online</strong> (com canais e seleções oficiais de ministérios de louvor adventistas) e <strong>Vídeos Personalizados</strong> (onde você adiciona seus próprios links e playlists favoritas para tocar e projetar no culto).",
       "online_videos_title": "Vídeos Online (Canais e Playlists Oficiais)",
       "online_videos_desc": "Navegue com facilidade por canais e ministérios de louvor consagrados cadastrados no sistema, como <em>Minha Vida É Uma Viagem</em>, <em>MENOS UM</em>, <em>Cata Vento</em>, <em>Casa Publicadora Brasileira</em> e outros:",
       "online_channels": "<strong>Canais em Cartões:</strong> A tela inicial exibe os canais com suas identidades visuais. Clique em qualquer canal para acessar suas respectivas playlists e produções.",
@@ -615,7 +615,7 @@
       "toggle_access": "<strong>Abrir e Fechar a Fila:</strong> Na barra inferior do player, clique no ícone da fila (<i class=\"mdi mdi-playlist-play text-primary\"></i>) para expandir o painel retrátil a partir do rodapé. Para fechar, clique no botão de recolher (<i class=\"mdi mdi-chevron-down text-primary\"></i>) no topo do painel ou no próprio botão do player.",
       "auto_collapse": "<strong>Auto-recolhimento Inteligente:</strong> Ao navegar para qualquer outro módulo através do menu lateral (como Bíblia, Liturgia ou Editor), o painel da fila se recolhe automaticamente para manter seu espaço de trabalho livre e organizado.",
       "add_title": "Adicionando Músicas à Fila",
-      "add_desc": "Você pode enviar qualquer canção para a fila a partir de múltiplos locais do aplicativo:",
+      "add_desc": "Você pode enviar qualquer canção para a fila a partir de múltiplos locais do programa:",
       "add_from_anywhere": "<strong>Menu de Opções das Faixas:</strong> Em qualquer lista ou tabela de músicas (Hinário Adventista 1996, Hinário 2022, Álbuns e Coletâneas Personalizadas), clique no menu de 3 pontinhos (<i class=\"mdi mdi-dots-vertical\"></i>) ao lado da música e selecione <strong>\"Adicionar à fila\"</strong>.",
       "modes_explanation": "<strong>Cantado ou Playback:</strong> Você escolhe se a música entrará na fila em versão cantada ou instrumental (playback). A fila exibe selos coloridos destacados para rápida identificação: <span class=\"text-info font-weight-bold\">CT</span> para Cantado e <span class=\"text-success font-weight-bold\">PB</span> para Playback.",
       "reorder_title": "Reorganização e Execução Dinâmica",
@@ -667,7 +667,7 @@
     "email_placeholder": "Ex: joao@email.com",
     "category": "Tipo de Mensagem",
     "categories": {
-      "doubt": "Dúvida sobre o aplicativo",
+      "doubt": "Dúvida sobre o programa",
       "suggestion": "Sugestão de melhoria",
       "bug": "Problema ou erro encontrado",
       "other": "Outro assunto"
@@ -717,7 +717,7 @@
     "warns_count": "{count} avisos",
     "copy_full_report": "Copiar Relatório Completo",
     "categories": {
-      "app": "Aplicativo & Ambiente",
+      "app": "Programa & Ambiente",
       "os": "Sistema Operacional",
       "cpu": "Processador & CPU",
       "memory": "Memória RAM",
@@ -727,7 +727,7 @@
       "battery": "Bateria & Energia"
     },
     "labels": {
-      "version": "Versão do App",
+      "version": "Versão do Programa",
       "electron": "Electron",
       "chrome": "Chromium",
       "node": "Node.js",

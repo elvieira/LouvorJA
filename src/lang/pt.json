@@ -52,7 +52,7 @@
         "yes": "Sim",
         "no": "Não",
         "wait": "Aguarde...",
-        "close_app_title": "Encerrar Aplicativo?",
+        "close_app_title": "Encerrar Programa?",
         "close_app_text": "Existe uma mídia ativa ou projeção em andamento. Deseja realmente sair?",
         "msg_lang_title": "Aviso de Idioma",
         "msg_lang_download": "Ao alterar o idioma, é necessário baixar o banco de dados e configurações do novo idioma. Deseja prosseguir?",

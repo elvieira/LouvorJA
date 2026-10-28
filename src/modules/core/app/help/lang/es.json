@@ -50,7 +50,7 @@
       "settings": "Configuraciones"
     },
     "intro": {
-      "p1": "¡Bienvenido a <strong>Louvor JA</strong>! Esta aplicación fue creada para hacer los momentos de alabanza más dinámicos, rápidos y confiables, reuniendo todo lo que necesitas en un solo lugar.",
+      "p1": "¡Bienvenido a <strong>Louvor JA</strong>! Este programa fue creado para hacer los momentos de alabanza más dinámicos, rápidos y confiables, reuniendo todo lo que necesitas en un solo lugar.",
       "p2": "Con Louvor JA, tienes acceso a los himnarios completos, una amplia biblioteca de canciones de diversos álbumes y colecciones, integración con la Santa Biblia y potentes herramientas para organizar la liturgia del culto. Todo esto pudiendo proyectarse no solo a la pantalla del templo, sino también directamente a tu software de transmisión (como OBS o vMix).",
       "p3": "En este manual de uso, explicamos detalladamente cómo aprovechar al máximo cada función del programa. Utiliza el menú lateral para navegar entre los temas o la barra de búsqueda superior para ir directo a lo que buscas.",
       "modules_overview_title": "Principales Módulos del Sistema",
@@ -68,7 +68,7 @@
       "mod_custom_title": "Colección Personalizada",
       "mod_custom_desc": "Creación de colecciones locales, incorporación de archivos propios y acceso al Editor de Música.",
       "player_preview_title": "Ejemplo visual: Barra de Control y Reproductor Inferior",
-      "player_preview_desc": "Siempre presente en el pie de página de la aplicación para comandar audio y reproducción desde cualquier ventana:",
+      "player_preview_desc": "Siempre presente en el pie de página del programa para comandar audio y reproducción desde cualquier ventana:",
       "player_mock_title": "Te Alabamos, Señor",
       "player_mock_subtitle": "17 - Himnario Adventista 1996",
       "player_legend_info": "Identificación de la canción actual",
@@ -78,7 +78,7 @@
       "tip_desc": "Si estás comenzando, te recomendamos explorar primero la sección de <strong>Música e Himnos</strong> para aprender a buscar y proyectar el contenido básico, ¡y luego revisar <strong>Liturgia</strong> para aprender a estructurar tu programa!"
     },
     "shortcuts": {
-      "intro": "Agiliza el uso de la aplicación utilizando los atajos de teclado asignados. A continuación, puedes ver las combinaciones disponibles para cada módulo del sistema.",
+      "intro": "Agiliza el uso del programa utilizando los atajos de teclado asignados. A continuación, puedes ver las combinaciones disponibles para cada módulo del sistema.",
       "or": "o",
       "os_platform_note": "La tecla Ctrl se utiliza en Windows y Linux, mientras que en macOS se utiliza la tecla Command (⌘).",
       "os_badge_mac": "Mostrando atajos para macOS (tecla Command ⌘). En Windows use Ctrl.",
@@ -335,7 +335,7 @@
       "preview_notes_sample_line4": "Tema del Sermón: 'La Promesa de la Gracia Redentora'"
     },
     "custom_collection": {
-      "intro": "El módulo <strong>Colección Personalizada</strong> te permite crear tus propias carpetas temáticas de música, organizando archivos locales de tu computadora o reuniendo canciones ya presentes en el acervo oficial de la aplicación.",
+      "intro": "El módulo <strong>Colección Personalizada</strong> te permite crear tus propias carpetas temáticas de música, organizando archivos locales de tu computadora o reuniendo canciones ya presentes en el acervo oficial del programa.",
       "create_title": "Creación de Colecciones",
       "create_p1": "El asistente de nueva colección guía el proceso en dos sencillos pasos:",
       "step_1_title": "<strong>Paso 1 (Nombre e Imagen de Portada):</strong>",
@@ -544,7 +544,7 @@
       "batch_all_downloaded": "<strong>Todas Descargadas:</strong> Cuando todo el acervo está guardado en el disco, el botón muestra una insignia verde de confirmación.",
       "batch_cancel_all": "<strong>Cancelar Todas:</strong> Detiene la cola de descargas activas inmediatamente cuando sea necesario.",
       "db_update_title": "Actualización de la Base de Datos",
-      "db_update_desc": "La aplicación compara automáticamente la versión local de la base de datos con la versión disponible en el servidor:",
+      "db_update_desc": "El programa compara automáticamente la versión local de la base de datos con la versión disponible en el servidor:",
       "db_version_check": "Muestra la versión instalada en la computadora y la versión remota disponible (ej: <em>Actual: v3 / Nueva: v4</em>).",
       "db_update_btn": "Haz clic en <strong>\"Actualizar Base de Datos\"</strong> para sincronizar de inmediato nuevas pistas, himnos, versiones bíblicas y correcciones sin alterar tus preferencias.",
       "import_legacy_title": "Importación de Louvor JA Clásico",
@@ -554,7 +554,7 @@
       "preview_sync_legacy_title": "Ejemplo Visual: Asistente de Importación de Louvor JA Clásico"
     },
     "settings": {
-      "title": "Configuraciones de la Aplicación",
+      "title": "Configuraciones del Programa",
       "p1": "La pantalla de Configuraciones permite personalizar el comportamiento y la apariencia de Louvor JA. Accede a ella a través del módulo inferior en la barra lateral.",
       "appearance": "<strong>Apariencia y Temas:</strong> Ajusta el tema visual (claro/oscuro) y los colores principales de la interfaz.",
       "projection_monitor": "<strong>Pantallas y Monitores:</strong> Define qué pantallas se utilizarán para proyectar las canciones/videos y configura pantallas de retorno para el escenario.",
@@ -569,7 +569,7 @@
       "interactive_text_p": "La función de Texto Interactivo permitirá crear textos editables para ser proyectados en tiempo real (como avisos urgentes o números de matrícula). Actualmente esta función está en desarrollo para una futura actualización."
     },
     "online_collection": {
-      "intro": "La <strong>Colección Online</strong> amplía el repertorio de Louvor JA conectando la aplicación al extenso contenido de alabanzas disponible en la web y en YouTube. El módulo se divide en dos áreas complementarias: <strong>Videos Online</strong> (con canales y selecciones oficiales de ministerios adventistas) y <strong>Videos Personalizados</strong> (donde agregas tus propios enlaces y playlists favoritas para reproducir y proyectar en el culto).",
+      "intro": "La <strong>Colección Online</strong> amplía el repertorio de Louvor JA conectando el programa al extenso contenido de alabanzas disponible en la web y en YouTube. El módulo se divide en dos áreas complementarias: <strong>Videos Online</strong> (con canales y selecciones oficiales de ministerios adventistas) y <strong>Videos Personalizados</strong> (donde agregas tus propios enlaces y playlists favoritas para reproducir y proyectar en el culto).",
       "online_videos_title": "Videos Online (Canales y Playlists Oficiales)",
       "online_videos_desc": "Navega con facilidad por canales y ministerios de música reconocidos disponibles en el sistema, como <em>Minha Vida É Uma Viagem</em>, <em>MENOS UM</em>, <em>Cata Vento</em>, <em>Casa Publicadora Brasileña</em> y otros:",
       "online_channels": "<strong>Canales en Tarjetas:</strong> La pantalla inicial muestra los canales con su identidad visual. Haz clic en cualquier canal para acceder a sus playlists y videos.",
@@ -615,7 +615,7 @@
       "toggle_access": "<strong>Abrir y Cerrar la Cola:</strong> En la barra inferior del reproductor, haz clic en el ícono de cola (<i class=\"mdi mdi-playlist-play text-primary\"></i>) para desplegar el panel retráctil. Para cerrarlo, haz clic en el botón de contraer (<i class=\"mdi mdi-chevron-down text-primary\"></i>) o en el propio botón del reproductor.",
       "auto_collapse": "<strong>Cierre Automático Inteligente:</strong> Al navegar a cualquier otro módulo en la barra lateral (como Biblia, Liturgia o Editor), el panel de la cola se repliega automáticamente para mantener limpia tu área de trabajo.",
       "add_title": "Agregando Canciones a la Cola",
-      "add_desc": "Puedes enviar cualquier canción a la cola desde múltiples secciones de la aplicación:",
+      "add_desc": "Puedes enviar cualquier canción a la cola desde múltiples secciones del programa:",
       "add_from_anywhere": "<strong>Menú de Opciones de Canciones:</strong> En cualquier lista o tabla de temas (Himnario 1996, Himnario Nuevo, Álbumes y Colecciones Personalizadas), haz clic en el menú de 3 puntos (<i class=\"mdi mdi-dots-vertical\"></i>) y selecciona <strong>\"Agregar a la cola\"</strong>.",
       "modes_explanation": "<strong>Cantado o Pista (Playback):</strong> Puedes elegir si el tema ingresa a la cola en versión cantada o instrumental. La cola muestra distintivos de color destacados para rápida identificación: <span class=\"text-info font-weight-bold\">CT</span> para Cantado y <span class=\"text-success font-weight-bold\">PB</span> para Playback/Pista.",
       "reorder_title": "Reorganización Dinámica y Control",
@@ -667,7 +667,7 @@
     "email_placeholder": "Ej: juan@email.com",
     "category": "Tipo de Mensaje",
     "categories": {
-      "doubt": "Duda sobre la aplicación",
+      "doubt": "Duda sobre el programa",
       "suggestion": "Sugerencia de mejora",
       "bug": "Problema o error encontrado",
       "other": "Otro asunto"
@@ -717,7 +717,7 @@
     "warns_count": "{count} avisos",
     "copy_full_report": "Copiar Informe Completo",
     "categories": {
-      "app": "Aplicación y Entorno",
+      "app": "Programa y Entorno",
       "os": "Sistema Operativo",
       "cpu": "Procesador y CPU",
       "memory": "Memoria RAM",
@@ -727,7 +727,7 @@
       "battery": "Batería y Energía"
     },
     "labels": {
-      "version": "Versión de la App",
+      "version": "Versión del Programa",
       "electron": "Electron",
       "chrome": "Chromium",
       "node": "Node.js",

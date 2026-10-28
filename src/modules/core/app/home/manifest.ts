@@ -7,7 +7,7 @@ const manifest: ModuleManifest = {
   id: "home",
   name: "Página Inicial",
   version: "1.0.0",
-  description: "Página Inicial (Dashboard). Visão geral do aplicativo, exibindo coletâneas recentes, atalhos rápidos e músicas mais tocadas.",
+  description: "Página Inicial (Dashboard). Visão geral do programa, exibindo coletâneas recentes, atalhos rápidos e músicas mais tocadas.",
   author: "elvieira",
   category: null,
   showInMainMenu: false,
