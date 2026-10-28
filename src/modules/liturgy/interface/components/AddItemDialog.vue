@@ -728,20 +728,40 @@
                   </div>
                 </div>
                 <div class="d-flex align-center flex-shrink-0 ml-3" style="gap: 4px;">
-                  <v-btn
-                    icon
-                    size="small"
-                    variant="text"
-                    color="primary"
-                    @click="selectUnifiedFile"
-                  >
-                    <v-icon size="18">
-                      mdi-folder-open-outline
-                    </v-icon>
-                    <v-tooltip activator="parent" location="top">
-                      {{ t('actions.change') }}
-                    </v-tooltip>
-                  </v-btn>
+                  <v-menu location="bottom end" :offset="4">
+                    <template #activator="{ props: menuProps }">
+                      <v-btn
+                        v-bind="menuProps"
+                        icon
+                        size="small"
+                        variant="text"
+                        color="primary"
+                        :title="t('actions.change')"
+                      >
+                        <v-icon size="18">
+                          mdi-folder-open-outline
+                        </v-icon>
+                      </v-btn>
+                    </template>
+                    <v-list density="compact" rounded="lg" elevation="4">
+                      <v-list-item
+                        prepend-icon="mdi-file-outline"
+                        @click="selectUnifiedFile"
+                      >
+                        <v-list-item-title class="text-body-2">
+                          {{ t('fields.select_file') }}
+                        </v-list-item-title>
+                      </v-list-item>
+                      <v-list-item
+                        prepend-icon="mdi-folder-outline"
+                        @click="selectFolder"
+                      >
+                        <v-list-item-title class="text-body-2">
+                          {{ t('fields.select_folder') }}
+                        </v-list-item-title>
+                      </v-list-item>
+                    </v-list>
+                  </v-menu>
                   <v-btn
                     icon
                     size="small"
@@ -770,11 +790,24 @@
                   </v-icon>
                 </div>
                 <div class="dropzone-title">
-                  {{ t('fields.select_file') || 'Escolher Arquivo ou Pasta' }}
+                  {{ t('fields.select_file') || 'Escolher Arquivo' }}
                 </div>
-                <div class="dropzone-subtitle">
+                <div class="dropzone-subtitle mb-2">
                   {{ t('type_descriptions.file') }}
                 </div>
+                <v-btn
+                  size="small"
+                  variant="tonal"
+                  color="primary"
+                  class="text-none font-weight-medium px-4 mt-1"
+                  rounded="lg"
+                  @click.stop="selectFolder"
+                >
+                  <v-icon start size="16">
+                    mdi-folder-outline
+                  </v-icon>
+                  {{ t('fields.or_select_folder') || 'Ou selecionar uma pasta...' }}
+                </v-btn>
               </div>
             </div>
 
@@ -1540,8 +1573,8 @@ export default defineComponent({
     async selectUnifiedFile() {
       if (window.electronAPI?.openFileDialog) {
         const filePath = await window.electronAPI.openFileDialog({
-          title: this.t("fields.select_file") || "Selecionar Arquivo ou Pasta",
-          properties: ["openFile", "openDirectory"],
+          title: this.t("fields.select_file") || "Selecionar Arquivo",
+          properties: ["openFile"],
           filters: [
             { name: "Todos os Arquivos e Mídias", extensions: ["*"] },
             { name: "Mídias (Áudio / Vídeo)", extensions: ["mp4", "mkv", "avi", "mov", "wmv", "webm", "mp3", "opus", "wav", "flac", "aac", "ogg", "wma", "m4a"] },
@@ -1552,6 +1585,22 @@ export default defineComponent({
         });
         if (filePath) {
           const pathStr = filePath as string;
+          this.addForm.filePath = pathStr;
+          if (!this.addForm.name) {
+            const info = getLiturgyFileInfo(pathStr);
+            this.addForm.name = info.fileName;
+          }
+        }
+      }
+    },
+    async selectFolder() {
+      if (window.electronAPI?.openFileDialog) {
+        const folderPath = await window.electronAPI.openFileDialog({
+          title: this.t("fields.select_folder") || "Selecionar Pasta",
+          properties: ["openDirectory"],
+        });
+        if (folderPath) {
+          const pathStr = folderPath as string;
           this.addForm.filePath = pathStr;
           if (!this.addForm.name) {
             const info = getLiturgyFileInfo(pathStr);

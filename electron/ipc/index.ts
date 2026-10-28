@@ -357,12 +357,20 @@ export function registerIpcHandlers() {
   ipcMain.handle("open-file-dialog", async (event, options: Electron.OpenDialogOptions) => {
     const win = BrowserWindow.fromWebContents(event.sender);
     if (!win) return null;
+
+    let properties = options?.properties || ["openFile"];
+    // On Windows and Linux, openFile and openDirectory cannot be used simultaneously in native dialogs.
+    // If both are specified, prioritize openFile so regular files can be chosen.
+    if (process.platform !== "darwin" && properties.includes("openFile") && properties.includes("openDirectory")) {
+      properties = properties.filter((p) => p !== "openDirectory");
+    }
+
     const result = await dialog.showOpenDialog(win, {
       title: options?.title || "Selecionar Arquivo",
       filters: options?.filters || [
         { name: "Vídeos", extensions: ["mp4", "mkv", "avi", "mov", "wmv", "webm"] },
       ],
-      properties: options?.properties || ["openFile"],
+      properties,
     });
     if (result.canceled) return null;
     return result.filePaths[0];

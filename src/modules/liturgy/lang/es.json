@@ -49,6 +49,8 @@
     "select_music": "Seleccionar Música",
     "select_verse": "Seleccionar Versículo",
     "select_file": "Seleccionar Archivo",
+    "select_folder": "Seleccionar Carpeta",
+    "or_select_folder": "O seleccionar una carpeta...",
     "book": "Libro",
     "chapter": "Capítulo",
     "verses": "Versículos",
