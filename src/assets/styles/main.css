@@ -191,7 +191,25 @@ img, a {
     transition: all 0.15s ease !important;
 }
 
-/* Modo Escuro (Dark Mode) */
+/* Tooltips no Player de Vídeo e Áudio (Sempre Escuros) */
+.player-tooltip,
+.v-overlay.v-tooltip .player-tooltip,
+.v-overlay-container .v-tooltip .player-tooltip,
+.v-overlay-container .v-overlay.v-tooltip .player-tooltip {
+    background: #16243a !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(52, 74, 107, 0.6) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5) !important;
+}
+
+.player-tooltip *,
+.v-overlay.v-tooltip .player-tooltip *,
+.v-overlay-container .v-tooltip .player-tooltip *,
+.v-overlay-container .v-overlay.v-tooltip .player-tooltip * {
+    color: #ffffff !important;
+}
+
+/* Modo Escuro (Dark Mode) - Tooltips Globais */
 .v-theme--dark.v-tooltip .v-overlay__content,
 .v-overlay.v-theme--dark.v-tooltip .v-overlay__content,
 .v-overlay-container .v-overlay.v-theme--dark.v-tooltip .v-overlay__content,
@@ -201,7 +219,9 @@ img, a {
 .v-overlay-container .v-theme--dark.v-tooltip .modern-glass-menu,
 .v-overlay.v-theme--dark .sync-tooltip,
 .v-overlay-container .v-overlay.v-theme--dark .sync-tooltip,
-:root[data-theme="dark"] .sync-tooltip {
+:root[data-theme="dark"] .sync-tooltip,
+:root[data-theme="dark"] .v-tooltip .v-overlay__content,
+:root[data-theme="dark"] .v-tooltip .modern-glass-menu {
     background: #16243a !important;
     color: #ffffff !important;
     border: 1px solid rgba(52, 74, 107, 0.6) !important;
@@ -211,9 +231,18 @@ img, a {
 .v-theme--dark.v-tooltip .v-overlay__content *,
 .v-overlay.v-theme--dark.v-tooltip .v-overlay__content *,
 .v-overlay-container .v-overlay.v-theme--dark.v-tooltip .v-overlay__content *,
+.v-overlay-container .v-overlay.v-theme--dark .v-tooltip .v-overlay__content *,
 .v-overlay.v-theme--dark .sync-tooltip *,
-.v-overlay-container .v-overlay.v-theme--dark .sync-tooltip * {
+.v-overlay-container .v-overlay.v-theme--dark .sync-tooltip *,
+:root[data-theme="dark"] .v-tooltip .v-overlay__content *,
+:root[data-theme="dark"] .v-tooltip .modern-glass-menu * {
     color: #ffffff !important;
+}
+
+/* Garante que o ícone do botão play circular seja sempre escuro sobre o fundo branco */
+.play-pill-btn .v-icon,
+.play-pill-btn i {
+    color: #0b1120 !important;
 }
 
 /* Modo Claro (Light Mode) */

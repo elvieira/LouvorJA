@@ -43,7 +43,8 @@
                 activator="parent"
                 location="top"
                 open-delay="250"
-                content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+                theme="dark"
+                content-class="player-tooltip modern-glass-menu elevation-0 font-weight-medium text-white"
               >
                 {{ t('controls.rewind_10') || 'Retroceder 10s' }}
               </v-tooltip>
@@ -52,7 +53,6 @@
             <button
               type="button"
               class="play-pill-btn mx-2"
-              :title="isPaused ? t('controls.play') : t('controls.pause')"
               @click="$emit('toggle-play')"
             >
               <v-icon
@@ -66,7 +66,8 @@
                 activator="parent"
                 location="top"
                 open-delay="250"
-                content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+                theme="dark"
+                content-class="player-tooltip modern-glass-menu elevation-0 font-weight-medium text-white"
               >
                 {{ isPaused ? t('controls.play') : t('controls.pause') }}
               </v-tooltip>
@@ -87,7 +88,8 @@
                 activator="parent"
                 location="top"
                 open-delay="250"
-                content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+                theme="dark"
+                content-class="player-tooltip modern-glass-menu elevation-0 font-weight-medium text-white"
               >
                 {{ t('controls.forward_10') || 'Avançar 10s' }}
               </v-tooltip>
@@ -134,14 +136,14 @@
                   type="button"
                   v-bind="menuProps"
                   class="speed-pill-btn mx-1"
-                  :title="t('controls.playback_rate') || 'Velocidade'"
                 >
                   <span>{{ currentSpeedLabel }}</span>
                   <v-tooltip
                     activator="parent"
                     location="top"
                     open-delay="250"
-                    content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+                    theme="dark"
+                    content-class="player-tooltip modern-glass-menu elevation-0 font-weight-medium text-white"
                   >
                     {{ t('controls.playback_rate') || 'Velocidade' }}: {{ currentSpeedLabel }}
                   </v-tooltip>
@@ -191,7 +193,8 @@
                   activator="parent"
                   location="top"
                   open-delay="250"
-                  content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+                  theme="dark"
+                  content-class="player-tooltip modern-glass-menu elevation-0 font-weight-medium text-white"
                 >
                   {{ volume === 0 ? (t('controls.unmute') || 'Desmutar') : (t('controls.mute') || 'Mutar') }}
                 </v-tooltip>
@@ -231,7 +234,8 @@
                 activator="parent"
                 location="top"
                 open-delay="250"
-                content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+                theme="dark"
+                content-class="player-tooltip modern-glass-menu elevation-0 font-weight-medium text-white"
               >
                 {{ t('controls.exit_fullscreen') }}
               </v-tooltip>
@@ -427,6 +431,10 @@ export default defineComponent({
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
   transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.18s ease;
   flex-shrink: 0;
+
+  .v-icon {
+    color: #0b1120 !important;
+  }
 
   &:hover {
     transform: scale(1.08);

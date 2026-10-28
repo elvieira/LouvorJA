@@ -87,7 +87,6 @@
       <button
         type="button"
         class="play-pill-btn mx-1"
-        :title="media.config.is_paused ? 'Reproduzir' : 'Pausar'"
         @click="play"
       >
         <v-icon
@@ -1049,6 +1048,10 @@ onBeforeUnmount(() => {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.18s ease;
   flex-shrink: 0;
+
+  .v-icon {
+    color: #0b1120 !important;
+  }
 
   &:hover {
     transform: scale(1.08);

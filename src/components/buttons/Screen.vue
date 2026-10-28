@@ -18,7 +18,8 @@
       activator="parent"
       location="top"
       open-delay="300"
-      content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+      theme="dark"
+      content-class="player-tooltip modern-glass-menu elevation-0 font-weight-medium text-white"
     >
       {{ is_selected ? 'Projetando' : 'Projetar' }}
     </v-tooltip>

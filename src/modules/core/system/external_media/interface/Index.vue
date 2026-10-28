@@ -24,6 +24,7 @@
       compact_footer
       size="large"
       eager
+      dark
       class="modern-media-window external-media-window"
       @close="closeMedia()"
       @minimize="minimizeMedia()"
@@ -43,7 +44,8 @@
               activator="parent"
               location="top"
               open-delay="300"
-              content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+              theme="dark"
+              content-class="player-tooltip modern-glass-menu elevation-0 font-weight-medium text-white"
             >
               {{ t('controls.minimize') }}
             </v-tooltip>
@@ -61,7 +63,8 @@
               activator="parent"
               location="top"
               open-delay="300"
-              content-class="modern-glass-menu elevation-0 font-weight-medium text-white"
+              theme="dark"
+              content-class="player-tooltip modern-glass-menu elevation-0 font-weight-medium text-white"
             >
               {{ t('controls.close') }}
             </v-tooltip>

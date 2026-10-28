@@ -5,7 +5,7 @@
     persistent
     :width="w_width"
     :height="w_height"
-    :theme="dark ? 'dark' : ''"
+    :theme="dark ? 'dark' : undefined"
     attach=".v-main"
     contained
     :eager="eager"
