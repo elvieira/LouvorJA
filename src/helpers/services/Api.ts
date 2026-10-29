@@ -63,3 +63,21 @@ export async function fetchWithFallback(
     throw err;
   }
 }
+
+/**
+ * Extrai a versão remota do banco de dados a partir da resposta de /params?type=env.
+ * Prioriza `https_db_version` (usado para os bancos SQLite HTTPS modernos no desktop) e
+ * mantém fallback para `db_version` caso https_db_version não esteja presente.
+ */
+export function parseDbVersionFromEnv(text: string): number {
+  if (!text) return 0;
+  const httpsMatch = text.match(/https_db_version\s*=\s*(\d+)/i);
+  if (httpsMatch && httpsMatch[1]) {
+    return parseInt(httpsMatch[1], 10);
+  }
+  const dbMatch = text.match(/^db_version\s*=\s*(\d+)/mi) || text.match(/db_version\s*=\s*(\d+)/i);
+  if (dbMatch && dbMatch[1]) {
+    return parseInt(dbMatch[1], 10);
+  }
+  return 0;
+}

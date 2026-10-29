@@ -23,7 +23,7 @@ import AppTitlebar from "@/layout/Titlebar.vue";
 import AppAlert from "@/layout/Alert.vue";
 import AppSnackbar from "@/layout/Snackbar.vue";
 import { openFavorites } from "@/helpers/services/Favorites";
-import { fetchWithFallback } from "@/helpers/services/Api";
+import { fetchWithFallback, parseDbVersionFromEnv } from "@/helpers/services/Api";
 
 
 export default {
@@ -197,9 +197,8 @@ export default {
           try {
             const response = await fetchWithFallback("/params?type=env");
             const text = await response.text();
-            const dbVersionMatch = text.match(/db_version=(\d+)/);
-            if (dbVersionMatch && dbVersionMatch[1]) {
-              const remoteVersion = parseInt(dbVersionMatch[1], 10);
+            const remoteVersion = parseDbVersionFromEnv(text);
+            if (remoteVersion > 0) {
               const localConfig = await window.electronAPI.getLocalDb("config");
               const localVersion = (localConfig?.data?.version_number || localConfig?.version_number || localConfig?.db_version) 
                 ? parseInt(localConfig?.data?.version_number || localConfig?.version_number || localConfig?.db_version, 10) 
