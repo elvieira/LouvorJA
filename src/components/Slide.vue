@@ -19,9 +19,13 @@
       >
         <div v-if="!no_background" class="position-absolute top-0 left-0 w-100 h-100" :style="style_bg(currentSlide)" />
         <div
+          v-if="!no_background && currentSlide.cover"
+          class="position-absolute top-0 left-0 w-100 h-100 cover-vignette-overlay"
+        />
+        <div
           class="position-absolute top-0 left-0 w-100 h-100 d-flex justify-center"
           :class="slideAlignClass"
-          :style="{ padding: `${fontSizePc(4)}px` }"
+          :style="{ padding: `${fontSizePc(4)}px`, zIndex: 2 }"
         >
           <!-- Hero Design Exclusivo para o Título da Música (Cover Slide) -->
           <!-- eslint-disable vue/no-v-html -->
@@ -568,7 +572,7 @@ const style_cover_title = (_slide: any): any => {
     textWrap: "balance" as const,
     overflowWrap: "break-word" as const,
     wordBreak: "normal" as const,
-    textShadow: "0 6px 18px rgba(0, 0, 0, 0.35), 0 2px 4px rgba(0, 0, 0, 0.28)",
+    textShadow: "0 2px 4px rgba(0, 0, 0, 0.7), 0 4px 16px rgba(0, 0, 0, 0.5), 0 8px 32px rgba(0, 0, 0, 0.35)",
   };
 };
 
@@ -1048,5 +1052,18 @@ onUnmounted(() => {
   word-break: normal;
   overflow-wrap: break-word;
   text-wrap: balance;
+}
+
+.cover-vignette-overlay {
+  background: radial-gradient(
+    ellipse 85% 70% at 50% 50%,
+    rgba(0, 0, 0, 0.52) 0%,
+    rgba(0, 0, 0, 0.42) 35%,
+    rgba(0, 0, 0, 0.20) 65%,
+    rgba(0, 0, 0, 0.05) 85%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 1;
 }
 </style>
