@@ -825,12 +825,14 @@ const style_text = (_slide: any): any => {
     };
   }
 
+  const borderStyle = `${Math.max(1.5, fontSizePc(0.35))}px solid rgba(255, 255, 255, 0.85)`;
+
   if (customTextFormat.value) {
     const hasTextBg = customTextBgIntensity.value > 0;
     return {
       ...fixedDims,
       backgroundColor: hasTextBg ? hexToRgba(customTextBgColor.value, customTextBgIntensity.value / 100) : "transparent",
-      border: hasTextBg && customTextBgBorder.value ? "1px solid rgba(255, 255, 255, 0.2)" : "none",
+      border: hasTextBg && customTextBgBorder.value ? borderStyle : "none",
       backdropFilter: hasTextBg ? "blur(12px)" : "none",
       WebkitBackdropFilter: hasTextBg ? "blur(12px)" : "none",
       boxShadow: hasTextBg ? "0 10px 30px rgba(0, 0, 0, 0.3)" : "none",
@@ -849,7 +851,7 @@ const style_text = (_slide: any): any => {
   return {
     ...fixedDims,
     backgroundColor: "rgba(10, 16, 26, 0.52)",
-    border: "1px solid rgba(255, 255, 255, 0.18)",
+    border: customTextBgBorder.value ? borderStyle : "none",
     textAlign: "center" as const,
     textTransform: "uppercase",
     fontSize: `${finalFontSize}px`,
