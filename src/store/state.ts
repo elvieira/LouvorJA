@@ -82,13 +82,16 @@ const state: AppState = {
       title: "module_group.utilities.title",
       modules: [],
     },
-    online_collection: {
-      title: "module_group.online_collection.title",
-      modules: [],
-    },
-    personalized: {
-      title: "module_group.personalized.title",
-      modules: [],
+    special_collections: {
+      title: "module_group.special_collections.title",
+      icon: "mdi-playlist-star",
+      modules: [
+        "custom_collection",
+        "personalized_videos",
+        "online_collection",
+        "music_editor",
+      ],
+      dividers: ["music_editor"],
     },
   },
   menu: {

@@ -244,7 +244,7 @@
                 <kbd class="keycap">Ctrl/ <span class="cmd-symbol">⌘</span></kbd> <span class="shortcut-operator">+</span> <kbd class="keycap">5</kbd>
               </td>
               <td class="desc-cell">
-                {{ t('shortcuts.nav_online') }}
+                {{ t('shortcuts.nav_special_collections') }}
               </td>
             </tr>
             <tr>
@@ -252,7 +252,7 @@
                 <kbd class="keycap">Ctrl/ <span class="cmd-symbol">⌘</span></kbd> <span class="shortcut-operator">+</span> <kbd class="keycap">6</kbd>
               </td>
               <td class="desc-cell">
-                {{ t('shortcuts.nav_personalized') }}
+                {{ t('shortcuts.nav_liturgy') }}
               </td>
             </tr>
             <tr>
@@ -261,14 +261,6 @@
               </td>
               <td class="desc-cell">
                 {{ t('shortcuts.nav_favorites') }}
-              </td>
-            </tr>
-            <tr>
-              <td class="keys-cell">
-                <kbd class="keycap">Ctrl/ <span class="cmd-symbol">⌘</span></kbd> <span class="shortcut-operator">+</span> <kbd class="keycap">7</kbd>
-              </td>
-              <td class="desc-cell">
-                {{ t('shortcuts.nav_liturgy') }}
               </td>
             </tr>
             <tr>

@@ -441,15 +441,10 @@ export default {
         }
         if (e.code === "Digit5" || e.code === "Numpad5" || e.key === "5") {
           e.preventDefault();
-          this.cycleModuleGroup("online_collection");
+          this.cycleModuleGroup("special_collections");
           return;
         }
         if (e.code === "Digit6" || e.code === "Numpad6" || e.key === "6") {
-          e.preventDefault();
-          this.cycleModuleGroup("personalized");
-          return;
-        }
-        if (e.code === "Digit7" || e.code === "Numpad7" || e.key === "7") {
           e.preventDefault();
           this.$modules.open("liturgy");
           return;

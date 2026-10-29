@@ -8,7 +8,7 @@ const manifest: ModuleManifest = {
   version: "1.0.0",
   description: "Crie e edite músicas personalizadas com letra dividida em slides, prontas para projeção.",
   author: "railsonmonteiro",
-  category: "personalized",
+  category: "special_collections",
   icon: "mdi-music-note-plus",
   minAppVersion: "1.0.0",
   dependencies: [],

@@ -196,22 +196,15 @@ export function createWindow(): void {
           },
         },
         {
-          label: "Coletâneas Online",
+          label: "Coletâneas Especiais",
           accelerator: "CmdOrCtrl+5",
           click: () => {
-            mainWindow.webContents.send("cycle-module-group", "online_collection");
-          },
-        },
-        {
-          label: "Coletâneas Personalizadas / Editor",
-          accelerator: "CmdOrCtrl+6",
-          click: () => {
-            mainWindow.webContents.send("cycle-module-group", "personalized");
+            mainWindow.webContents.send("cycle-module-group", "special_collections");
           },
         },
         {
           label: "Liturgia",
-          accelerator: "CmdOrCtrl+7",
+          accelerator: "CmdOrCtrl+6",
           click: () => {
             mainWindow.webContents.send("navigate-module", "liturgy");
           },

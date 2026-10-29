@@ -8,7 +8,7 @@ const manifest: ModuleManifest = {
   version: "1.0.0",
   description: "Adicione seus próprios links de vídeos do YouTube para tocar durante o culto.",
   author: "railsonmonteiro",
-  category: "online_collection",
+  category: "special_collections",
   icon: "mdi-playlist-plus",
   minAppVersion: "1.0.0",
   dependencies: [],

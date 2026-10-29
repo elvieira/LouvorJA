@@ -98,21 +98,25 @@
             </v-icon>
           </a>
           <div class="nav-submenu" :class="{ expanded: submenuOpen[groupKey] }">
-            <div
-              v-for="moduleId in group.modules"
-              :key="moduleId"
-              class="nav-item"
-              :class="{ active: currentModule === moduleId }"
-            >
-              <a
+            <template v-for="(moduleId, modIdx) in group.modules" :key="moduleId">
+              <div
+                v-if="hasDividerBefore(group, moduleId, modIdx)"
+                class="nav-submenu-divider"
+              />
+              <div
                 v-if="shouldShowModule(moduleId)"
-                href="#"
-                class="nav-link"
-                @click.prevent="openModule(moduleId)"
+                class="nav-item"
+                :class="{ active: currentModule === moduleId }"
               >
-                <span class="nav-text">{{ getModuleTitle(moduleId) }}</span>
-              </a>
-            </div>
+                <a
+                  href="#"
+                  class="nav-link"
+                  @click.prevent="openModule(moduleId)"
+                >
+                  <span class="nav-text">{{ getModuleTitle(moduleId) }}</span>
+                </a>
+              </div>
+            </template>
           </div>
         </div>
       </template>
@@ -353,6 +357,7 @@ export default defineComponent({
       
       const groupIcons: Record<string, string> = {
         musics: "mdi-play",
+        special_collections: "mdi-playlist-star",
         online_collection: "mdi-web",
         bible: "mdi-book-cross",
         utilities: "mdi-plus-circle",
@@ -364,7 +369,7 @@ export default defineComponent({
         if ((group as any).modules && (group as any).modules.length > 0) {
           result[key] = {
             ...(group as any),
-            icon: groupIcons[key] || "mdi-folder",
+            icon: (group as any).icon || groupIcons[key] || "mdi-folder",
           };
         }
       }
@@ -541,6 +546,18 @@ export default defineComponent({
       }
       
       return true;
+    },
+    hasVisibleModules(moduleIds: string[]): boolean {
+      if (!Array.isArray(moduleIds)) return false;
+      return moduleIds.some((id) => this.shouldShowModule(id));
+    },
+    hasDividerBefore(group: any, moduleId: string, modIdx?: number | string): boolean {
+      if (!group || !Array.isArray(group.dividers)) return false;
+      if (!group.dividers.includes(moduleId)) return false;
+      if (!this.shouldShowModule(moduleId)) return false;
+      const index = typeof modIdx === "number" ? modIdx : Number(modIdx ?? (group.modules || []).indexOf(moduleId));
+      const prevModules = (group.modules || []).slice(0, index);
+      return prevModules.some((id: string) => this.shouldShowModule(id));
     },
     getModuleTitle(moduleId: string): string {
       const module = (this as any).$appdata.get(`modules.${moduleId}`);
@@ -948,7 +965,13 @@ export default defineComponent({
     transition: max-height 0.3s ease;
     
     &.expanded {
-      max-height: 200px;
+      max-height: 400px;
+    }
+
+    .nav-submenu-divider {
+      height: 1px;
+      margin: 6px 16px 6px 0;
+      background: var(--sidebar-border, rgba(255, 255, 255, 0.1));
     }
     
     .nav-item {
@@ -1190,6 +1213,10 @@ export default defineComponent({
 
     .nav-submenu {
       padding-left: 20px;
+
+      .nav-submenu-divider {
+        margin: 4px 10px 4px 0;
+      }
 
       .nav-item .nav-link {
         padding: 3px 10px;

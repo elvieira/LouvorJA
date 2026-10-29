@@ -8,7 +8,7 @@ const manifest: ModuleManifest = {
   version: "1.0.0",
   description: "Explore canais, playlists e vídeos de louvor no YouTube, prontos para projetar durante o culto.",
   author: "railsonmonteiro",
-  category: "online_collection",
+  category: "special_collections",
   icon: "mdi-web",
   minAppVersion: "1.0.0",
   dependencies: [],

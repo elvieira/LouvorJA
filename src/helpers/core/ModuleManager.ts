@@ -49,12 +49,13 @@ export default {
       if (category) {
         const moduleGroups = $appdata.get("module_group") || {};
         // Add module to category if not already present
-        if (!moduleGroups[category].modules.includes(manifest.id)) {
-          moduleGroups[category].modules.push(manifest.id);
+        if (moduleGroups[category] && Array.isArray(moduleGroups[category].modules)) {
+          if (!moduleGroups[category].modules.includes(manifest.id)) {
+            moduleGroups[category].modules.push(manifest.id);
+          }
+          // Save updated module groups
+          $appdata.set("module_group", moduleGroups);
         }
-
-        // Save updated module groups
-        $appdata.set("module_group", moduleGroups);
       }
 
       // Add to main menu
