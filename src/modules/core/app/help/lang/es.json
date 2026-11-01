@@ -663,7 +663,7 @@
     "name": "Su Nombre Completo",
     "name_placeholder": "Ej: Juan Pérez",
     "email": "Correo Electrónico de Contacto",
-    "email_placeholder": "Ej: juan@email.com",
+    "email_placeholder": "Ej: juan{'@'}email.com",
     "category": "Tipo de Mensaje",
     "categories": {
       "doubt": "Duda sobre el programa",

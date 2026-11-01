@@ -663,7 +663,7 @@
     "name": "Seu Nome Completo",
     "name_placeholder": "Ex: João da Silva",
     "email": "E-mail de Contato",
-    "email_placeholder": "Ex: joao@email.com",
+    "email_placeholder": "Ex: joao{'@'}email.com",
     "category": "Tipo de Mensagem",
     "categories": {
       "doubt": "Dúvida sobre o programa",
