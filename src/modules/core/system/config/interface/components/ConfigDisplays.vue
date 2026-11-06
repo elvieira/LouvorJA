@@ -172,16 +172,38 @@
                   :key="monitor.value"
                   flat
                   class="rounded-xl border cursor-pointer"
-                  :class="stage_monitor_display === monitor.value ? 'elevation-2' : ''"
-                  :style="stage_monitor_display === monitor.value ? 'background: rgba(0,151,215,0.08); border: 2px solid var(--accent-blue) !important; transition: all 0.2s;' : 'background: var(--main-bg); border: 2px solid transparent !important; transition: all 0.2s; box-shadow: inset 0 0 0 1px var(--border-color);'"
+                  :class="[
+                    stage_monitor_display === monitor.value ? 'elevation-2' : '',
+                    isStageMonitorInactive(monitor.value) ? 'monitor-requires-slide' : ''
+                  ]"
+                  :style="
+                    stage_monitor_display === monitor.value
+                      ? 'background: rgba(0,151,215,0.08); border: 2px solid var(--accent-blue) !important; transition: all 0.2s;'
+                      : isStageMonitorInactive(monitor.value)
+                        ? 'background: var(--main-bg); border: 2px dashed rgba(150,150,150,0.3) !important; opacity: 0.6; transition: all 0.2s;'
+                        : 'background: var(--main-bg); border: 2px solid transparent !important; transition: all 0.2s; box-shadow: inset 0 0 0 1px var(--border-color);'
+                  "
                   width="180"
-                  @click="stage_monitor_display = stage_monitor_display === monitor.value ? null : monitor.value"
+                  @click="toggleStageMonitor(monitor.value)"
                 >
                   <div class="pa-4 d-flex flex-column align-center">
-                    <v-icon :color="stage_monitor_display === monitor.value ? 'primary' : 'grey'" size="32" class="mb-2 transition-all">
-                      {{ stage_monitor_display === monitor.value ? 'mdi-monitor-eye' : 'mdi-monitor-off' }}
+                    <v-icon
+                      :color="stage_monitor_display === monitor.value ? 'primary' : 'grey'"
+                      size="32"
+                      class="mb-2 transition-all"
+                    >
+                      {{
+                        stage_monitor_display === monitor.value
+                          ? 'mdi-monitor-eye'
+                          : isStageMonitorInactive(monitor.value)
+                            ? 'mdi-monitor-lock'
+                            : 'mdi-monitor-off'
+                      }}
                     </v-icon>
-                    <span class="text-body-2 font-weight-bold text-center transition-all" :style="stage_monitor_display === monitor.value ? 'color: var(--accent-blue)' : 'color: var(--sidebar-text-secondary)'">
+                    <span
+                      class="text-body-2 font-weight-bold text-center transition-all"
+                      :style="stage_monitor_display === monitor.value ? 'color: var(--accent-blue)' : 'color: var(--sidebar-text-secondary)'"
+                    >
                       {{ monitor.title }}
                     </span>
                   </div>
@@ -244,6 +266,7 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import manifest from "../../manifest";
+import $snackbar from "@/helpers/ui/Snackbar";
 
 export default defineComponent({
   name: "ConfigDisplays",
@@ -361,6 +384,20 @@ export default defineComponent({
       if (window.electronAPI && window.electronAPI.identifyDisplays) {
         window.electronAPI.identifyDisplays();
       }
+    },
+    isStageMonitorInactive(val: any): boolean {
+      return !this.slide_monitor.includes(val);
+    },
+    toggleStageMonitor(val: any) {
+      if (!this.slide_monitor.includes(val)) {
+        $snackbar.show({
+          text: this.t("stage_monitor_requires_slide_screen"),
+          color: "warning",
+          timeout: 4500,
+        });
+        return;
+      }
+      this.stage_monitor_display = this.stage_monitor_display === val ? null : val;
     },
     toggleSlideMonitor(val: any) {
       let unselected: any[] = (this as any).$userdata.get("modules.config.unselected_slide_monitors") || [];

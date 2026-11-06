@@ -360,15 +360,15 @@ export function createWindow(): void {
     const displays = screen.getAllDisplays();
     const primaryDisplay = screen.getPrimaryDisplay();
 
-    const monitorMatch = features.match(/monitor=(\d+)/) || url.match(/[?&]monitor=(\d+)/) || frameName.match(/_(\d+)_/);
-    const targetMonitorId = monitorMatch ? parseInt(monitorMatch[1]) : null;
+    const monitorMatch = features.match(/monitor=(-?\d+)/) || url.match(/[?&]monitor=(-?\d+)/) || frameName.match(/_(-?\d+)_/);
+    const targetMonitorId = monitorMatch ? parseInt(monitorMatch[1], 10) : null;
 
     const isExplicitNoFullscreen = features.includes("fullscreen=no") || url.includes("fullscreen=0");
     const isFullscreen = !isExplicitNoFullscreen;
 
     let targetDisplay: Display | null = null;
-    if (targetMonitorId) {
-      targetDisplay = displays.find((d: Display) => d.id === targetMonitorId) || null;
+    if (targetMonitorId !== null && targetMonitorId !== undefined) {
+      targetDisplay = displays.find((d: Display) => String(d.id) === String(targetMonitorId)) || null;
     }
     if (!targetDisplay && displays.length > 1) {
       targetDisplay = displays.find((d: Display) => d.id !== primaryDisplay.id) || null;

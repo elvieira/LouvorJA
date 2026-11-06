@@ -81,6 +81,7 @@
     "stage_monitor_desc": "Exibe a letra atual e um preview da próxima letra em uma tela separada, ideal para quem está no palco.",
     "stage_monitor_screen": "Tela para o retorno:",
     "stage_monitor_no_screens": "Ative um monitor estendido em Múltiplas Telas para usá-lo como tela de retorno.",
+    "stage_monitor_requires_slide_screen": "Para usar este monitor como tela de retorno, ative-o primeiro em 'Projeção em Múltiplas Telas' acima.",
     "slide_alignment_structure": "Alinhamento e Estrutura dos Slides",
     "align_top": "Cima",
     "align_center": "Centro",
