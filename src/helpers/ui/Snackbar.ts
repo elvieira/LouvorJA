@@ -21,6 +21,18 @@ export default {
       };
     }
 
+    if ($appdata.get("snackbar.show") && !formattedData.loading) {
+      $appdata.set("snackbar.show", false);
+      setTimeout(() => {
+        $appdata.set("snackbar.text", formattedData.text);
+        $appdata.set("snackbar.loading", formattedData.loading);
+        $appdata.set("snackbar.color", formattedData.color);
+        $appdata.set("snackbar.timeout", formattedData.timeout);
+        $appdata.set("snackbar.show", true);
+      }, 60);
+      return;
+    }
+
     $appdata.set("snackbar.text", formattedData.text);
     $appdata.set("snackbar.loading", formattedData.loading);
     $appdata.set("snackbar.color", formattedData.color);
