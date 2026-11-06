@@ -484,18 +484,28 @@ export default defineComponent({
         }
       }
 
-      // Navegação de versículos pelas teclas direcionais quando a mídia não estiver tocando
+      // Navegação de versículos e capítulos pelas teclas direcionais quando a mídia não estiver tocando
       const isMediaPlaying = this.$appdata.get("modules.media.show") && !this.$appdata.get("modules.media.minimized");
       if (!isMediaPlaying && !e.ctrlKey && !e.metaKey && !e.altKey) {
-        if (["ArrowRight", "ArrowDown", "PageDown"].includes(e.code)) {
-          if (this.select_bible?.verses?.length) {
+        if (["ArrowDown", "PageDown"].includes(e.code)) {
+          if (this.bible.chapter) {
             e.preventDefault();
             this.nextVerse();
           }
-        } else if (["ArrowLeft", "ArrowUp", "PageUp"].includes(e.code)) {
-          if (this.select_bible?.verses?.length) {
+        } else if (["ArrowUp", "PageUp"].includes(e.code)) {
+          if (this.bible.chapter) {
             e.preventDefault();
             this.prevVerse();
+          }
+        } else if (e.code === "ArrowRight") {
+          if (this.bible.chapter) {
+            e.preventDefault();
+            this.nextChapter();
+          }
+        } else if (e.code === "ArrowLeft") {
+          if (this.bible.chapter) {
+            e.preventDefault();
+            this.prevChapter();
           }
         }
       }
@@ -602,13 +612,34 @@ export default defineComponent({
       if (chapter) {
         this.bible.chapter = chapter;
       }
-      this.bible.verses = [];
-      this.last_verse = 1;
+
+      const isSameBookAndChapter =
+        this.select_bible?.id_bible_book === this.bible.id_bible_book &&
+        Number(this.select_bible?.chapter) === Number(this.bible.chapter) &&
+        (!this.select_bible?.id_bible_version || !this.bible.id_bible_version || this.select_bible.id_bible_version === this.bible.id_bible_version);
+
+      if (isSameBookAndChapter && this.select_bible?.verses && this.select_bible.verses.length > 0) {
+        this.bible.verses = [...this.select_bible.verses];
+        this.last_verse = this.bible.verses[this.bible.verses.length - 1];
+      } else {
+        this.bible.verses = [];
+        this.last_verse = 1;
+      }
+
       await this.loadData();
 
-      const element = document.getElementById(`listChapter_${chapter}`);
+      const element = document.getElementById(`listChapter_${chapter || this.bible.chapter}`);
       if (element) {
         element.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+
+      if (isSameBookAndChapter && this.last_verse) {
+        this.$nextTick(() => {
+          const vEl = document.getElementById(`listVerse_${this.last_verse}`);
+          if (vEl) {
+            vEl.scrollIntoView({ behavior: "smooth", block: "center" });
+          }
+        });
       }
     },
     // Picking a chapter while browsing a book's expanded chapter list in
@@ -757,23 +788,27 @@ export default defineComponent({
       this.projectIfConfigured();
     },
     async prevVerse() {
-      if (this.select_bible?.id_bible_version) {
-        await this.selVersion(this.select_bible.id_bible_version);
+      if (!this.bible.verses || this.bible.verses.length === 0) {
+        this.selVerse(null, 1);
+        return;
       }
-      if (this.select_bible?.id_bible_book) {
-        await this.selBook(this.select_bible.id_bible_book);
+      if (this.bible?.id_bible_version) {
+        await this.selVersion(this.bible.id_bible_version);
       }
-      if (this.select_bible?.chapter) {
-        await this.selChapter(this.select_bible.chapter);
+      if (this.bible?.id_bible_book) {
+        await this.selBook(this.bible.id_bible_book);
       }
-      if (this.select_bible?.verses && this.select_bible.verses.length > 0) {
+      if (this.bible?.chapter) {
+        await this.selChapter(this.bible.chapter);
+      }
+      if (this.bible?.verses && this.bible.verses.length > 0) {
         let verse = Math.min(
-          ...this.select_bible.verses.filter((num: number) => num > 0),
+          ...this.bible.verses.filter((num: number) => num > 0),
         );
         if (verse > 1) {
           verse--;
-        } else if (this.select_bible.chapter > 1) {
-          await this.selChapter(this.select_bible.chapter - 1);
+        } else if (this.bible.chapter > 1) {
+          await this.selChapter(this.bible.chapter - 1);
           verse = Math.max(...Object.keys(this.verses).map(Number));
         } else {
           const bookIndex = this.books.findIndex(
@@ -791,23 +826,27 @@ export default defineComponent({
       }
     },
     async nextVerse() {
-      if (this.select_bible?.id_bible_version) {
-        await this.selVersion(this.select_bible.id_bible_version);
+      if (!this.bible.verses || this.bible.verses.length === 0) {
+        this.selVerse(null, 1);
+        return;
       }
-      if (this.select_bible?.id_bible_book) {
-        await this.selBook(this.select_bible.id_bible_book);
+      if (this.bible?.id_bible_version) {
+        await this.selVersion(this.bible.id_bible_version);
       }
-      if (this.select_bible?.chapter) {
-        await this.selChapter(this.select_bible.chapter);
+      if (this.bible?.id_bible_book) {
+        await this.selBook(this.bible.id_bible_book);
       }
-      if (this.select_bible?.verses && this.select_bible.verses.length > 0) {
-        let verse = Math.max(...this.select_bible.verses);
+      if (this.bible?.chapter) {
+        await this.selChapter(this.bible.chapter);
+      }
+      if (this.bible?.verses && this.bible.verses.length > 0) {
+        let verse = Math.max(...this.bible.verses);
         const max_verse = Math.max(...Object.keys(this.verses).map(Number));
         const max_chapter = this.book.chapters;
         if (verse < max_verse) {
           verse++;
-        } else if (this.select_bible.chapter < max_chapter) {
-          await this.selChapter(this.select_bible.chapter + 1);
+        } else if (this.bible.chapter < max_chapter) {
+          await this.selChapter(this.bible.chapter + 1);
           verse = 1;
         } else {
           const bookIndex = this.books.findIndex(
@@ -822,6 +861,49 @@ export default defineComponent({
           verse = 1;
         }
         this.selVerse(null, verse);
+      }
+    },
+    async prevChapter() {
+      if (!this.books || this.books.length === 0) return;
+
+      const currentChapter = Number(this.bible.chapter) || 1;
+
+      if (currentChapter > 1) {
+        await this.selChapter(currentChapter - 1);
+      } else {
+        const bookIndex = this.books.findIndex(
+          (b: any) => b.id_bible_book === this.bible.id_bible_book,
+        );
+        const prevBook =
+          bookIndex > 0
+            ? this.books[bookIndex - 1]
+            : this.books[this.books.length - 1];
+        await this.selBookChapter({
+          id_bible_book: prevBook.id_bible_book,
+          chapter: prevBook.chapters,
+        });
+      }
+    },
+    async nextChapter() {
+      if (!this.books || this.books.length === 0) return;
+
+      const currentChapter = Number(this.bible.chapter) || 1;
+      const maxChapter = Number(this.book?.chapters) || 1;
+
+      if (currentChapter < maxChapter) {
+        await this.selChapter(currentChapter + 1);
+      } else {
+        const bookIndex = this.books.findIndex(
+          (b: any) => b.id_bible_book === this.bible.id_bible_book,
+        );
+        const nextBook =
+          bookIndex < this.books.length - 1
+            ? this.books[bookIndex + 1]
+            : this.books[0];
+        await this.selBookChapter({
+          id_bible_book: nextBook.id_bible_book,
+          chapter: 1,
+        });
       }
     },
     scripturalReference(data: any) {

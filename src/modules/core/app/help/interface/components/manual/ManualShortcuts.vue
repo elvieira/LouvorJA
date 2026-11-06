@@ -494,7 +494,68 @@
       </v-card-text>
     </v-card>
 
-    <!-- 4. Buscas Globais Rápidas -->
+    <!-- 4. Navegação na Bíblia Sagrada -->
+    <v-card variant="flat" class="rounded-xl mb-6 shortcut-table-card">
+      <v-card-title class="px-5 py-4 d-flex align-center shortcut-card-header">
+        <v-icon
+          icon="mdi-book-open-variant"
+          color="primary"
+          class="mr-3"
+          size="small"
+        />
+        <span class="font-weight-bold text-subtitle-1" style="color: var(--sidebar-text);">
+          {{ t('shortcuts.bible_title') }}
+        </span>
+      </v-card-title>
+      <v-card-text class="pa-0">
+        <v-table class="bg-transparent shortcut-table" density="comfortable">
+          <tbody>
+            <tr>
+              <td class="keys-cell">
+                <kbd class="keycap">↓</kbd> <span class="shortcut-operator">{{ t('shortcuts.or') }}</span> <kbd class="keycap">PgDn</kbd>
+              </td>
+              <td class="desc-cell">
+                {{ t('shortcuts.bible_next_verse') }}
+              </td>
+            </tr>
+            <tr>
+              <td class="keys-cell">
+                <kbd class="keycap">↑</kbd> <span class="shortcut-operator">{{ t('shortcuts.or') }}</span> <kbd class="keycap">PgUp</kbd>
+              </td>
+              <td class="desc-cell">
+                {{ t('shortcuts.bible_prev_verse') }}
+              </td>
+            </tr>
+            <tr>
+              <td class="keys-cell">
+                <kbd class="keycap">→</kbd>
+              </td>
+              <td class="desc-cell">
+                {{ t('shortcuts.bible_next_chapter') }}
+              </td>
+            </tr>
+            <tr>
+              <td class="keys-cell">
+                <kbd class="keycap">←</kbd>
+              </td>
+              <td class="desc-cell">
+                {{ t('shortcuts.bible_prev_chapter') }}
+              </td>
+            </tr>
+            <tr>
+              <td class="keys-cell">
+                <kbd class="keycap">Ctrl/ <span class="cmd-symbol">⌘</span></kbd> <span class="shortcut-operator">+</span> <kbd class="keycap">Enter</kbd>
+              </td>
+              <td class="desc-cell">
+                {{ t('shortcuts.bible_project_selected') }}
+              </td>
+            </tr>
+          </tbody>
+        </v-table>
+      </v-card-text>
+    </v-card>
+
+    <!-- 5. Buscas Globais Rápidas -->
     <v-card variant="flat" class="rounded-xl mb-6 shortcut-table-card">
       <v-card-title class="px-5 py-4 d-flex align-center shortcut-card-header">
         <v-icon

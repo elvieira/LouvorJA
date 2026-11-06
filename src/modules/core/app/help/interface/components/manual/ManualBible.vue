@@ -114,6 +114,31 @@
       </div>
     </div>
 
+    <!-- Destaque: Navegação pelo Teclado (Setas) -->
+    <div class="manual-preview-card pa-4 rounded-xl mb-6">
+      <div class="d-flex align-center mb-2">
+        <v-icon icon="mdi-keyboard-outline" class="mr-2" size="20" color="primary" />
+        <span class="font-weight-bold text-subtitle-2" style="color: var(--sidebar-text);">
+          {{ t('bible.nav_keyboard_title') }}
+        </span>
+      </div>
+      <p class="text-body-2 mb-3" style="color: var(--sidebar-text-secondary);">
+        {{ t('bible.nav_keyboard_desc') }}
+      </p>
+      <ul class="pl-6 text-body-2 mb-4" style="color: var(--sidebar-text-secondary);">
+        <li class="mb-2" v-html="t('bible.nav_keyboard_verses')" />
+        <li class="mb-2" v-html="t('bible.nav_keyboard_chapters')" />
+      </ul>
+      <v-alert
+        type="info"
+        variant="tonal"
+        density="compact"
+        class="rounded-lg text-caption"
+      >
+        <span v-html="t('bible.nav_keyboard_behavior')" />
+      </v-alert>
+    </div>
+
     <v-divider class="my-6 border-opacity-25" />
 
     <!-- 2. Barra de Pesquisa e Seleção de Versículos (REF / TEX) -->

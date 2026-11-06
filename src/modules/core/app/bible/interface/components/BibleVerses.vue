@@ -44,7 +44,7 @@
 
         <!-- Anterior (Posição 2) -->
         <v-btn
-          v-shortkey="{ left: ['arrowleft'], up: ['arrowup'], pgup: ['pageup'] }"
+          v-shortkey="{ up: ['arrowup'], pgup: ['pageup'] }"
           variant="tonal"
           size="small"
           icon
@@ -67,7 +67,7 @@
 
         <!-- Próximo (Posição 3) -->
         <v-btn
-          v-shortkey="{ right: ['arrowright'], down: ['arrowdown'], pgdn: ['pagedown'] }"
+          v-shortkey="{ down: ['arrowdown'], pgdn: ['pagedown'] }"
           variant="tonal"
           size="small"
           icon
