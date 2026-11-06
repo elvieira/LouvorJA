@@ -1,7 +1,17 @@
-import { app, ipcMain } from "electron";
+import { ipcMain } from "electron";
 import * as path from "path";
 import * as fs from "fs-extra";
-import { coversPath, musicPath, slidesPath, avatarsPath, getSysDbPath, sysConfigPath } from "../config/constants";
+import {
+  getCoversPath,
+  getMusicPath,
+  getSlidesPath,
+  getAvatarsPath,
+  getSysDbPath,
+  getDatabasePath,
+  sysConfigPath,
+  isMediaPathConfigured,
+  needsMediaPathMigration,
+} from "../config/constants";
 import { SQLiteHelper } from "../utils/sqlite";
 import DbExtractor from "./db-extractor";
 import { decryptData } from "../utils/crypto";
@@ -9,7 +19,18 @@ import { decryptData } from "../utils/crypto";
 export function registerValidatorHandlers() {
   ipcMain.handle("validate-installation", async (event, lang: string = "pt", devAvatarFilenames: string[] = []) => {
     try {
-      const dbPath = path.join(app.getPath("userData"), `database_${lang}.db`);
+      const coversPath = getCoversPath();
+      const musicPath = getMusicPath();
+      const slidesPath = getSlidesPath();
+      const avatarsPath = getAvatarsPath();
+      const dbPath = getDatabasePath(lang);
+
+      const mediaConfigured = isMediaPathConfigured();
+      const needsMigration = needsMediaPathMigration();
+      // O programa só deve validar/recuperar mídias se o caminho estiver configurado
+      // como sendo o da mídia e não houver migração pendente.
+      const shouldValidateMedia = mediaConfigured && !needsMigration;
+
       if (!fs.existsSync(dbPath)) {
         const coverFiles = new Set<string>();
         const sysDbPath = getSysDbPath(lang);
@@ -36,7 +57,7 @@ export function registerValidatorHandlers() {
           }
         }
         const actualCovers = new Set<string>(fs.existsSync(coversPath) ? fs.readdirSync(coversPath) : []);
-        const missingCovers = [...coverFiles].filter(x => x && !actualCovers.has(x));
+        const missingCovers = shouldValidateMedia ? [...coverFiles].filter(x => x && !actualCovers.has(x)) : [];
         const actualAvatars = new Set<string>(fs.existsSync(avatarsPath) ? fs.readdirSync(avatarsPath) : []);
         const missingAvatars = (devAvatarFilenames || []).filter(x => x && !actualAvatars.has(x));
         return { missingCovers, missingMusic: [], missingImages: [], missingBins: [], missingAvatars, totalMissing: missingCovers.length + missingAvatars.length };
@@ -110,10 +131,10 @@ export function registerValidatorHandlers() {
       const currentSysDbPath = getSysDbPath(lang);
       const actualBins = new Set<string>(fs.existsSync(currentSysDbPath) ? fs.readdirSync(currentSysDbPath) : []);
 
-      const missingCovers = [...coverFiles].filter(x => x && !actualCovers.has(x));
+      const missingCovers = shouldValidateMedia ? [...coverFiles].filter(x => x && !actualCovers.has(x)) : [];
       
       // Validação baseada no fs.existsSync diretamente usando musicPath (com compatibilidade .opus/.mp3)
-      const missingMusic = [...musicFiles].filter(x => {
+      const missingMusic = shouldValidateMedia ? [...musicFiles].filter(x => {
         if (!x) return false;
         const directPath = path.join(musicPath, x);
         if (fs.existsSync(directPath)) return false;
@@ -126,8 +147,8 @@ export function registerValidatorHandlers() {
           if (fs.existsSync(opusPath)) return false;
         }
         return true;
-      });
-      const missingImages = [...imageFiles].filter(x => x && !fs.existsSync(path.join(slidesPath, x)));
+      }) : [];
+      const missingImages = shouldValidateMedia ? [...imageFiles].filter(x => x && !fs.existsSync(path.join(slidesPath, x))) : [];
       
       const missingBins = [...binFiles].filter(x => x && !actualBins.has(x));
 
@@ -150,7 +171,7 @@ export function registerValidatorHandlers() {
 
   ipcMain.handle("repair-sysdata", async (event, filenames: string[], lang: string = "pt") => {
     try {
-      const dbPath = path.join(app.getPath("userData"), `database_${lang}.db`);
+      const dbPath = getDatabasePath(lang);
       if (!fs.existsSync(dbPath)) return false;
       const extractor = new DbExtractor(dbPath);
       await extractor.connect();

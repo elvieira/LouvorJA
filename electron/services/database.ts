@@ -1,11 +1,18 @@
-import { ipcMain, app, net } from "electron";
+import { ipcMain, net } from "electron";
 import * as path from "path";
 import * as fs from "fs-extra";
 import AdmZip from "adm-zip";
 import DbExtractor, { updateSysConfig } from "./db-extractor";
 import { encryptData, decryptData } from "../utils/crypto";
 import { SQLiteHelper } from "../utils/sqlite";
-import { getSysDbPath, sysConfigPath, mediaPath } from "../config/constants";
+import {
+  getSysDbPath,
+  sysConfigPath,
+  getMediaPath,
+  getDatabasePath,
+  getLiturgyPath,
+  getFluteDataPath,
+} from "../config/constants";
 import { URL_FILES, API_PRIMARY, API_FALLBACK, netFetchWithFallback } from "../utils/api-fallback";
 
 async function downloadStreamToFile(
@@ -92,7 +99,7 @@ export function registerDatabaseHandlers() {
           }
         }
 
-        const dbPath = path.join(app.getPath("userData"), `database_${lang}.db`);
+        const dbPath = getDatabasePath(lang);
         if (fs.existsSync(dbPath)) {
           const extractor = new DbExtractor(dbPath, lang);
           const data = await extractor.repairFile(filename);
@@ -154,7 +161,7 @@ export function registerDatabaseHandlers() {
                           filename.startsWith("music_");
 
       if (canSelfHeal) {
-        const dbPath = path.join(app.getPath("userData"), `database_${lang}.db`);
+        const dbPath = getDatabasePath(lang);
         if (fs.existsSync(dbPath)) {
           console.log(`[self-healing] Arquivo ${filename} ausente. Tentando restaurar a partir do banco de dados (${lang})...`);
           const extractor = new DbExtractor(dbPath, lang);
@@ -175,7 +182,7 @@ export function registerDatabaseHandlers() {
 
   ipcMain.handle("search-bible", async (event, versionId: number, query: string, mode: "text" | "reference", lang: string = "pt") => {
     try {
-      const dbPath = path.join(app.getPath("userData"), `database_${lang}.db`);
+      const dbPath = getDatabasePath(lang);
       const cleanQuery = query.trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
       if (!cleanQuery) return [];
 
@@ -322,7 +329,7 @@ export function registerDatabaseHandlers() {
 
   ipcMain.handle("get-liturgy-data", async () => {
     try {
-      const liturgyPath = path.join(app.getPath("userData"), "liturgy.json");
+      const liturgyPath = getLiturgyPath();
       if (fs.existsSync(liturgyPath)) {
         const content = fs.readFileSync(liturgyPath, "utf8");
         return JSON.parse(content);
@@ -336,7 +343,7 @@ export function registerDatabaseHandlers() {
 
   ipcMain.handle("save-liturgy-data", async (event, data: unknown) => {
     try {
-      const liturgyPath = path.join(app.getPath("userData"), "liturgy.json");
+      const liturgyPath = getLiturgyPath();
       const jsonString = JSON.stringify(data, null, 2);
       fs.writeFileSync(liturgyPath, jsonString, "utf8");
       return true;
@@ -348,8 +355,8 @@ export function registerDatabaseHandlers() {
 
   ipcMain.handle("extract-local-db", async (event, lang: string = "pt") => {
     try {
-      const dbPath = path.join(app.getPath("userData"), `database_${lang}.db`);
-      const bundlePath = path.join(app.getPath("userData"), `bundle_${lang}.zip`);
+      const dbPath = getDatabasePath(lang);
+      const bundlePath = path.join(getFluteDataPath(), `bundle_${lang}.zip`);
 
       // Se o banco SQLite oficial existe, extrai com o DbExtractor
       if (fs.existsSync(dbPath)) {
@@ -414,8 +421,8 @@ export function registerDatabaseHandlers() {
 
   ipcMain.handle("download-database", async (event, lang: string = "pt", force: boolean = false) => {
     const langKey = (lang || "pt").toLowerCase();
-    const dbPath = path.join(app.getPath("userData"), `database_${langKey}.db`);
-    const bundlePath = path.join(app.getPath("userData"), `bundle_${langKey}.zip`);
+    const dbPath = path.join(getFluteDataPath(), `database_${langKey}.db`);
+    const bundlePath = path.join(getFluteDataPath(), `bundle_${langKey}.zip`);
 
     if (fs.existsSync(dbPath) && force) {
       try { 
@@ -533,7 +540,7 @@ export function registerDatabaseHandlers() {
   ipcMain.handle("import-old-installation", async () => {
     try {
       const oldPath = "C:\\Program Files (x86)\\Louvor JA\\config\\database.db";
-      const dbPath = path.join(app.getPath("userData"), "database_pt.db");
+      const dbPath = path.join(getFluteDataPath(), "database_pt.db");
       fs.copyFileSync(oldPath, dbPath);
       return true;
     } catch (error) {
@@ -542,7 +549,7 @@ export function registerDatabaseHandlers() {
     }
   });
   ipcMain.handle("check-database-exists", async (event, lang: string = "pt") => {
-    const dbPath = path.join(app.getPath("userData"), `database_${lang}.db`);
+    const dbPath = getDatabasePath(lang);
     if (fs.existsSync(dbPath)) return true;
     const sysDbPath = getSysDbPath(lang);
     return fs.existsSync(path.join(sysDbPath, `${lang}_categories.bin`)) ||
@@ -578,7 +585,7 @@ export function registerDatabaseHandlers() {
         }
       }
 
-      const dbPath = path.join(app.getPath("userData"), `database_${lang}.db`);
+      const dbPath = getDatabasePath(lang);
       if (fs.existsSync(dbPath)) {
         const extractor = new DbExtractor(dbPath, lang);
         return await extractor.getVersion();
@@ -591,7 +598,7 @@ export function registerDatabaseHandlers() {
 
   ipcMain.handle("get-albums-details", async (event, lang: string = "pt") => {
     try {
-      const dbPath = path.join(app.getPath("userData"), `database_${lang}.db`);
+      const dbPath = getDatabasePath(lang);
       if (!fs.existsSync(dbPath)) return {};
 
       const sqlite = new SQLiteHelper(dbPath);
@@ -686,7 +693,7 @@ export function registerDatabaseHandlers() {
         const sample = sampleMusicMap.get(sqliteId);
         if (sample && sample.dir) {
           const relativeClean = sample.dir.replace(/^\//, "");
-          return path.join(mediaPath, relativeClean);
+          return path.join(getMediaPath(), relativeClean);
         }
         return undefined;
       };
@@ -702,8 +709,8 @@ export function registerDatabaseHandlers() {
         const sample = sampleMusicMap.get(sqliteId);
         if (sample && sample.dir) {
           const relativeClean = sample.dir.replace(/^\//, "");
-          const filePath = sample.file_name ? path.join(mediaPath, relativeClean, sample.file_name) : "";
-          const dirPath = path.join(mediaPath, relativeClean);
+          const filePath = sample.file_name ? path.join(getMediaPath(), relativeClean, sample.file_name) : "";
+          const dirPath = path.join(getMediaPath(), relativeClean);
           if (filePath && fs.existsSync(filePath)) {
             try {
               const stat = fs.statSync(filePath);
@@ -819,7 +826,7 @@ export async function searchMusics(query: string, lang = "pt", limit = 40): Prom
       }
 
       if (!musics) {
-        const dbPath = path.join(app.getPath("userData"), `database_${lang}.db`);
+        const dbPath = getDatabasePath(lang);
         if (fs.existsSync(dbPath)) {
           const extractor = new DbExtractor(dbPath, lang);
           musics = (await extractor.repairFile(`${lang}_musics`)) as MusicItem[];

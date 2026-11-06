@@ -1,7 +1,7 @@
 import { BrowserWindow, dialog, WebContents } from "electron";
 import * as path from "path";
 import * as fs from "fs-extra";
-import { musicPath, slidesPath, sysConfigPath } from "../config/constants";
+import { getMusicPath, getSlidesPath, sysConfigPath } from "../config/constants";
 import { encryptData, decryptData } from "../utils/crypto";
 
 export const DEFAULT_LEGACY_INSTALL_PATH = "C:\\Program Files (x86)\\Louvor JA";
@@ -46,26 +46,129 @@ function resolveConfigDir(baseDir: string): string | null {
 }
 
 /**
- * Verifica se a instalação padrão do Louvor JA clássico existe no sistema.
+ * Retorna os caminhos candidatos mais comuns onde o Louvor JA Clássico costuma estar instalado.
+ * No Windows, varre letras de unidade de C: a Z:.
+ * No macOS/Linux, varre /Volumes ou /media para suportar discos externos/backups.
+ */
+export function getCandidateLegacyPaths(): string[] {
+  const candidates: string[] = [DEFAULT_LEGACY_INSTALL_PATH];
+
+  if (process.platform === "win32") {
+    for (let code = 67; code <= 90; code++) { // C a Z
+      const letter = String.fromCharCode(code);
+      candidates.push(
+        `${letter}:\\Program Files (x86)\\Louvor JA`,
+        `${letter}:\\Program Files\\Louvor JA`,
+        `${letter}:\\Louvor JA`,
+        `${letter}:\\Arquivos de Programas (x86)\\Louvor JA`,
+        `${letter}:\\Arquivos de Programas\\Louvor JA`,
+      );
+    }
+  } else if (process.platform === "darwin") {
+    const volumesDir = "/Volumes";
+    try {
+      if (fs.existsSync(volumesDir)) {
+        const vols = fs.readdirSync(volumesDir, { withFileTypes: true });
+        for (const vol of vols) {
+          if (!vol.isDirectory()) continue;
+          candidates.push(
+            path.join(volumesDir, vol.name, "Louvor JA"),
+            path.join(volumesDir, vol.name, "Program Files (x86)", "Louvor JA"),
+          );
+        }
+      }
+    } catch {
+      // Ignora falhas de leitura em volumes
+    }
+  }
+
+  // Remove duplicatas preservando a ordem
+  return Array.from(new Set(candidates));
+}
+
+/**
+ * Encontra todas as instalações válidas do Louvor JA Clássico existentes nas unidades do sistema.
+ */
+export function findAllLegacyInstallations(): string[] {
+  const found: string[] = [];
+  const candidates = getCandidateLegacyPaths();
+
+  for (const candidate of candidates) {
+    try {
+      const configDir = resolveConfigDir(candidate);
+      if (!configDir) continue;
+
+      const hasMusic = fs.existsSync(path.join(configDir, "musicas"));
+      const hasImages = fs.existsSync(path.join(configDir, "imagens"));
+
+      if (hasMusic || hasImages) {
+        found.push(candidate);
+      }
+    } catch {
+      // Unidade inacessível ou sem permissão
+    }
+  }
+
+  return found;
+}
+
+/**
+ * Verifica se uma instalação do Louvor JA clássico existe no sistema.
+ * Se nenhum caminho for especificado (ou for o padrão), realiza varredura automática
+ * em múltiplos discos (C: a Z:) para localizar a pasta clássica automaticamente.
  */
 export function checkLegacyInstallation(targetDir: string = DEFAULT_LEGACY_INSTALL_PATH): LegacyCheckResult {
-  if (process.platform !== "win32") {
-    return { exists: false, path: targetDir, hasMusic: false, hasImages: false };
+  // Se o usuário passou um diretório específico diferente do padrão, testa ele diretamente
+  if (targetDir && targetDir !== DEFAULT_LEGACY_INSTALL_PATH) {
+    const configDir = resolveConfigDir(targetDir);
+    if (!configDir) {
+      return { exists: false, path: targetDir, hasMusic: false, hasImages: false };
+    }
+    const hasMusic = fs.existsSync(path.join(configDir, "musicas"));
+    const hasImages = fs.existsSync(path.join(configDir, "imagens"));
+    return {
+      exists: hasMusic || hasImages,
+      path: targetDir,
+      hasMusic,
+      hasImages,
+    };
   }
 
-  const configDir = resolveConfigDir(targetDir);
-  if (!configDir) {
-    return { exists: false, path: targetDir, hasMusic: false, hasImages: false };
+  // Caso padrão: testa primeiro o padrão C:\Program Files (x86)\Louvor JA
+  const defaultConfigDir = resolveConfigDir(DEFAULT_LEGACY_INSTALL_PATH);
+  if (defaultConfigDir) {
+    const hasMusic = fs.existsSync(path.join(defaultConfigDir, "musicas"));
+    const hasImages = fs.existsSync(path.join(defaultConfigDir, "imagens"));
+    if (hasMusic || hasImages) {
+      return {
+        exists: true,
+        path: DEFAULT_LEGACY_INSTALL_PATH,
+        hasMusic,
+        hasImages,
+      };
+    }
   }
 
-  const hasMusic = fs.existsSync(path.join(configDir, "musicas"));
-  const hasImages = fs.existsSync(path.join(configDir, "imagens"));
+  // Varredura automática em outros discos (D:\, E:\, etc.)
+  const allFound = findAllLegacyInstallations();
+  if (allFound.length > 0) {
+    const bestMatch = allFound[0];
+    const configDir = resolveConfigDir(bestMatch);
+    const hasMusic = configDir ? fs.existsSync(path.join(configDir, "musicas")) : false;
+    const hasImages = configDir ? fs.existsSync(path.join(configDir, "imagens")) : false;
+    return {
+      exists: true,
+      path: bestMatch,
+      hasMusic,
+      hasImages,
+    };
+  }
 
   return {
-    exists: hasMusic || hasImages,
-    path: targetDir,
-    hasMusic,
-    hasImages,
+    exists: false,
+    path: DEFAULT_LEGACY_INSTALL_PATH,
+    hasMusic: false,
+    hasImages: false,
   };
 }
 
@@ -149,6 +252,9 @@ export async function importLegacyMedia(
 
   const legacyMusicasDir = path.join(configDir, "musicas");
   const legacyImagensDir = path.join(configDir, "imagens");
+
+  const musicPath = getMusicPath();
+  const slidesPath = getSlidesPath();
 
   // Destino das músicas:
   // Se a pasta legada já contiver a subpasta 'pt', copiamos mantendo a hierarquia para musicPath.

@@ -1,7 +1,14 @@
 import { app, protocol, net, BrowserWindow, screen, session } from "electron";
 import * as path from "path";
 import * as fs from "fs";
-import { isDev } from "../config/constants";
+import {
+  isDev,
+  getMediaPath,
+  getMusicPath,
+  getSlidesPath,
+  getCoversPath,
+  getAvatarsPath,
+} from "../config/constants";
 import { URL_FILES, API_FALLBACK } from "../utils/api-fallback";
 import { createWindow, getMainWindow } from "./window";
 
@@ -145,15 +152,37 @@ export function setupLifecycle(): void {
         fallbackPath = filePath;
       }
 
-      if (fallbackPath.startsWith("/music/")) {
-        fallbackPath = `/musics/${fallbackPath.slice(7)}`;
+      // Identifica o tipo de mídia e extrai o caminho relativo
+      let mediaType: "music" | "images" | "covers" | "avatars" | "other" = "other";
+      let relSubPath = fallbackPath.replace(/^\/+/, "");
+
+      const musicMatch = fallbackPath.match(/^\/?(musics?|m[úu]sicas?)\/(.*)$/i);
+      const imageMatch = fallbackPath.match(/^\/?(images?|imagens?|slides?)\/(.*)$/i);
+      const coverMatch = fallbackPath.match(/^\/?(covers?|capas?)\/(.*)$/i);
+      const avatarMatch = fallbackPath.match(/^\/?(avatars?|avatares?)\/(.*)$/i);
+
+      let resolvedFilePath = "";
+      if (musicMatch) {
+        mediaType = "music";
+        relSubPath = musicMatch[2];
+        resolvedFilePath = path.join(getMusicPath(), relSubPath);
+      } else if (imageMatch) {
+        mediaType = "images";
+        relSubPath = imageMatch[2];
+        resolvedFilePath = path.join(getSlidesPath(), relSubPath);
+      } else if (coverMatch) {
+        mediaType = "covers";
+        relSubPath = coverMatch[2];
+        resolvedFilePath = path.join(getCoversPath(), relSubPath);
+      } else if (avatarMatch) {
+        mediaType = "avatars";
+        relSubPath = avatarMatch[2];
+        resolvedFilePath = path.join(getAvatarsPath(), relSubPath);
+      } else {
+        resolvedFilePath = path.join(getMediaPath(), relSubPath);
       }
 
-      const userDataPath = app.getPath("userData");
-      const mediaPath = path.join(userDataPath, "Media");
-      let resolvedFilePath = path.join(mediaPath, fallbackPath);
-
-      if (!fs.existsSync(resolvedFilePath) && fallbackPath.startsWith("/musics/")) {
+      if (!fs.existsSync(resolvedFilePath) && mediaType === "music") {
         const checkAudioExt = (p: string) => {
           if (p.toLowerCase().endsWith(".opus")) {
             const alt = p.replace(/\.opus$/i, ".mp3");
@@ -169,9 +198,9 @@ export function setupLifecycle(): void {
         if (altExt) {
           resolvedFilePath = altExt;
         } else {
-          const rest = fallbackPath.slice(8); // após /musics/
-          if (rest.startsWith("pt/")) {
-            const alt = path.join(mediaPath, "musics", rest.slice(3));
+          const currentMusicFolder = getMusicPath();
+          if (relSubPath.startsWith("pt/")) {
+            const alt = path.join(currentMusicFolder, relSubPath.slice(3));
             if (fs.existsSync(alt)) {
               resolvedFilePath = alt;
             } else {
@@ -179,7 +208,7 @@ export function setupLifecycle(): void {
               if (altExtPt) resolvedFilePath = altExtPt;
             }
           } else {
-            const alt = path.join(mediaPath, "musics", "pt", rest);
+            const alt = path.join(currentMusicFolder, "pt", relSubPath);
             if (fs.existsSync(alt)) {
               resolvedFilePath = alt;
             } else {
@@ -193,16 +222,23 @@ export function setupLifecycle(): void {
       filePath = resolvedFilePath;
 
       if (!fs.existsSync(filePath)) {
-        if (fallbackPath.startsWith("/avatars/")) {
+        if (mediaType === "avatars") {
           return callback({ error: -6 });
         }
-        const cleanPath = fallbackPath.replace(/\\/g, "/");
-        const cleanPathNoLead = cleanPath.startsWith("/") ? cleanPath.substring(1) : cleanPath;
+        let apiFolder = "musics";
+        if (mediaType === "images") apiFolder = "images";
+        else if (mediaType === "covers") apiFolder = "covers";
+
+        const cleanRel = relSubPath.replace(/\\/g, "/");
+        const cleanPathNoLead = mediaType !== "other"
+          ? `${apiFolder}/${cleanRel}`
+          : cleanRel;
+
         const apiUrlPrimary = `${URL_FILES}/${cleanPathNoLead}`;
         const apiUrlFallback = `${API_FALLBACK}/file/${cleanPathNoLead}`;
 
-        const isAudio = fallbackPath.startsWith("/musics/") && (fallbackPath.endsWith(".mp3") || fallbackPath.endsWith(".opus"));
-        const altExt = fallbackPath.endsWith(".mp3") ? ".opus" : ".mp3";
+        const isAudio = mediaType === "music" && (cleanPathNoLead.endsWith(".mp3") || cleanPathNoLead.endsWith(".opus"));
+        const altExt = cleanPathNoLead.endsWith(".mp3") ? ".opus" : ".mp3";
         const altPathNoLead = isAudio ? cleanPathNoLead.replace(/\.(mp3|opus)$/i, altExt) : "";
 
         const fetchFromApi = async () => {
@@ -222,7 +258,7 @@ export function setupLifecycle(): void {
               const res = await net.fetch(u, { signal: controller.signal });
               clearTimeout(timer);
               if (res.ok) {
-                const targetPath = (isAudio && u.includes(altPathNoLead)) 
+                const targetPath = (isAudio && u.includes(altPathNoLead))
                   ? path.join(path.dirname(filePath), path.basename(altPathNoLead))
                   : filePath;
                 return { buffer: await res.arrayBuffer(), finalPath: targetPath };
@@ -240,7 +276,7 @@ export function setupLifecycle(): void {
           callback({ path: finalPath });
         }).catch(err => {
           console.error("Fallback download error:", err);
-          callback({ error: -6 }); 
+          callback({ error: -6 });
         });
         return;
       }

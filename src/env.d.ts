@@ -86,7 +86,8 @@ interface ElectronAPI {
   checkDatabaseExists: (lang?: string) => Promise<boolean>
   checkOldInstallation: () => Promise<boolean>
   importOldInstallation: () => Promise<boolean>
-  checkLegacyInstallation?: () => Promise<{ exists: boolean; path: string; hasMusic: boolean; hasImages: boolean }>
+  checkLegacyInstallation?: (targetDir?: string) => Promise<{ exists: boolean; path: string; hasMusic: boolean; hasImages: boolean }>
+  scanLegacyInstallations?: () => Promise<string[]>
   selectLegacyFolder?: () => Promise<{ canceled: boolean; path?: string; valid?: boolean }>
   importLegacyMedia?: (folderPath?: string) => Promise<{ success: boolean; copiedMusic: number; copiedImages: number; totalCopied: number; error?: string }>
   onImportLegacyProgress?: (callback: (data: { current: number; total: number; filename: string }) => void) => void
@@ -143,6 +144,26 @@ interface ElectronAPI {
   exportLogs?: () => Promise<{ success: boolean; filePath?: string; canceled?: boolean; error?: string }>
   onLogEntryAdded?: (callback: (entry: unknown) => void) => void
   removeLogEntryListener?: () => void
+
+  // Gerenciamento do Caminho de Mídia
+  getMediaPath?: () => Promise<string>
+  openMediaFolder?: () => Promise<boolean>
+  setMediaPath?: (newPath: string) => Promise<boolean>
+  checkMediaPathMigration?: () => Promise<{
+    needsMigration: boolean
+    legacyPath: string
+    suggestedPath: string
+    isInterrupted?: boolean
+  }>
+  scanMediaDrives?: () => Promise<string[]>
+  openFolderPicker?: () => Promise<string | null>
+  migrateMediaFiles?: (
+    targetPath: string,
+    deleteSource?: boolean,
+    sourcePath?: string,
+  ) => Promise<{ success: boolean; totalCopied: number; error?: string }>
+  onMediaMigrationProgress?: (callback: (data: { current: number; total: number; filename: string; percent: number }) => void) => void
+  removeMediaMigrationProgressListener?: () => void
 }
 
 declare global {

@@ -3,7 +3,7 @@ import * as os from "os";
 import * as path from "path";
 import * as fs from "fs";
 import { app } from "electron";
-import { mediaPath, coversPath, musicPath, slidesPath } from "../config/constants";
+import { getMediaPath, getCoversPath, getMusicPath, getSlidesPath } from "../config/constants";
 
 export interface StreamingSlideData {
   type: "media" | "bible" | "idle";
@@ -497,12 +497,12 @@ class StreamingServerService {
     // 8. Servir arquivos de mídia (imagens e papéis de parede do LouvorJA)
     if (pathname.startsWith("/media/")) {
       const relPath = decodeURIComponent(pathname.substring(7));
-      let filePath = path.normalize(path.join(mediaPath, relPath));
+      let filePath = path.normalize(path.join(getMediaPath(), relPath));
       if (!fs.existsSync(filePath)) {
         const altPaths = [
-          path.join(coversPath, relPath),
-          path.join(musicPath, relPath),
-          path.join(slidesPath, relPath),
+          path.join(getCoversPath(), relPath),
+          path.join(getMusicPath(), relPath),
+          path.join(getSlidesPath(), relPath),
         ];
         for (const alt of altPaths) {
           if (fs.existsSync(alt)) {

@@ -98,11 +98,12 @@
         >
           <div class="logo-wrapper mb-4">
             <img
-              src="/ico/favicon.svg"
+              src="/ico/favicon.png"
               width="84"
               height="84"
               class="boot-logo"
               alt="Louvor JA"
+              @error="onLogoError"
             />
           </div>
 
@@ -175,16 +176,36 @@
           >
             <!-- Direct Boot Subtitle (only during direct boot) -->
             <p
-              v-if="!isFirstBoot"
+              v-if="!isFirstBoot && !isMigrationMode"
               class="loader-subtitle text-center mb-6"
             >
               {{ $t('first_boot.subtitle') }}
             </p>
+            <p
+              v-else-if="isMigrationMode"
+              class="loader-subtitle text-center mb-4"
+            >
+              {{ $t('first_boot.migration_subtitle') }}
+            </p>
+
+            <!-- Warning notice during migration -->
+            <div
+              v-if="isMigrationMode"
+              class="boot-migration-warning mb-5 pa-3 rounded-xl d-flex align-center justify-center text-center"
+              style="background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.35); gap: 10px;"
+            >
+              <v-icon color="warning" size="22" class="flex-shrink-0">
+                mdi-alert
+              </v-icon>
+              <span class="text-caption font-weight-bold" style="color: #f59e0b; line-height: 1.4;">
+                {{ $t('first_boot.migration_warning') }}
+              </span>
+            </div>
 
             <!-- Status & Percentage Header (only when not in error) -->
             <div v-if="!hasError" class="status-meta d-flex justify-space-between align-center mb-2">
-              <span class="status-text font-weight-medium">{{ statusText }}</span>
-              <span v-if="!isIndeterminate && progress > 0" class="progress-percent font-weight-bold">{{ progress }}%</span>
+              <span class="status-text font-weight-medium text-truncate mr-2">{{ statusText }}</span>
+              <span v-if="!isIndeterminate && (progress > 0 || isMigrationMode)" class="progress-percent font-weight-bold">{{ progress }}%</span>
             </div>
 
             <!-- Progress Bar (Normal) -->
@@ -379,6 +400,7 @@ export default defineComponent({
       isLegalModalOpen: false as boolean,
       legalModalTab: "terms" as "terms" | "privacy" | "copyright",
       legalModalLocale: "pt" as "pt" | "es",
+      isMigrationMode: false as boolean,
     };
   },
   computed: {
@@ -418,6 +440,7 @@ export default defineComponent({
     this.$appdata.set("system_first_boot_loading", true);
 
     window.addEventListener("show-boot-screen", this.handleManualShow);
+    window.addEventListener("start-media-migration-boot", this.handleMediaMigration as any);
 
     setTimeout(async () => {
       await this.checkFirstBoot();
@@ -426,12 +449,85 @@ export default defineComponent({
   },
   unmounted() {
     window.removeEventListener("show-boot-screen", this.handleManualShow);
+    window.removeEventListener("start-media-migration-boot", this.handleMediaMigration as any);
     if (this.bootInterval) {
       clearInterval(this.bootInterval);
       this.bootInterval = null;
     }
   },
   methods: {
+    onLogoError(e: Event) {
+      const img = e.target as HTMLImageElement;
+      if (img && !img.dataset.fallbackTried) {
+        img.dataset.fallbackTried = "true";
+        img.src = "/ico/favicon-180x180.png";
+      }
+    },
+    async handleMediaMigration(event: CustomEvent<{ targetPath: string; deleteSource?: boolean; sourcePath?: string; onComplete?: (_result: any) => void }>) {
+      const targetPath = event?.detail?.targetPath;
+      if (!targetPath || !window.electronAPI?.migrateMediaFiles) return;
+
+      const deleteSource = event?.detail?.deleteSource ?? false;
+      const sourcePath = event?.detail?.sourcePath;
+
+      this.isMigrationMode = true;
+      this.isFirstBoot = false;
+      this.isOpen = true;
+      this.showContent = true;
+      this.showWelcomeScreen = false;
+      this.hasError = false;
+      this.isIndeterminate = false;
+      this.progress = 0;
+      this.statusText = this.$t("modules.config.media_path_migrating") || "Iniciando transferência...";
+      this.detailCard = {
+        icon: "mdi-folder-sync",
+        title: this.$t("modules.config.media_path_migrating") || "Transferindo arquivos de mídia...",
+        subtitle: targetPath,
+      };
+
+      if (window.electronAPI.onMediaMigrationProgress) {
+        window.electronAPI.onMediaMigrationProgress((data: any) => {
+          this.progress = data.percent;
+          // Mostra apenas o progresso em quantidade e percentual, sem nomes de arquivos individuais
+          this.statusText = `${this.$t("modules.config.media_path_migrating") || "Transferindo arquivos..."} (${data.current}/${data.total})`;
+        });
+      }
+
+      try {
+        const res = await window.electronAPI.migrateMediaFiles(targetPath, deleteSource, sourcePath);
+        if (window.electronAPI.removeMediaMigrationProgressListener) {
+          window.electronAPI.removeMediaMigrationProgressListener();
+        }
+
+        if (res.success) {
+          this.progress = 100;
+          this.statusText = this.$t("first_boot.migration_success") || "Migração concluída com sucesso!";
+          this.detailCard = {
+            icon: "mdi-check-circle",
+            title: this.$t("first_boot.migration_success") || "Migração concluída com sucesso!",
+            subtitle: `${res.totalCopied} arquivos transferidos`,
+          };
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          this.isOpen = false;
+          this.isMigrationMode = false;
+          if (event?.detail?.onComplete) event.detail.onComplete(res);
+        } else {
+          this.hasError = true;
+          this.statusText = `Erro na migração: ${res.error || "Falha na cópia"}`;
+          this.detailCard = {
+            icon: "mdi-alert-circle",
+            title: "Erro na migração",
+            subtitle: res.error || "Ocorreu uma falha ao transferir os arquivos.",
+          };
+          if (event?.detail?.onComplete) event.detail.onComplete(res);
+        }
+      } catch (err: any) {
+        console.error("Erro na migração de mídia:", err);
+        this.hasError = true;
+        this.statusText = `Erro: ${err?.message || err}`;
+        if (event?.detail?.onComplete) event.detail.onComplete({ success: false, error: err?.message || err });
+      }
+    },
     toggleTheme() {
       const nextTheme = this.isDarkMode ? "light" : "dark";
       this.overrideTheme = nextTheme;
@@ -953,6 +1049,9 @@ export default defineComponent({
 .boot-logo {
   filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.25));
   animation: bootLogoEntrance 0.8s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto;
 }
 
 @keyframes bootLogoEntrance {

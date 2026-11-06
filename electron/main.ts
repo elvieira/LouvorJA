@@ -4,11 +4,20 @@ import { app } from "electron";
 // Define o nome oficial da aplicação para o menu do macOS e processos do sistema
 app.name = "Louvor JA";
 import * as fs from "fs-extra";
-import * as path from "path";
 import { initLogger } from "./services/logger";
 import { setupLifecycle } from "./core/lifecycle";
 import { registerIpcHandlers } from "./ipc";
-import { getSysDbPath, mediaPath, coversPath, musicPath, slidesPath, oldDbPath } from "./config/constants";
+import {
+  getSysDbPath,
+  getMediaPath,
+  getCoversPath,
+  getMusicPath,
+  getSlidesPath,
+  getAvatarsPath,
+  getFluteDataPath,
+  getFluteSystemPath,
+  oldDbPath,
+} from "./config/constants";
 import { setupUpdater } from "./services/updater";
 
 // Inicializa o serviço de logging central
@@ -27,23 +36,19 @@ if (fs.existsSync(oldDbPath)) {
   } catch (_e) { console.error("Remove old db legacy error:", _e); }
 }
 
-// Migração da pasta antiga 'music' para 'musics'
-const oldMusicPath = path.join(mediaPath, "music");
-if (fs.existsSync(oldMusicPath)) {
-  try {
-    if (!fs.existsSync(musicPath)) {
-      // Se a nova não existir, apenas renomeia (instantâneo)
-      fs.renameSync(oldMusicPath, musicPath);
-    } else {
-      // Se ambas existirem, mescla os arquivos e remove a antiga
-      fs.copySync(oldMusicPath, musicPath, { overwrite: false });
-      fs.removeSync(oldMusicPath);
-    }
-  } catch (_e) { console.error("Migrate old music folder error:", _e); }
-}
-
 // Garante que todas as pastas essenciais existam ao inicializar
-[getSysDbPath("pt"), getSysDbPath("es"), mediaPath, coversPath, musicPath, slidesPath].forEach(dir => {
+const essentialDirs = [
+  getFluteDataPath(),
+  getFluteSystemPath(),
+  getAvatarsPath(),
+  getSysDbPath("pt"),
+  getSysDbPath("es"),
+  getMediaPath(),
+  getMusicPath(),
+  getSlidesPath(),
+  getCoversPath(),
+];
+essentialDirs.forEach(dir => {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 });
 

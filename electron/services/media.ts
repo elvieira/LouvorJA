@@ -1,7 +1,7 @@
 import { ipcMain, net } from "electron";
 import * as path from "path";
 import * as fs from "fs-extra";
-import { coversPath, musicPath, slidesPath, avatarsPath, sysConfigPath } from "../config/constants";
+import { getCoversPath, getMusicPath, getSlidesPath, getAvatarsPath, sysConfigPath } from "../config/constants";
 import { encryptData, decryptData } from "../utils/crypto";
 import { URL_FILES, API_FALLBACK } from "../utils/api-fallback";
 
@@ -58,7 +58,7 @@ function cleanRelativeMediaFilename(raw: string): string {
   }
   decoded = decoded.replace(/^https?:\/\/[^/]+\//i, "");
   decoded = decoded.replace(/^local:\/\/media\//i, "");
-  decoded = decoded.replace(/^\/?(musics|images|covers|avatars)\//i, "");
+  decoded = decoded.replace(/^\/?(musics?|m[úu]sicas?|images?|imagens?|slides?|covers?|capas?|avatars?|avatares?)\//i, "");
   return decoded;
 }
 
@@ -78,10 +78,10 @@ function buildApiUrl(destFolderType: string, filename: string, useFallback: bool
 export function registerMediaHandlers() {
   ipcMain.handle("download-media", async (event, url: string, destFolderType: string, filename: string) => {
     try {
-      let destFolder = coversPath;
-      if (destFolderType === "music") destFolder = musicPath;
-      else if (destFolderType === "slides") destFolder = slidesPath;
-      else if (destFolderType === "avatars") destFolder = avatarsPath;
+      let destFolder = getCoversPath();
+      if (destFolderType === "music") destFolder = getMusicPath();
+      else if (destFolderType === "slides") destFolder = getSlidesPath();
+      else if (destFolderType === "avatars") destFolder = getAvatarsPath();
 
       const decodedFilename = cleanRelativeMediaFilename(filename);
       const filePath = path.join(destFolder, decodedFilename);
@@ -185,10 +185,10 @@ export function registerMediaHandlers() {
   });
 
   ipcMain.handle("check-media", async (event, destFolderType: string, filename: string) => {
-    let destFolder = coversPath;
-    if (destFolderType === "music") destFolder = musicPath;
-    else if (destFolderType === "slides") destFolder = slidesPath;
-    else if (destFolderType === "avatars") destFolder = avatarsPath;
+    let destFolder = getCoversPath();
+    if (destFolderType === "music") destFolder = getMusicPath();
+    else if (destFolderType === "slides") destFolder = getSlidesPath();
+    else if (destFolderType === "avatars") destFolder = getAvatarsPath();
 
     let decodedFilename = cleanRelativeMediaFilename(filename);
     let filePath = path.join(destFolder, decodedFilename);
@@ -252,10 +252,10 @@ export function registerMediaHandlers() {
   });
 
   ipcMain.handle("delete-media", async (event, destFolderType: string, filename: string) => {
-    let destFolder = coversPath;
-    if (destFolderType === "music") destFolder = musicPath;
-    else if (destFolderType === "slides") destFolder = slidesPath;
-    else if (destFolderType === "avatars") destFolder = avatarsPath;
+    let destFolder = getCoversPath();
+    if (destFolderType === "music") destFolder = getMusicPath();
+    else if (destFolderType === "slides") destFolder = getSlidesPath();
+    else if (destFolderType === "avatars") destFolder = getAvatarsPath();
 
     let decodedFilename = cleanRelativeMediaFilename(filename);
     let filePath = path.join(destFolder, decodedFilename);

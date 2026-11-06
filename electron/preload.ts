@@ -39,7 +39,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
   getAlbumsDetails: (lang?: string) => ipcRenderer.invoke("get-albums-details", lang),
   checkOldInstallation: () => ipcRenderer.invoke("check-old-installation"),
   importOldInstallation: () => ipcRenderer.invoke("import-old-installation"),
-  checkLegacyInstallation: () => ipcRenderer.invoke("check-legacy-installation"),
+  checkLegacyInstallation: (targetDir?: string) => ipcRenderer.invoke("check-legacy-installation", targetDir),
+  scanLegacyInstallations: () => ipcRenderer.invoke("scan-legacy-installations"),
   selectLegacyFolder: () => ipcRenderer.invoke("select-legacy-folder"),
   importLegacyMedia: (folderPath?: string) => ipcRenderer.invoke("import-legacy-media", folderPath),
   onImportLegacyProgress: (callback: (data: unknown) => void) => {
@@ -149,5 +150,21 @@ contextBridge.exposeInMainWorld("electronAPI", {
   },
   removeLogEntryListener: () => {
     ipcRenderer.removeAllListeners("log-entry-added");
+  },
+
+  // Gerenciamento do Caminho de Mídia
+  getMediaPath: () => ipcRenderer.invoke("get-media-path"),
+  openMediaFolder: () => ipcRenderer.invoke("open-media-folder"),
+  setMediaPath: (newPath: string) => ipcRenderer.invoke("set-media-path", newPath),
+  checkMediaPathMigration: () => ipcRenderer.invoke("check-media-path-migration"),
+  scanMediaDrives: () => ipcRenderer.invoke("scan-media-drives"),
+  openFolderPicker: () => ipcRenderer.invoke("open-folder-picker"),
+  migrateMediaFiles: (targetPath: string, deleteSource?: boolean, sourcePath?: string) =>
+    ipcRenderer.invoke("migrate-media-files", targetPath, deleteSource, sourcePath),
+  onMediaMigrationProgress: (callback: (data: unknown) => void) => {
+    ipcRenderer.on("media-migration-progress", (_event, data) => callback(data));
+  },
+  removeMediaMigrationProgressListener: () => {
+    ipcRenderer.removeAllListeners("media-migration-progress");
   },
 });

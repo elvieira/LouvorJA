@@ -3,7 +3,16 @@ import * as fs from "fs-extra";
 import { statfsSync } from "fs";
 import * as path from "path";
 import AdmZip from "adm-zip";
-import { getSysDbPath, mediaPath, coversPath, musicPath, slidesPath, userDataPath, sysConfigPath } from "../config/constants";
+import { getSysDbPath, getMediaPath, getCoversPath, getMusicPath, getSlidesPath, userDataPath, fluteDataPath, sysConfigPath } from "../config/constants";
+import {
+  saveMediaPath,
+  needsMediaPathMigration,
+  getLegacyMediaPath,
+  getDefaultSharedMediaPath,
+  scanForExistingMediaPaths,
+  migrateMediaFiles,
+  isMigrationInterrupted,
+} from "../config/media-path";
 import { encryptData, decryptData } from "../utils/crypto";
 import { registerDatabaseHandlers } from "../services/database";
 import { registerMediaHandlers } from "../services/media";
@@ -12,7 +21,7 @@ import { registerValidatorHandlers } from "../services/validator";
 import { registerStreamingIpcHandlers } from "./streaming";
 import { registerYoutubeHandlers } from "../services/youtube";
 import { registerLoggerHandlers } from "../services/logger";
-import { checkLegacyInstallation, selectLegacyFolder, importLegacyMedia } from "../services/legacy-importer";
+import { checkLegacyInstallation, selectLegacyFolder, importLegacyMedia, findAllLegacyInstallations } from "../services/legacy-importer";
 import { getRememberWindowBounds, setRememberWindowBounds } from "../services/window-state";
 import { getPendingFilePathToOpen } from "../core/lifecycle";
 import { closeProjections } from "../core/window";
@@ -256,8 +265,12 @@ export function registerIpcHandlers() {
   registerStreamingIpcHandlers();
   registerYoutubeHandlers();
 
-  ipcMain.handle("check-legacy-installation", async () => {
-    return checkLegacyInstallation();
+  ipcMain.handle("check-legacy-installation", async (_event, targetDir?: string) => {
+    return checkLegacyInstallation(targetDir);
+  });
+
+  ipcMain.handle("scan-legacy-installations", async () => {
+    return findAllLegacyInstallations();
   });
 
   ipcMain.handle("select-legacy-folder", async () => {
@@ -320,9 +333,9 @@ export function registerIpcHandlers() {
       let targetPath = "";
       switch (dirType) {
         case "database": targetPath = getSysDbPath("pt"); break; // Retorna o tamanho aproximado
-        case "covers": targetPath = coversPath; break;
-        case "music": targetPath = musicPath; break;
-        case "slides": targetPath = slidesPath; break;
+        case "covers": targetPath = getCoversPath(); break;
+        case "music": targetPath = getMusicPath(); break;
+        case "slides": targetPath = getSlidesPath(); break;
       }
       if (targetPath) {
         const size = await getFolderSize(targetPath);
@@ -657,12 +670,21 @@ export function registerIpcHandlers() {
 
   ipcMain.handle("clear-all-data", async () => {
     try {
-      // Deleta todos os diretórios com prefixo .sysdata_
-      const files = fs.readdirSync(userDataPath);
-      for (const file of files) {
-        if (file.startsWith(".sysdata_")) {
-          const p = path.join(userDataPath, file);
-          fs.emptyDirSync(p);
+      const mediaPath = getMediaPath();
+      const coversPath = getCoversPath();
+      const musicPath = getMusicPath();
+      const slidesPath = getSlidesPath();
+      // Deleta todos os diretórios com prefixo .sysdata_ em fluteDataPath
+      const targetDirs = [fluteDataPath, userDataPath];
+      for (const targetDir of targetDirs) {
+        if (fs.existsSync(targetDir)) {
+          const files = fs.readdirSync(targetDir);
+          for (const file of files) {
+            if (file.startsWith(".sysdata_")) {
+              const p = path.join(targetDir, file);
+              fs.emptyDirSync(p);
+            }
+          }
         }
       }
       if (fs.existsSync(mediaPath)) fs.emptyDirSync(mediaPath);
@@ -803,4 +825,70 @@ export function registerIpcHandlers() {
     const win = BrowserWindow.getAllWindows().find((w) => w.id === 1) || BrowserWindow.getAllWindows()[0];
     return setRememberWindowBounds(enabled, win);
   });
+
+  // ─── Handlers de Gerenciamento do Caminho de Mídia ───────────────────────────
+
+  ipcMain.handle("get-media-path", () => {
+    return getMediaPath();
+  });
+
+  ipcMain.handle("open-media-folder", async () => {
+    const currentPath = getMediaPath();
+    if (currentPath && fs.existsSync(currentPath)) {
+      await shell.openPath(currentPath);
+      return true;
+    }
+    const parent = path.dirname(currentPath);
+    if (fs.existsSync(parent)) {
+      await shell.openPath(parent);
+      return true;
+    }
+    return false;
+  });
+
+  ipcMain.handle("set-media-path", (_event, newPath: string) => {
+    return saveMediaPath(newPath);
+  });
+
+  ipcMain.handle("check-media-path-migration", () => {
+    const suggestedPath = getDefaultSharedMediaPath();
+    return {
+      needsMigration: needsMediaPathMigration(),
+      legacyPath: getLegacyMediaPath(),
+      suggestedPath,
+      isInterrupted: isMigrationInterrupted(suggestedPath),
+    };
+  });
+
+  ipcMain.handle("scan-media-drives", async () => {
+    return await scanForExistingMediaPaths();
+  });
+
+  ipcMain.handle("open-folder-picker", async (event) => {
+    const win = BrowserWindow.fromWebContents(event.sender);
+    const result = await dialog.showOpenDialog(win || BrowserWindow.getAllWindows()[0], {
+      title: "Selecionar pasta de mídia",
+      properties: ["openDirectory", "createDirectory"],
+    });
+    if (result.canceled || !result.filePaths.length) return null;
+    return result.filePaths[0];
+  });
+
+  ipcMain.handle("migrate-media-files", async (event, targetPath: string, deleteSource?: boolean, sourcePath?: string) => {
+    return await migrateMediaFiles(
+      targetPath,
+      sourcePath,
+      (progress: unknown) => {
+        try {
+          if (!event.sender.isDestroyed()) {
+            event.sender.send("media-migration-progress", progress);
+          }
+        } catch {
+          // ignora se sender fechou
+        }
+      },
+      deleteSource || false,
+    );
+  });
 }
+

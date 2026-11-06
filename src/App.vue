@@ -133,6 +133,11 @@ export default {
         }
       }
 
+      // Verificação da pasta de mídia compartilhada (migração de mídias antigas)
+      setTimeout(() => {
+        this.checkSharedMediaMigration();
+      }, 1500);
+
       if (window.electronAPI && window.electronAPI.onStreamingRemoteAction) {
         window.electronAPI.onStreamingRemoteAction(async (data) => {
           const { action, params } = data;
@@ -600,6 +605,79 @@ export default {
           this.$media.minimize();
         }
       }
+    },
+    async checkSharedMediaMigration() {
+      if (!window.electronAPI?.checkMediaPathMigration) return;
+      try {
+        const migration = await window.electronAPI.checkMediaPathMigration();
+        if (!migration?.needsMigration) return;
+
+        const title = this.$t("modules.config.media_path_migration_title") || "Nova Pasta de Mídia";
+        let promptText = this.$t("modules.config.media_path_migration_prompt");
+        if (typeof promptText === "string" && promptText.includes("{legacy}")) {
+          promptText = promptText
+            .replace("{legacy}", migration.legacyPath)
+            .replace("{suggested}", migration.suggestedPath);
+        } else {
+          promptText = `Identificamos que suas mídias estão no local padrão antigo:<br><b>${migration.legacyPath}</b><br><br>Deseja migrá-las para o novo diretório?<br><b>${migration.suggestedPath}</b>`;
+        }
+
+        const { default: $alert } = await import("@/helpers/ui/Alert");
+        $alert.show({
+          title,
+          text: promptText,
+          translate: false,
+          maxWidth: 580,
+          buttons: [
+            { text: "modules.config.media_path_migration_keep", color: "grey", variant: "text", value: "keep" },
+            { text: "modules.config.media_path_migration_choose", color: "primary", variant: "tonal", value: "choose" },
+            { text: "modules.config.media_path_migration_migrate", color: "primary", variant: "flat", value: "migrate" },
+          ],
+        }, async (resp) => {
+          if (resp === "migrate") {
+            await this.executeStartupMediaMigration(migration.suggestedPath);
+          } else if (resp === "choose") {
+            const picked = await window.electronAPI.openFolderPicker?.();
+            if (picked) {
+              await this.executeStartupMediaMigration(picked);
+            }
+          } else if (resp === "keep") {
+            await window.electronAPI.setMediaPath?.(migration.legacyPath);
+          }
+        });
+      } catch (e) {
+        console.error("Erro na verificação de migração de mídia:", e);
+      }
+    },
+    async executeStartupMediaMigration(targetPath) {
+      if (!window.electronAPI?.migrateMediaFiles) return;
+
+      window.dispatchEvent(
+        new CustomEvent("start-media-migration-boot", {
+          detail: {
+            targetPath,
+            deleteSource: true,
+            onComplete: async (res) => {
+              if (res && res.success) {
+                const { default: $snackbar } = await import("@/helpers/ui/Snackbar");
+                $snackbar.show({
+                  text: this.$t("modules.config.media_path_migration_success", { count: res.totalCopied }),
+                  color: "success",
+                  timeout: 5000,
+                });
+              } else if (res && !res.success) {
+                const { default: $alert } = await import("@/helpers/ui/Alert");
+                $alert.show({
+                  title: this.$t("modules.config.media_path_title"),
+                  text: this.$t("modules.config.media_path_migration_error", { error: res.error || "" }),
+                  translate: false,
+                  buttons: [{ text: "alert.close", color: "primary", value: "close" }],
+                });
+              }
+            },
+          },
+        }),
+      );
     },
   },
 };
