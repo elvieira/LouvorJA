@@ -248,7 +248,7 @@ const statusConfig = computed(() => {
   .v-snackbar__content {
     padding: 0 !important;
     display: flex;
-    align-center;
+    align-items: center;
     flex: 1 1 auto;
     min-width: 0;
   }
