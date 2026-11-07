@@ -3,7 +3,7 @@ import * as fs from "fs-extra";
 import { statfsSync } from "fs";
 import * as path from "path";
 import AdmZip from "adm-zip";
-import { getSysDbPath, getMediaPath, getCoversPath, getMusicPath, getSlidesPath, userDataPath, fluteDataPath, sysConfigPath } from "../config/constants";
+import { getSysDbPath, getMediaPath, getCoversPath, getMusicPath, getSlidesPath, userDataPath, fluteDataPath, sysConfigPath, getSysConfigPath } from "../config/constants";
 import {
   saveMediaPath,
   needsMediaPathMigration,
@@ -705,8 +705,9 @@ export function registerIpcHandlers() {
       if (fs.existsSync(sysDbPath)) fs.emptyDirSync(sysDbPath);
       if (!fs.existsSync(sysDbPath)) fs.mkdirSync(sysDbPath, { recursive: true });
       
-      if (fs.existsSync(sysConfigPath)) {
-        const configEncrypted = fs.readFileSync(sysConfigPath, "utf8");
+      const readConfigPath = getSysConfigPath();
+      if (fs.existsSync(readConfigPath)) {
+        const configEncrypted = fs.readFileSync(readConfigPath, "utf8");
         const configDecrypted = decryptData(configEncrypted);
         if (configDecrypted) {
           const sysConfig = JSON.parse(configDecrypted);

@@ -17,6 +17,16 @@
     "modules": {
         "invalid": {
             "title": "#Error#"
+        },
+        "config": {
+            "media_path_migration_title": "Migración de la Carpeta de Medios",
+            "media_path_migration_prompt": "Identificamos una instalación previa con medios en:<br><b>{legacy}</b><br><br>¿Desea migrarlos a la nueva carpeta compartida?<br><b>{suggested}</b>",
+            "media_path_migration_keep": "Mantener en la Ubicación Anterior",
+            "media_path_migration_choose": "Elegir Otra Ubicación...",
+            "media_path_migration_migrate": "Migrar Ahora",
+            "media_path_migrating": "Transfiriendo archivos de medios...",
+            "media_path_migration_success": "¡Migración de medios completada! {count} archivos transferidos.",
+            "media_path_migration_error": "Fallo en la migración de medios: {error}"
         }
     },
     "module_group": {

@@ -11,6 +11,7 @@ import {
   needsMediaPathMigration,
   getDefaultSharedMediaPath,
   isMigrationInterrupted,
+  getSysConfigPath,
 } from "./media-path";
 import {
   getFluteBasePath,
@@ -79,6 +80,7 @@ export function getLiturgyPath(): string {
   return p;
 }
 
+export { getSysConfigPath };
 export const sysConfigPath = path.join(getFluteDataPath(), ".sysconfig.bin");
 export const oldDbPath = path.join(getFluteDataPath(), "database");
 export const finalDbPath = path.join(getFluteDataPath(), "database.db");

@@ -174,8 +174,12 @@ export function addLog(
   try {
     const windows = BrowserWindow.getAllWindows();
     for (const win of windows) {
-      if (!win.isDestroyed() && win.webContents) {
-        win.webContents.send("log-entry-added", entry);
+      if (!win.isDestroyed() && win.webContents && !win.webContents.isDestroyed()) {
+        try {
+          win.webContents.send("log-entry-added", entry);
+        } catch {
+          // ignore
+        }
       }
     }
   } catch {

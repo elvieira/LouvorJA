@@ -1,7 +1,7 @@
 import { BrowserWindow, dialog, WebContents } from "electron";
 import * as path from "path";
 import * as fs from "fs-extra";
-import { getMusicPath, getSlidesPath, sysConfigPath } from "../config/constants";
+import { getMusicPath, getSlidesPath, sysConfigPath, getSysConfigPath } from "../config/constants";
 import { encryptData, decryptData } from "../utils/crypto";
 
 export const DEFAULT_LEGACY_INSTALL_PATH = "C:\\Program Files (x86)\\Louvor JA";
@@ -370,8 +370,9 @@ export async function importLegacyMedia(
   // Registra as mídias importadas no sysConfig ("dlm")
   try {
     let sysConfig: Record<string, unknown> = {};
-    if (fs.existsSync(sysConfigPath)) {
-      const configEncrypted = fs.readFileSync(sysConfigPath, "utf8");
+    const readPath = getSysConfigPath();
+    if (fs.existsSync(readPath)) {
+      const configEncrypted = fs.readFileSync(readPath, "utf8");
       const configDecrypted = decryptData(configEncrypted);
       if (configDecrypted) sysConfig = JSON.parse(configDecrypted);
     }

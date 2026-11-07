@@ -17,6 +17,16 @@
     "modules": {
         "invalid": {
             "title": "#Erro#"
+        },
+        "config": {
+            "media_path_migration_title": "Migração da Pasta de Mídia",
+            "media_path_migration_prompt": "Identificamos uma instalação da versão anterior com mídias em:<br><b>{legacy}</b><br><br>Deseja migrá-las para a nova pasta compartilhada?<br><b>{suggested}</b>",
+            "media_path_migration_keep": "Manter no Local Antigo",
+            "media_path_migration_choose": "Escolher Outro Local...",
+            "media_path_migration_migrate": "Migrar Agora",
+            "media_path_migrating": "Transferindo arquivos de mídia...",
+            "media_path_migration_success": "Migração de mídia concluída! {count} arquivos transferidos.",
+            "media_path_migration_error": "Falha na migração de mídia: {error}"
         }
     },
     "module_group": {

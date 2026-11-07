@@ -3,13 +3,14 @@ import * as fs from "fs-extra";
 
 import { encryptData, decryptData } from "../utils/crypto";
 import { SQLiteHelper } from "../utils/sqlite";
-import { getSysDbPath, sysConfigPath } from "../config/constants";
+import { getSysDbPath, sysConfigPath, getSysConfigPath } from "../config/constants";
 
 export function updateSysConfig(key: string, value: unknown): boolean {
   try {
     let sysConfig: Record<string, unknown> = {};
-    if (fs.existsSync(sysConfigPath)) {
-      const encrypted = fs.readFileSync(sysConfigPath, "utf8");
+    const readPath = getSysConfigPath();
+    if (fs.existsSync(readPath)) {
+      const encrypted = fs.readFileSync(readPath, "utf8");
       const decrypted = decryptData(encrypted);
       if (decrypted) {
         sysConfig = JSON.parse(decrypted);
@@ -30,8 +31,9 @@ export function updateSysConfig(key: string, value: unknown): boolean {
 
 export function getSysConfigValue<T = unknown>(key: string): T | null {
   try {
-    if (fs.existsSync(sysConfigPath)) {
-      const encrypted = fs.readFileSync(sysConfigPath, "utf8");
+    const readPath = getSysConfigPath();
+    if (fs.existsSync(readPath)) {
+      const encrypted = fs.readFileSync(readPath, "utf8");
       const decrypted = decryptData(encrypted);
       if (decrypted) {
         const sysConfig = JSON.parse(decrypted);

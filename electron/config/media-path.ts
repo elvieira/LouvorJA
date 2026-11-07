@@ -20,7 +20,7 @@ import * as crypto from "crypto";
 import * as path from "path";
 import * as os from "os";
 import * as fs from "fs";
-import { getFluteDataPath, getFluteAvatarsPath, getLegacyUserDataPath } from "./flute-paths";
+import { getFluteBasePath, getFluteDataPath, getFluteAvatarsPath, getLegacyUserDataPath } from "./flute-paths";
 
 // Chave estática para ofuscação (mesma de constants.ts sem import para evitar dependência circular)
 const ENCRYPTION_KEY = Buffer.from("v389s8dkj238910s8a7d3h2j1k9s8d7f", "utf8");
@@ -102,6 +102,15 @@ function readConfiguredMediaPath(): string | null {
 }
 
 function resolveWindowsDefaultMediaPath(): string {
+  try {
+    const fluteBase = getFluteBasePath();
+    const parentDir = path.dirname(fluteBase);
+    if (path.basename(parentDir).toLowerCase() === "louvor ja") {
+      return path.join(parentDir, "Media");
+    }
+  } catch {
+    // fallback
+  }
   const systemDrive = (process.env.SYSTEMDRIVE || "C:").replace(/\\$/, "");
   return path.join(`${systemDrive}\\`, "Louvor JA", "Media");
 }
@@ -357,6 +366,11 @@ export function needsMediaPathMigration(): boolean {
   if (configured) return false;
 
   const legacy = getLegacyMediaPath();
+  const suggested = getDefaultSharedMediaPath();
+  if (path.resolve(legacy).toLowerCase() === path.resolve(suggested).toLowerCase()) {
+    return false;
+  }
+
   return hasMediaContent(legacy);
 }
 
@@ -465,6 +479,7 @@ export interface MediaMigrationProgress {
 export interface MediaMigrationResult {
   success: boolean;
   totalCopied: number;
+  errorCount?: number;
   error?: string;
 }
 
@@ -536,21 +551,22 @@ export function isMigrationInterrupted(targetPath: string): boolean {
  */
 export async function migrateMediaFiles(
   targetPath: string,
-  sourcePath: string = (needsMediaPathMigration() ? getLegacyMediaPath() : resolveMediaPath()),
+  sourcePath?: string,
   onProgress?: (progress: MediaMigrationProgress) => void,
   deleteSource: boolean = false,
 ): Promise<MediaMigrationResult> {
+  const effectiveSourcePath = sourcePath || (needsMediaPathMigration() ? getLegacyMediaPath() : resolveMediaPath());
   const markerFile = path.join(targetPath, ".migration_in_progress");
   const fluteDataDir = getFluteDataPath();
   const lockFile = path.join(fluteDataDir, ".migration_lock.json");
 
   try {
-    if (!fs.existsSync(sourcePath)) {
+    if (!fs.existsSync(effectiveSourcePath)) {
       saveMediaPath(targetPath);
       return { success: true, totalCopied: 0 };
     }
 
-    if (path.resolve(sourcePath).toLowerCase() === path.resolve(targetPath).toLowerCase()) {
+    if (path.resolve(effectiveSourcePath).toLowerCase() === path.resolve(targetPath).toLowerCase()) {
       saveMediaPath(targetPath);
       return { success: true, totalCopied: 0 };
     }
@@ -559,7 +575,7 @@ export async function migrateMediaFiles(
     const interrupted = isMigrationInterrupted(targetPath);
     if (interrupted || fs.existsSync(markerFile)) {
       console.log("[media-path] Transferência interrompida detectada. Apagando pasta de destino e reiniciando do zero:", targetPath);
-      if (targetPath.length > 5 && path.resolve(targetPath).toLowerCase() !== path.resolve(sourcePath).toLowerCase()) {
+      if (targetPath.length > 5 && path.resolve(targetPath).toLowerCase() !== path.resolve(effectiveSourcePath).toLowerCase()) {
         try {
           fs.rmSync(targetPath, { recursive: true, force: true });
         } catch (rmErr) {
@@ -573,9 +589,9 @@ export async function migrateMediaFiles(
       fs.mkdirSync(targetPath, { recursive: true });
     }
     try {
-      fs.writeFileSync(markerFile, JSON.stringify({ sourcePath, targetPath, startedAt: new Date().toISOString() }), "utf8");
+      fs.writeFileSync(markerFile, JSON.stringify({ sourcePath: effectiveSourcePath, targetPath, startedAt: new Date().toISOString() }), "utf8");
       if (fs.existsSync(fluteDataDir)) {
-        fs.writeFileSync(lockFile, JSON.stringify({ sourcePath, targetPath, startedAt: new Date().toISOString() }), "utf8");
+        fs.writeFileSync(lockFile, JSON.stringify({ sourcePath: effectiveSourcePath, targetPath, startedAt: new Date().toISOString() }), "utf8");
       }
     } catch (e) {
       console.warn("[media-path] Aviso ao registrar marcador de transferência:", e);
@@ -591,10 +607,13 @@ export async function migrateMediaFiles(
       if (!fs.existsSync(d)) fs.mkdirSync(d, { recursive: true });
     });
 
-    const files = collectFilesRecursively(sourcePath);
+    const files = collectFilesRecursively(effectiveSourcePath);
     const totalFiles = files.length;
     let processed = 0;
     let totalCopied = 0;
+    let errorCount = 0;
+    const MAX_ALLOWED_ERRORS = 40;
+    const failedFiles: string[] = [];
 
     for (const file of files) {
       processed++;
@@ -638,8 +657,17 @@ export async function migrateMediaFiles(
       }
 
       if (needsCopy) {
-        fs.copyFileSync(file.fullPath, destPath);
-        totalCopied++;
+        try {
+          fs.copyFileSync(file.fullPath, destPath);
+          totalCopied++;
+        } catch (copyErr) {
+          errorCount++;
+          failedFiles.push(file.relPath);
+          console.warn(`[media-path] Erro ao copiar ${file.relPath} (${errorCount}/${MAX_ALLOWED_ERRORS}):`, copyErr);
+          if (errorCount >= MAX_ALLOWED_ERRORS) {
+            throw new Error(`Limite de erros (${MAX_ALLOWED_ERRORS}) atingido durante a transferência de mídia.`);
+          }
+        }
       }
 
       if (onProgress && (processed % 5 === 0 || processed === totalFiles)) {
@@ -653,7 +681,11 @@ export async function migrateMediaFiles(
       }
     }
 
-    // Salva o novo caminho de mídia configurado apenas com 100% dos arquivos copiados
+    if (errorCount > 0) {
+      console.warn(`[media-path] Migração concluída com ${errorCount} erros tolerados (arquivos pendentes para recuperação):`, failedFiles);
+    }
+
+    // Salva o novo caminho de mídia configurado apenas com a transferência bem-sucedida (dentro do limite de tolerância)
     saveMediaPath(targetPath);
 
     // Remove os marcadores de transferência em andamento
@@ -664,26 +696,58 @@ export async function migrateMediaFiles(
       // Ignora erro ao remover marcadores
     }
 
-    // Exclui a pasta de origem apenas se solicitado e após concluir 100% da transferência
-    if (deleteSource && fs.existsSync(sourcePath) && path.resolve(sourcePath).toLowerCase() !== path.resolve(targetPath).toLowerCase()) {
+    // 1. Exclui a pasta de origem apenas se solicitado (mover/migrar) e após concluir a transferência
+    if (deleteSource && fs.existsSync(effectiveSourcePath) && path.resolve(effectiveSourcePath).toLowerCase() !== path.resolve(targetPath).toLowerCase()) {
       try {
-        fs.rmSync(sourcePath, { recursive: true, force: true });
-        console.log("[media-path] Pasta antiga removida com sucesso após migração completa:", sourcePath);
+        fs.rmSync(effectiveSourcePath, { recursive: true, force: true });
+        console.log("[media-path] Pasta antiga removida com sucesso após migração completa:", effectiveSourcePath);
       } catch (rmErr) {
-        console.warn("[media-path] Não foi possível remover pasta antiga após migração:", rmErr);
+        console.warn("[media-path] Tentativa primária de remoção atômica falhou, limpando arquivo por arquivo:", rmErr);
+        try {
+          const oldRemaining = collectFilesRecursively(effectiveSourcePath);
+          for (const f of oldRemaining) {
+            try { fs.rmSync(f.fullPath, { force: true }); } catch {}
+          }
+          fs.rmSync(effectiveSourcePath, { recursive: true, force: true });
+        } catch {}
       }
+    }
+
+    // 2. Se a migração foi com deleteSource (ou de versão anterior), verifica se a pasta AppData\Roaming\Louvor JA ainda existe
+    // e apaga ela inteira, pois não há mais nada de útil nela
+    try {
+      const legacyUser = getLegacyUserDataPath();
+      const fluteBase = getFluteBasePath();
+      const fluteData = getFluteDataPath();
+      if (
+        legacyUser &&
+        fs.existsSync(legacyUser) &&
+        path.resolve(legacyUser).toLowerCase() !== path.resolve(fluteBase).toLowerCase() &&
+        path.resolve(legacyUser).toLowerCase() !== path.resolve(fluteData).toLowerCase()
+      ) {
+        const remaining = fs.readdirSync(legacyUser);
+        // Se a pasta Roaming\Louvor JA estiver vazia ou deleteSource foi executado
+        if (remaining.length === 0 || deleteSource || remaining.every(r => r.toLowerCase() === "media" || r.startsWith("."))) {
+          fs.rmSync(legacyUser, { recursive: true, force: true });
+          console.log("[media-path] Pasta legada %APPDATA%\\Louvor JA removida por completo:", legacyUser);
+        }
+      }
+    } catch (e) {
+      console.warn("[media-path] Aviso ao tentar remover pasta legada completa:", e);
     }
 
     return {
       success: true,
       totalCopied,
+      errorCount,
     };
   } catch (err: unknown) {
     console.error("[media-path] Erro durante migração de mídias:", err);
-    // Em caso de falha/interrupção, o marcador é mantido para que na próxima execução a pasta seja reiniciada do zero
+    // Em caso de falha/interrupção além do limite tolerado, o marcador é mantido
     return {
       success: false,
       totalCopied: 0,
+      errorCount,
       error: err instanceof Error ? err.message : String(err),
     };
   }

@@ -9,6 +9,7 @@ import {
   getSysDbPath,
   getDatabasePath,
   sysConfigPath,
+  getSysConfigPath,
   isMediaPathConfigured,
   needsMediaPathMigration,
 } from "../config/constants";
@@ -67,9 +68,10 @@ export function registerValidatorHandlers() {
       await db.connect();
       
       let downloadedMedia: string[] = [];
-      if (fs.existsSync(sysConfigPath)) {
+      const readPath = getSysConfigPath();
+      if (fs.existsSync(readPath)) {
         try {
-          const encryptedContent = fs.readFileSync(sysConfigPath, "utf8");
+          const encryptedContent = fs.readFileSync(readPath, "utf8");
           const decryptedString = decryptData(encryptedContent);
           if (decryptedString) {
             const sysConfig = JSON.parse(decryptedString);

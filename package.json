@@ -17,7 +17,7 @@
     "version:min": "npm version minor",
     "version:bug": "npm version patch",
     "serve": "vite preview",
-    "build": "vite build",
+    "build": "vite build --base=./",
     "lint": "eslint src electron --ext .vue,.js,.ts --fix",
     "dev": "vite",
     "host": "vite --host",

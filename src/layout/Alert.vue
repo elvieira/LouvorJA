@@ -33,7 +33,7 @@
           height="38"
           @click="clickBtn(btn.value)"
         >
-          {{ $t(btn.text) }}
+          {{ alert.translate === false ? ($te && $te(btn.text) ? $t(btn.text) : btn.text) : $t(btn.text) }}
         </v-btn>
       </v-card-actions>
     </v-card>

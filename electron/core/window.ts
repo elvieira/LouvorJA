@@ -75,11 +75,15 @@ export function createWindow(): void {
   });
 
   mainWindow.on("maximize", () => {
-    mainWindow.webContents.send("window-maximized-state", true);
+    if (!mainWindow.isDestroyed() && !mainWindow.webContents.isDestroyed()) {
+      mainWindow.webContents.send("window-maximized-state", true);
+    }
   });
   
   mainWindow.on("unmaximize", () => {
-    mainWindow.webContents.send("window-maximized-state", false);
+    if (!mainWindow.isDestroyed() && !mainWindow.webContents.isDestroyed()) {
+      mainWindow.webContents.send("window-maximized-state", false);
+    }
   });
 
   // Menu nativo personalizado para macOS e Desktop
@@ -549,6 +553,28 @@ export function createWindow(): void {
     }
   });
 
+  mainWindow.webContents.on("did-fail-load", (_event, errorCode, errorDescription, validatedURL) => {
+    console.error(`[window] Falha ao carregar URL (${errorCode}): ${errorDescription} - ${validatedURL}`);
+  });
+
+  mainWindow.webContents.on("render-process-gone", (_event, details) => {
+    console.error(`[window] Processo de renderização finalizado inesperadamente: ${details.reason} (exitCode: ${details.exitCode})`);
+  });
+
+  mainWindow.webContents.on("console-message", (_event, level, message, line, sourceId) => {
+    if (level >= 2) {
+      console.error(`[renderer error] ${message} (${sourceId}:${line})`);
+    }
+  });
+
+  mainWindow.webContents.on("before-input-event", (_event, input) => {
+    if (input.type === "keyDown") {
+      if (input.key === "F12" || (input.control && input.shift && input.key.toLowerCase() === "i")) {
+        mainWindow.webContents.toggleDevTools();
+      }
+    }
+  });
+
   if (process.env.VITE_DEV_SERVER_URL) {
     mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL);
     // mainWindow.webContents.openDevTools();
@@ -560,8 +586,14 @@ export function createWindow(): void {
 
   mainWindow.on("close", (e) => {
     if (!(global as unknown as Record<string, boolean>).isQuitting) {
-      e.preventDefault();
-      mainWindow.webContents.send("request-close-app");
+      if (!mainWindow.isDestroyed() && !mainWindow.webContents.isDestroyed()) {
+        e.preventDefault();
+        try {
+          mainWindow.webContents.send("request-close-app");
+        } catch {
+          // fallback
+        }
+      }
     }
   });
 }

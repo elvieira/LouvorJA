@@ -8,6 +8,7 @@ import { SQLiteHelper } from "../utils/sqlite";
 import {
   getSysDbPath,
   sysConfigPath,
+  getSysConfigPath,
   getMediaPath,
   getDatabasePath,
   getLiturgyPath,
@@ -68,8 +69,9 @@ export function registerDatabaseHandlers() {
   ipcMain.handle("get-local-db", async (event, filename: string, lang: string = "pt") => {
     try {
       // 1. Tenta ler do cofre unificado (.sysconfig.bin)
-      if (fs.existsSync(sysConfigPath)) {
-        const configEncrypted = fs.readFileSync(sysConfigPath, "utf8");
+      const currentSysConfig = getSysConfigPath();
+      if (fs.existsSync(currentSysConfig)) {
+        const configEncrypted = fs.readFileSync(currentSysConfig, "utf8");
         const configDecrypted = decryptData(configEncrypted);
         if (configDecrypted) {
           const sysConfig = JSON.parse(configDecrypted);
@@ -295,8 +297,9 @@ export function registerDatabaseHandlers() {
       let sysConfig: Record<string, unknown> = {};
       
       // Lê o cofre unificado se existir
-      if (fs.existsSync(sysConfigPath)) {
-        const configEncrypted = fs.readFileSync(sysConfigPath, "utf8");
+      const currentSysConfig = getSysConfigPath();
+      if (fs.existsSync(currentSysConfig)) {
+        const configEncrypted = fs.readFileSync(currentSysConfig, "utf8");
         const configDecrypted = decryptData(configEncrypted);
         if (configDecrypted) {
           sysConfig = JSON.parse(configDecrypted);
@@ -558,8 +561,9 @@ export function registerDatabaseHandlers() {
   });
   ipcMain.handle("get-database-version", async (event, lang: string = "pt") => {
     try {
-      if (fs.existsSync(sysConfigPath)) {
-        const configEncrypted = fs.readFileSync(sysConfigPath, "utf8");
+      const currentSysConfig = getSysConfigPath();
+      if (fs.existsSync(currentSysConfig)) {
+        const configEncrypted = fs.readFileSync(currentSysConfig, "utf8");
         const configDecrypted = decryptData(configEncrypted);
         if (configDecrypted) {
           const sysConfig = JSON.parse(configDecrypted);
@@ -648,8 +652,9 @@ export function registerDatabaseHandlers() {
       const rows = sqlite.prepare(query).all() as { id_album: number; total_size: number }[];
 
       let sysConfig: Record<string, unknown> = {};
-      if (fs.existsSync(sysConfigPath)) {
-        const configEncrypted = fs.readFileSync(sysConfigPath, "utf8");
+      const currentSysConfig = getSysConfigPath();
+      if (fs.existsSync(currentSysConfig)) {
+        const configEncrypted = fs.readFileSync(currentSysConfig, "utf8");
         const configDecrypted = decryptData(configEncrypted);
         if (configDecrypted) sysConfig = JSON.parse(configDecrypted);
       }

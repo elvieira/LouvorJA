@@ -1,15 +1,16 @@
 import { ipcMain, net } from "electron";
 import * as path from "path";
 import * as fs from "fs-extra";
-import { getCoversPath, getMusicPath, getSlidesPath, getAvatarsPath, sysConfigPath } from "../config/constants";
+import { getCoversPath, getMusicPath, getSlidesPath, getAvatarsPath, sysConfigPath, getSysConfigPath } from "../config/constants";
 import { encryptData, decryptData } from "../utils/crypto";
 import { URL_FILES, API_FALLBACK } from "../utils/api-fallback";
 
 function registerDownloadedMedia(filename: string) {
   try {
     let sysConfig: Record<string, unknown> = {};
-    if (fs.existsSync(sysConfigPath)) {
-      const configEncrypted = fs.readFileSync(sysConfigPath, "utf8");
+    const readPath = getSysConfigPath();
+    if (fs.existsSync(readPath)) {
+      const configEncrypted = fs.readFileSync(readPath, "utf8");
       const configDecrypted = decryptData(configEncrypted);
       if (configDecrypted) sysConfig = JSON.parse(configDecrypted);
     }
@@ -30,8 +31,9 @@ function registerDownloadedMedia(filename: string) {
 function unregisterDownloadedMedia(filename: string) {
   try {
     let sysConfig: Record<string, unknown> = {};
-    if (fs.existsSync(sysConfigPath)) {
-      const configEncrypted = fs.readFileSync(sysConfigPath, "utf8");
+    const readPath = getSysConfigPath();
+    if (fs.existsSync(readPath)) {
+      const configEncrypted = fs.readFileSync(readPath, "utf8");
       const configDecrypted = decryptData(configEncrypted);
       if (configDecrypted) sysConfig = JSON.parse(configDecrypted);
     }
