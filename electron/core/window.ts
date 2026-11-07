@@ -34,7 +34,7 @@ export function createWindow(): void {
     height: windowState.enabled ? windowState.height : defaultDimensions.height,
     minWidth: 920,
     minHeight: 600,
-    title: "Louvor JA",
+    title: "Louvor JA Flute",
     icon: path.join(__dirname, "../public/ico/favicon.png"),
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
@@ -87,10 +87,10 @@ export function createWindow(): void {
 
   const menuTemplate: MenuItemConstructorOptions[] = [
     ...(isMac ? [{
-      label: "Louvor JA",
+      label: "Louvor JA Flute",
       submenu: [
         {
-          label: "Sobre o Louvor JA",
+          label: "Sobre o Louvor JA Flute",
           click: () => {
             mainWindow.webContents.send("navigate-route", "about");
           },
@@ -106,11 +106,11 @@ export function createWindow(): void {
         { type: "separator" },
         { role: "services", label: "Serviços" },
         { type: "separator" },
-        { role: "hide", label: "Ocultar Louvor JA" },
+        { role: "hide", label: "Ocultar Louvor JA Flute" },
         { role: "hideOthers", label: "Ocultar Outros" },
         { role: "unhide", label: "Mostrar Tudo" },
         { type: "separator" },
-        { role: "quit", label: "Encerrar Louvor JA", accelerator: "CmdOrCtrl+Q" },
+        { role: "quit", label: "Encerrar Louvor JA Flute", accelerator: "CmdOrCtrl+Q" },
       ],
     }] as MenuItemConstructorOptions[] : []),
     {
@@ -303,7 +303,7 @@ export function createWindow(): void {
           },
         },
         {
-          label: "Ajuda e Sobre o Louvor JA",
+          label: "Ajuda e Sobre o Louvor JA Flute",
           click: () => {
             mainWindow.webContents.send("navigate-route", "about");
           },

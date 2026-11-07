@@ -1,6 +1,6 @@
 {
     "app": {
-        "name": "Louvor JA",
+        "name": "Louvor JA Flute",
         "close": "Fechar"
     },
     "sidebar": {
@@ -71,8 +71,8 @@
         "misconfigured_module": "Este módulo está mal configurado. O id informado no manifest.json deve ter o mesmo nome da pasta onde está localizado!"
     },
     "first_boot": {
-        "title_prepare": "Preparando o Louvor JA",
-        "title_start": "Iniciando o Louvor JA",
+        "title_prepare": "Preparando o Louvor JA Flute",
+        "title_start": "Iniciando o Louvor JA Flute",
         "subtitle": "Aguarde instantes enquanto organizamos tudo para você.",
         "migration_title": "Migração de Mídias",
         "migration_subtitle": "Transferindo seus arquivos de mídia para a nova pasta.",

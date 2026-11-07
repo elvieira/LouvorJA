@@ -25,7 +25,7 @@ export const ENCRYPTION_KEY = Buffer.from("v389s8dkj238910s8a7d3h2j1k9s8d7f", "u
 export const IV_LENGTH = 16;
 
 // Força o nome do app
-app.setName("Louvor JA");
+app.setName("Louvor JA Flute");
 
 // Executa migração de configurações legadas (AppData) para Flute/data
 migrateLegacyDataToFlute();

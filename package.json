@@ -85,7 +85,7 @@
   ],
   "build": {
     "appId": "com.louvorja.app",
-    "productName": "Louvor JA",
+    "productName": "Louvor JA Flute",
     "directories": {
       "output": "release"
     },
@@ -102,20 +102,20 @@
     "fileAssociations": [
       {
         "ext": "slja",
-        "name": "Música e Slides Louvor JA",
-        "description": "Arquivo de Música e Slides Louvor JA",
+        "name": "Música e Slides Louvor JA Flute",
+        "description": "Arquivo de Música e Slides Louvor JA Flute",
         "role": "Viewer"
       },
       {
         "ext": "sja",
-        "name": "Música e Slides Louvor JA",
-        "description": "Arquivo de Música e Slides Louvor JA",
+        "name": "Música e Slides Louvor JA Flute",
+        "description": "Arquivo de Música e Slides Louvor JA Flute",
         "role": "Viewer"
       },
       {
         "ext": "lja",
-        "name": "Letra e Slides Louvor JA",
-        "description": "Arquivo de Letra e Slides Louvor JA",
+        "name": "Letra e Slides Louvor JA Flute",
+        "description": "Arquivo de Letra e Slides Louvor JA Flute",
         "role": "Viewer"
       }
     ],

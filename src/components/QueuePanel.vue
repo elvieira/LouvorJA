@@ -201,7 +201,7 @@
                   {{ element.name }}
                 </div>
                 <div class="track-subtitle text-caption text-truncate opacity-75" :title="element.subtitle">
-                  {{ element.subtitle || 'Louvor JA' }}
+                  {{ element.subtitle || 'Louvor JA Flute' }}
                 </div>
               </div>
 
@@ -307,7 +307,7 @@
                 {{ element.name }}
               </div>
               <div class="track-subtitle text-caption text-truncate opacity-75" :title="element.subtitle">
-                {{ element.subtitle || 'Louvor JA' }}
+                {{ element.subtitle || 'Louvor JA Flute' }}
               </div>
             </div>
 

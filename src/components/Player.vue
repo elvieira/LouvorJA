@@ -23,7 +23,7 @@
           :class="defaultTextClass"
           :title="media.config.title"
         >
-          {{ media.config.title || 'Louvor JA' }}
+          {{ media.config.title || 'Louvor JA Flute' }}
         </span>
         <span
           class="player-song-subtitle text-truncate cursor-pointer"

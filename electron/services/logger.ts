@@ -555,7 +555,7 @@ export function registerLoggerHandlers(): void {
   ipcMain.handle("export-logs", async (event) => {
     const win = BrowserWindow.fromWebContents(event.sender);
     const saveResult = await dialog.showSaveDialog(win || BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0], {
-      title: "Exportar Logs do Louvor JA",
+      title: "Exportar Logs do Louvor JA Flute",
       defaultPath: path.join(app.getPath("documents"), `louvorja-diagnostico-${Date.now()}.log`),
       filters: [{ name: "Arquivo de Log", extensions: ["log", "txt"] }],
     });

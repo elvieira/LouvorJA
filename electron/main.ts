@@ -2,7 +2,7 @@ import "dotenv/config";
 import { app } from "electron";
 
 // Define o nome oficial da aplicação para o menu do macOS e processos do sistema
-app.name = "Louvor JA";
+app.name = "Louvor JA Flute";
 import * as fs from "fs-extra";
 import { initLogger } from "./services/logger";
 import { setupLifecycle } from "./core/lifecycle";

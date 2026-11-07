@@ -1,6 +1,6 @@
 {
     "app": {
-        "name": "Loor JA",
+        "name": "Louvor JA Flute",
         "close": "Cerrar"
     },
     "sidebar": {
@@ -71,8 +71,8 @@
         "misconfigured_module": "Este módulo está mal configurado. ¡La identificación ingresada en manifest.json debe tener el mismo nombre que la carpeta donde se encuentra!"
     },
     "first_boot": {
-        "title_prepare": "Preparando Loor JA",
-        "title_start": "Iniciando Loor JA",
+        "title_prepare": "Preparando Louvor JA Flute",
+        "title_start": "Iniciando Louvor JA Flute",
         "subtitle": "Espera un momento mientras organizamos todo para ti.",
         "migration_title": "Migración de Medios",
         "migration_subtitle": "Transfiriendo tus archivos de medios a la nueva carpeta.",
