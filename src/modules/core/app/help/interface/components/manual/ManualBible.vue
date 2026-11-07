@@ -117,7 +117,12 @@
     <!-- Destaque: Navegação pelo Teclado (Setas) -->
     <div class="manual-preview-card pa-4 rounded-xl mb-6">
       <div class="d-flex align-center mb-2">
-        <v-icon icon="mdi-keyboard-outline" class="mr-2" size="20" color="primary" />
+        <v-icon
+          icon="mdi-keyboard-outline"
+          class="mr-2"
+          size="20"
+          color="primary"
+        />
         <span class="font-weight-bold text-subtitle-2" style="color: var(--sidebar-text);">
           {{ t('bible.nav_keyboard_title') }}
         </span>

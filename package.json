@@ -153,6 +153,7 @@
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "allowElevation": true,
+      "warningsAsErrors": false,
       "include": "build/installer.nsh"
     },
     "linux": {
