@@ -16,11 +16,12 @@
     @mouseleave="isHovered = false"
   >
     <div class="sidebar-header">
-      <div class="logo-container">
+      <div
+        class="logo-container"
+        :title="$t('sidebar.home')"
+        @click="navigateTo('home')"
+      >
         <img src="/ico/favicon.svg" alt="LouvorJA" class="logo-svg" />
-        <div class="logo-text">
-          <span class="logo-title">{{ $t("app.name").toUpperCase() }}</span>
-        </div>
       </div>
       <button
         v-if="!isMobile"
@@ -36,7 +37,7 @@
     </div>
 
     <nav class="sidebar-nav-main">
-      <div class="nav-item close-item">
+      <div v-if="!isCollapsed" class="nav-item close-item">
         <button class="close-sidebar-btn" @click="closeSidebar">
           <v-icon class="nav-icon">
             mdi-arrow-left
@@ -69,38 +70,47 @@
         </div>
       </template>
 
-      <template v-for="(group, groupKey) in moduleGroups" :key="groupKey">
+      <!-- Reorganized main navigation items -->
+      <template v-for="item in navItems" :key="item.key">
+        <!-- Discrete separator before dev module -->
         <div
-          v-if="groupKey === 'bible'"
+          v-if="item.key === 'dev'"
+          class="sidebar-dev-divider"
+        />
+
+        <!-- Direct module (Bible, Liturgy, Dev, etc.) -->
+        <div
+          v-if="item.isDirectModule"
           class="nav-item main-item"
-          :class="{ active: currentModule === 'bible' }"
+          :class="{ active: currentModule === item.moduleId }"
         >
-          <a href="#" class="nav-link" @click.prevent="openModule('bible')">
+          <a href="#" class="nav-link" @click.prevent="openModule(item.moduleId)">
             <v-icon class="nav-icon">
-              {{ group.icon }}
+              {{ item.icon }}
             </v-icon>
-            <span class="nav-text">{{ $t(group.title) }}</span>
+            <span class="nav-text">{{ $t(item.title) }}</span>
           </a>
         </div>
 
+        <!-- Group with dropdown (Musics, Special Collections, Utilities) -->
         <div
-          v-else 
+          v-else-if="item.isGroup"
           class="nav-item main-item"
-          :class="{ 'group-active': isGroupActive(group) && (!submenuOpen[groupKey] || isCollapsed) }"
+          :class="{ 'group-active': isGroupActive(item.group) && (!submenuOpen[item.key] || isCollapsed) }"
         >
-          <a href="#" class="nav-link" @click.prevent="toggleSubmenu(groupKey)">
+          <a href="#" class="nav-link" @click.prevent="toggleSubmenu(item.key)">
             <v-icon class="nav-icon">
-              {{ group.icon }}
+              {{ item.icon }}
             </v-icon>
-            <span class="nav-text">{{ $t(group.title) }}</span>
-            <v-icon class="nav-arrow" :class="{ expanded: submenuOpen[groupKey] }">
+            <span class="nav-text">{{ $t(item.title) }}</span>
+            <v-icon class="nav-arrow" :class="{ expanded: submenuOpen[item.key] }">
               mdi-chevron-right
             </v-icon>
           </a>
-          <div class="nav-submenu" :class="{ expanded: submenuOpen[groupKey] }">
-            <template v-for="(moduleId, modIdx) in group.modules" :key="moduleId">
+          <div class="nav-submenu" :class="{ expanded: submenuOpen[item.key] }">
+            <template v-for="(moduleId, modIdx) in item.group.modules" :key="moduleId">
               <div
-                v-if="hasDividerBefore(group, moduleId, modIdx)"
+                v-if="hasDividerBefore(item.group, moduleId, modIdx)"
                 class="nav-submenu-divider"
               />
               <div
@@ -120,49 +130,35 @@
           </div>
         </div>
       </template>
-
-      <template v-for="(module, moduleKey) in individualModules" :key="moduleKey">
-        <div
-          v-if="shouldShowModule(moduleKey) && !(language === 'es' && moduleKey === 'hymnal')"
-          class="nav-item main-item"
-          :class="{ active: currentModule === moduleKey }"
-        >
-          <a href="#" class="nav-link" @click.prevent="openModule(moduleKey)">
-            <v-icon class="nav-icon">
-              {{ module.icon }}
-            </v-icon>
-            <span class="nav-text">{{ $t(module.title) }}</span>
-          </a>
-        </div>
-      </template>
     </nav>
 
     <div class="sidebar-footer">
-      <div v-if="isDesktop" class="nav-item" :class="{ active: currentModule === 'sync' }">
+      <div v-if="isDesktop" class="nav-item footer-item" :class="{ active: currentModule === 'sync' }">
         <a href="#" class="nav-link" @click.prevent="openLocalLibrary">
           <v-icon 
-            class="nav-icon" 
-            :color="currentModule === 'sync' ? '' : 'primary'"
+            class="nav-icon"
+            size="18"
           >
-            mdi-library
+            mdi-library-outline
           </v-icon>
-          <span class="nav-text font-weight-bold" :style="{ color: currentModule === 'sync' ? '' : 'var(--accent-blue)' }">{{ $t("sidebar.local_library") }}</span>
+          <span class="nav-text">{{ $t("sidebar.local_library") }}</span>
           
           <div 
             v-if="isDownloading"
             class="v-icon"
-            style="position: relative; margin-left: auto; width: 22px; height: 22px;"
+            style="position: relative; margin-left: auto; width: 18px; height: 18px;"
           >
             <v-icon 
               class="mdi-spin" 
-              :color="currentModule === 'sync' ? '' : 'primary'"
+              color="primary"
+              size="18"
               style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"
             >
               mdi-loading
             </v-icon>
             <v-icon 
-              :color="currentModule === 'sync' ? '' : 'primary'"
-              size="12"
+              color="primary"
+              size="10"
               style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); margin: 0;"
             >
               mdi-arrow-down
@@ -171,20 +167,20 @@
         </a>
       </div>
       
-      <div v-if="hasAnyUpdateAvailable" class="nav-item update-item" :class="{ 'pulse-animation': (updateStatus === 'available' || dbUpdateAvailable) && currentModule !== 'update', active: currentModule === 'update' }">
+      <div v-if="hasAnyUpdateAvailable" class="nav-item footer-item update-item" :class="{ 'pulse-animation': (updateStatus === 'available' || dbUpdateAvailable) && currentModule !== 'update', active: currentModule === 'update' }">
         <a 
           href="#" 
           class="nav-link" 
           @click.prevent="openUpdateModule"
         >
-          <v-icon class="nav-icon">{{ updateIcon }}</v-icon>
-          <span class="nav-text font-weight-bold">{{ $t("sidebar.update_available") }}</span>
+          <v-icon class="nav-icon" size="18">{{ updateIcon }}</v-icon>
+          <span class="nav-text">{{ $t("sidebar.update_available") }}</span>
         </a>
       </div>
       
       <div 
         v-if="currentModule !== 'home'" 
-        class="nav-item notifications-item" 
+        class="nav-item footer-item notifications-item" 
         :class="{
           'pulse-urgent': hasUrgentNotifications,
           'pulse-high': !hasUrgentNotifications && hasHighNotifications,
@@ -194,7 +190,8 @@
         <a href="#" class="nav-link" @click.prevent="openNotifications">
           <div class="nav-icon-wrapper position-relative d-inline-flex align-center justify-center">
             <v-icon 
-              class="nav-icon" 
+              class="nav-icon"
+              size="18" 
               :color="
                 hasUrgentNotifications
                   ? 'error'
@@ -230,18 +227,18 @@
         </a>
       </div>
 
-      <div class="nav-item" :class="{ active: currentModule === 'help' }">
+      <div class="nav-item footer-item" :class="{ active: currentModule === 'help' }">
         <a href="#" class="nav-link" @click.prevent="openModule('help')">
-          <v-icon class="nav-icon">
-            mdi-help-circle
+          <v-icon class="nav-icon" size="18">
+            mdi-help-circle-outline
           </v-icon>
           <span class="nav-text">{{ $t("sidebar.help") }}</span>
         </a>
       </div>
-      <div class="nav-item" :class="{ active: currentModule === 'config' }">
+      <div class="nav-item footer-item" :class="{ active: currentModule === 'config' }">
         <a href="#" class="nav-link" @click.prevent="openModule('config')">
-          <v-icon class="nav-icon">
-            mdi-cog
+          <v-icon class="nav-icon" size="18">
+            mdi-cog-outline
           </v-icon>
           <span class="nav-text">{{ $t("sidebar.settings") }}</span>
         </a>
@@ -405,6 +402,99 @@ export default defineComponent({
       }
       
       return result;
+    },
+    navItems(): Array<any> {
+      const groups = (this as any).$appdata.get("module_group") || {};
+      const allModules = (this as any).$appdata.get("modules") || {};
+      
+      const groupIcons: Record<string, string> = {
+        musics: "mdi-play",
+        special_collections: "mdi-playlist-star",
+        online_collection: "mdi-web",
+        bible: "mdi-book-cross",
+        utilities: "mdi-plus-circle",
+        personalized: "mdi-star-outline",
+      };
+
+      const orderedKeys = [
+        "musics",
+        "bible",
+        "utilities",
+        "special_collections",
+        "liturgy",
+        "dev",
+      ];
+
+      const items: Array<any> = [];
+
+      for (const key of orderedKeys) {
+        if (groups[key]) {
+          if (this.language === "es" && key === "musics") continue;
+          const grp = groups[key];
+          if (key === "bible") {
+            if (this.shouldShowModule("bible")) {
+              items.push({
+                key: "bible",
+                isGroup: false,
+                isDirectModule: true,
+                moduleId: "bible",
+                title: grp.title,
+                icon: grp.icon || groupIcons[key] || "mdi-book-cross",
+              });
+            }
+          } else if (grp.modules && grp.modules.length > 0) {
+            items.push({
+              key,
+              isGroup: true,
+              isDirectModule: false,
+              group: {
+                ...grp,
+                icon: grp.icon || groupIcons[key] || "mdi-folder",
+              },
+              title: grp.title,
+              icon: grp.icon || groupIcons[key] || "mdi-folder",
+            });
+          }
+        } else if (allModules[key]) {
+          const mod = allModules[key];
+          if (mod.showInMainMenu && this.shouldShowModule(key)) {
+            items.push({
+              key,
+              isGroup: false,
+              isDirectModule: true,
+              moduleId: key,
+              title: mod.title,
+              icon: mod.icon,
+            });
+          }
+        }
+      }
+
+      // Add any remaining individual modules
+      const handledKeys = new Set(orderedKeys);
+      for (const [key, mod] of Object.entries(allModules)) {
+        if (!handledKeys.has(key) && (mod as any).showInMainMenu && this.shouldShowModule(key)) {
+          let inGroup = false;
+          for (const grp of Object.values(groups)) {
+            if ((grp as any).modules?.includes(key)) {
+              inGroup = true;
+              break;
+            }
+          }
+          if (!inGroup) {
+            items.push({
+              key,
+              isGroup: false,
+              isDirectModule: true,
+              moduleId: key,
+              title: (mod as any).title,
+              icon: (mod as any).icon,
+            });
+          }
+        }
+      }
+
+      return items;
     },
     language(): string {
       return (this as any).$userdata.get("language");
@@ -580,21 +670,24 @@ export default defineComponent({
 <style lang="scss">
 .sidebar-unread-badge {
   position: absolute;
-  top: -5px;
-  right: -7px;
+  top: 2px;
+  right: 3px;
   background-color: var(--accent-blue, #0097d7);
   color: #ffffff;
   font-size: 10px;
   font-weight: 700;
+  line-height: 1;
   border-radius: 10px;
   padding: 0 4px;
-  min-width: 17px;
-  height: 17px;
+  min-width: 16px;
+  height: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
   border: 2px solid var(--sidebar-bg, #10141d);
+  pointer-events: none;
+  z-index: 2;
 
   &.badge-high {
     background-color: #f59e0b !important;
@@ -625,16 +718,18 @@ export default defineComponent({
     width: var(--sidebar-collapsed-width);
 
     .logo-text, .nav-text {
-      opacity: 0;
-      pointer-events: none;
-      max-width: 0;
-      overflow: hidden;
-      margin: 0;
-      transition: opacity 0.2s ease, max-width 0.2s ease, margin 0.2s ease;
+      opacity: 0 !important;
+      pointer-events: none !important;
+      transition: opacity 0.15s ease !important;
+      flex-shrink: 0 !important;
     }
 
     .nav-arrow {
-      display: none !important;
+      opacity: 0 !important;
+      pointer-events: none !important;
+      transition: opacity 0.15s ease !important;
+      position: absolute !important;
+      right: 12px !important;
     }
 
     .nav-submenu {
@@ -642,81 +737,219 @@ export default defineComponent({
     }
 
     .sidebar-header {
-      padding: 24px 16px;
+      height: 84px;
+      padding: 0;
+      justify-content: center;
 
       .sidebar-pin-btn {
-        opacity: 0;
-        pointer-events: none;
+        opacity: 0 !important;
+        pointer-events: none !important;
       }
 
       .logo-container {
-        gap: 0;
+        justify-content: center;
       }
     }
 
-    .nav-item,
-    .nav-item.main-item {
-      margin: 4px 12px;
-      flex-shrink: 0;
-
-      .nav-link {
-        padding: 12px;
-        justify-content: center;
-        gap: 0;
-
-        .nav-icon {
-          margin: 0;
-        }
+    .sidebar-nav-main {
+      .nav-item.close-item {
+        display: none !important;
       }
 
-      &.active,
-      &.group-active {
-        width: 44px;
-        height: 44px;
-        min-width: 44px;
-        min-height: 44px;
-        margin: 4px auto;
-        border-radius: 50% !important;
+      .sidebar-dev-divider {
+        margin: 6px 18px !important;
+        opacity: 0.4 !important;
+      }
+
+      .nav-item,
+      .nav-item.main-item {
+        margin: 4px 14px !important;
+        height: 44px !important;
+        min-width: 44px !important;
+        min-height: 44px !important;
+        border-radius: 10px !important;
         flex-shrink: 0;
         display: flex;
         align-items: center;
-        justify-content: center;
+        justify-content: flex-start !important;
+        position: relative;
+        overflow: hidden;
 
         .nav-link {
-          width: 100%;
-          height: 100%;
+          width: 100% !important;
+          height: 100% !important;
           padding: 0 !important;
-          display: flex;
-          align-items: center;
-          justify-content: center;
+          justify-content: flex-start !important;
+          gap: 0 !important;
+
+          .nav-icon {
+            width: 44px !important;
+            min-width: 44px !important;
+            max-width: 44px !important;
+            height: 44px !important;
+            font-size: 20px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            flex-shrink: 0 !important;
+            margin: 0 !important;
+          }
+        }
+
+        &:hover {
+          background: var(--sidebar-hover);
+          border-radius: 10px !important;
+        }
+
+        &.active,
+        &.group-active {
+          height: 44px !important;
+          min-width: 44px !important;
+          min-height: 44px !important;
+          margin: 4px 14px !important;
+          border-radius: 10px !important;
+          background: rgba(0, 155, 226, 0.12) !important;
+
+          &::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 8px;
+            bottom: 8px;
+            width: 3.5px;
+            border-radius: 0 4px 4px 0;
+            background: var(--accent-blue);
+            display: block !important;
+          }
+        }
+      }
+    }
+
+    .sidebar-footer {
+      padding: 8px 0 12px 0;
+
+      .nav-item {
+        margin: 3px 18px !important;
+        height: 36px !important;
+        min-width: 36px !important;
+        min-height: 36px !important;
+        border-radius: 9px !important;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start !important;
+        position: relative;
+        overflow: hidden;
+
+        .nav-link {
+          width: 100% !important;
+          height: 100% !important;
+          padding: 0 !important;
+          justify-content: flex-start !important;
+          gap: 0 !important;
+
+          .nav-icon,
+          .nav-icon-wrapper {
+            width: 36px !important;
+            min-width: 36px !important;
+            max-width: 36px !important;
+            height: 36px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            flex-shrink: 0 !important;
+            margin: 0 !important;
+
+            .nav-icon {
+              font-size: 18px !important;
+              min-width: 18px !important;
+              width: 18px !important;
+              height: 18px !important;
+              margin: 0 !important;
+            }
+          }
+        }
+
+        &:hover {
+          background: var(--sidebar-hover);
+          border-radius: 9px !important;
+        }
+
+        &.active {
+          height: 36px !important;
+          min-width: 36px !important;
+          min-height: 36px !important;
+          margin: 3px 18px !important;
+          border-radius: 9px !important;
+          background: rgba(0, 155, 226, 0.12) !important;
+
+          &::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 6px;
+            bottom: 6px;
+            width: 3px;
+            border-radius: 0 3px 3px 0;
+            background: var(--accent-blue);
+            display: block !important;
+          }
+        }
+
+        &.update-item:not(.active) {
+          margin: 3px 18px !important;
+          background: rgba(0, 151, 215, 0.08) !important;
+          border-radius: 9px !important;
+
+          .nav-link {
+            background: transparent !important;
+          }
+        }
+
+        &.notifications-item {
+          overflow: visible !important;
+
+          .nav-link {
+            overflow: visible !important;
+          }
         }
       }
     }
   }
 
-  .logo-text, .nav-text, .nav-arrow {
+  .logo-text, .nav-text {
     opacity: 1;
-    max-width: 200px;
-    transition: opacity 0.3s ease 0.1s, max-width 0.3s ease;
+    transition: opacity 0.2s ease 0.06s;
     white-space: nowrap;
     overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .nav-arrow {
+    opacity: 0.7;
+    transition: opacity 0.2s ease 0.06s, transform 0.3s ease;
+    white-space: nowrap;
   }
 
   .sidebar-header {
     position: relative;
-    padding: 24px 24px;
-    background: transparent;
+    width: 100%;
+    height: 84px;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: padding 0.3s ease;
+    padding: 0;
+    background: transparent;
+    transition: height 0.3s ease;
+    box-sizing: border-box;
 
     .sidebar-pin-btn {
       position: absolute;
-      top: 10px;
-      right: 10px;
+      top: 16px;
+      right: 14px;
       width: 26px;
       height: 26px;
+      flex-shrink: 0;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -724,52 +957,61 @@ export default defineComponent({
       border: none;
       border-radius: 6px;
       color: var(--sidebar-text-secondary);
+      opacity: 0.35;
       cursor: pointer;
-      transition: var(--transition), opacity 0.2s ease;
+      transition: opacity 0.25s ease, background-color 0.2s ease, color 0.2s ease;
 
       &:hover {
+        opacity: 1;
         background: var(--sidebar-hover);
         color: var(--accent-blue);
       }
 
       &.pinned {
+        opacity: 0.9;
         color: var(--accent-blue);
       }
     }
 
+    &:hover .sidebar-pin-btn:not(.pinned) {
+      opacity: 0.7;
+    }
+
     .logo-container {
       display: flex;
-      justify-content: center;
       align-items: center;
-      width: 100%;
-      gap: 12px;
+      justify-content: center;
+      user-select: none;
+      cursor: pointer;
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 
-      .logo-svg {
-        width: 38px;
-        height: 38px;
-        flex-shrink: 0;
+      &:hover {
+        transform: scale(1.08);
       }
 
-      .logo-text .logo-title {
-        font-size: 18px;
-        font-weight: 700;
-        color: var(--sidebar-text);
-        letter-spacing: 0.8px;
-        background: linear-gradient(135deg, var(--accent-yellow) 0%, var(--accent-blue) 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
+      &:active {
+        transform: scale(0.95);
+      }
+
+      .logo-svg {
+        width: 44px;
+        height: 44px;
+        flex-shrink: 0;
+        filter: drop-shadow(0 3px 12px rgba(0, 155, 226, 0.35));
       }
     }
   }
 
   .sidebar-nav-main {
     flex: 1;
-    padding: 20px 0;
+    padding: 16px 0;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    gap: 2px;
+    gap: 0;
     overflow-y: auto;
     overflow-x: hidden;
     scrollbar-width: none;
@@ -789,16 +1031,133 @@ export default defineComponent({
   }
 
   .sidebar-footer {
-    padding: 16px 0 24px 0;
+    padding: 8px 0 12px 0;
     border-top: 1px solid var(--sidebar-border);
     background: transparent;
+
+    .nav-item {
+      margin: 3px 18px;
+      height: 36px;
+      min-height: 36px;
+      border-radius: 9px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+
+      .nav-link {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        height: 100%;
+        padding: 0 10px 0 0;
+        text-decoration: none;
+        gap: 0;
+        color: var(--sidebar-text-secondary);
+
+        .nav-icon,
+        .nav-icon-wrapper {
+          width: 36px;
+          min-width: 36px;
+          height: 36px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+          margin: 0;
+
+          .nav-icon {
+            font-size: 18px;
+            min-width: 18px;
+            color: var(--sidebar-text-secondary);
+            opacity: 0.8;
+          }
+        }
+
+        .nav-text {
+          font-size: 13px;
+          font-weight: 500;
+          color: var(--sidebar-text-secondary);
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          flex-shrink: 0;
+          margin-left: 2px;
+        }
+
+        &:hover {
+          color: var(--sidebar-text);
+
+          .nav-icon,
+          .nav-text {
+            color: var(--sidebar-text);
+            opacity: 1;
+          }
+        }
+      }
+
+      &:hover {
+        background: var(--sidebar-hover);
+        border-radius: 9px;
+      }
+
+      &.active {
+        background: rgba(0, 155, 226, 0.12);
+        border-radius: 9px;
+
+        .nav-link {
+          color: var(--accent-blue);
+
+          .nav-icon,
+          .nav-text {
+            color: var(--accent-blue);
+            opacity: 1;
+            font-weight: 600;
+          }
+        }
+
+        &::before {
+          content: '';
+          position: absolute;
+          left: 0;
+          top: 6px;
+          bottom: 6px;
+          width: 3px;
+          border-radius: 0 3px 3px 0;
+          background: var(--accent-blue);
+          display: block !important;
+        }
+      }
+
+      &.update-item:not(.active) {
+        background: rgba(0, 151, 215, 0.08);
+        border-radius: 9px;
+
+        .nav-link {
+          background: transparent;
+
+          .nav-icon,
+          .nav-text {
+            color: var(--accent-blue);
+          }
+        }
+      }
+
+      &.notifications-item {
+        overflow: visible !important;
+
+        .nav-link {
+          overflow: visible !important;
+        }
+      }
+    }
   }
 
   .nav-item {
     position: relative;
-    margin: 4px 16px;
-    border-radius: var(--border-radius);
-    transition: var(--transition);
+    margin: 4px 14px;
+    border-radius: 10px;
+    overflow: hidden;
     
     &.close-item {
       display: none;
@@ -810,18 +1169,17 @@ export default defineComponent({
         width: 100%;
         display: flex;
         align-items: center;
-        padding: 10px 16px;
+        padding: 12px 14px;
         color: var(--accent-blue);
         gap: 12px;
-        font-size: 15px;
+        font-size: 14.5px;
         font-weight: 600;
         cursor: pointer;
-        transition: var(--transition);
-        border-radius: var(--border-radius);
+        border-radius: 10px;
         
         .nav-icon {
-          font-size: 22px;
-          min-width: 22px;
+          font-size: 20px;
+          min-width: 20px;
           color: var(--accent-blue);
         }
         
@@ -847,147 +1205,218 @@ export default defineComponent({
     }
     
     &.main-item {
-      margin: 4px 16px;
+      margin: 4px 14px;
+      min-height: 44px;
       
-      .nav-link {
-        padding: 12px 16px;
-        font-size: 15px;
-        font-weight: 600;
+      > .nav-link {
+        display: flex;
+        align-items: center;
+        height: 44px;
+        padding: 0 12px 0 0;
+        font-size: 14.5px;
+        font-weight: 500;
+        text-decoration: none;
+        gap: 0;
+        color: var(--sidebar-text);
+        border-radius: 10px;
+        position: relative;
+        transition: background-color 0.15s ease, color 0.15s ease;
         
         .nav-icon {
-          font-size: 22px;
-          min-width: 22px;
-          color: var(--accent-blue);
+          width: 44px;
+          min-width: 44px;
+          height: 44px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+          font-size: 20px;
+          margin: 0;
+          color: var(--sidebar-text-secondary);
+          opacity: 0.85;
+          transition: color 0.2s ease, opacity 0.2s ease;
         }
         
         .nav-text {
-          font-weight: 600;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          font-weight: 500;
+          flex-shrink: 0;
+          margin-left: 2px;
+        }
+
+        .nav-arrow {
+          font-size: 16px;
+          margin-left: auto;
+          flex-shrink: 0;
+          color: var(--sidebar-text-secondary);
+          transition: transform 0.3s ease, opacity 0.2s ease;
+          opacity: 0.7;
+          
+          &.expanded {
+            transform: rotate(90deg);
+          }
+        }
+
+        &:hover {
+          background: var(--sidebar-hover);
+          color: var(--sidebar-text);
+
+          .nav-icon {
+            color: var(--sidebar-text);
+            opacity: 1;
+          }
+
+          .nav-text {
+            color: var(--sidebar-text);
+          }
         }
       }
     }
     
-    &:hover {
-      background: var(--sidebar-hover);
-      border-radius: var(--border-radius);
-    }
-    
     &.active {
-      background: var(--sidebar-active);
-      border-radius: var(--border-radius);
-
-      .nav-link {
-        color: white;
+      > .nav-link {
+        background: rgba(0, 155, 226, 0.12);
+        border-radius: 10px;
+        color: var(--accent-blue);
 
         .nav-icon {
-          color: white;
+          color: var(--accent-blue);
+          opacity: 1;
+        }
+
+        .nav-text {
+          color: var(--accent-blue);
+          font-weight: 600;
+        }
+
+        .nav-arrow {
+          color: var(--accent-blue);
+        }
+
+        &::before {
+          content: '';
+          position: absolute;
+          left: 0;
+          top: 8px;
+          bottom: 8px;
+          width: 3.5px;
+          border-radius: 0 4px 4px 0;
+          background: var(--accent-blue);
         }
       }
     }
 
     &.group-active {
-      background: var(--sidebar-active);
-      border-radius: var(--border-radius);
-
-      .nav-link {
-        color: white;
+      > .nav-link {
+        background: rgba(0, 155, 226, 0.08);
+        border-radius: 10px;
+        color: var(--sidebar-text);
 
         .nav-icon {
-          color: white;
+          color: var(--accent-blue);
+          opacity: 1;
         }
-      }
-    }
 
-    &.update-item {
-      &:not(.active) {
-        .nav-link {
-          background: rgba(0, 151, 215, 0.1);
-          border-radius: var(--border-radius);
-
-          .nav-icon,
-          .nav-text {
-            color: var(--accent-blue);
-          }
-        }
-      }
-
-      &.active {
-        background: var(--sidebar-active);
-        border-radius: var(--border-radius);
-
-        .nav-link {
-          background: transparent;
-          color: #ffffff !important;
-
-          .nav-icon,
-          .nav-text {
-            color: #ffffff !important;
-          }
-        }
-      }
-    }
-    
-    .nav-link {
-      display: flex;
-      align-items: center;
-      padding: 8px 16px;
-      color: var(--sidebar-text);
-      text-decoration: none;
-      gap: 16px;
-      font-size: 14px;
-      font-weight: 500;
-      transition: var(--transition);
-      
-      .nav-icon {
-        font-size: 20px;
-        min-width: 20px;
-        color: var(--accent-blue);
-      }
-      
-      .nav-text {
-        flex: 1;
-      }
-      
-      .nav-arrow {
-        font-size: 16px;
-        transition: transform 0.3s ease;
-        
-        &.expanded {
-          transform: rotate(90deg);
+        &::before {
+          content: '';
+          position: absolute;
+          left: 0;
+          top: 8px;
+          bottom: 8px;
+          width: 3.5px;
+          border-radius: 0 4px 4px 0;
+          background: var(--accent-blue);
+          opacity: 0.6;
         }
       }
     }
   }
 
+  .sidebar-dev-divider {
+    height: 1px;
+    margin: 6px 18px;
+    background: var(--sidebar-border, rgba(255, 255, 255, 0.08));
+    opacity: 0.6;
+    transition: margin 0.3s ease, opacity 0.3s ease;
+  }
+
   .nav-submenu {
-    padding-left: 32px;
+    padding: 0;
     max-height: 0;
     overflow: hidden;
-    transition: max-height 0.3s ease;
+    transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), padding 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     
     &.expanded {
-      max-height: 400px;
+      max-height: 500px;
+      padding: 2px 0 4px 0;
     }
 
     .nav-submenu-divider {
       height: 1px;
-      margin: 6px 16px 6px 0;
-      background: var(--sidebar-border, rgba(255, 255, 255, 0.1));
+      margin: 4px 16px 4px 44px;
+      background: var(--sidebar-border, rgba(255, 255, 255, 0.08));
     }
     
     .nav-item {
-      margin: 1px 0;
+      margin: 1px 12px 1px 36px !important;
+      min-height: 28px !important;
+      height: 28px !important;
+      border-radius: 6px !important;
+      display: flex !important;
+      align-items: center !important;
+      background: transparent !important;
+      overflow: hidden !important;
       
-      &.active .nav-link {
-        color: white !important;
+      &.active {
+        background: rgba(0, 155, 226, 0.12) !important;
+
+        .nav-link {
+          color: var(--accent-blue) !important;
+          font-weight: 600 !important;
+
+          .nav-text {
+            color: var(--accent-blue) !important;
+            font-weight: 600 !important;
+          }
+        }
+
+        &::before {
+          display: none !important;
+        }
       }
 
       .nav-link {
-        padding: 6px 16px;
-        font-size: 13px;
-        color: var(--sidebar-text-secondary);
+        display: flex !important;
+        align-items: center !important;
+        width: 100% !important;
+        height: 28px !important;
+        min-height: 28px !important;
+        padding: 0 10px !important;
+        font-size: 13px !important;
+        font-weight: 500 !important;
+        color: var(--sidebar-text-secondary) !important;
+        border-radius: 6px !important;
+        text-decoration: none !important;
+        transition: background-color 0.15s ease, color 0.15s ease !important;
         
+        .nav-text {
+          white-space: nowrap !important;
+          overflow: hidden !important;
+          text-overflow: ellipsis !important;
+          font-size: 13px !important;
+          font-weight: inherit !important;
+          color: inherit !important;
+        }
+
         &:hover {
-          color: var(--sidebar-text);
+          color: var(--sidebar-text) !important;
+          background: var(--sidebar-hover) !important;
+
+          .nav-text {
+            color: var(--sidebar-text) !important;
+          }
         }
       }
     }
@@ -1075,84 +1504,181 @@ export default defineComponent({
 @media (max-height: 820px) {
   .dashboard-sidebar {
     .sidebar-header {
-      padding: 14px 16px;
+      padding: 0;
+      height: 68px;
 
-      .logo-container .logo-svg {
-        width: 32px;
-        height: 32px;
+      .logo-container {
+        width: 42px;
+        height: 42px;
+
+        .logo-svg {
+          width: 38px;
+          height: 38px;
+        }
       }
-      .logo-container .logo-text .logo-title {
-        font-size: 16px;
+
+      .sidebar-pin-btn {
+        top: 12px;
+        right: 12px;
       }
     }
 
     .sidebar-nav-main {
       padding: 8px 0;
-      gap: 2px;
-    }
+      gap: 0;
 
-    .sidebar-footer {
-      padding: 10px 0 14px 0;
-    }
+      .nav-item.main-item {
+        margin: 2px 14px;
+        min-height: 40px;
 
-    .nav-item {
-      margin: 2px 12px;
-
-      .nav-link {
-        padding: 7px 12px;
-        gap: 12px;
-        font-size: 13px;
-
-        .nav-icon {
-          font-size: 19px;
-          min-width: 19px;
-        }
-      }
-
-      &.main-item {
-        margin: 2px 12px;
-
-        .nav-link {
-          padding: 8px 12px;
-          font-size: 14px;
+        > .nav-link {
+          height: 40px;
 
           .nav-icon {
-            font-size: 20px;
-            min-width: 20px;
+            width: 44px;
+            min-width: 44px;
+            height: 40px;
+            font-size: 19px;
           }
         }
       }
     }
 
-    .nav-submenu {
-      padding-left: 24px;
+    .sidebar-footer {
+      padding: 6px 0 10px 0;
 
-      .nav-item .nav-link {
-        padding: 4px 12px;
-        font-size: 12px;
+      .nav-item {
+        margin: 2px 18px;
+        height: 34px;
+        min-height: 34px;
+
+        .nav-link {
+          height: 34px;
+
+          .nav-icon,
+          .nav-icon-wrapper {
+            width: 36px;
+            min-width: 36px;
+            height: 34px;
+
+            .nav-icon {
+              font-size: 17px;
+              width: 17px;
+              height: 17px;
+            }
+          }
+        }
+      }
+    }
+
+    .sidebar-dev-divider {
+      margin: 4px 18px !important;
+    }
+
+    .nav-submenu {
+      padding: 0;
+
+      &.expanded {
+        padding: 1px 0 3px 0;
+      }
+
+      .nav-submenu-divider {
+        margin: 3px 12px 3px 40px;
+      }
+
+      .nav-item {
+        margin: 1px 12px 1px 36px !important;
+        min-height: 26px !important;
+        height: 26px !important;
+
+        .nav-link {
+          height: 26px !important;
+          min-height: 26px !important;
+          font-size: 12px !important;
+          padding: 0 8px !important;
+
+          .nav-text {
+            font-size: 12px !important;
+          }
+        }
       }
     }
 
     &.is-collapsed {
       .sidebar-header {
-        padding: 14px 12px;
+        height: 68px;
       }
 
-      .nav-item,
-      .nav-item.main-item {
-        margin: 3px 8px;
-
-        .nav-link {
-          padding: 8px;
+      .sidebar-nav-main {
+        .nav-item.close-item {
+          display: none !important;
         }
 
-        &.active,
-        &.group-active {
-          width: 40px;
-          height: 40px;
-          min-width: 40px;
-          min-height: 40px;
-          margin: 3px auto;
+        .nav-item,
+        .nav-item.main-item {
+          margin: 2px 14px !important;
+          height: 40px !important;
+          min-width: 44px !important;
+          min-height: 40px !important;
+          justify-content: flex-start !important;
+
+          .nav-link .nav-icon {
+            width: 44px !important;
+            height: 40px !important;
+          }
+
+          &.active,
+          &.group-active {
+            height: 40px !important;
+            min-width: 44px !important;
+            min-height: 40px !important;
+            margin: 2px 14px !important;
+
+            &::before {
+              top: 7px;
+              bottom: 7px;
+            }
+          }
+        }
+      }
+
+      .sidebar-footer {
+        .nav-item {
+          margin: 2px 18px !important;
+          height: 34px !important;
+          min-width: 36px !important;
+          min-height: 34px !important;
+          border-radius: 8px !important;
+          justify-content: flex-start !important;
+
+          .nav-link {
+            .nav-icon,
+            .nav-icon-wrapper {
+              width: 36px !important;
+              min-width: 36px !important;
+              height: 34px !important;
+            }
+          }
+
+          &.active {
+            height: 34px !important;
+            min-width: 36px !important;
+            min-height: 34px !important;
+            margin: 2px 18px !important;
+            border-radius: 8px !important;
+
+            &::before {
+              top: 5px;
+              bottom: 5px;
+            }
+          }
+
+          &.update-item:not(.active) {
+            margin: 2px 18px !important;
+            min-width: 36px !important;
+            height: 34px !important;
+            border-radius: 8px !important;
+          }
         }
       }
     }
@@ -1162,88 +1688,181 @@ export default defineComponent({
 @media (max-height: 720px) {
   .dashboard-sidebar {
     .sidebar-header {
-      padding: 10px 14px;
+      padding: 0;
+      height: 56px;
 
-      .logo-container .logo-svg {
-        width: 28px;
-        height: 28px;
+      .logo-container {
+        width: 36px;
+        height: 36px;
+
+        .logo-svg {
+          width: 32px;
+          height: 32px;
+        }
       }
-      .logo-container .logo-text .logo-title {
-        font-size: 15px;
+
+      .sidebar-pin-btn {
+        top: 10px;
+        right: 10px;
       }
     }
 
     .sidebar-nav-main {
       padding: 4px 0;
-      gap: 1px;
-    }
+      gap: 0;
 
-    .sidebar-footer {
-      padding: 6px 0 8px 0;
-    }
+      .nav-item.main-item {
+        margin: 1px 14px;
+        min-height: 36px;
 
-    .nav-item {
-      margin: 1px 10px;
-
-      .nav-link {
-        padding: 5px 10px;
-        gap: 10px;
-        font-size: 13px;
-
-        .nav-icon {
-          font-size: 18px;
-          min-width: 18px;
-        }
-      }
-
-      &.main-item {
-        margin: 1px 10px;
-
-        .nav-link {
-          padding: 6px 10px;
-          font-size: 13px;
+        > .nav-link {
+          height: 36px;
 
           .nav-icon {
-            font-size: 19px;
-            min-width: 19px;
+            width: 44px;
+            min-width: 44px;
+            height: 36px;
+            font-size: 18px;
           }
         }
       }
     }
 
-    .nav-submenu {
-      padding-left: 20px;
+    .sidebar-footer {
+      padding: 4px 0 6px 0;
 
-      .nav-submenu-divider {
-        margin: 4px 10px 4px 0;
+      .nav-item {
+        margin: 1px 18px;
+        height: 32px;
+        min-height: 32px;
+
+        .nav-link {
+          height: 32px;
+
+          .nav-icon,
+          .nav-icon-wrapper {
+            width: 36px;
+            min-width: 36px;
+            height: 32px;
+
+            .nav-icon {
+              font-size: 16px;
+              width: 16px;
+              height: 16px;
+            }
+          }
+        }
+      }
+    }
+
+    .sidebar-dev-divider {
+      margin: 2px 18px !important;
+    }
+
+    .nav-submenu {
+      padding: 0;
+
+      &.expanded {
+        padding: 1px 0 2px 0;
       }
 
-      .nav-item .nav-link {
-        padding: 3px 10px;
-        font-size: 11px;
+      .nav-submenu-divider {
+        margin: 2px 10px 2px 36px;
+      }
+
+      .nav-item {
+        margin: 1px 10px 1px 32px !important;
+        min-height: 24px !important;
+        height: 24px !important;
+
+        .nav-link {
+          height: 24px !important;
+          min-height: 24px !important;
+          font-size: 11px !important;
+          padding: 0 6px !important;
+
+          .nav-text {
+            font-size: 11px !important;
+          }
+        }
       }
     }
 
     &.is-collapsed {
       .sidebar-header {
-        padding: 10px 8px;
+        height: 56px;
       }
 
-      .nav-item,
-      .nav-item.main-item {
-        margin: 2px 6px;
-
-        .nav-link {
-          padding: 6px;
+      .sidebar-nav-main {
+        .nav-item.close-item {
+          display: none !important;
         }
 
-        &.active,
-        &.group-active {
-          width: 38px;
-          height: 38px;
-          min-width: 38px;
-          min-height: 38px;
-          margin: 2px auto;
+        .nav-item,
+        .nav-item.main-item {
+          margin: 1px 14px !important;
+          height: 36px !important;
+          min-width: 44px !important;
+          min-height: 36px !important;
+          justify-content: flex-start !important;
+
+          .nav-link .nav-icon {
+            width: 44px !important;
+            height: 36px !important;
+          }
+
+          &.active,
+          &.group-active {
+            height: 36px !important;
+            min-width: 44px !important;
+            min-height: 36px !important;
+            margin: 1px 14px !important;
+
+            &::before {
+              top: 5px;
+              bottom: 5px;
+            }
+          }
+        }
+      }
+
+      .sidebar-footer {
+        .nav-item {
+          margin: 1px 18px !important;
+          height: 32px !important;
+          min-width: 36px !important;
+          min-height: 32px !important;
+          border-radius: 7px !important;
+          justify-content: flex-start !important;
+
+          .nav-link {
+            .nav-icon,
+            .nav-icon-wrapper {
+              width: 36px !important;
+              min-width: 36px !important;
+              height: 32px !important;
+            }
+          }
+
+          &.active {
+            height: 32px !important;
+            min-width: 36px !important;
+            min-height: 32px !important;
+            margin: 1px 18px !important;
+            border-radius: 7px !important;
+
+            &::before {
+              top: 4px;
+              bottom: 4px;
+            }
+          }
+
+          &.update-item:not(.active) {
+            margin: 1px 18px !important;
+            min-width: 36px !important;
+            height: 32px !important;
+            border-radius: 7px !important;
+          }
         }
       }
     }
