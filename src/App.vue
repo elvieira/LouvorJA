@@ -660,12 +660,32 @@ export default {
                   timeout: 5000,
                 });
               } else if (res && !res.success) {
-                const { default: $alert } = await import("@/helpers/ui/Alert");
+                const [{ default: $alert }, { default: $string }] = await Promise.all([
+                  import("@/helpers/ui/Alert"),
+                  import("@/helpers/utils/String"),
+                ]);
+                const errorHtml = $string.formatErrorHtml(res.error || "");
+                const chooseLabel = this.$t("modules.config.media_path_migration_choose") || "Escolher outra pasta";
+                const retryLabel = this.$t("first_boot.retry_button") || "Tentar Novamente";
                 $alert.show({
                   title: this.$t("modules.config.media_path_title"),
-                  text: this.$t("modules.config.media_path_migration_error", { error: res.error || "" }),
+                  text: this.$t("modules.config.media_path_migration_error", { error: errorHtml ? `<br><br>${errorHtml}` : "" }),
                   translate: false,
-                  buttons: [{ text: "alert.close", color: "primary", value: "close" }],
+                  maxWidth: 560,
+                  buttons: [
+                    { text: "alert.close", color: "grey", variant: "text", value: "close" },
+                    { text: chooseLabel, color: "primary", variant: "tonal", value: "choose" },
+                    { text: retryLabel, color: "primary", variant: "flat", value: "retry" },
+                  ],
+                }, async (retryResp) => {
+                  if (retryResp === "retry") {
+                    await this.executeStartupMediaMigration(targetPath, sourcePath);
+                  } else if (retryResp === "choose") {
+                    const picked = await window.electronAPI.openFolderPicker?.();
+                    if (picked) {
+                      await this.executeStartupMediaMigration(picked, sourcePath);
+                    }
+                  }
                 });
               }
             },

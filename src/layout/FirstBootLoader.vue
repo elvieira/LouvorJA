@@ -241,7 +241,16 @@
                 </v-btn>
 
                 <v-btn
-                  v-if="canContinueOffline"
+                  v-if="isMigrationMode"
+                  variant="outlined"
+                  class="px-4 rounded-lg font-weight-medium offline-btn"
+                  @click="closeMigrationError"
+                >
+                  {{ $t('alert.close') }}
+                </v-btn>
+
+                <v-btn
+                  v-else-if="canContinueOffline"
                   variant="outlined"
                   class="px-4 rounded-lg font-weight-medium offline-btn"
                   @click="continueOffline"
@@ -372,6 +381,7 @@ import { defineComponent } from "vue";
 import LegalModal from "@/components/LegalModal.vue";
 import $path from "@/helpers/utils/Path";
 import $alert from "@/helpers/ui/Alert";
+import $string from "@/helpers/utils/String";
 import { fetchWithFallback } from "@/helpers/services/Api";
 
 export default defineComponent({
@@ -401,6 +411,7 @@ export default defineComponent({
       legalModalTab: "terms" as "terms" | "privacy" | "copyright",
       legalModalLocale: "pt" as "pt" | "es",
       isMigrationMode: false as boolean,
+      lastMigrationDetail: null as null | { targetPath: string; deleteSource?: boolean; sourcePath?: string; onComplete?: (_result: any) => void },
     };
   },
   computed: {
@@ -467,6 +478,7 @@ export default defineComponent({
       const targetPath = event?.detail?.targetPath;
       if (!targetPath || !window.electronAPI?.migrateMediaFiles) return;
 
+      this.lastMigrationDetail = event.detail;
       const deleteSource = event?.detail?.deleteSource ?? false;
       const sourcePath = event?.detail?.sourcePath;
 
@@ -512,21 +524,43 @@ export default defineComponent({
           this.isMigrationMode = false;
           if (event?.detail?.onComplete) event.detail.onComplete(res);
         } else {
-          this.hasError = true;
-          this.statusText = `Erro na migração: ${res.error || "Falha na cópia"}`;
-          this.detailCard = {
-            icon: "mdi-alert-circle",
-            title: "Erro na migração",
-            subtitle: res.error || "Ocorreu uma falha ao transferir os arquivos.",
-          };
-          if (event?.detail?.onComplete) event.detail.onComplete(res);
+          const cleanError = $string.cleanIpcError(res.error || "Falha na cópia dos arquivos.");
+          if (event?.detail?.onComplete) {
+            this.hasError = false;
+            this.isOpen = false;
+            this.isMigrationMode = false;
+            event.detail.onComplete({ ...res, error: cleanError });
+          } else {
+            this.hasError = true;
+            this.statusText = cleanError;
+            this.detailCard = {
+              icon: "mdi-alert-circle",
+              title: "Erro na migração",
+              subtitle: cleanError,
+            };
+          }
         }
       } catch (err: any) {
+        if (window.electronAPI.removeMediaMigrationProgressListener) {
+          window.electronAPI.removeMediaMigrationProgressListener();
+        }
         console.error("Erro na migração de mídia:", err);
-        this.hasError = true;
-        this.statusText = `Erro: ${err?.message || err}`;
-        if (event?.detail?.onComplete) event.detail.onComplete({ success: false, error: err?.message || err });
+        const cleanError = $string.cleanIpcError(err);
+        if (event?.detail?.onComplete) {
+          this.hasError = false;
+          this.isOpen = false;
+          this.isMigrationMode = false;
+          event.detail.onComplete({ success: false, totalCopied: 0, error: cleanError });
+        } else {
+          this.hasError = true;
+          this.statusText = cleanError;
+        }
       }
+    },
+    closeMigrationError() {
+      this.hasError = false;
+      this.isOpen = false;
+      this.isMigrationMode = false;
     },
     toggleTheme() {
       const nextTheme = this.isDarkMode ? "light" : "dark";
@@ -572,6 +606,10 @@ export default defineComponent({
     async retrySync() {
       this.hasError = false;
       this.progress = 0;
+      if (this.isMigrationMode && this.lastMigrationDetail) {
+        await this.handleMediaMigration({ detail: this.lastMigrationDetail } as any);
+        return;
+      }
       this.statusText = this.$t("first_boot.status.preparing_env");
       await this.runFirstBootSync();
     },

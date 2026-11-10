@@ -270,6 +270,7 @@
 import { defineComponent } from "vue";
 import manifest from "../../manifest";
 import SettingsActionRow from "@/components/SettingsActionRow.vue";
+import $string from "@/helpers/utils/String";
 
 export default defineComponent({
   name: "ConfigMaintenance",
@@ -454,10 +455,12 @@ export default defineComponent({
               this.isMigratingMedia = false;
               await this.loadMediaPathInfo();
               if (result && !result.success) {
+                const errorHtml = $string.formatErrorHtml(result.error || "");
                 (this as any).$alert.show({
                   title: this.t("media_path_title"),
-                  text: this.t("media_path_migration_error", { error: result.error || "" }),
+                  text: this.t("media_path_migration_error", { error: errorHtml ? `<br><br>${errorHtml}` : "" }),
                   translate: false,
+                  maxWidth: 560,
                   buttons: [{ text: "alert.close", color: "primary", value: "close" }],
                 });
               }

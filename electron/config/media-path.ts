@@ -481,6 +481,7 @@ export interface MediaMigrationResult {
   totalCopied: number;
   errorCount?: number;
   error?: string;
+  errorCode?: string;
 }
 
 function collectFilesRecursively(dir: string, baseDir: string = dir): Array<{ fullPath: string; relPath: string }> {
@@ -539,6 +540,104 @@ export function isMigrationInterrupted(targetPath: string): boolean {
   return false;
 }
 
+const SYSTEM_ERROR_DESCRIPTIONS: Record<string, { reason: string; suggestion: string }> = {
+  EACCES: {
+    reason: "Sem permissão para criar ou gravar arquivos na pasta de destino.",
+    suggestion: "Verifique se o antivírus/Windows Defender não está bloqueando o aplicativo ou escolha outra pasta com permissão de escrita.",
+  },
+  EPERM: {
+    reason: "Acesso negado pelo sistema operacional ao gravar na pasta de destino.",
+    suggestion: "Verifique se o antivírus/Windows Defender não está bloqueando o aplicativo ou execute como Administrador / escolha outra pasta.",
+  },
+  ENOSPC: {
+    reason: "Espaço em disco insuficiente na unidade de destino.",
+    suggestion: "Libere espaço em disco ou escolha outro disco/pasta para salvar as mídias.",
+  },
+  EROFS: {
+    reason: "A unidade ou pasta de destino está protegida contra gravação (somente leitura).",
+    suggestion: "Escolha outro disco ou pasta onde seja possível gravar arquivos.",
+  },
+  EBUSY: {
+    reason: "Arquivos estão em uso por outro programa ou bloqueados temporariamente.",
+    suggestion: "Feche outros aplicativos que possam estar acessando as mídias e tente novamente.",
+  },
+  EAGAIN: {
+    reason: "Recurso temporariamente indisponível ao acessar os arquivos.",
+    suggestion: "Aguarde alguns instantes e tente novamente.",
+  },
+  ETXTBSY: {
+    reason: "Um ou mais arquivos estão ocupados por outro processo.",
+    suggestion: "Feche outros aplicativos abertos e tente novamente.",
+  },
+  ENOENT: {
+    reason: "Pasta ou arquivo de origem/destino não foi encontrado.",
+    suggestion: "Verifique se o disco ou pasta selecionada existe e está acessível.",
+  },
+  ENAMETOOLONG: {
+    reason: "O caminho de um ou mais arquivos excedeu o limite suportado pelo sistema.",
+    suggestion: "Escolha uma pasta de destino com um caminho mais curto (ex: C:\\Louvor JA\\Media).",
+  },
+  EIO: {
+    reason: "Falha de leitura ou gravação no disco.",
+    suggestion: "Verifique se o disco de origem/destino está conectado e funcionando normalmente.",
+  },
+  ENODEV: {
+    reason: "Unidade de armazenamento desconectada ou inacessível.",
+    suggestion: "Verifique se o HD externo/pendrive ou pasta em rede está conectado.",
+  },
+  EMFILE: {
+    reason: "Limite de arquivos abertos simultaneamente atingido no sistema.",
+    suggestion: "Feche alguns programas em execução e tente novamente.",
+  },
+  ENFILE: {
+    reason: "Limite de arquivos abertos no sistema atingido.",
+    suggestion: "Feche alguns programas em execução e tente novamente.",
+  },
+};
+
+function formatMigrationErrorMessage(
+  err: unknown,
+  context: {
+    errorCount: number;
+    maxErrors: number;
+    lastCopyError: unknown;
+    lastFailedPath?: string;
+  },
+): { message: string; code: string } {
+  const isTooManyErrors = err instanceof Error && err.message === "TOO_MANY_ERRORS";
+  const targetErr = isTooManyErrors && context.lastCopyError ? context.lastCopyError : err;
+
+  const errObj = targetErr as NodeJS.ErrnoException | undefined;
+  const code = errObj && typeof errObj === "object" && "code" in errObj && errObj.code ? String(errObj.code) : "";
+  const rawMessage = targetErr instanceof Error ? targetErr.message : String(targetErr ?? "");
+  const cleanRawMessage = rawMessage.replace(/^Error invoking remote method '[^']+':\s*/i, "");
+
+  const known = code ? SYSTEM_ERROR_DESCRIPTIONS[code] : undefined;
+  const reason = known ? known.reason : cleanRawMessage || "Erro inesperado ao transferir arquivos.";
+  const suggestion = known ? known.suggestion : "Tente novamente ou escolha outra pasta de destino.";
+
+  const lines: string[] = [];
+  if (isTooManyErrors) {
+    lines.push(`Não foi possível concluir a transferência porque ${context.errorCount} arquivos falharam (limite de ${context.maxErrors}).`);
+    lines.push(`Motivo principal: ${reason}`);
+  } else {
+    lines.push(reason);
+  }
+  lines.push(suggestion);
+
+  const techParts: string[] = [];
+  if (code) techParts.push(`Código: ${code}`);
+  if (context.lastFailedPath) techParts.push(`Arquivo: ${context.lastFailedPath}`);
+  if (techParts.length > 0) {
+    lines.push(techParts.join(" | "));
+  }
+
+  return {
+    message: lines.join("\n"),
+    code: code || (isTooManyErrors ? "TOO_MANY_ERRORS" : "UNKNOWN"),
+  };
+}
+
 /**
  * Migra (copia) arquivos de mídia de uma pasta origem (ex: userData/Media)
  * para a nova pasta de destino compartilhada (ex: C:\Louvor JA\Media).
@@ -559,6 +658,13 @@ export async function migrateMediaFiles(
   const markerFile = path.join(targetPath, ".migration_in_progress");
   const fluteDataDir = getFluteDataPath();
   const lockFile = path.join(fluteDataDir, ".migration_lock.json");
+
+  const MAX_ALLOWED_ERRORS = 40;
+  let totalCopied = 0;
+  let errorCount = 0;
+  const failedFiles: string[] = [];
+  let lastCopyError: unknown = null;
+  let lastFailedPath: string | undefined;
 
   try {
     if (!fs.existsSync(effectiveSourcePath)) {
@@ -610,10 +716,6 @@ export async function migrateMediaFiles(
     const files = collectFilesRecursively(effectiveSourcePath);
     const totalFiles = files.length;
     let processed = 0;
-    let totalCopied = 0;
-    let errorCount = 0;
-    const MAX_ALLOWED_ERRORS = 40;
-    const failedFiles: string[] = [];
 
     for (const file of files) {
       processed++;
@@ -639,9 +741,6 @@ export async function migrateMediaFiles(
         : path.join(targetFileDir, path.basename(file.fullPath));
 
       const destDir = path.dirname(destPath);
-      if (!fs.existsSync(destDir)) {
-        fs.mkdirSync(destDir, { recursive: true });
-      }
 
       let needsCopy = true;
       if (fs.existsSync(destPath)) {
@@ -658,14 +757,19 @@ export async function migrateMediaFiles(
 
       if (needsCopy) {
         try {
+          if (!fs.existsSync(destDir)) {
+            fs.mkdirSync(destDir, { recursive: true });
+          }
           fs.copyFileSync(file.fullPath, destPath);
           totalCopied++;
         } catch (copyErr) {
           errorCount++;
+          lastCopyError = copyErr;
+          lastFailedPath = file.relPath;
           failedFiles.push(file.relPath);
           console.warn(`[media-path] Erro ao copiar ${file.relPath} (${errorCount}/${MAX_ALLOWED_ERRORS}):`, copyErr);
           if (errorCount >= MAX_ALLOWED_ERRORS) {
-            throw new Error(`Limite de erros (${MAX_ALLOWED_ERRORS}) atingido durante a transferência de mídia.`);
+            throw new Error("TOO_MANY_ERRORS");
           }
         }
       }
@@ -686,7 +790,10 @@ export async function migrateMediaFiles(
     }
 
     // Salva o novo caminho de mídia configurado apenas com a transferência bem-sucedida (dentro do limite de tolerância)
-    saveMediaPath(targetPath);
+    const saved = saveMediaPath(targetPath);
+    if (!saved) {
+      throw new Error("Não foi possível salvar a configuração da nova pasta de mídia no arquivo de configuração.");
+    }
 
     // Remove os marcadores de transferência em andamento
     try {
@@ -706,10 +813,10 @@ export async function migrateMediaFiles(
         try {
           const oldRemaining = collectFilesRecursively(effectiveSourcePath);
           for (const f of oldRemaining) {
-            try { fs.rmSync(f.fullPath, { force: true }); } catch {}
+            try { fs.rmSync(f.fullPath, { force: true }); } catch { /* ignora arquivo em uso */ }
           }
           fs.rmSync(effectiveSourcePath, { recursive: true, force: true });
-        } catch {}
+        } catch { /* ignora falha parcial na remoção da pasta */ }
       }
     }
 
@@ -742,13 +849,20 @@ export async function migrateMediaFiles(
       errorCount,
     };
   } catch (err: unknown) {
-    console.error("[media-path] Erro durante migração de mídias:", err);
+    const formatted = formatMigrationErrorMessage(err, {
+      errorCount,
+      maxErrors: MAX_ALLOWED_ERRORS,
+      lastCopyError,
+      lastFailedPath,
+    });
+    console.error("[media-path] Erro durante migração de mídias:", formatted.message, err);
     // Em caso de falha/interrupção além do limite tolerado, o marcador é mantido
     return {
       success: false,
-      totalCopied: 0,
+      totalCopied,
       errorCount,
-      error: err instanceof Error ? err.message : String(err),
+      error: formatted.message,
+      errorCode: formatted.code,
     };
   }
 }

@@ -45,4 +45,16 @@ export default {
           .replace(/[\u0300-\u036f]/g, ""),
       );
   },
+  cleanIpcError(error: unknown): string {
+    const raw = error instanceof Error ? error.message : String(error ?? "");
+    return raw.replace(/^Error invoking remote method '[^']+':\s*/i, "").trim();
+  },
+  formatErrorHtml(error: unknown): string {
+    const cleaned = this.cleanIpcError(error);
+    return cleaned
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/\n/g, "<br>");
+  },
 };

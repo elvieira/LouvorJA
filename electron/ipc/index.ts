@@ -876,20 +876,30 @@ export function registerIpcHandlers() {
   });
 
   ipcMain.handle("migrate-media-files", async (event, targetPath: string, deleteSource?: boolean, sourcePath?: string) => {
-    return await migrateMediaFiles(
-      targetPath,
-      sourcePath,
-      (progress: unknown) => {
-        try {
-          if (!event.sender.isDestroyed()) {
-            event.sender.send("media-migration-progress", progress);
+    try {
+      return await migrateMediaFiles(
+        targetPath,
+        sourcePath,
+        (progress: unknown) => {
+          try {
+            if (!event.sender.isDestroyed()) {
+              event.sender.send("media-migration-progress", progress);
+            }
+          } catch {
+            // ignora se sender fechou
           }
-        } catch {
-          // ignora se sender fechou
-        }
-      },
-      deleteSource || false,
-    );
+        },
+        deleteSource || false,
+      );
+    } catch (err: unknown) {
+      console.error("[ipc] Erro inesperado em migrate-media-files:", err);
+      return {
+        success: false,
+        totalCopied: 0,
+        errorCount: 0,
+        error: err instanceof Error ? err.message : String(err),
+      };
+    }
   });
 }
 

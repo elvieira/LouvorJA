@@ -161,7 +161,7 @@ interface ElectronAPI {
     targetPath: string,
     deleteSource?: boolean,
     sourcePath?: string,
-  ) => Promise<{ success: boolean; totalCopied: number; error?: string }>
+  ) => Promise<{ success: boolean; totalCopied: number; errorCount?: number; error?: string; errorCode?: string }>
   onMediaMigrationProgress?: (callback: (data: { current: number; total: number; filename: string; percent: number }) => void) => void
   removeMediaMigrationProgressListener?: () => void
 }
